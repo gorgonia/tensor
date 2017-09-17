@@ -1,4 +1,4 @@
-package execution
+package execution // import "gorgonia.org/tensor/internal/execution"
 
 import (
 	"fmt"
