@@ -23,8 +23,6 @@ env:
 before_install:
   - go get github.com/mattn/goveralls
 
-install:
-  - go get -u -t -v gorgonia.org/tensor
 
 script:
   - $HOME/gopath/bin/goveralls -service=travis-ci
