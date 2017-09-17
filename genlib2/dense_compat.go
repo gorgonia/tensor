@@ -153,7 +153,7 @@ func convToFloat64(x interface{}) float64 {
 `
 
 const compatRaw = `// FromMat64 converts a *"gonum/matrix/mat64".Dense into a *tensorf64.Tensor.
-func FromMat64(m *mat64.Dense, opts ...FuncOpt) *Dense {
+func FromMat64(m *mat.Dense, opts ...FuncOpt) *Dense {
 	r, c := m.Dims()
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
@@ -189,18 +189,18 @@ func FromMat64(m *mat64.Dense, opts ...FuncOpt) *Dense {
 }
 
 
-// ToMat64 converts a *Dense to a *mat64.Dense. All the values are converted into float64s.
+// ToMat64 converts a *Dense to a *mat.Dense. All the values are converted into float64s.
 // This function will only convert matrices. Anything *Dense with dimensions larger than 2 will cause an error.
-func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat64.Dense, err error) {
+func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 	// checks:
 	if !t.IsNativelyAccessible() {
-		err = errors.Errorf("Cannot convert *Dense to *mat64.Dense. Data is inaccessible")
+		err = errors.Errorf("Cannot convert *Dense to *mat.Dense. Data is inaccessible")
 		return
 	}
 
 	if !t.IsMatrix() {
 		// error
-		err = errors.Errorf("Cannot convert *Dense to *mat64.Dense. Expected number of dimensions: <=2, T has got %d dimensions (Shape: %v)", t.Dims(), t.Shape())
+		err = errors.Errorf("Cannot convert *Dense to *mat.Dense. Expected number of dimensions: <=2, T has got %d dimensions (Shape: %v)", t.Dims(), t.Shape())
 		return
 	}
 
@@ -232,7 +232,7 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat64.Dense, err error) {
 		
 	}
 
-	retVal = mat64.NewDense(r, c, data)
+	retVal = mat.NewDense(r, c, data)
 	return
 }
 `

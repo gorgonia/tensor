@@ -21,7 +21,7 @@ func TestToMat64(t *testing.T){
 	assert := assert.New(t)
 	for i, tmt := range toMat64Tests {
 		T := New(WithBacking(tmt.data), WithShape(tmt.shape...))
-		var m *mat64.Dense
+		var m *mat.Dense
 		var err error
 		if m, err = ToMat64(T); err != nil {
 			t.Errorf("ToMat basic test %d failed : %v", i, err)
@@ -64,14 +64,14 @@ func TestToMat64(t *testing.T){
 
 func TestFromMat64(t *testing.T){
 	assert := assert.New(t)
-	var m *mat64.Dense
+	var m *mat.Dense
 	var T *Dense
 	var backing []float64
 
 
 	for i, tmt := range toMat64Tests {
 		backing = Range(Float64, 0, 6).([]float64)
-		m = mat64.NewDense(2, 3, backing)
+		m = mat.NewDense(2, 3, backing)
 		T = FromMat64(m)
 		conv := anyToFloat64s(tmt.data)
 		assert.Equal(conv, T.Float64s(), "test %d: []float64 from %v", i, tmt.dt)
@@ -83,7 +83,7 @@ func TestFromMat64(t *testing.T){
 
 		if tmt.dt == Float64{
 			backing = Range(Float64, 0, 6).([]float64)
-			m = mat64.NewDense(2, 3, backing)
+			m = mat.NewDense(2, 3, backing)
 			T = FromMat64(m, UseUnsafe())
 			assert.Equal(backing, T.Float64s())
 			assert.True(T.Shape().Eq(tmt.shape))

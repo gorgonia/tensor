@@ -24,9 +24,9 @@ type Kinds struct {
 
 func init() {
 	gopath = os.Getenv("GOPATH")
-	tensorPkgLoc = path.Join(gopath, "src/github.com/chewxy/gorgonia/tensor")
-	execLoc = path.Join(gopath, "src/github.com/chewxy/gorgonia/tensor/internal/execution")
-	storageLoc = path.Join(gopath, "src/github.com/chewxy/gorgonia/tensor/internal/storage")
+	tensorPkgLoc = path.Join(gopath, "src/gorgonia.org/tensor")
+	execLoc = path.Join(gopath, "src/gorgonia.org/tensor/internal/execution")
+	storageLoc = path.Join(gopath, "src/gorgonia.org/tensor/internal/storage")
 }
 
 func main() {
