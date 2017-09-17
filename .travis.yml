@@ -1,0 +1,30 @@
+sudo: required
+
+language: go
+
+branches:
+  only:
+    - master
+go:
+  - 1.6.x
+  - 1.7.x
+  - 1.8.x
+  - 1.9.x
+  - tip
+
+env:
+  global:
+    - GOARCH=amd64
+    - BLAS_LIB=OpenBLAS
+    - TRAVISTEST=true
+    - CUDA=8.0.61-1
+
+
+before_install:
+  - go get github.com/mattn/goveralls
+
+install:
+  - go get -u -t -v gorgonia.org/tensor
+
+script:
+  - $HOME/gopath/bin/goveralls -service=travis-ci
