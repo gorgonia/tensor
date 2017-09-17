@@ -63,7 +63,7 @@ To install: `go get -u "github.com/chewxy/gorgonia/tensor"`
 To create a matrix with package `tensor` is easy:
 
 ```go
-// Creating a (2,2) matrix:
+// Creating a (2,2) matrix of int:
 a := New(WithShape(2, 2), WithBacking([]int{1, 2, 3, 4}))
 fmt.Printf("a:\n%v\n", a)
 
@@ -77,7 +77,7 @@ fmt.Printf("a:\n%v\n", a)
 To create a 3-Tensor is just as easy - just put the correct shape and you're good to go:
 
 ```go 
-// Creating a (2,3,4) 3-Tensor
+// Creating a (2,3,4) 3-Tensor of float32
 b := New(WithBacking(Range(Float32, 0, 24)), WithShape(2, 3, 4))
 fmt.Printf("b:\n%1.1f\n", b)
 
@@ -137,7 +137,7 @@ There is a whole laundry list of methods and functions available at the [godoc](
 
 The design of the `*Dense` tensor is quite simple in concept. However, let's start with something more familiar. This is a visual representation of a slice in Go (taken from rsc's excellent blog post on [Go data structures](https://research.swtch.com/godata)):
 
-![slice](https://raw.githubusercontent.com/chewxy/gorgonia/master/tensor/media/slice.png)
+![slice](https://github.com/gorgonia/tensor/blob/master/media/slice.png?raw=true)
 
 The data structure for `*Dense` is similar, but a lot more complex. Much of the complexity comes from the need to do accounting work on the data structure as well as preserving references to memory locations. This is how the `*Dense` is defined:
 
@@ -153,7 +153,7 @@ type Dense struct {
 
 And here's a visual representation of the `*Dense`.
 
-![dense](https://raw.githubusercontent.com/chewxy/gorgonia/master/tensor/media/dense.png)
+![dense](https://github.com/gorgonia/tensor/blob/master/media/dense.png?raw=true)
 
 `*Dense` draws its inspiration from Go's slice. Underlying it all is a flat array, and access to elements are controlled by `*AP`. Where a Go is able to store its metadata in a 3-word stucture (obiviating the need to allocate memory), a `*Dense` unfortunately needs to allocate some memory. The majority of the data is stored in the `*AP` structure, which contains metadata such as shape, stride, and methods for accessing the array.
 
@@ -216,11 +216,12 @@ One could argue that this sidesteps the compiler's type checking system, deferri
 
 Currently, the tensor package supports limited type of genericity - limited to a tensor of any primitive type. 
 
-## How This Package is Developed ##
+# How This Package is Developed #
 Much of the code in this package is generated. The code to generate them is in the directory `genlib2`. 
 
+
 ## Things Knowingly Untested For ##
-- `complex64` and `complex128` are excluded from quick check generation process [https://github.com/chewxy/gorgonia/issues/143](Issue #143)
+- `complex64` and `complex128` are excluded from quick check generation process [Issue #11](https://github.com/gorgonia/tensor/issues/11)
 
 
 ### TODO ###
@@ -228,3 +229,44 @@ Much of the code in this package is generated. The code to generate them is in t
 * [ ] Identity optimizations for op
 * [ ] Zero value optimizations
 * [ ] fix Random() - super dodgy
+
+# How To Get Support #
+
+The best way of support right now is to open a ticket on Github.
+
+# Contributing #
+
+Obviously since you are most probably reading this on Github, Github will form the major part of the workflow for contributing to this package.
+
+See also: CONTRIBUTING.md
+
+
+## Contributors and Significant Contributors ##
+
+All contributions are welcome. However, there is a new class of contributor, called Significant Contributors. 
+
+A Significant Contributor is one who has shown *deep understanding* of how the library works and/or its environs.  Here are examples of what constitutes a Significant Contribution:
+
+* Wrote significant amounts of documentation pertaining to **why**/the mechanics of particular functions/methods and how the different parts affect one another
+* Wrote code, and tests around the more intricately connected parts of Gorgonia
+* Wrote code and tests, and have at least 5 pull requests accepted
+* Provided expert analysis on parts of the package (for example, you may be a floating point operations expert who optimized one function)
+* Answered at least 10 support questions.
+
+Significant Contributors list will be updated once a month (if anyone even uses Gorgonia that is).
+
+
+# Licence #
+
+Gorgonia and the `tensor` package are licenced under a variant of Apache 2.0. It's for all intents and purposes the same as the Apache 2.0 Licence, with the exception of not being able to commercially profit directly from the package unless you're a Significant Contributor (for example, providing commercial support for the package). It's perfectly fine to profit directly from a derivative of Gorgonia (for example, if you use Gorgonia as a library in your product)
+
+
+Everyone is still allowed to use Gorgonia for commercial purposes (example: using it in a software for your business).
+
+## Various Other Copyright Notices ##
+
+These are the packages and libraries which inspired and were adapted from in the process of writing Gorgonia (the Go packages that were used were already declared above):
+
+| Source | How it's Used | Licence |
+|------|---|-------|
+| Numpy  | Inspired large portions. Directly adapted algorithms for a few methods (explicitly labelled in the docs) | MIT/BSD-like. [Numpy Licence](https://github.com/numpy/numpy/blob/master/LICENSE.txt) |
