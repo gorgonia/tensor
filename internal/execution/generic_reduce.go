@@ -220,34 +220,272 @@ func ReduceUnsafePointer(f func(a, b unsafe.Pointer) unsafe.Pointer, def unsafe.
 	return
 }
 
-func SumI(a []int) int                   { return ReduceI(AddI, 0, a...) }
-func SumI8(a []int8) int8                { return ReduceI8(AddI8, 0, a...) }
-func SumI16(a []int16) int16             { return ReduceI16(AddI16, 0, a...) }
-func SumI32(a []int32) int32             { return ReduceI32(AddI32, 0, a...) }
-func SumI64(a []int64) int64             { return ReduceI64(AddI64, 0, a...) }
-func SumU(a []uint) uint                 { return ReduceU(AddU, 0, a...) }
-func SumU8(a []uint8) uint8              { return ReduceU8(AddU8, 0, a...) }
-func SumU16(a []uint16) uint16           { return ReduceU16(AddU16, 0, a...) }
-func SumU32(a []uint32) uint32           { return ReduceU32(AddU32, 0, a...) }
-func SumU64(a []uint64) uint64           { return ReduceU64(AddU64, 0, a...) }
-func SumF32(a []float32) float32         { return ReduceF32(AddF32, 0, a...) }
-func SumF64(a []float64) float64         { return ReduceF64(AddF64, 0, a...) }
-func SumC64(a []complex64) complex64     { return ReduceC64(AddC64, 0, a...) }
-func SumC128(a []complex128) complex128  { return ReduceC128(AddC128, 0, a...) }
-func ProdI(a []int) int                  { return ReduceI(MulI, 1, a...) }
-func ProdI8(a []int8) int8               { return ReduceI8(MulI8, 1, a...) }
-func ProdI16(a []int16) int16            { return ReduceI16(MulI16, 1, a...) }
-func ProdI32(a []int32) int32            { return ReduceI32(MulI32, 1, a...) }
-func ProdI64(a []int64) int64            { return ReduceI64(MulI64, 1, a...) }
-func ProdU(a []uint) uint                { return ReduceU(MulU, 1, a...) }
-func ProdU8(a []uint8) uint8             { return ReduceU8(MulU8, 1, a...) }
-func ProdU16(a []uint16) uint16          { return ReduceU16(MulU16, 1, a...) }
-func ProdU32(a []uint32) uint32          { return ReduceU32(MulU32, 1, a...) }
-func ProdU64(a []uint64) uint64          { return ReduceU64(MulU64, 1, a...) }
-func ProdF32(a []float32) float32        { return ReduceF32(MulF32, 1, a...) }
-func ProdF64(a []float64) float64        { return ReduceF64(MulF64, 1, a...) }
-func ProdC64(a []complex64) complex64    { return ReduceC64(MulC64, 1, a...) }
-func ProdC128(a []complex128) complex128 { return ReduceC128(MulC128, 1, a...) }
+func SumI(a []int) int {
+	var retVal int
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumI8(a []int8) int8 {
+	var retVal int8
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumI16(a []int16) int16 {
+	var retVal int16
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumI32(a []int32) int32 {
+	var retVal int32
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumI64(a []int64) int64 {
+	var retVal int64
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumU(a []uint) uint {
+	var retVal uint
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumU8(a []uint8) uint8 {
+	var retVal uint8
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumU16(a []uint16) uint16 {
+	var retVal uint16
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumU32(a []uint32) uint32 {
+	var retVal uint32
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumU64(a []uint64) uint64 {
+	var retVal uint64
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumF32(a []float32) float32 {
+	var retVal float32
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumF64(a []float64) float64 {
+	var retVal float64
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumC64(a []complex64) complex64 {
+	var retVal complex64
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func SumC128(a []complex128) complex128 {
+	var retVal complex128
+	a = a[:]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
+func ProdI(a []int) int {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal int = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdI8(a []int8) int8 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal int8 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdI16(a []int16) int16 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal int16 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdI32(a []int32) int32 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal int32 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdI64(a []int64) int64 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal int64 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdU(a []uint) uint {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal uint = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdU8(a []uint8) uint8 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal uint8 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdU16(a []uint16) uint16 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal uint16 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdU32(a []uint32) uint32 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal uint32 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdU64(a []uint64) uint64 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal uint64 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdF32(a []float32) float32 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal float32 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdF64(a []float64) float64 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal float64 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdC64(a []complex64) complex64 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal complex64 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
+func ProdC128(a []complex128) complex128 {
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal complex128 = 1
+	a = a[:]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
 
 func SliceMinI(a []int) int {
 	if len(a) < 1 {

@@ -38,10 +38,27 @@ const genericReduceRaw = `func Reduce{{short .}}(f func(a, b {{asType .}}) {{asT
 
 `
 
-const genericSumRaw = `func Sum{{short .}}(a []{{asType .}}) {{asType .}}{ return Reduce{{short .}}(Add{{short .}}, 0, a...)}
+const genericSumRaw = `func Sum{{short .}}(a []{{asType .}}) {{asType .}}{ 
+	var retVal {{asType .}}
+	a = a[:len(a)]
+	for _, v := range a {
+		retVal += v
+	}
+	return retVal
+}
 `
 
-const genericProdRaw = `func Prod{{short .}}(a []{{asType .}}) {{asType .}} { return Reduce{{short .}}(Mul{{short .}}, 1, a...)}
+const genericProdRaw = `func Prod{{short .}}(a []{{asType .}}) {{asType .}} { 
+	if len(a) == 0 {
+		return 0
+	}
+	var retVal {{asType .}} = 1
+	a = a[:len(a)]
+	for _, v := range a {
+		retVal *= v
+	}
+	return retVal
+}
 `
 
 const genericSliceMinMaxRaw = `func SliceMin{{short .}}(a []{{asType .}}) {{asType .}}{
