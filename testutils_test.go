@@ -326,6 +326,18 @@ func shuffleInts(a []int, r *rand.Rand) {
 	}
 }
 
+type TensorGenerator struct {
+	ShapeConstraint Shape
+	DtypeConstraint Dtype
+}
+
+func (g TensorGenerator) Generate(r *rand.Rand, size int) reflect.Value {
+	var retVal Tensor
+	// generate type of tensor
+
+	return reflect.ValueOf(retVal)
+}
+
 func (t *Dense) Generate(r *rand.Rand, size int) reflect.Value {
 	// generate type
 	ri := r.Intn(len(specializedTypes.set))
