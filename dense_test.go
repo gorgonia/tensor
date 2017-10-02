@@ -20,7 +20,6 @@ func TestDense_ShallowClone(t *testing.T) {
 	assert.Equal(t, T.Engine(), T2.Engine())
 	assert.Equal(t, T.oe, T2.oe)
 	assert.Equal(t, T.flag, T2.flag)
-	assert.Equal(t, T.array, T2.array)
 }
 
 func TestDense_Clone(t *testing.T) {
