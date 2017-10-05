@@ -79,6 +79,8 @@ func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
 	retVal = recycledDense(t.t, Shape{t.len()})
 	copyDense(retVal, t)
 
+	retVal.e = t.e
+	retVal.oe = t.oe
 	retVal.AP = transform
 	retVal.old = t.AP.Clone()
 	retVal.transposeWith = axes
