@@ -244,8 +244,7 @@ func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
 
 	// if axes is 0, 1, 2, 3... then no op
 	if monotonic, incr1 := IsMonotonicInts(axes); monotonic && incr1 && axes[0] == 0 {
-		err = noopError{}
-		return
+		return ap, a, noopError{}
 	}
 
 	currentShape := ap.shape

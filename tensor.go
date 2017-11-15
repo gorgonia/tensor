@@ -14,6 +14,7 @@ import (
 var (
 	_ Tensor = &Dense{}
 	_ Tensor = &CS{}
+	_ View   = &Dense{}
 )
 
 // Tensor represents a variety of n-dimensional arrays. The most commonly used tensor is the Dense tensor.
