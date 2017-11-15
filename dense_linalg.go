@@ -329,7 +329,7 @@ func (t *Dense) TensorMul(other Tensor, axesA, axesB []int) (retVal *Dense, err 
 	retShape = append(retShape, retShape1...)
 	retShape = append(retShape, retShape2...)
 
-	if en(retShape) == 0 { // In case a scalar is returned, it should be returned as shape = {1}
+	if len(retShape) == 0 { // In case a scalar is returned, it should be returned as shape = {1}
 		retShape = append(retShape, 1)
 	}
 
