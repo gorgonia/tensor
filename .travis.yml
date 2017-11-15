@@ -1,5 +1,6 @@
 sudo: required
 language: go
+
 branches:
   only:
     - master
@@ -24,3 +25,7 @@ go_import_path: gorgonia.org/tensor
 
 script:
   - $HOME/gopath/bin/goveralls -service=travis-ci -package=gorgonia.org/tensor -covermode=atomic
+
+matrix:
+  allow_failures:
+    - go: tip
