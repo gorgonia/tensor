@@ -443,7 +443,8 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		tA = blas.Trans
 	}
 
-	if bd.oldAP() != nil {
+	// Special case if b is (1, N)
+	if bd.oldAP() != nil || bd.IsRowVec() {
 		tB = blas.Trans
 	}
 
@@ -457,6 +458,31 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	ldb := bd.ostrides()[0]
 	ldc := pd.ostrides()[0]
 
+	// special case: if a is (1, N) x (N, M), then we can just use GEMV
+	if ad.IsRowVec() {
+		tB = blas.Trans
+		if bd.oldAP() != nil {
+			tB = blas.NoTrans
+		}
+		m = bd.Shape()[0]
+		n = bd.Shape()[1]
+		switch A := ad.Data().(type) {
+		case []float64:
+			B := bd.Float64s()
+			C := pd.Float64s()
+			alpha, beta := float64(1), float64(0)
+			whichblas.Dgemv(tB, m, n, alpha, B, ldb, A, lda, beta, C, ldc)
+		case []float32:
+			B := bd.Float32s()
+			C := pd.Float32s()
+			alpha, beta := float32(1), float32(0)
+			whichblas.Sgemv(tB, m, n, alpha, B, ldb, A, lda, beta, C, ldc)
+		default:
+			return errors.Errorf(typeNYI, "matMul a is row vec", ad.Data())
+		}
+		return
+	}
+
 	switch A := ad.Data().(type) {
 	case []float64:
 		B := bd.Float64s()
@@ -469,7 +495,7 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		alpha, beta := float32(1), float32(0)
 		whichblas.Sgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
 	default:
-		return errors.Errorf(typeNYI, "matVecMul", bd.Data())
+		return errors.Errorf(typeNYI, "matMul", ad.Data())
 	}
 	return
 }
