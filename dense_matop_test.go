@@ -569,6 +569,15 @@ func TestDense_Slice(t *testing.T) {
 
 }
 
+func TestDense_SliceInto(t *testing.T) {
+	V := New(WithShape(100), Of(Byte))
+	T := New(WithBacking([]float64{1, 2, 3, 4, 5, 6}), WithShape(2, 3))
+	T.SliceInto(V, ss(0))
+
+	assert.True(t, Shape{3}.Eq(V.Shape()), "Got %v", V.Shape())
+	assert.Equal(t, []float64{1, 2, 3}, V.Data())
+}
+
 var rollaxisTests = []struct {
 	axis, start int
 
