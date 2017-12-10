@@ -17,6 +17,11 @@ var (
 	_ View   = &Dense{}
 )
 
+func init() {
+	gob.Register(&Dense{})
+	gob.Register(&CS{})
+}
+
 // Tensor represents a variety of n-dimensional arrays. The most commonly used tensor is the Dense tensor.
 // It can be used to represent a vector, matrix, 3D matrix and n-dimensional tensors.
 type Tensor interface {

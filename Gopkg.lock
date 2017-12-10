@@ -15,13 +15,13 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/chewxy/vecf32"
+  name = "gorgonia.org/vecf32"
   packages = ["."]
   revision = "1f59516136c1a7f1c19871d3dc5f0d9928ffbd7c"
 
 [[projects]]
   branch = "master"
-  name = "github.com/chewxy/vecf64"
+  name = "gorgonia.org/vecf64"
   packages = ["."]
   revision = "a97a4d31b6c9343b1860ef8ce583069671265b81"
 

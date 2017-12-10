@@ -31,11 +31,11 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/chewxy/vecf32"
+  name = "gorgonia.org/vecf32"
 
 [[constraint]]
   branch = "master"
-  name = "github.com/chewxy/vecf64"
+  name = "gorgonia.org/vecf64"
 
 [[constraint]]
   name = "github.com/pkg/errors"
