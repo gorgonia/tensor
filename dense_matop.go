@@ -232,6 +232,37 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 	return view, err
 }
 
+// SliceInto is a convenience method. It does NOT copy the values - it simply updates the AP of the view.
+// The underlying data is the same.
+// This method will override ALL the metadata in view.
+func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error) {
+	var newAP *AP
+	var ndStart, ndEnd int
+
+	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
+		return
+	}
+
+	ReturnAP(view.AP)
+	view.AP = nil
+	view.array.v = nil // reset
+
+	view.t = t.t
+	view.e = t.e
+	view.oe = t.oe
+	view.flag = t.flag
+	view.AP = newAP
+	view.setParentTensor(t)
+	t.sliceInto(ndStart, ndEnd, &view.array)
+
+	if t.IsMasked() {
+		view.mask = t.mask[ndStart:ndEnd]
+	}
+
+	return view, err
+
+}
+
 // RollAxis rolls the axis backwards until it lies in the given position.
 //
 // This method was adapted from Numpy's Rollaxis. The licence for Numpy is a BSD-like licence and can be found here: https://github.com/numpy/numpy/blob/master/LICENSE.txt
