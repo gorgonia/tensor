@@ -126,6 +126,9 @@ type FlatIterator struct {
 	track     []int
 	done      bool
 	reverse   bool // if true, iterator starts at end of array and runs backwards
+
+	isScalar bool
+	isVector bool
 }
 
 // NewFlatIterator creates a new FlatIterator.
@@ -142,6 +145,9 @@ func NewFlatIterator(ap *AP) *FlatIterator {
 		track:    make([]int, len(ap.shape)),
 		size:     ap.shape.TotalSize(),
 		strides0: strides0,
+
+		isScalar: ap.IsScalar(),
+		isVector: ap.IsVector(),
 	}
 }
 
@@ -182,10 +188,10 @@ func (it *FlatIterator) Next() (int, error) {
 	}
 
 	switch {
-	case it.IsScalar():
+	case it.isScalar:
 		it.done = true
 		return 0, nil
-	case it.IsVector():
+	case it.isVector:
 		if it.reverse {
 			return it.singlePrevious()
 		}
@@ -212,10 +218,10 @@ func (it *FlatIterator) NextValid() (int, int, error) {
 		return -1, 1, noopError{}
 	}
 	switch {
-	case it.IsScalar():
+	case it.isScalar:
 		it.done = true
 		return 0, 0, nil
-	case it.IsVector():
+	case it.isVector:
 		if it.reverse {
 			a, err := it.singlePrevious()
 			return a, -1, err
