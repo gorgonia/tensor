@@ -1,3 +1,5 @@
+// +build !inplacetranspose
+
 package tensor
 
 import (
@@ -37,223 +39,99 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 }
 
 func (e StdEng) denseTranspose1(a DenseTensor, expStrides []int) {
-	axes := a.transposeAxes()
-	size := a.len()
+	var tmpArr array
+	e.makeArray(&tmpArr, a.Dtype(), a.Size())
+	u8s := tmpArr.Uint8s()
 
-	// first we'll create a bit-map to track which elements have been moved to their correct places
-	track := NewBitMap(size)
-	track.Set(0)
-	track.Set(size - 1) // first and last element of a transposedon't change
-
-	var saved, tmp byte
-	var i int
-
-	data := a.hdr().Uint8s()
-	for i = 1; ; {
-		dest := a.transposeIndex(i, axes, expStrides)
-
-		if track.IsSet(i) && track.IsSet(dest) {
-			data[i] = saved
-			saved = 0
-			for i < size && track.IsSet(i) {
-				i++
-			}
-			if i >= size {
-				break
-			}
-			continue
-		}
-		track.Set(i)
-		tmp = data[i]
-		data[i] = saved
-		saved = tmp
-
-		i = dest
+	orig := a.hdr().Uint8s()
+	it := NewFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		u8s[j] = orig[i]
+		j++
 	}
+	copy(orig, u8s)
 }
 
 func (e StdEng) denseTranspose2(a DenseTensor, expStrides []int) {
-	axes := a.transposeAxes()
-	size := a.len()
+	var tmpArr array
+	e.makeArray(&tmpArr, a.Dtype(), a.Size())
+	u16s := tmpArr.Uint16s()
 
-	// first we'll create a bit-map to track which elements have been moved to their correct places
-	track := NewBitMap(size)
-	track.Set(0)
-	track.Set(size - 1) // first and last element of a transposedon't change
-
-	var saved, tmp uint16
-	var i int
-
-	data := a.hdr().Uint16s()
-	for i = 1; ; {
-		dest := a.transposeIndex(i, axes, expStrides)
-
-		if track.IsSet(i) && track.IsSet(dest) {
-			data[i] = saved
-			saved = 0
-			for i < size && track.IsSet(i) {
-				i++
-			}
-			if i >= size {
-				break
-			}
-			continue
-		}
-		track.Set(i)
-		tmp = data[i]
-		data[i] = saved
-		saved = tmp
-
-		i = dest
+	orig := a.hdr().Uint16s()
+	it := NewFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		u16s[j] = orig[i]
+		j++
 	}
+	copy(orig, u16s)
 }
 
 func (e StdEng) denseTranspose4(a DenseTensor, expStrides []int) {
-	axes := a.transposeAxes()
-	size := a.len()
+	var tmpArr array
+	e.makeArray(&tmpArr, a.Dtype(), a.Size())
+	u32s := tmpArr.Uint32s()
 
-	// first we'll create a bit-map to track which elements have been moved to their correct places
-	track := NewBitMap(size)
-	track.Set(0)
-	track.Set(size - 1) // first and last element of a transposedon't change
-
-	var saved, tmp uint32
-	var i int
-
-	data := a.hdr().Uint32s()
-	for i = 1; ; {
-		dest := a.transposeIndex(i, axes, expStrides)
-
-		if track.IsSet(i) && track.IsSet(dest) {
-			data[i] = saved
-			saved = 0
-			for i < size && track.IsSet(i) {
-				i++
-			}
-			if i >= size {
-				break
-			}
-			continue
-		}
-		track.Set(i)
-		tmp = data[i]
-		data[i] = saved
-		saved = tmp
-
-		i = dest
+	orig := a.hdr().Uint32s()
+	it := NewFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		u32s[j] = orig[i]
+		j++
 	}
+	copy(orig, u32s)
 }
 
 func (e StdEng) denseTranspose8(a DenseTensor, expStrides []int) {
-	axes := a.transposeAxes()
-	size := a.len()
+	var tmpArr array
+	e.makeArray(&tmpArr, a.Dtype(), a.Size())
+	u64s := tmpArr.Uint64s()
 
-	// first we'll create a bit-map to track which elements have been moved to their correct places
-	track := NewBitMap(size)
-	track.Set(0)
-	track.Set(size - 1) // first and last element of a transposedon't change
-
-	var saved, tmp uint64
-	var i int
-
-	data := a.hdr().Uint64s()
-	for i = 1; ; {
-		dest := a.transposeIndex(i, axes, expStrides)
-
-		if track.IsSet(i) && track.IsSet(dest) {
-			data[i] = saved
-			saved = 0
-			for i < size && track.IsSet(i) {
-				i++
-			}
-			if i >= size {
-				break
-			}
-			continue
-		}
-		track.Set(i)
-		tmp = data[i]
-		data[i] = saved
-		saved = tmp
-
-		i = dest
+	orig := a.hdr().Uint64s()
+	it := NewFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		u64s[j] = orig[i]
+		j++
 	}
+	copy(orig, u64s)
 }
 
 func (e StdEng) denseTransposeString(a DenseTensor, expStrides []int) {
-	axes := a.transposeAxes()
-	size := a.len()
+	var tmpArr array
+	e.makeArray(&tmpArr, a.Dtype(), a.Size())
+	strs := tmpArr.Strings()
 
-	// first we'll create a bit-map to track which elements have been moved to their correct places
-	track := NewBitMap(size)
-	track.Set(0)
-	track.Set(size - 1) // first and last element of a transposedon't change
-
-	var saved, tmp string
-	var i int
-
-	data := a.hdr().Strings()
-	for i = 1; ; {
-		dest := a.transposeIndex(i, axes, expStrides)
-
-		if track.IsSet(i) && track.IsSet(dest) {
-			data[i] = saved
-			saved = ""
-			for i < size && track.IsSet(i) {
-				i++
-			}
-			if i >= size {
-				break
-			}
-			continue
-		}
-		track.Set(i)
-		tmp = data[i]
-		data[i] = saved
-		saved = tmp
-
-		i = dest
+	orig := a.hdr().Strings()
+	it := NewFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		strs[j] = orig[i]
+		j++
 	}
+	copy(orig, strs)
 }
 
 func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
-	axes := a.transposeAxes()
-	size := a.len()
 	rtype := a.rtype()
 	typeSize := int(rtype.Size())
+	var tmpArr array
+	e.makeArray(&tmpArr, a.Dtype(), a.Size())
+	// arbs := storage.AsByteSlice(tmpArr.hdr(), rtype)
+	arbs := tmpArr.byteSlice()
 
-	// first we'll create a bit-map to track which elements have been moved to their correct places
-	track := NewBitMap(size)
-	track.Set(0)
-	track.Set(size - 1) // first and last element of a transposedon't change
+	orig := storage.AsByteSlice(a.hdr(), rtype)
+	it := NewFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		srcStart := i * typeSize
+		srcEnd := srcStart + typeSize
+		dstStart := j * typeSize
+		dstEnd := dstStart + typeSize
 
-	saved := make([]byte, typeSize, typeSize)
-	tmp := make([]byte, typeSize, typeSize)
-	var i int
-
-	data := storage.AsByteSlice(a.hdr(), rtype)
-	for i = 1; ; {
-		dest := a.transposeIndex(i, axes, expStrides)
-		start := typeSize * i
-
-		if track.IsSet(i) && track.IsSet(dest) {
-			copy(data[start:start+typeSize], saved)
-			for i := range saved {
-				saved[i] = 0
-			}
-			for i < size && track.IsSet(i) {
-				i++
-			}
-			if i >= size {
-				break
-			}
-			continue
-		}
-		track.Set(i)
-		copy(tmp, data[start:start+typeSize])
-		copy(data[start:start+typeSize], saved)
-		saved = tmp
-
-		i = dest
+		copy(arbs[dstStart:dstEnd], orig[srcStart:srcEnd])
+		j++
 	}
+	copy(orig, arbs)
 }
