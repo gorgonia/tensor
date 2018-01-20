@@ -50,7 +50,7 @@ func Example_TransposeExtension() {
 	//
 	// After:
 	// ⎡{a: 0, b: 0, c: 0, d: 0, e: 0}  {a: 2, b: 2, c: 2, d: 2, e: 2}⎤
-	// ⎣{a: 2, b: 2, c: 2, d: 2, e: 2}  {a: 3, b: 3, c: 3, d: 3, e: 3}⎦
+	// ⎣{a: 1, b: 1, c: 1, d: 1, e: 1}  {a: 3, b: 3, c: 3, d: 3, e: 3}⎦
 }
 
 func Example_stackExtension() {

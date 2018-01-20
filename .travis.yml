@@ -16,7 +16,7 @@ env:
     - GOARCH=amd64
     - BLAS_LIB=OpenBLAS
     - TRAVISTEST=true
-    - CUDA=8.0.61-1
+    - CUDA=9.1.85-1
 
 before_install:
   - go get github.com/mattn/goveralls
