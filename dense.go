@@ -129,7 +129,6 @@ func (t *Dense) Reshape(dims ...int) error {
 	}
 
 	if t.old != nil {
-		log.Println("Transposing")
 		t.Transpose()
 	}
 
