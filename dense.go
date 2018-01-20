@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"fmt"
-	"log"
 	"unsafe"
 
 	"github.com/pkg/errors"
