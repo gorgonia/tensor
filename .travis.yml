@@ -24,6 +24,7 @@ before_install:
 go_import_path: gorgonia.org/tensor
 
 script:
+   source ${TRAVIS_BUILD_DIR}/.travis/test.sh
   - $HOME/gopath/bin/goveralls -service=travis-ci -package=gorgonia.org/tensor -covermode=atomic
 
 matrix:
