@@ -161,7 +161,6 @@ func (e StdEng) denseTranspose8(a DenseTensor, expStrides []int) {
 	data := a.hdr().Uint64s()
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
-
 		if track.IsSet(i) && track.IsSet(dest) {
 			data[i] = saved
 			saved = 0
@@ -174,6 +173,7 @@ func (e StdEng) denseTranspose8(a DenseTensor, expStrides []int) {
 			continue
 		}
 		track.Set(i)
+		// log.Printf("i: %d start %d, end %d | tmp %v saved %v", i, start, end, tmp, saved)
 		tmp = data[i]
 		data[i] = saved
 		saved = tmp
@@ -232,14 +232,14 @@ func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
 	saved := make([]byte, typeSize, typeSize)
 	tmp := make([]byte, typeSize, typeSize)
 	var i int
-
 	data := storage.AsByteSlice(a.hdr(), rtype)
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 		start := typeSize * i
+		end := start + typeSize
 
 		if track.IsSet(i) && track.IsSet(dest) {
-			copy(data[start:start+typeSize], saved)
+			copy(data[start:end], saved)
 			for i := range saved {
 				saved[i] = 0
 			}
@@ -252,10 +252,9 @@ func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
 			continue
 		}
 		track.Set(i)
-		copy(tmp, data[start:start+typeSize])
-		copy(data[start:start+typeSize], saved)
-		saved = tmp
-
+		copy(tmp, data[start:end])
+		copy(data[start:end], saved)
+		copy(saved, tmp)
 		i = dest
 	}
 }
