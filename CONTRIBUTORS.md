@@ -3,6 +3,7 @@
 * Xuanyi Chew (@chewxy) - initial package
 * Naseer Dari (@ndari) - errors and error handling
 * Joe Kabaka (@kabaka0) - masked array functionality
+* Stuart Carnie (@stuartcarnie) - performance optimization for iterators
 
 # Contributors
 

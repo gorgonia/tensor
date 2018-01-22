@@ -119,13 +119,16 @@ type FlatIterator struct {
 	*AP
 
 	//state
+	track     []int
 	nextIndex int
 	lastIndex int
 	strides0  int
 	size      int
-	track     []int
 	done      bool
 	reverse   bool // if true, iterator starts at end of array and runs backwards
+
+	isScalar bool
+	isVector bool
 }
 
 // NewFlatIterator creates a new FlatIterator.
@@ -142,6 +145,9 @@ func NewFlatIterator(ap *AP) *FlatIterator {
 		track:    make([]int, len(ap.shape)),
 		size:     ap.shape.TotalSize(),
 		strides0: strides0,
+
+		isScalar: ap.IsScalar(),
+		isVector: ap.IsVector(),
 	}
 }
 
@@ -182,10 +188,10 @@ func (it *FlatIterator) Next() (int, error) {
 	}
 
 	switch {
-	case it.IsScalar():
+	case it.isScalar:
 		it.done = true
 		return 0, nil
-	case it.IsVector():
+	case it.isVector:
 		if it.reverse {
 			return it.singlePrevious()
 		}
@@ -212,10 +218,10 @@ func (it *FlatIterator) NextValid() (int, int, error) {
 		return -1, 1, noopError{}
 	}
 	switch {
-	case it.IsScalar():
+	case it.isScalar:
 		it.done = true
 		return 0, 0, nil
-	case it.IsVector():
+	case it.isVector:
 		if it.reverse {
 			a, err := it.singlePrevious()
 			return a, -1, err
@@ -292,20 +298,36 @@ func (it *FlatIterator) singlePrevious() (int, error) {
 }
 
 func (it *FlatIterator) ndNext() (int, error) {
-	it.lastIndex = it.nextIndex
-	for i := len(it.shape) - 1; i >= 0; i-- {
-		it.track[i]++
-		if it.track[i] == it.shape[i] {
+	// the reason for this weird looking bits of code is because the SSA compiler doesn't
+	// know how to optimize for this bit of code, not keeping things in registers correctly
+	// @stuartcarnie optimized this iout to great effect
+
+	v := len(it.shape) - 1
+	nextIndex := it.nextIndex
+	it.lastIndex = nextIndex
+
+	// the following 3 lines causes the compiler to perform bounds check here,
+	// instead of being done in the loop
+	coord := it.shape[:v+1]
+	track := it.track[:v+1]
+	strides := it.strides[:v+1]
+	for i := v; i >= 0; i-- {
+		track[i]++
+		shapeI := coord[i]
+		strideI := strides[i]
+
+		if track[i] == shapeI {
 			if i == 0 {
 				it.done = true
 			}
-			it.track[i] = 0
-			it.nextIndex -= (it.shape[i] - 1) * it.strides[i]
+			track[i] = 0
+			nextIndex -= (shapeI - 1) * strideI
 			continue
 		}
-		it.nextIndex += it.strides[i]
+		nextIndex += strideI
 		break
 	}
+	it.nextIndex = nextIndex
 	return it.lastIndex, nil
 }
 
@@ -338,9 +360,10 @@ func (it *FlatIterator) colMajorNDPrevious() (int, error) {
 // Coord returns the next coordinate.
 // When Next() is called, the coordinates are updated AFTER the Next() returned.
 // See example for more details.
-func (it *FlatIterator) Coord() []int {
-	return it.track
-}
+//
+// The returned coordinates is mutable. Changing any values in the return value will
+// change the state of the iterator
+func (it *FlatIterator) Coord() []int { return it.track }
 
 // Slice is a convenience function that augments
 func (it *FlatIterator) Slice(sli Slice) (retVal []int, err error) {

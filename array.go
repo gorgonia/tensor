@@ -321,16 +321,7 @@ func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 		panic("Cannot copy Dense arrays of different types")
 	}
 
-	// do not use requiresIterator because requiresIterator has particular optimizations for operations (like add, sub etc)
-	var dstOK, srcOK bool
-	if dstView, ok := dst.(View); ok && dstView.IsMaterializable() {
-		srcOK = true
-	}
-	if srcView, ok := src.(View); ok && srcView.IsMaterializable() {
-		dstOK = true
-	}
-
-	if !dstOK && !srcOK {
+	if !dst.RequiresIterator() && !src.RequiresIterator() {
 		return copyDense(dst, src), nil
 	}
 

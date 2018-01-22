@@ -69,3 +69,24 @@ func BenchmarkGetWithIterator(b *testing.B) {
 	}
 	_ = f
 }
+
+func BenchmarkComplicatedGet(b *testing.B) {
+	T := New(WithShape(101, 1, 36, 5), Of(Float64))
+	T.T(0, 2, 1, 3)
+	data := T.Data().([]float64)
+	var f float64
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		it := IteratorFromDense(T)
+		var next int
+
+		var err error
+		for next, err = it.Start(); err == nil; next, err = it.Next() {
+			f = data[next]
+		}
+		if _, ok := err.(NoOpError); !ok {
+			b.Error("Error: %v", err)
+		}
+	}
+	_ = f
+}
