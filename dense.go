@@ -584,6 +584,7 @@ func (t *Dense) slice(start, end int) {
 	t.array = t.array.slice(start, end)
 }
 
+// RequiresIterator indicates if an iterator is required to read the data in *Dense in the correct fashion
 func (t *Dense) RequiresIterator() bool {
 	if t.len() == 1 {
 		return false
