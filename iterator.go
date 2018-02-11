@@ -1,6 +1,8 @@
 package tensor
 
-import "runtime"
+import (
+	"runtime"
+)
 
 func requiresOrderedIterator(e Engine, t Tensor) bool {
 	if t.IsScalar() {
@@ -111,8 +113,8 @@ func iteratorLoadAP(it Iterator, ap *AP) {
 
 /* FLAT ITERATOR */
 
-// FlatIterator is an iterator that iterates over Tensors. It utilizes the *AP
-// of a Tensor to determine what the next index is.
+// FlatIterator is an iterator that iterates over Tensors according to the data's layout.
+// It utilizes the *AP of a Tensor to determine what the next index is.
 // This data structure is similar to Numpy's flatiter, with some standard Go based restrictions of course
 // (such as, not allowing negative indices)
 type FlatIterator struct {
@@ -127,8 +129,9 @@ type FlatIterator struct {
 	done      bool
 	reverse   bool // if true, iterator starts at end of array and runs backwards
 
-	isScalar bool
-	isVector bool
+	isScalar   bool
+	isVector   bool
+	isColMajor bool
 }
 
 // NewFlatIterator creates a new FlatIterator.
@@ -146,8 +149,9 @@ func NewFlatIterator(ap *AP) *FlatIterator {
 		size:     ap.shape.TotalSize(),
 		strides0: strides0,
 
-		isScalar: ap.IsScalar(),
-		isVector: ap.IsVector(),
+		isScalar:   ap.IsScalar(),
+		isVector:   ap.IsVector(),
+		isColMajor: ap.o.isColMajor(),
 	}
 }
 
@@ -200,6 +204,9 @@ func (it *FlatIterator) Next() (int, error) {
 		if it.reverse {
 			return it.ndPrevious()
 		}
+		if it.isColMajor {
+			return it.colMajorNDNext()
+		}
 		return it.ndNext()
 	}
 }
@@ -232,6 +239,11 @@ func (it *FlatIterator) NextValid() (int, int, error) {
 		if it.reverse {
 			a, err := it.ndPrevious()
 			return a, -1, err
+		}
+
+		if it.isColMajor {
+			a, err := it.colMajorNDNext()
+			return a, 1, err
 		}
 		a, err := it.ndNext()
 		return a, 1, err
@@ -332,7 +344,38 @@ func (it *FlatIterator) ndNext() (int, error) {
 }
 
 func (it *FlatIterator) colMajorNDNext() (int, error) {
-	return 0, nil
+	// the reason for this weird looking bits of code is because the SSA compiler doesn't
+	// know how to optimize for this bit of code, not keeping things in registers correctly
+	// @stuartcarnie optimized this iout to great effect
+
+	v := len(it.shape) - 1
+	nextIndex := it.nextIndex
+	it.lastIndex = nextIndex
+
+	// the following 3 lines causes the compiler to perform bounds check here,
+	// instead of being done in the loop
+	coord := it.shape[:v+1]
+	track := it.track[:v+1]
+	strides := it.strides[:v+1]
+	for i := v; i >= 0; i-- {
+		track[i]++
+		shapeI := coord[i]
+		strideI := strides[i]
+
+		if track[i] == shapeI {
+			if i == 0 {
+				it.done = true
+			}
+			track[i] = 0
+			nextIndex -= (shapeI - 1) * strideI
+			continue
+		}
+		nextIndex += strideI
+		break
+	}
+	it.nextIndex = nextIndex
+	return it.lastIndex, nil
+
 }
 
 func (it *FlatIterator) ndPrevious() (int, error) {

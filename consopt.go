@@ -185,14 +185,24 @@ func WithEngine(e Engine) ConsOpt {
 	return f
 }
 
-func AsFortran() ConsOpt {
+// AsFortran creates a *Dense with a col-major layout.
+// If the optional backing argument is passed, the backing is assumed to be C-order (row major), and
+// it will be transposed before being used.
+func AsFortran(backing interface{}) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
 			if tt.AP == nil {
 				// create AP
 			}
+			if backing != nil {
+				tt.fromSlice(backing)
+			}
+
 			tt.AP.o = MakeDataOrder(tt.AP.o, ColMajor)
+			tt.AP.strides = tt.AP.calcStrides() // recalculate the strides
+		case *CS:
+			panic("AsFortran is not an available option for Compressed Sparse layouts")
 		}
 	}
 	return f
