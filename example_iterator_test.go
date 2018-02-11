@@ -33,11 +33,11 @@ func Example_iteratorColMajor() {
 
 	// Output:
 	// Col Major
-	// i: 0, coord: [0 1]
-	// i: 1, coord: [1 1]
-	// i: 2, coord: [0 2]
-	// i: 3, coord: [1 2]
-	// i: 4, coord: [1 0]
+	// i: 0, coord: [1 0]
+	// i: 1, coord: [0 1]
+	// i: 2, coord: [1 1]
+	// i: 3, coord: [0 2]
+	// i: 4, coord: [1 2]
 	// i: 5, coord: [0 0]
 
 }

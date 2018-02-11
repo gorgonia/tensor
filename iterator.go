@@ -357,16 +357,17 @@ func (it *FlatIterator) colMajorNDNext() (int, error) {
 	coord := it.shape[:v+1]
 	track := it.track[:v+1]
 	strides := it.strides[:v+1]
-	for i := v; i >= 0; i-- {
+	for i := 0; i <= v; i++ {
 		track[i]++
 		shapeI := coord[i]
 		strideI := strides[i]
 
 		if track[i] == shapeI {
-			if i == 0 {
+			if i == v {
 				it.done = true
 			}
 			track[i] = 0
+
 			nextIndex -= (shapeI - 1) * strideI
 			continue
 		}
