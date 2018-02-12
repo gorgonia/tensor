@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	// "log"
 	"runtime"
 )
 
@@ -138,11 +139,19 @@ type FlatIterator struct {
 // newFlatIterator creates a new FlatIterator.
 func newFlatIterator(ap *AP) *FlatIterator {
 	var strides0 int
+
 	if ap.IsVector() {
 		strides0 = ap.strides[0]
-	} else if ap.o.isColMajor() {
-		strides0 = ap.strides[0]
 	}
+	// else if ap.o.isColMajor() {
+	// 	defer func() {
+	// 		if r := recover(); r != nil {
+	// 			log.Printf("STRIDES %v", ap)
+	// 			panic(r)
+	// 		}
+	// 	}()
+	// 	strides0 = ap.strides[len(ap.strides)-1]
+	// }
 
 	return &FlatIterator{
 		AP:       ap,

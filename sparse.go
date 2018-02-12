@@ -182,13 +182,14 @@ func CSCFromCoord(shape Shape, xs, ys []int, data interface{}) *CS {
 	return t
 }
 
-func (t *CS) Shape() Shape   { return t.s }
-func (t *CS) Strides() []int { return nil }
-func (t *CS) Dtype() Dtype   { return t.t }
-func (t *CS) Dims() int      { return 2 }
-func (t *CS) Size() int      { return t.s.TotalSize() }
-func (t *CS) DataSize() int  { return t.L }
-func (t *CS) Engine() Engine { return t.e }
+func (t *CS) Shape() Shape         { return t.s }
+func (t *CS) Strides() []int       { return nil }
+func (t *CS) Dtype() Dtype         { return t.t }
+func (t *CS) Dims() int            { return 2 }
+func (t *CS) Size() int            { return t.s.TotalSize() }
+func (t *CS) DataSize() int        { return t.L }
+func (t *CS) Engine() Engine       { return t.e }
+func (t *CS) DataOrder() DataOrder { return t.o }
 
 func (t *CS) Slice(...Slice) (View, error) {
 	return nil, errors.Errorf("Slice for sparse tensors not implemented yet")

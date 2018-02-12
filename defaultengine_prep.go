@@ -3,6 +3,7 @@ package tensor
 import (
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
+	// "log"
 )
 
 func handleFuncOpts(expShape Shape, expType Dtype, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
@@ -101,7 +102,10 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 	}
 
 	// iter
-	useIter = a.RequiresIterator() || b.RequiresIterator() || (reuse != nil && reuse.RequiresIterator())
+	useIter = a.RequiresIterator() ||
+		b.RequiresIterator() ||
+		(reuse != nil && reuse.RequiresIterator()) ||
+		!a.DataOrder().hasSameOrder(b.DataOrder())
 	if useIter {
 		ait = a.Iterator()
 		bit = b.Iterator()
@@ -109,6 +113,7 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 			iit = reuse.Iterator()
 		}
 	}
+	// log.Printf("Use Itrer %v ", useIter)
 
 	// swap
 	if _, ok := a.(*CS); ok {

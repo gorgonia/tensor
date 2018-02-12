@@ -36,6 +36,7 @@ type Tensor interface {
 	// Data access related
 	RequiresIterator() bool
 	Iterator() Iterator
+	DataOrder() DataOrder
 
 	// ops
 	Slicer

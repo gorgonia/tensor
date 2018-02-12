@@ -76,7 +76,6 @@ type DenseTensor interface {
 	Tensor
 	Info() *AP
 
-	DataOrder() DataOrder
 	IsMatrix() bool
 	IsVector() bool
 	IsRowVec() bool

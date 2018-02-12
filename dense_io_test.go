@@ -23,7 +23,7 @@ func TestSaveLoadNumpy(t *testing.T) {
 
 	script := "import numpy as np\nx = np.load('test.npy')\nprint(x)"
 
-	cmd := exec.Command("python2")
+	cmd := exec.Command("python")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		t.Error(err)
