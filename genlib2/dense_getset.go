@@ -47,10 +47,10 @@ const copyIterRaw = `func copyDenseIter(dest, src *Dense, diter, siter *FlatIter
 	}
 
 	if diter == nil {
-		diter = NewFlatIterator(dest.AP)	
+		diter = newFlatIterator(dest.AP)	
 	}
 	if siter == nil {
-		siter = NewFlatIterator(src.AP)
+		siter = newFlatIterator(src.AP)
 	}
 	
 	isMasked:= src.IsMasked()

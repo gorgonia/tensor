@@ -87,8 +87,8 @@ func assignArray(dest, src DenseTensor) (err error) {
 	sap := NewAP(tmpShape, newStrides)
 	sap.o = src.Info().o
 
-	diter := NewFlatIterator(dap)
-	siter := NewFlatIterator(sap)
+	diter := newFlatIterator(dap)
+	siter := newFlatIterator(sap)
 	_, err = copyDenseIter(dest, src, diter, siter)
 	return
 }

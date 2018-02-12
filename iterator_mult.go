@@ -102,7 +102,7 @@ func NewMultIterator(aps ...*AP) *MultIterator {
 		ap2.Δ = ap.Δ
 
 		it.whichBlock[i] = f
-		it.fitArr[nBlocks-1] = NewFlatIterator(ap2)
+		it.fitArr[nBlocks-1] = newFlatIterator(ap2)
 	}
 
 	it.fitArr = it.fitArr[:nBlocks]

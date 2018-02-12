@@ -537,7 +537,7 @@ func (t *Dense) Memset(x interface{}) error {
 		return errors.Errorf(inaccessibleData, t)
 	}
 	if t.IsMaterializable() {
-		it := NewFlatIterator(t.AP)
+		it := newFlatIterator(t.AP)
 		return t.array.memsetIter(x, it)
 	}
 	return t.array.Memset(x)
@@ -560,7 +560,7 @@ func (t *Dense) Eq(other interface{}) bool {
 
 func (t *Dense) Zero() {
 	if t.IsMaterializable() {
-		it := NewFlatIterator(t.AP)
+		it := newFlatIterator(t.AP)
 		if err := t.zeroIter(it); err != nil {
 			panic(err)
 		}

@@ -41,3 +41,14 @@ func Example_iteratorColMajor() {
 	// i: 5, coord: [0 0]
 
 }
+
+func Example_play() {
+	T0 := New(WithShape(2, 3), Of(Float64), WithBacking([]float64{0, 1, 2, 3, 4, 5}), AsFortran(nil))
+	T1 := New(WithShape(2, 3), Of(Float64), WithBacking([]float64{0, 1, 2, 3, 4, 5}))
+	fmt.Printf("T0\n%v\nT1\n%v\n", T0, T1)
+
+	T2, _ := Add(T0, T1)
+	fmt.Printf("%v\n", T2)
+	// Output:
+	// Foo
+}

@@ -72,7 +72,7 @@ func NewIterator(aps ...*AP) Iterator {
 	case 0:
 		return nil
 	case 1:
-		return NewFlatIterator(aps[0])
+		return newFlatIterator(aps[0])
 	default:
 		return NewMultIterator(aps...)
 	}
@@ -129,13 +129,14 @@ type FlatIterator struct {
 	done      bool
 	reverse   bool // if true, iterator starts at end of array and runs backwards
 
-	isScalar   bool
-	isVector   bool
-	isColMajor bool
+	isScalar bool
+	isVector bool
+
+	outerFirst bool
 }
 
-// NewFlatIterator creates a new FlatIterator.
-func NewFlatIterator(ap *AP) *FlatIterator {
+// newFlatIterator creates a new FlatIterator.
+func newFlatIterator(ap *AP) *FlatIterator {
 	var strides0 int
 	if ap.IsVector() {
 		strides0 = ap.strides[0]
@@ -149,15 +150,14 @@ func NewFlatIterator(ap *AP) *FlatIterator {
 		size:     ap.shape.TotalSize(),
 		strides0: strides0,
 
-		isScalar:   ap.IsScalar(),
-		isVector:   ap.IsVector(),
-		isColMajor: ap.o.isColMajor(),
+		isScalar: ap.IsScalar(),
+		isVector: ap.IsVector(),
 	}
 }
 
 // FlatIteratorFromDense creates a new FlatIterator from a dense tensor
 func FlatIteratorFromDense(tt DenseTensor) *FlatIterator {
-	return NewFlatIterator(tt.Info())
+	return newFlatIterator(tt.Info())
 }
 
 // SetReverse initializes iterator to run backwards
@@ -204,7 +204,7 @@ func (it *FlatIterator) Next() (int, error) {
 		if it.reverse {
 			return it.ndPrevious()
 		}
-		if it.isColMajor {
+		if it.outerFirst {
 			return it.colMajorNDNext()
 		}
 		return it.ndNext()
@@ -241,7 +241,7 @@ func (it *FlatIterator) NextValid() (int, int, error) {
 			return a, -1, err
 		}
 
-		if it.isColMajor {
+		if it.outerFirst {
 			a, err := it.colMajorNDNext()
 			return a, 1, err
 		}
