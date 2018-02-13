@@ -5,7 +5,7 @@ import "text/template"
 // level 2 aggregation (tensor.StdEng) templates
 
 const cmpPrepRaw = `var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), false, opts...); err != nil{
+	if reuse, safe, _, _, same, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(),  {{.VecVar}}.DataOrder(),false, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -14,7 +14,7 @@ const cmpPrepRaw = `var safe, same bool
 `
 
 const arithPrepRaw = `var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), true, opts...); err != nil{
+	if reuse, safe, toReuse, incr, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}	
 `
@@ -69,7 +69,7 @@ const prepUnaryRaw = `if err = unaryCheck(a, {{.TypeClassCheck | lower}}Types); 
 	}
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), true, opts...); err != nil {
+	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 
