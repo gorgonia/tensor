@@ -15,6 +15,8 @@ const (
 	NonContiguous
 )
 
+var dataOrderNames = "NonContiguous, RowMajorNonContiguous, ColMajor"
+
 // MakeDataOrder makes a data order. Typical examples:
 //		MakeDataOrder(DataOrder(0))            // Row Major, contiguous
 //		MakeDataOrder(NonContiguous            // Row Major, non-contiguous
@@ -37,6 +39,23 @@ func (f DataOrder) isNotContiguous() bool     { return (f & NonContiguous) != 0 
 func (f DataOrder) toggleColMajor() DataOrder { return f ^ (ColMajor) }
 func (f DataOrder) hasSameOrder(other DataOrder) bool {
 	return (f.isColMajor() && other.isColMajor()) || (f.isRowMajor() && other.isRowMajor())
+}
+
+func (f DataOrder) String() string {
+	var start, end int
+	if f.isRowMajor() {
+		end = 23
+		if f.isContiguous() {
+			start = 3
+		}
+	} else {
+		end = 46
+		start = 23
+		if f.isContiguous() {
+			start = 26
+		}
+	}
+	return dataOrderNames[start:end]
 }
 
 // Triangle is a flag representing the "triangle"ness of a matrix

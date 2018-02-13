@@ -294,6 +294,9 @@ func (ap *AP) calcStrides() []int {
 	panic("unreachable")
 }
 
+// setDataOrder is a method such that any tensor that embeds *AP will have the same method
+func (ap *AP) setDataOrder(o DataOrder) { ap.o = o }
+
 // TransposeIndex returns the new index given the old index
 func TransposeIndex(i int, oldShape, pattern, oldStrides, newStrides []int) int {
 	oldCoord, err := Itol(i, oldShape, oldStrides)

@@ -6,7 +6,7 @@ import (
 	// "log"
 )
 
-func handleFuncOpts(expShape Shape, expType Dtype, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
+func handleFuncOpts(expShape Shape, expType Dtype, do DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
 	fo := ParseFuncOpts(opts...)
 
 	reuseT, incr := fo.IncrReuse()
@@ -39,6 +39,10 @@ func handleFuncOpts(expShape Shape, expType Dtype, strict bool, opts ...FuncOpt)
 			err = errors.Errorf(shapeMismatch, reuse.Shape(), expShape)
 			err = errors.Wrapf(err, "Cannot use reuse: shape mismatch - reuse.len() %v, expShape.TotalSize() %v", reuse.len(), expShape.TotalSize())
 			return
+		}
+
+		if !incr {
+
 		}
 
 	}
@@ -138,12 +142,14 @@ func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse 
 	if a.IsScalar() {
 		return
 	}
-	if a.RequiresIterator() || (reuse != nil && reuse.RequiresIterator()) {
+	useIter = a.RequiresIterator() ||
+		(reuse != nil && reuse.RequiresIterator()) ||
+		(reuse != nil && reuse.DataOrder().hasSameOrder(a.DataOrder()))
+	if useIter {
 		ait = a.Iterator()
 		if reuse != nil {
 			iit = reuse.Iterator()
 		}
-		useIter = true
 	}
 	return
 }
@@ -160,12 +166,14 @@ func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse 
 	if b.IsScalar() {
 		return
 	}
-	if b.RequiresIterator() || (reuse != nil && reuse.RequiresIterator()) {
+	useIter = b.RequiresIterator() ||
+		(reuse != nil && reuse.RequiresIterator()) ||
+		(reuse != nil && reuse.DataOrder().hasSameOrder(b.DataOrder()))
+	if useIter {
 		bit = b.Iterator()
 		if reuse != nil {
 			iit = reuse.Iterator()
 		}
-		useIter = true
 	}
 	return
 }

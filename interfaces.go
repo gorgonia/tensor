@@ -88,6 +88,7 @@ type DenseTensor interface {
 	rtype() reflect.Type
 	reshape(dims ...int) error
 
+	setDataOrder(o DataOrder)
 	isTransposed() bool
 	ostrides() []int
 	oshape() Shape
