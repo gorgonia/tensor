@@ -43,6 +43,7 @@ func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opt
 
 		if !incr && reuse != nil {
 			reuse.setDataOrder(o)
+			// err = reuse.reshape(expShape...)
 		}
 
 	}

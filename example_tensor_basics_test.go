@@ -59,6 +59,11 @@ func Example_differingDataOrders() {
 	T2, _ = Add(T0, T1)
 	fmt.Printf("T0:\n%vT1:\n%vT2:\n%vT2 Data Order: %v\n\n", T0, T1, T2, T2.DataOrder())
 
+	reuse := New(WithShape(2, 3), WithBacking([]int{1000, 1000, 1000, 1000, 1000, 1000}))
+	fmt.Printf("reuse Data Order: %v\n", reuse.DataOrder())
+	T2, _ = Add(T0, T1, WithReuse(reuse))
+	fmt.Printf("T2:\n%vT2 Data Order: %v\n\n", T2, T2.DataOrder())
+
 	// Output:
 	// 	T0:
 	// ⎡0  1  2⎤
@@ -84,4 +89,10 @@ func Example_differingDataOrders() {
 	// T2 Data Order: Contiguous, ColMajor
 	//
 	//
+	// reuse Data Order: Contiguous, RowMajor
+	// T2:
+	// ⎡ 2   5   8⎤
+	// ⎣ 6   9  12⎦
+	// T2 Data Order: Contiguous, ColMajor
+
 }
