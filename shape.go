@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/pkg/errors"
 )
@@ -86,7 +85,6 @@ func (s Shape) calcStridesWithMask(mask []bool) []int {
 }
 
 func (s Shape) calcStridesColMajor() []int {
-	log.Printf("calcStridesColMajor")
 	if s.IsScalar() {
 		return nil
 	}

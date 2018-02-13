@@ -193,14 +193,28 @@ func AsFortran(backing interface{}) ConsOpt {
 		switch tt := t.(type) {
 		case *Dense:
 			if tt.AP == nil {
-				// create AP
+				tt.AP = new(AP)
 			}
 			if backing != nil {
-				tt.fromSlice(backing)
+				// put the data into the tensor, then make a clone tensor to transpose
+				tt.fromSliceOrArrayer(backing)
+				// create a temporary tensor, to which the transpose will be done
+				tmp := NewDense(tt.Dtype(), tt.shape.Clone())
+				copyArray(tmp.arrPtr(), tt.arrPtr())
+				tmp.T()
+				tmp.Transpose()
+				// copy the data back to the current tensor
+				copyArray(tt.arrPtr(), tmp.arrPtr())
+				// cleanup: return the temporary tensor back to the pool
+				ReturnTensor(tmp)
 			}
 
 			tt.AP.o = MakeDataOrder(tt.AP.o, ColMajor)
-			tt.AP.strides = tt.AP.calcStrides() // recalculate the strides
+			if tt.AP.shape != nil {
+				ReturnInts(tt.AP.strides)
+				tt.AP.strides = nil
+				tt.AP.strides = tt.AP.calcStrides()
+			}
 		case *CS:
 			panic("AsFortran is not an available option for Compressed Sparse layouts")
 		}
