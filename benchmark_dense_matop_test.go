@@ -1,6 +1,9 @@
 package tensor
 
-import "testing"
+import (
+	"math/rand"
+	"testing"
+)
 
 func BenchmarkDense_Transpose(b *testing.B) {
 	T := New(WithShape(100, 100, 2), WithBacking(Range(Byte, 0, 100*100*2)))
@@ -89,4 +92,53 @@ func BenchmarkComplicatedGet(b *testing.B) {
 		}
 	}
 	_ = f
+}
+
+var atCoords [10000][2]int
+
+func init() {
+	for i := range atCoords {
+		atCoords[i][0] = rand.Intn(100)
+		atCoords[i][1] = rand.Intn(100)
+	}
+}
+
+var at1, at2 float64
+
+func BenchmarkAtWithNativeIterator(b *testing.B) {
+	T := New(WithShape(100, 100), Of(Float64))
+	it, err := NativeMatrixF64(T)
+	if err != nil {
+		b.Fatal("Error: %v", err)
+	}
+
+	var j int
+	for i := 0; i < b.N; i++ {
+
+		if j >= len(atCoords) {
+			j = 0
+		}
+
+		at := atCoords[j]
+		at1 = it[at[0]][at[1]]
+		j++
+	}
+}
+
+func BenchmarkAt(b *testing.B) {
+	T := New(WithShape(100, 100), Of(Float64))
+	var j int
+	for i := 0; i < b.N; i++ {
+		if j >= len(atCoords) {
+			j = 0
+		}
+
+		at := atCoords[j]
+		_, err := T.At(at[0], at[1])
+		if err != nil {
+			b.Error("Error: %v", err)
+		}
+
+		j++
+	}
 }
