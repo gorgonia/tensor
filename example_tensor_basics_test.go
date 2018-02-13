@@ -96,3 +96,41 @@ func Example_differingDataOrders() {
 	// T2 Data Order: Contiguous, ColMajor
 
 }
+
+// The AsFortran construction option is a bit finnicky.
+func Example_asFortran() {
+	// Here the data is passed in and directly used without changing the underlying data
+	T0 := New(WithShape(2, 3), WithBacking([]float64{0, 1, 2, 3, 4, 5}), AsFortran(nil))
+	fmt.Printf("T0:\n%vData: %v\n\n", T0, T0.Data())
+
+	// Here the data is passed into the AsFortran construction option, and it assumes that the data is already in
+	// row-major form. Therefore a transpose will be performed.
+	T1 := New(WithShape(2, 3), AsFortran([]float64{0, 1, 2, 3, 4, 5}))
+	fmt.Printf("T1:\n%vData: %v\n\n", T1, T1.Data())
+
+	// Further example of how AsFortran works:
+	orig := New(WithShape(2, 3), WithBacking([]float64{0, 1, 2, 3, 4, 5}))
+	T2 := New(WithShape(2, 3), AsFortran(orig))
+	fmt.Printf("Original\n%vData: %v\n", orig, orig.Data())
+	fmt.Printf("T2:\n%vData: %v\n", T2, T2.Data())
+
+	// Output:
+	// T0:
+	// ⎡0  2  4⎤
+	// ⎣1  3  5⎦
+	// Data: [0 1 2 3 4 5]
+	//
+	// T1:
+	// ⎡0  1  2⎤
+	// ⎣3  4  5⎦
+	// Data: [0 3 1 4 2 5]
+	//
+	// Original
+	// ⎡0  1  2⎤
+	// ⎣3  4  5⎦
+	// Data: [0 1 2 3 4 5]
+	// T2:
+	// ⎡0  1  2⎤
+	// ⎣3  4  5⎦
+	// Data: [0 3 1 4 2 5]
+}
