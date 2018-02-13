@@ -6,7 +6,7 @@ import (
 	// "log"
 )
 
-func handleFuncOpts(expShape Shape, expType Dtype, do DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
+func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
 	fo := ParseFuncOpts(opts...)
 
 	reuseT, incr := fo.IncrReuse()
@@ -41,8 +41,8 @@ func handleFuncOpts(expShape Shape, expType Dtype, do DataOrder, strict bool, op
 			return
 		}
 
-		if !incr {
-
+		if !incr && reuse != nil {
+			reuse.setDataOrder(o)
 		}
 
 	}
@@ -109,7 +109,8 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 	useIter = a.RequiresIterator() ||
 		b.RequiresIterator() ||
 		(reuse != nil && reuse.RequiresIterator()) ||
-		!a.DataOrder().hasSameOrder(b.DataOrder())
+		!a.DataOrder().hasSameOrder(b.DataOrder()) ||
+		(reuse != nil && (!a.DataOrder().hasSameOrder(reuse.DataOrder()) || !b.DataOrder().hasSameOrder(reuse.DataOrder())))
 	if useIter {
 		ait = a.Iterator()
 		bit = b.Iterator()

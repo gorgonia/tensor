@@ -295,7 +295,11 @@ func (ap *AP) calcStrides() []int {
 }
 
 // setDataOrder is a method such that any tensor that embeds *AP will have the same method
-func (ap *AP) setDataOrder(o DataOrder) { ap.o = o }
+func (ap *AP) setDataOrder(o DataOrder) {
+	if !o.hasSameOrder(ap.o) {
+		ap.o = ap.o.toggleColMajor()
+	}
+}
 
 // TransposeIndex returns the new index given the old index
 func TransposeIndex(i int, oldShape, pattern, oldStrides, newStrides []int) int {

@@ -16,7 +16,7 @@ func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, e
 
 	var reuse DenseTensor
 	var safe, _, incr bool
-	if reuse, safe, _, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), true, opts...); err != nil {
+	if reuse, safe, _, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return
 	}
 	switch {
@@ -328,7 +328,7 @@ func (StdEng) prepReduce(a Tensor, axis int, opts ...FuncOpt) (at, reuse DenseTe
 
 	// FUNC PREP
 	var safe bool
-	if reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		err = errors.Wrap(err, "Unable to prep unary tensor")
 		return
 	}
