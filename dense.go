@@ -311,6 +311,7 @@ func (t *Dense) sanity() error {
 	return nil
 }
 
+// isTransposed returns true if the *Dense holds a transposed array.
 func (t *Dense) isTransposed() bool { return t.old == nil }
 
 // oshape returns the original shape
@@ -321,6 +322,7 @@ func (t *Dense) oshape() Shape {
 	return t.Shape()
 }
 
+// ostrides returns the original strides
 func (t *Dense) ostrides() []int {
 	if t.old != nil {
 		return t.old.Strides()
