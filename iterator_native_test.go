@@ -41,5 +41,6 @@ func TestNative3TensorF64(t *testing.T) {
 
 	assert.Equal(2, len(it))
 	assert.Equal(3, len(it[0]))
+	assert.Equal(4, len(it[0][0]))
 	t.Logf("%v", it)
 }

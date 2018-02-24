@@ -1,7 +1,8 @@
-# Package `tensor` [![GoDoc](https://godoc.org/github.com/chewxy/gorgonia/tensor?status.svg)](https://godoc.org/github.com/chewxy/gorgonia/tensor) [![Build Status](https://travis-ci.org/gorgonia/tensor.svg?branch=master)](https://travis-ci.org/gorgonia/tensor) [![Coverage Status](https://coveralls.io/repos/github/gorgonia/tensor/badge.svg?branch=master)](https://coveralls.io/github/gorgonia/tensor?branch=master) #
+# Package `tensor` [![GoDoc](https://godoc.org/gorgonia.org/tensor?status.svg)](https://godoc.org/gorgonia.org/tensor) [![GitHub version](https://badge.fury.io/gh/gorgonia%2Ftensor.svg)](https://badge.fury.io/gh/gorgonia%2Ftensor)  [![Build Status](https://travis-ci.org/gorgonia/tensor.svg?branch=master)](https://travis-ci.org/gorgonia/tensor) [![Coverage Status](https://coveralls.io/repos/github/gorgonia/tensor/badge.svg?branch=master)](https://coveralls.io/github/gorgonia/tensor?branch=master) [![Go Report Card](https://goreportcard.com/badge/gorgonia.org/tensor)](https://goreportcard.com/report/gorgonia.org/tensor) [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)#
+
 Package `tensor` is a package that provides efficient, generic (by some definitions of generic) n-dimensional arrays in Go. Also in this package are functions and methods that are used commonly in arithmetic, comparison and linear algebra operations.
 
-The main purpose of this package is to support the operations required by [Gorgonia](https://github.com/chewxy/gorgonia).
+The main purpose of this package is to support the operations required by [Gorgonia](https://gorgonia.org/gorgonia).
 
 ## Introduction ##
 In the data analysis world, [Numpy](http://http://www.numpy.org/) and [Matlab](https://www.mathworks.com/products/matlab.html) currently reign supreme. Both tools rely heavily on having performant n-dimensional arrays, or tensors. **There is an obvious need for multidimensional arrays in Go**. 
@@ -50,15 +51,15 @@ The `*Dense` tensor is the primary tensor and is represented by a singular flat 
 
 ### Compressed Sparse Column Matrix ###
 
-Coming soon
+Documentation Coming soon
 
 ### Compressed Sparse Row Matrix ###
 
-Coming soon
+Documentation Coming soon
 
 ## Usage ##
 
-To install: `go get -u "github.com/chewxy/gorgonia/tensor"`
+To install: `go get -u "gorgonia.org/tensor"`
 
 To create a matrix with package `tensor` is easy:
 
@@ -129,7 +130,7 @@ b.SetAt(1000, 0, 1, 2)
 fmt.Printf("b:\n%v", b)
 ```
 
-There is a whole laundry list of methods and functions available at the [godoc](https://godoc.org/github.com/chewxy/gorgonia/tensor) page
+There is a whole laundry list of methods and functions available at the [godoc](https://godoc.org/gorgonia.org/tensor) page
 
 
 

@@ -93,6 +93,9 @@ func main() {
 	pipeline(tensorPkgLoc, "api_unary_generated_test.go", Kinds{allKinds}, generateAPIUnaryTests)
 	pipeline(tensorPkgLoc, "api_cmp_generated_test.go", Kinds{allKinds}, generateAPICmpTests, generateAPICmpMixedTests)
 	pipeline(tensorPkgLoc, "dense_cmp_test.go", Kinds{allKinds}, generateDenseMethodCmpTests, generateDenseMethodCmpMixedTests)
+
+	// native iterators
+	pipeline(tensorPkgLoc, "iterator_native.go", Kinds{allKinds}, generateNativeIterators)
 }
 
 func pipeline(pkg, filename string, kinds Kinds, fns ...func(io.Writer, Kinds)) {
