@@ -1,6 +1,6 @@
-package serialization
+package pb
 
-// proteus:generate
+//proteus:generate
 type DataOrder byte
 
 // the reason for spreading the states out is because proteaus cannot handle non-iota tates
@@ -11,6 +11,7 @@ const (
 	ColMajorNonContiguous
 )
 
+//proteus:generate
 type Triangle byte
 
 const (
@@ -20,7 +21,7 @@ const (
 	Symmetric
 )
 
-// proteus:generate
+//proteus:generate
 type AP struct {
 	Shape   []int
 	Strides []int
@@ -29,14 +30,14 @@ type AP struct {
 	T Triangle
 }
 
-// proteus:generate
+//proteus:generate
 type Dense struct {
 	AP
 	Type string // type name
 	Data []byte
 }
 
-// proteus:generate
+//proteus:generate
 type MaskedDense struct {
 	Dense
 	Mask       []bool
