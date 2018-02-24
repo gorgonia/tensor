@@ -28,7 +28,7 @@ const checkNativeiterable = `func checkNativeIterable(t *Dense, dims int, dt Dty
 }
 `
 
-const nativeVectorRaw = `// NativeVector{{short .}} converts a *Dense into a []{{asType .}}
+const nativeIterRaw = `// NativeVector{{short .}} converts a *Dense into a []{{asType .}}
 // If the *Dense does not represent a vector of the wanted type, it will return an error.
 func NativeVector{{short .}}(t *Dense) (retVal []{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 1, {{reflectKind .}}); err != nil {
@@ -36,9 +36,8 @@ func NativeVector{{short .}}(t *Dense) (retVal []{{asType .}}, err error) {
 	}
 	return t.Data().([]{{asType .}}), nil
 }
-`
 
-const nativeMatrixRaw = `// NativeMatrix{{short .}} converts a  *Dense into a [][]{{asType .}}
+// NativeMatrix{{short .}} converts a  *Dense into a [][]{{asType .}}
 // If the *Dense does not represent a matrix of the wanted type, it will return an error.
 func NativeMatrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 2, {{reflectKind .}}); err != nil {
@@ -64,12 +63,11 @@ func NativeMatrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 	}
 	return
 }
-`
 
-const native3TensorRaw = `// Native3Tensor{{short .}} converts a *Dense into  a [][][]{{asType .}}. 
+// Native3Tensor{{short .}} converts a *Dense into  a [][][]{{asType .}}. 
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Native3Tensor{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
-	if err = checkNativeIterable(t, 3, Float64); err != nil {
+	if err = checkNativeIterable(t, 3, {{reflectKind .}}); err != nil {
 		return nil, err
 	}
 
@@ -99,16 +97,63 @@ func Native3Tensor{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 }
 `
 
+const nativeIterTestRaw = `func Test_NativeVector{{short .}}(t *testing.T) {
+	assert := assert.New(t)
+	{{if isRangeable . -}}
+	T := New(WithBacking(Range({{reflectKind .}}, 0, 6)), WithShape(6))
+	{{else -}}
+	T := New(Of({{reflectKind .}}), WithShape(6))
+	{{end -}}
+	it, err := NativeVector{{short .}}(T)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(6, len(it))
+}
+
+func Test_NativeMatrix{{short .}}(t *testing.T) {
+	assert := assert.New(t)
+	{{if isRangeable . -}}
+	T := New(WithBacking(Range({{reflectKind .}}, 0, 6)), WithShape(2, 3))
+	{{else -}}
+	T := New(Of({{reflectKind .}}), WithShape(2, 3))
+	{{end -}}
+	it, err := NativeMatrix{{short .}}(T)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(2, len(it))
+	assert.Equal(3, len(it[0]))
+}
+
+func TestNative3Tensor{{short .}}(t *testing.T) {
+	assert := assert.New(t)
+	{{if isRangeable . -}}
+	T := New(WithBacking(Range({{reflectKind .}}, 0, 24)), WithShape(2, 3, 4))
+	{{else -}}
+	T := New(Of({{reflectKind .}}), WithShape(2, 3, 4))
+	{{end -}}
+	it, err := Native3Tensor{{short .}}(T)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(2, len(it))
+	assert.Equal(3, len(it[0]))
+	assert.Equal(4, len(it[0][0]))
+}
+`
+
 var (
-	NativeVector  *template.Template
-	NativeMatrix  *template.Template
-	Native3Tensor *template.Template
+	NativeIter     *template.Template
+	NativeIterTest *template.Template
 )
 
 func init() {
-	NativeVector = template.Must(template.New("NativeVector").Funcs(funcs).Parse(nativeVectorRaw))
-	NativeMatrix = template.Must(template.New("NativeMatirx").Funcs(funcs).Parse(nativeMatrixRaw))
-	Native3Tensor = template.Must(template.New("Native3tensor").Funcs(funcs).Parse(native3TensorRaw))
+	NativeIter = template.Must(template.New("NativeIter").Funcs(funcs).Parse(nativeIterRaw))
+	NativeIterTest = template.Must(template.New("NativeIterTest").Funcs(funcs).Parse(nativeIterTestRaw))
 }
 
 func generateNativeIterators(f io.Writer, ak Kinds) {
@@ -116,11 +161,15 @@ func generateNativeIterators(f io.Writer, ak Kinds) {
 	ks := filter(ak.Kinds, isSpecialized)
 	for _, k := range ks {
 		fmt.Fprintf(f, "/* Native Iterables for %v */\n\n", k)
-		NativeVector.Execute(f, k)
-		fmt.Fprint(f, "\n")
-		NativeMatrix.Execute(f, k)
-		fmt.Fprint(f, "\n")
-		Native3Tensor.Execute(f, k)
+		NativeIter.Execute(f, k)
+		fmt.Fprint(f, "\n\n")
+	}
+}
+
+func generateNativeIteratorTests(f io.Writer, ak Kinds) {
+	ks := filter(ak.Kinds, isSpecialized)
+	for _, k := range ks {
+		NativeIterTest.Execute(f, k)
 		fmt.Fprint(f, "\n\n")
 	}
 }
