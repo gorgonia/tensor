@@ -27,3 +27,7 @@ Proteus needs to be installed, as does its dependencies.
 # Notes #
 
 `find gorgonia.org/ -mindepth 2 -type f -exec mv -i '{}' . ';'` is used to flatten  and put all the stuff in the root IDLs directory.
+
+# The Serialization Story #
+
+To serialize, we copy/convert/coerce the data to the internal/serialization data structures, then call the `Marshall` methods from there

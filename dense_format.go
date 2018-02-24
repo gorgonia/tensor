@@ -249,7 +249,7 @@ func (f *fmtState) writeVElision() {
 // Special care also needs be taken for the verb 's' - it prints a super compressed version of the tensor, only printing 4 cols and 4 rows.
 func (t *Dense) Format(s fmt.State, c rune) {
 	if c == 'i' {
-		fmt.Fprintf(s, "INFO:\n\tAP:  %v\n\tOLD: %v\n\tTRANS %v\n\t", t.AP, t.old, t.transposeWith)
+		fmt.Fprintf(s, "INFO:\n\tAP:  %v\n\tOLD: %v\n\tTRANS %v\n\tENGINE: %T\n", t.AP, t.old, t.transposeWith, t.e)
 		return
 	}
 
