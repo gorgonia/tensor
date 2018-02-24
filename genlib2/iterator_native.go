@@ -34,7 +34,7 @@ func NativeVector{{short .}}(t *Dense) (retVal []{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 1, {{reflectKind .}}); err != nil {
 		return nil, err
 	}
-	return t.Data().([]{{asType .}}), nil
+	return t.{{sliceOf .}}, nil
 }
 
 // NativeMatrix{{short .}} converts a  *Dense into a [][]{{asType .}}
@@ -44,7 +44,7 @@ func NativeMatrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]{{asType .}})
+	data := t.{{sliceOf .}}
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -71,7 +71,7 @@ func Native3Tensor{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]{{asType .}})
+	data := t.{{sliceOf .}}
 	shape := t.Shape()
 	strides := t.Strides()
 

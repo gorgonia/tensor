@@ -38,7 +38,7 @@ func NativeVectorB(t *Dense) (retVal []bool, err error) {
 	if err = checkNativeIterable(t, 1, Bool); err != nil {
 		return nil, err
 	}
-	return t.Data().([]bool), nil
+	return t.Bools(), nil
 }
 
 // NativeMatrixB converts a  *Dense into a [][]bool
@@ -48,7 +48,7 @@ func NativeMatrixB(t *Dense) (retVal [][]bool, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]bool)
+	data := t.Bools()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -75,7 +75,7 @@ func Native3TensorB(t *Dense) (retVal [][][]bool, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]bool)
+	data := t.Bools()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -108,7 +108,7 @@ func NativeVectorI(t *Dense) (retVal []int, err error) {
 	if err = checkNativeIterable(t, 1, Int); err != nil {
 		return nil, err
 	}
-	return t.Data().([]int), nil
+	return t.Ints(), nil
 }
 
 // NativeMatrixI converts a  *Dense into a [][]int
@@ -118,7 +118,7 @@ func NativeMatrixI(t *Dense) (retVal [][]int, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int)
+	data := t.Ints()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -145,7 +145,7 @@ func Native3TensorI(t *Dense) (retVal [][][]int, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int)
+	data := t.Ints()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -178,7 +178,7 @@ func NativeVectorI8(t *Dense) (retVal []int8, err error) {
 	if err = checkNativeIterable(t, 1, Int8); err != nil {
 		return nil, err
 	}
-	return t.Data().([]int8), nil
+	return t.Int8s(), nil
 }
 
 // NativeMatrixI8 converts a  *Dense into a [][]int8
@@ -188,7 +188,7 @@ func NativeMatrixI8(t *Dense) (retVal [][]int8, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int8)
+	data := t.Int8s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -215,7 +215,7 @@ func Native3TensorI8(t *Dense) (retVal [][][]int8, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int8)
+	data := t.Int8s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -248,7 +248,7 @@ func NativeVectorI16(t *Dense) (retVal []int16, err error) {
 	if err = checkNativeIterable(t, 1, Int16); err != nil {
 		return nil, err
 	}
-	return t.Data().([]int16), nil
+	return t.Int16s(), nil
 }
 
 // NativeMatrixI16 converts a  *Dense into a [][]int16
@@ -258,7 +258,7 @@ func NativeMatrixI16(t *Dense) (retVal [][]int16, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int16)
+	data := t.Int16s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -285,7 +285,7 @@ func Native3TensorI16(t *Dense) (retVal [][][]int16, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int16)
+	data := t.Int16s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -318,7 +318,7 @@ func NativeVectorI32(t *Dense) (retVal []int32, err error) {
 	if err = checkNativeIterable(t, 1, Int32); err != nil {
 		return nil, err
 	}
-	return t.Data().([]int32), nil
+	return t.Int32s(), nil
 }
 
 // NativeMatrixI32 converts a  *Dense into a [][]int32
@@ -328,7 +328,7 @@ func NativeMatrixI32(t *Dense) (retVal [][]int32, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int32)
+	data := t.Int32s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -355,7 +355,7 @@ func Native3TensorI32(t *Dense) (retVal [][][]int32, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int32)
+	data := t.Int32s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -388,7 +388,7 @@ func NativeVectorI64(t *Dense) (retVal []int64, err error) {
 	if err = checkNativeIterable(t, 1, Int64); err != nil {
 		return nil, err
 	}
-	return t.Data().([]int64), nil
+	return t.Int64s(), nil
 }
 
 // NativeMatrixI64 converts a  *Dense into a [][]int64
@@ -398,7 +398,7 @@ func NativeMatrixI64(t *Dense) (retVal [][]int64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int64)
+	data := t.Int64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -425,7 +425,7 @@ func Native3TensorI64(t *Dense) (retVal [][][]int64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]int64)
+	data := t.Int64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -458,7 +458,7 @@ func NativeVectorU(t *Dense) (retVal []uint, err error) {
 	if err = checkNativeIterable(t, 1, Uint); err != nil {
 		return nil, err
 	}
-	return t.Data().([]uint), nil
+	return t.Uints(), nil
 }
 
 // NativeMatrixU converts a  *Dense into a [][]uint
@@ -468,7 +468,7 @@ func NativeMatrixU(t *Dense) (retVal [][]uint, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint)
+	data := t.Uints()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -495,7 +495,7 @@ func Native3TensorU(t *Dense) (retVal [][][]uint, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint)
+	data := t.Uints()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -528,7 +528,7 @@ func NativeVectorU8(t *Dense) (retVal []uint8, err error) {
 	if err = checkNativeIterable(t, 1, Uint8); err != nil {
 		return nil, err
 	}
-	return t.Data().([]uint8), nil
+	return t.Uint8s(), nil
 }
 
 // NativeMatrixU8 converts a  *Dense into a [][]uint8
@@ -538,7 +538,7 @@ func NativeMatrixU8(t *Dense) (retVal [][]uint8, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint8)
+	data := t.Uint8s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -565,7 +565,7 @@ func Native3TensorU8(t *Dense) (retVal [][][]uint8, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint8)
+	data := t.Uint8s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -598,7 +598,7 @@ func NativeVectorU16(t *Dense) (retVal []uint16, err error) {
 	if err = checkNativeIterable(t, 1, Uint16); err != nil {
 		return nil, err
 	}
-	return t.Data().([]uint16), nil
+	return t.Uint16s(), nil
 }
 
 // NativeMatrixU16 converts a  *Dense into a [][]uint16
@@ -608,7 +608,7 @@ func NativeMatrixU16(t *Dense) (retVal [][]uint16, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint16)
+	data := t.Uint16s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -635,7 +635,7 @@ func Native3TensorU16(t *Dense) (retVal [][][]uint16, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint16)
+	data := t.Uint16s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -668,7 +668,7 @@ func NativeVectorU32(t *Dense) (retVal []uint32, err error) {
 	if err = checkNativeIterable(t, 1, Uint32); err != nil {
 		return nil, err
 	}
-	return t.Data().([]uint32), nil
+	return t.Uint32s(), nil
 }
 
 // NativeMatrixU32 converts a  *Dense into a [][]uint32
@@ -678,7 +678,7 @@ func NativeMatrixU32(t *Dense) (retVal [][]uint32, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint32)
+	data := t.Uint32s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -705,7 +705,7 @@ func Native3TensorU32(t *Dense) (retVal [][][]uint32, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint32)
+	data := t.Uint32s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -738,7 +738,7 @@ func NativeVectorU64(t *Dense) (retVal []uint64, err error) {
 	if err = checkNativeIterable(t, 1, Uint64); err != nil {
 		return nil, err
 	}
-	return t.Data().([]uint64), nil
+	return t.Uint64s(), nil
 }
 
 // NativeMatrixU64 converts a  *Dense into a [][]uint64
@@ -748,7 +748,7 @@ func NativeMatrixU64(t *Dense) (retVal [][]uint64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint64)
+	data := t.Uint64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -775,7 +775,7 @@ func Native3TensorU64(t *Dense) (retVal [][][]uint64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]uint64)
+	data := t.Uint64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -808,7 +808,7 @@ func NativeVectorF32(t *Dense) (retVal []float32, err error) {
 	if err = checkNativeIterable(t, 1, Float32); err != nil {
 		return nil, err
 	}
-	return t.Data().([]float32), nil
+	return t.Float32s(), nil
 }
 
 // NativeMatrixF32 converts a  *Dense into a [][]float32
@@ -818,7 +818,7 @@ func NativeMatrixF32(t *Dense) (retVal [][]float32, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]float32)
+	data := t.Float32s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -845,7 +845,7 @@ func Native3TensorF32(t *Dense) (retVal [][][]float32, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]float32)
+	data := t.Float32s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -878,7 +878,7 @@ func NativeVectorF64(t *Dense) (retVal []float64, err error) {
 	if err = checkNativeIterable(t, 1, Float64); err != nil {
 		return nil, err
 	}
-	return t.Data().([]float64), nil
+	return t.Float64s(), nil
 }
 
 // NativeMatrixF64 converts a  *Dense into a [][]float64
@@ -888,7 +888,7 @@ func NativeMatrixF64(t *Dense) (retVal [][]float64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]float64)
+	data := t.Float64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -915,7 +915,7 @@ func Native3TensorF64(t *Dense) (retVal [][][]float64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]float64)
+	data := t.Float64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -948,7 +948,7 @@ func NativeVectorC64(t *Dense) (retVal []complex64, err error) {
 	if err = checkNativeIterable(t, 1, Complex64); err != nil {
 		return nil, err
 	}
-	return t.Data().([]complex64), nil
+	return t.Complex64s(), nil
 }
 
 // NativeMatrixC64 converts a  *Dense into a [][]complex64
@@ -958,7 +958,7 @@ func NativeMatrixC64(t *Dense) (retVal [][]complex64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]complex64)
+	data := t.Complex64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -985,7 +985,7 @@ func Native3TensorC64(t *Dense) (retVal [][][]complex64, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]complex64)
+	data := t.Complex64s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -1018,7 +1018,7 @@ func NativeVectorC128(t *Dense) (retVal []complex128, err error) {
 	if err = checkNativeIterable(t, 1, Complex128); err != nil {
 		return nil, err
 	}
-	return t.Data().([]complex128), nil
+	return t.Complex128s(), nil
 }
 
 // NativeMatrixC128 converts a  *Dense into a [][]complex128
@@ -1028,7 +1028,7 @@ func NativeMatrixC128(t *Dense) (retVal [][]complex128, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]complex128)
+	data := t.Complex128s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -1055,7 +1055,7 @@ func Native3TensorC128(t *Dense) (retVal [][][]complex128, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]complex128)
+	data := t.Complex128s()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -1088,7 +1088,7 @@ func NativeVectorStr(t *Dense) (retVal []string, err error) {
 	if err = checkNativeIterable(t, 1, String); err != nil {
 		return nil, err
 	}
-	return t.Data().([]string), nil
+	return t.Strings(), nil
 }
 
 // NativeMatrixStr converts a  *Dense into a [][]string
@@ -1098,7 +1098,7 @@ func NativeMatrixStr(t *Dense) (retVal [][]string, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]string)
+	data := t.Strings()
 	shape := t.Shape()
 	strides := t.Strides()
 
@@ -1125,7 +1125,7 @@ func Native3TensorStr(t *Dense) (retVal [][][]string, err error) {
 		return nil, err
 	}
 
-	data := t.Data().([]string)
+	data := t.Strings()
 	shape := t.Shape()
 	strides := t.Strides()
 
