@@ -2,7 +2,7 @@ package tensor
 
 import "fmt"
 
-func Example_iteratorRowMajor() {
+func Example_iteratorRowmajor() {
 	T := New(WithShape(2, 3), WithBacking([]float64{0, 1, 2, 3, 4, 5}))
 	it := IteratorFromDense(T)
 	fmt.Printf("T:\n%v\n", T)

@@ -10,6 +10,7 @@ type ConsOpt func(Tensor)
 
 // Of is a construction option for a Tensor.
 func Of(a Dtype) ConsOpt {
+	Register(a)
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
