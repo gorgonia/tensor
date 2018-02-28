@@ -67,7 +67,7 @@ func BenchmarkGetWithIterator(b *testing.B) {
 			f = data[next]
 		}
 		if _, ok := err.(NoOpError); !ok {
-			b.Error("Error: %v", err)
+			b.Errorf("Error: %v", err)
 		}
 	}
 	_ = f
