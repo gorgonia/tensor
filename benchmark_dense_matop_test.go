@@ -88,7 +88,7 @@ func BenchmarkComplicatedGet(b *testing.B) {
 			f = data[next]
 		}
 		if _, ok := err.(NoOpError); !ok {
-			b.Error("Error: %v", err)
+			b.Errorf("Error: %v", err)
 		}
 	}
 	_ = f
@@ -109,7 +109,7 @@ func BenchmarkAtWithNativeIterator(b *testing.B) {
 	T := New(WithShape(100, 100), Of(Float64))
 	it, err := NativeMatrixF64(T)
 	if err != nil {
-		b.Fatal("Error: %v", err)
+		b.Fatalf("Error: %v", err)
 	}
 
 	var j int
@@ -136,7 +136,7 @@ func BenchmarkAt(b *testing.B) {
 		at := atCoords[j]
 		_, err := T.At(at[0], at[1])
 		if err != nil {
-			b.Error("Error: %v", err)
+			b.Errorf("Error: %v", err)
 		}
 
 		j++

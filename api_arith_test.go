@@ -26,7 +26,7 @@ func TestMod(t *testing.T) {
 
 	// scalar
 	if res, err = Mod(a, 1.0); err != nil {
-		t.Fatal("Error: %v", err)
+		t.Fatalf("Error: %v", err)
 	}
 	assert.Equal(t, correct, res.Data())
 }
