@@ -403,7 +403,7 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 	n := ad.oshape()[1]
 
 	tA := blas.NoTrans
-	if ad.oldAP() != nil {
+	if !ad.oldAP().IsZero() {
 		tA = blas.Trans
 	}
 	lda := ad.ostrides()[0]
@@ -439,12 +439,13 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	}
 
 	tA, tB := blas.NoTrans, blas.NoTrans
-	if ad.oldAP() != nil {
+
+	if !ad.oldAP().IsZero() {
 		tA = blas.Trans
 	}
 
 	// Special case if b is (1, N)
-	if bd.oldAP() != nil || bd.IsRowVec() {
+	if !bd.oldAP().IsZero() || bd.IsRowVec() {
 		tB = blas.Trans
 	}
 
@@ -461,7 +462,7 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	// special case: if a is (1, N) x (N, M), then we can just use GEMV
 	if ad.IsRowVec() {
 		tB = blas.Trans
-		if bd.oldAP() != nil {
+		if !bd.oldAP().IsZero() {
 			tB = blas.NoTrans
 		}
 		m = bd.Shape()[0]

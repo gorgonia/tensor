@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -81,6 +82,7 @@ func testSVD(T, T2, s, u, v *Dense, t string, i int) (err error) {
 	}
 
 	shape := T2.Shape()
+	fmt.Println(shape)
 	if t == "thin" {
 		shape = Shape{MinInt(shape[0], shape[1]), MinInt(shape[0], shape[1])}
 	}
@@ -101,6 +103,27 @@ func testSVD(T, T2, s, u, v *Dense, t string, i int) (err error) {
 		return errors.Errorf("Expected reconstructed to be %v. Got %v instead", T2.Data(), reconstructed.Data())
 	}
 	return nil
+}
+
+func Example_DenseSVD() {
+	T := New(
+		WithShape(4, 5),
+		WithBacking([]float64{1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0}),
+	)
+	_, u, _, _ := T.SVD(true, true)
+	uT := u.Clone().(*Dense)
+	uT.T()
+	eye, err := u.MatMul(uT)
+	fmt.Println(eye)
+	fmt.Println(err)
+
+	// Output:
+	// ⎡1  0  0  0⎤
+	// ⎢0  1  0  0⎥
+	// ⎢0  0  1  0⎥
+	// ⎣0  0  0  1⎦
+	//
+	// <nil>
 }
 
 func TestDense_SVD(t *testing.T) {
@@ -134,7 +157,6 @@ func TestDense_SVD(t *testing.T) {
 			t.Errorf("Expected v = %v. Got %v instead", stts.correctVData, v.Data())
 		}
 	}
-
 	// standard tests
 	for i, stfs := range svdtestsFull {
 		T = New(WithShape(stfs...), WithBacking(Random(Float64, stfs.TotalSize())))
@@ -143,14 +165,14 @@ func TestDense_SVD(t *testing.T) {
 		// full
 		if s, u, v, err = T.SVD(true, true); err != nil {
 			t.Error(err)
+			fmt.Println(err)
 			continue
 		}
-
 		if err = testSVD(T, T2, s, u, v, "full", i); err != nil {
 			t.Error(err)
+			fmt.Println(err)
 			continue
 		}
-
 		// thin
 		if s, u, v, err = T.SVD(true, false); err != nil {
 			t.Error(err)
@@ -183,8 +205,8 @@ func TestDense_SVD(t *testing.T) {
 		if !allClose(s.Data(), svd.Values(nil), closeenoughf64) {
 			t.Errorf("Singular value mismatch between Full and None decomposition. Expected %v. Got %v instead", svd.Values(nil), s.Data())
 		}
-	}
 
+	}
 	// this is illogical
 	T = New(Of(Float64), WithShape(2, 2))
 	if _, _, _, err = T.SVD(false, true); err == nil {

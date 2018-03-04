@@ -376,7 +376,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error) {
 			}
 		}
 	}
-	t.AP = BorrowAP(len(shape))
+	t.AP.zeroWithDims(len(shape))
 	t.setShape(shape...)
 	t.fix()
 	return t.sanity()
@@ -405,7 +405,7 @@ func (t *Dense) GobDecode(p []byte) (err error) {
 		}
 	}
 
-	t.AP = NewAP(shape, strides)
+	t.AP.Init(shape, strides)
 	t.AP.o = o
 	t.AP.Δ = tr
 
@@ -588,7 +588,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Int8:
@@ -611,7 +611,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Int16:
@@ -634,7 +634,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Int32:
@@ -657,7 +657,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Int64:
@@ -680,7 +680,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Uint:
@@ -703,7 +703,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Uint8:
@@ -726,7 +726,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Uint16:
@@ -749,7 +749,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Uint32:
@@ -772,7 +772,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Uint64:
@@ -795,7 +795,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Float32:
@@ -818,7 +818,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.Float64:
@@ -841,7 +841,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	case reflect.String:
@@ -860,7 +860,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	default:

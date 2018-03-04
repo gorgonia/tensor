@@ -101,7 +101,7 @@ func (t *Dense) Norm(ord NormOrder, axes ...int) (retVal *Dense, err error) {
 			ap.SetShape(t.Size())
 			ap.lock()
 
-			t.AP = ap
+			t.AP = *ap
 			if ret, err = Dot(t, t); err != nil { // returns a scalar
 				err = errors.Wrapf(err, opFail, "Norm-0")
 				return

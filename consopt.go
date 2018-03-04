@@ -193,9 +193,6 @@ func AsFortran(backing interface{}) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			if tt.AP == nil {
-				tt.AP = new(AP)
-			}
 			if backing != nil {
 				// put the data into the tensor, then make a clone tensor to transpose
 				tt.fromSliceOrArrayer(backing)

@@ -13,7 +13,7 @@ const (
 
 // Dense represents a dense tensor - this is the most common form of tensors. It can be used to represent vectors, matrices.. etc
 type Dense struct {
-	*AP
+	AP
 	array
 
 	flag MemoryFlag
@@ -21,7 +21,7 @@ type Dense struct {
 	oe   standardEngine // optimized engine
 
 	// backup AP. When a transpose is done, the old *AP is backed up here, for easy untransposes
-	old           *AP
+	old           AP
 	transposeWith []int
 
 	// if viewOf != nil, then this *Dense is a view.
@@ -54,7 +54,7 @@ func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) 
 	retVal.array.t = dt
 	retVal.array.L = size
 	retVal.array.C = size
-	retVal.AP = BorrowAP(shape.Dims())
+	retVal.AP.zeroWithDims(shape.Dims())
 
 	for _, opt := range opts {
 		opt(retVal)
@@ -97,7 +97,7 @@ func (t *Dense) makeArray(size int) {
 }
 
 // Info returns the access pattern which explains how the data in the underlying array is accessed. This is mostly used for debugging.
-func (t *Dense) Info() *AP { return t.AP }
+func (t *Dense) Info() *AP { return &t.AP }
 
 // Dtype returns the data type of the *Dense tensor.
 func (t *Dense) Dtype() Dtype { return t.t }
@@ -127,7 +127,7 @@ func (t *Dense) Reshape(dims ...int) error {
 		return errors.Errorf(methodNYI, "Reshape", "non-contiguous views")
 	}
 
-	if t.old != nil {
+	if !t.old.IsZero() {
 		t.Transpose()
 	}
 
@@ -159,7 +159,7 @@ func (t *Dense) IsView() bool {
 
 // IsMaterializeable indicates if the Tensor is materializable - if it has either gone through some transforms or slicing
 func (t *Dense) IsMaterializable() bool {
-	return t.viewOf != 0 || t.old != nil
+	return t.viewOf != 0 || !t.old.IsZero()
 }
 
 // IsManuallyManaged returns true if the memory associated with this *Dense is manually managed (by the user)
@@ -172,15 +172,16 @@ func (t *Dense) IsNativelyAccessible() bool { return t.flag.nativelyAccessible()
 func (t *Dense) Clone() interface{} {
 	if t.e != nil {
 		retVal := new(Dense)
-		retVal.AP = t.AP.Clone()
+		t.AP.CloneTo(&retVal.AP)
 		retVal.t = t.t
 		retVal.e = t.e
 		retVal.oe = t.oe
 		retVal.flag = t.flag
 		retVal.makeArray(t.L)
 
-		if t.old != nil {
-			retVal.old = t.old.Clone()
+		if !t.old.IsZero() {
+			retVal.old = *(t.old.Clone())
+			t.old.CloneTo(&retVal.old)
 		}
 		copyDense(retVal, t)
 		retVal.lock()
@@ -246,13 +247,9 @@ func (t *Dense) setShape(s ...int) {
 	return
 }
 
-func (t *Dense) setAP(ap *AP) { t.AP = ap }
+func (t *Dense) setAP(ap *AP) { t.AP = *ap }
 
 func (t *Dense) fix() {
-	if t.AP == nil {
-		return
-	}
-
 	if t.e == nil {
 		t.e = StdEng{}
 	}
@@ -298,7 +295,7 @@ func (t *Dense) makeMask() {
 
 // sanity is a function that sanity checks that a tensor is correct.
 func (t *Dense) sanity() error {
-	if t.AP != nil && t.Shape() == nil && t.array.Ptr == nil {
+	if !t.AP.IsZero() && t.Shape() == nil && t.array.Ptr == nil {
 		return errors.New(emptyTensor)
 	}
 
@@ -312,11 +309,11 @@ func (t *Dense) sanity() error {
 }
 
 // isTransposed returns true if the *Dense holds a transposed array.
-func (t *Dense) isTransposed() bool { return t.old == nil }
+func (t *Dense) isTransposed() bool { return t.old.IsZero() }
 
 // oshape returns the original shape
 func (t *Dense) oshape() Shape {
-	if t.old != nil {
+	if !t.old.IsZero() {
 		return t.old.Shape()
 	}
 	return t.Shape()
@@ -324,7 +321,7 @@ func (t *Dense) oshape() Shape {
 
 // ostrides returns the original strides
 func (t *Dense) ostrides() []int {
-	if t.old != nil {
+	if !t.old.IsZero() {
 		return t.old.Strides()
 	}
 	return t.Strides()
@@ -335,14 +332,14 @@ func (t *Dense) ShallowClone() *Dense {
 	retVal := borrowDense()
 	retVal.e = t.e
 	retVal.oe = t.oe
-	retVal.AP = t.AP.Clone()
+	t.AP.CloneTo(&retVal.AP)
 	retVal.flag = t.flag
 	retVal.array = t.array
 	return retVal
 }
 
-func (t *Dense) oldAP() *AP           { return t.old }
-func (t *Dense) setOldAP(ap *AP)      { t.old = ap }
+func (t *Dense) oldAP() *AP           { return &t.old }
+func (t *Dense) setOldAP(ap *AP)      { t.old = *ap }
 func (t *Dense) transposeAxes() []int { return t.transposeWith }
 func (t *Dense) parentTensor() *Dense {
 	if t.viewOf != 0 {
@@ -539,7 +536,7 @@ func (t *Dense) Memset(x interface{}) error {
 		return errors.Errorf(inaccessibleData, t)
 	}
 	if t.IsMaterializable() {
-		it := newFlatIterator(t.AP)
+		it := newFlatIterator(&t.AP)
 		return t.array.memsetIter(x, it)
 	}
 	return t.array.Memset(x)
@@ -562,7 +559,7 @@ func (t *Dense) Eq(other interface{}) bool {
 
 func (t *Dense) Zero() {
 	if t.IsMaterializable() {
-		it := newFlatIterator(t.AP)
+		it := newFlatIterator(&t.AP)
 		if err := t.zeroIter(it); err != nil {
 			panic(err)
 		}
@@ -592,7 +589,7 @@ func (t *Dense) RequiresIterator() bool {
 		return false
 	}
 	// non continuous slice, transpose, or masked. If it's a slice and contiguous, then iterator is not required
-	if !t.o.isContiguous() || t.old != nil || t.IsMasked() {
+	if !t.o.isContiguous() || !t.old.IsZero() || t.IsMasked() {
 		return true
 	}
 	return false

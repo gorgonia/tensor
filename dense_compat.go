@@ -418,7 +418,7 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 	case !t.IsMaterializable():
 		data = convToFloat64s(t)
 	default:
-		it := newFlatIterator(t.AP)
+		it := newFlatIterator(&t.AP)
 		var next int
 		for next, err = it.Next(); err == nil; next, err = it.Next() {
 			if err = handleNoOp(err); err != nil {

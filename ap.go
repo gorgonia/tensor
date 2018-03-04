@@ -35,6 +35,14 @@ func NewAP(shape Shape, strides []int) *AP {
 	return ap
 }
 
+// Init initalizes an already created AP with a shape and stries.
+// It will panic if AP is nil.
+func (ap *AP) Init(shape Shape, strides []int) {
+	ap.shape = shape
+	ap.strides = strides
+	ap.fin = true
+}
+
 // SetShape is for very specific times when modifying the AP is necessary, such as reshaping and doing I/O related stuff
 //
 // Caveats:
@@ -102,6 +110,33 @@ func (ap *AP) IsScalar() bool { return ap.shape.IsScalar() }
 // IsMatrix returns true if it's a matrix. This is mostly a convenience method. RowVec and ColVecs are also considered matrices
 func (ap *AP) IsMatrix() bool { return len(ap.shape) == 2 }
 
+// IsZero tell us if the ap has zero size
+func (ap *AP) IsZero() bool {
+	return len(ap.shape) == 0 && len(ap.strides) == 0 && !ap.fin && ap.o == 0 && ap.Δ == 0
+}
+
+// Zero zeros out an AP.
+func (ap *AP) zero() {
+	ap.shape = ap.shape[:0]
+	ap.strides = ap.strides[:0]
+	ap.fin = false
+	ap.o = 0
+	ap.Δ = 0
+}
+
+func (ap *AP) zeroWithDims(dims int) {
+	//ap.shape = BorrowInts(dims)
+	//ap.strides = BorrowInts(dims)
+	if cap(ap.shape) >= dims {
+		ap.shape = ap.shape[:dims]
+	}
+	ap.shape = BorrowInts(dims)
+	if cap(ap.strides) >= dims {
+		ap.strides = ap.strides[:dims]
+	}
+	ap.strides = BorrowInts(dims)
+}
+
 // Clone clones the *AP. Clearly.
 func (ap *AP) Clone() (retVal *AP) {
 	retVal = BorrowAP(len(ap.shape))
@@ -116,6 +151,14 @@ func (ap *AP) Clone() (retVal *AP) {
 	retVal.o = ap.o
 	retVal.Δ = ap.Δ
 	return
+}
+
+func (ap *AP) CloneTo(dest *AP) {
+	dest.shape = append(dest.shape[:0], ap.shape...)
+	dest.strides = append(dest.strides[:0], ap.strides...)
+	dest.fin = ap.fin
+	dest.o = ap.o
+	dest.Δ = ap.Δ
 }
 
 // DataOrder returns the data order of the AP.

@@ -83,18 +83,14 @@ func ReturnTensor(t Tensor) {
 	}
 	switch tt := t.(type) {
 	case *Dense:
-		if tt.old != nil {
-			ReturnAP(tt.old)
-			tt.old = nil
+		if !tt.old.IsZero() {
+			tt.old.zero()
 		}
 
 		if tt.transposeWith != nil {
 			ReturnInts(tt.transposeWith)
 			tt.transposeWith = nil
 		}
-
-		// return AP
-		ReturnAP(tt.AP)
 
 		// array reset
 		tt.t = Dtype{}
@@ -109,7 +105,7 @@ func ReturnTensor(t Tensor) {
 		tt.flag = 0
 
 		// other reset
-		tt.old = nil
+		tt.old.zero()
 		tt.viewOf = 0
 		tt.transposeWith = nil
 
