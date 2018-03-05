@@ -6,9 +6,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 )
 
@@ -24,6 +26,22 @@ type Kinds struct {
 
 func init() {
 	gopath = os.Getenv("GOPATH")
+
+	// now that go can have a default gopath, this checks that path
+	if gopath == "" {
+		usr, err := user.Current()
+		if err != nil {
+			log.Fatal(err)
+		}
+		gopath = path.Join(usr.HomeDir, "go")
+		stat, err := os.Stat(gopath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if !stat.IsDir() {
+			log.Fatal("You need to define a $GOPATH")
+		}
+	}
 	tensorPkgLoc = path.Join(gopath, "src/gorgonia.org/tensor")
 	execLoc = path.Join(gopath, "src/gorgonia.org/tensor/internal/execution")
 	storageLoc = path.Join(gopath, "src/gorgonia.org/tensor/internal/storage")
@@ -119,7 +137,12 @@ func pipeline(pkg, filename string, kinds Kinds, fns ...func(io.Writer, Kinds)) 
 		log.Fatalf("Go imports failed with %v for %q", err, fullpath)
 	}
 
-	cmd = exec.Command("sed", "-i", `s/github.com\/alecthomas\/assert/github.com\/stretchr\/testify\/assert/g`, fullpath)
+	// account for differences in the postix from the linux sed
+	if runtime.GOOS == "darwin" || strings.HasSuffix(runtime.GOOS, "bsd") {
+		cmd = exec.Command("sed", "-i", "", `s/github.com\/alecthomas\/assert/github.com\/stretchr\/testify\/assert/g`, fullpath)
+	} else {
+		cmd = exec.Command("sed", "-E", "-i", `s/github.com\/alecthomas\/assert/github.com\/stretchr\/testify\/assert/g`, fullpath)
+	}
 	if err = cmd.Run(); err != nil {
 		if err.Error() != "exit status 4" { // exit status 4 == not found
 			log.Fatalf("sed failed with %v for %q", err.Error(), fullpath)

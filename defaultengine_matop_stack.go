@@ -46,7 +46,6 @@ func (e StdEng) StackDense(t DenseTensor, axis int, others ...DenseTensor) (retV
 	}
 
 	retVal = recycledDense(t.Dtype(), ap.Shape(), WithEngine(e))
-	ReturnAP(retVal.Info())
 	retVal.setAP(ap)
 
 	// the "viewStack" method is the more generalized method

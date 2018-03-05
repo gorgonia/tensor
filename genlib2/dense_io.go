@@ -203,7 +203,7 @@ func (t *Dense) GobDecode(p []byte) (err error){
 		}
 	}
 
-	t.AP = NewAP(shape, strides)
+	t.AP.Init(shape, strides)
 	t.AP.o = o
 	t.AP.Δ = tr
 
@@ -325,7 +325,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 		}
 	{{end -}}
 	}
-	t.AP = BorrowAP(len(shape))
+	t.AP.zeroWithDims(len(shape))
 	t.setShape(shape...)
 	t.fix()
 	return t.sanity()
@@ -415,7 +415,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 		{{end -}}
@@ -437,7 +437,7 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 			rows++
 		}
 		t.fromSlice(backing)
-		t.AP = new(AP)
+		t.AP.zero()
 		t.AP.SetShape(rows, cols)
 		return nil
 	default:

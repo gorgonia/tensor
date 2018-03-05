@@ -9,7 +9,7 @@ import "github.com/pkg/errors"
 // https://en.wikipedia.org/wiki/In-place_matrix_transposition
 func (t *Dense) Transpose() error {
 	// if there is no oldinfo, that means the current info is the latest, and not the transpose
-	if t.old == nil {
+	if t.old.IsZero() {
 		return nil
 	}
 
@@ -18,8 +18,7 @@ func (t *Dense) Transpose() error {
 	}
 
 	defer func() {
-		ReturnAP(t.old)
-		t.old = nil
+		t.old.zero()
 		t.transposeWith = nil
 	}()
 

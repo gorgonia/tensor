@@ -353,7 +353,7 @@ func (t *Dense) Format(s fmt.State, c rune) {
 	}
 
 	// standard stuff
-	it := NewIterator(t.AP)
+	it := NewIterator(&t.AP)
 	coord := it.Coord()
 
 	firstRow := true

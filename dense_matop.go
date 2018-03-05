@@ -12,7 +12,7 @@ func (t *Dense) T(axes ...int) (err error) {
 
 	// is there any old transposes that need to be done first?
 	// this is important, because any old transposes for dim >=3 are merely permutations of the strides
-	if t.old != nil {
+	if !t.old.IsZero() {
 		if t.IsVector() {
 			// the transform that was calculated was a waste of time - return it to the pool then untranspose
 			ReturnAP(transform)
@@ -43,7 +43,7 @@ func (t *Dense) T(axes ...int) (err error) {
 	// swap out the old and the new
 	t.old = t.AP
 	t.transposeWith = axes
-	t.AP = transform
+	t.AP = *transform
 	return nil
 }
 
@@ -58,11 +58,10 @@ func (t *Dense) T(axes ...int) (err error) {
 //
 // Nothing will happen if there was no previous transpose
 func (t *Dense) UT() {
-	if t.old != nil {
-		ReturnAP(t.AP)
+	if !t.old.IsZero() {
 		ReturnInts(t.transposeWith)
 		t.AP = t.old
-		t.old = nil
+		t.old.zero()
 		t.transposeWith = nil
 	}
 }
@@ -81,8 +80,8 @@ func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
 
 	retVal.e = t.e
 	retVal.oe = t.oe
-	retVal.AP = transform
-	retVal.old = t.AP.Clone()
+	retVal.AP = *transform
+	t.AP.CloneTo(&retVal.old)
 	retVal.transposeWith = axes
 
 	return
@@ -221,7 +220,7 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 	view.e = t.e
 	view.oe = t.oe
 	view.flag = t.flag
-	view.AP = newAP
+	view.AP = *newAP
 	view.setParentTensor(t)
 	t.sliceInto(ndStart, ndEnd, &view.array)
 
@@ -243,15 +242,14 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 		return
 	}
 
-	ReturnAP(view.AP)
-	view.AP = nil
+	view.AP.zero()
 	view.array.v = nil // reset
 
 	view.t = t.t
 	view.e = t.e
 	view.oe = t.oe
 	view.flag = t.flag
-	view.AP = newAP
+	view.AP = *newAP
 	view.setParentTensor(t)
 	t.sliceInto(ndStart, ndEnd, &view.array)
 

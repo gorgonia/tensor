@@ -59,9 +59,8 @@ func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err e
 	if _, ok := err.(NoOpError); !ok && err != nil {
 		return
 	} else if ok {
-		newAP = t.Info().Clone()
+		t.Info().CloneTo(newAP)
 	}
-	defer ReturnAP(newAP)
 
 	it := IteratorFromDense(t)
 	iteratorLoadAP(it, newAP)

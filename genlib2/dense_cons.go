@@ -68,7 +68,7 @@ func I(dt Dtype, r, c, k int) *Dense{
 		panic(err)
 	}
 	var nexts []int
-	iter := newFlatIterator(s.AP)
+	iter := newFlatIterator(&s.AP)
 	nexts, err = iter.Slice(rs{i, s.Size(), c + 1})
 
 	switch s.t.Kind() {
