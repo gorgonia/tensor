@@ -199,7 +199,7 @@ The above call will use `myEngine` to allocate memory instead. This is useful in
 
 ### Other failed designs ###
 
-The alternative designs can be seen in the [ALTERNATIVE DESIGNS document](https://github.com/chewxy/gorgonia/blob/master/tensor/ALTERNATIVEDESIGNS.md)
+The alternative designs can be seen in the [ALTERNATIVE DESIGNS document](https://github.com/tensor/blob/master/ALTERNATIVEDESIGNS.md)
 
 ## Generic Features ##
 
