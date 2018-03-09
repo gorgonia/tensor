@@ -87,7 +87,8 @@ type Tensor interface {
 // New creates a new Dense Tensor. For sparse arrays use their relevant construction function
 func New(opts ...ConsOpt) *Dense {
 	d := borrowDense()
-	d.AP = new(AP)
+	d.AP.zero()
+	d.old.zero()
 	for _, opt := range opts {
 		opt(d)
 	}

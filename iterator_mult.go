@@ -120,7 +120,7 @@ func NewMultIterator(aps ...*AP) *MultIterator {
 
 // MultIteratorFromDense creates a new MultIterator from a list of dense tensors
 func MultIteratorFromDense(tts ...DenseTensor) *MultIterator {
-	aps := BorrowAPList(len(tts))
+	aps := make([]*AP, len(tts))
 	hasMask := BorrowBools(len(tts))
 	defer ReturnBools(hasMask)
 
@@ -155,7 +155,6 @@ func MultIteratorFromDense(tts ...DenseTensor) *MultIterator {
 		}
 	}
 	it.numMasked = numMasked
-	ReturnAPList(aps)
 	return it
 }
 

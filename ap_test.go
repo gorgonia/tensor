@@ -105,7 +105,7 @@ func TestAccessPatternBasics(t *testing.T) {
 	assert.Equal(2, ap.Size())
 
 	if ap.String() != "Shape: (1, 2), Stride: [1], Lock: false" {
-		t.Error("AP formatting error. Got %q", ap.String())
+		t.Errorf("AP formatting error. Got %q", ap.String())
 	}
 
 	ap2 := ap.Clone()

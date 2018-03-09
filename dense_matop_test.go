@@ -236,7 +236,7 @@ func TestDense_Transpose(t *testing.T) {
 		t.Errorf("Stacked .T() #1 for vector. Error: %v", err)
 		goto matrev
 	}
-	assert.Nil(T.old)
+	assert.True(T.old.IsZero())
 	assert.Nil(T.transposeWith)
 	assert.True(T.IsColVec())
 
@@ -251,7 +251,7 @@ matrev:
 		t.Errorf("Stacked .T() #2 for matrix reverse. Error: %v", err)
 		goto matnorev
 	}
-	assert.Nil(T.old)
+	assert.True(T.old.IsZero())
 	assert.Nil(T.transposeWith)
 	assert.True(Shape{2, 3}.Eq(T.Shape()))
 
@@ -278,12 +278,12 @@ func TestTUT(t *testing.T) {
 	T = New(Of(Float64), WithShape(2, 3, 4))
 	T.T()
 	T.UT()
-	assert.Nil(T.old)
+	assert.True(T.old.IsZero())
 	assert.Nil(T.transposeWith)
 
 	T.T(2, 0, 1)
 	T.UT()
-	assert.Nil(T.old)
+	assert.True(T.old.IsZero())
 	assert.Nil(T.transposeWith)
 }
 
@@ -540,7 +540,7 @@ func TestDense_Slice(t *testing.T) {
 	assert.True(Shape{2}.Eq(V.Shape()))
 	assert.Equal([]int{3}, V.Strides())
 	assert.Equal([]float32{0, 1, 2, 3}, V.Data())
-	assert.Nil(V.(*Dense).old)
+	assert.True(V.(*Dense).old.IsZero())
 
 	// slice a sliced
 	V, err = V.Slice(makeRS(1, 2))
