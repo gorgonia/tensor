@@ -34,7 +34,7 @@ func (e StdEng) StackDense(t DenseTensor, axis int, others ...DenseTensor) (retV
 		newStrides = newShape.calcStrides()
 
 	}
-	ap := NewAP(newShape, newStrides)
+	ap := MakeAP(newShape, newStrides)
 	ap.o = info.o
 	ap.Δ = info.Δ
 
@@ -46,7 +46,7 @@ func (e StdEng) StackDense(t DenseTensor, axis int, others ...DenseTensor) (retV
 	}
 
 	retVal = recycledDense(t.Dtype(), ap.Shape(), WithEngine(e))
-	retVal.setAP(ap)
+	retVal.setAP(&ap)
 
 	// the "viewStack" method is the more generalized method
 	// and will work for all Tensors, regardless of whether it's a view

@@ -180,7 +180,7 @@ func (t *Dense) Clone() interface{} {
 		retVal.makeArray(t.L)
 
 		if !t.old.IsZero() {
-			retVal.old = *(t.old.Clone())
+			retVal.old = t.old.Clone()
 			t.old.CloneTo(&retVal.old)
 		}
 		copyDense(retVal, t)
@@ -302,7 +302,7 @@ func (t *Dense) sanity() error {
 	size := t.L
 	expected := t.Size()
 	if t.viewOf == 0 && size != expected && !t.IsScalar() {
-		return errors.Errorf(shapeMismatch, t.Shape(), size)
+		return errors.Wrap(errors.Errorf(shapeMismatch, t.Shape(), size), "sanity check failed")
 	}
 	// TODO: sanity check for views
 	return nil

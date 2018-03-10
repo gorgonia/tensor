@@ -84,11 +84,12 @@ func assignArray(dest, src DenseTensor) (err error) {
 		return
 	}
 	dap := dest.Info()
-	sap := NewAP(tmpShape, newStrides)
+	sap := MakeAP(tmpShape, newStrides)
 	sap.o = src.Info().o
 
 	diter := newFlatIterator(dap)
-	siter := newFlatIterator(sap)
+	siter := newFlatIterator(&sap)
 	_, err = copyDenseIter(dest, src, diter, siter)
+	sap.zeroOnly() // cleanup, but not entirely because tmpShape and tmpStrides are separately cleaned up.  Don't double free
 	return
 }

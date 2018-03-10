@@ -286,13 +286,14 @@ func (e StdEng) Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 	var rd *Dense
 	if rd, err = a.TensorMul(b, axesA, axesB); err != nil {
+		panic(err)
 		return
 	}
 
 	if reuse != nil {
 		copyDense(reuse, rd)
-		ReturnAP(reuse.Info())
-		reuse.setAP(rd.Info().Clone())
+		ap := rd.Info().Clone()
+		reuse.setAP(&ap)
 		defer ReturnTensor(rd)
 		// swap out the underlying data and metadata
 		// reuse.data, rd.data = rd.data, reuse.data

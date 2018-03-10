@@ -94,14 +94,14 @@ func (t *Dense) Norm(ord NormOrder, axes ...int) (retVal *Dense, err error) {
 	if len(axes) == 0 {
 		if ord.IsUnordered() || (ord.IsFrobenius() && dims == 2) || (ord == Norm(2) && dims == 1) {
 			backup := t.AP
-			ap := BorrowAP(1)
-			defer ReturnAP(ap)
+			ap := makeAP(1)
+			defer ap.zero()
 
 			ap.unlock()
 			ap.SetShape(t.Size())
 			ap.lock()
 
-			t.AP = *ap
+			t.AP = ap
 			if ret, err = Dot(t, t); err != nil { // returns a scalar
 				err = errors.Wrapf(err, opFail, "Norm-0")
 				return
