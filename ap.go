@@ -26,13 +26,20 @@ type AP struct {
 	Δ Triangle
 }
 
-// NewAP creates a new AP, given the shape and strides
-func NewAP(shape Shape, strides []int) *AP {
-	ap := borrowAP()
-	ap.shape = shape
-	ap.strides = strides
-	ap.fin = true
-	return ap
+func makeAP(size int) AP {
+	return AP{
+		shape:   Shape(BorrowInts(size)),
+		strides: BorrowInts(size),
+	}
+}
+
+// MakeAP creates an AP, given the shape and strides.
+func MakeAP(shape Shape, strides []int) AP {
+	return AP{
+		shape:   shape,
+		strides: strides,
+		fin:     true,
+	}
 }
 
 // Init initalizes an already created AP with a shape and stries.
@@ -54,6 +61,9 @@ func (ap *AP) SetShape(s ...int) {
 	if !ap.fin {
 		// scalars are a special case, we don't want to remove it completely
 		if len(s) == 0 {
+			if ap.shape == nil || ap.strides == nil {
+				ap.shape = Shape{}
+			}
 			ap.shape = ap.shape[:0]
 			ap.strides = ap.strides[:0]
 			return
@@ -117,8 +127,25 @@ func (ap *AP) IsZero() bool {
 
 // Zero zeros out an AP.
 func (ap *AP) zero() {
-	ap.shape = ap.shape[:0]
-	ap.strides = ap.strides[:0]
+	// log.Printf("ZEROING. Called by %v", string(debug.Stack()))
+
+	// Jorge's original implementation for zeroing a AP is as below
+	// but to cater for the (*Dense).fix() method of the *Dense
+	// a nil shape is used to signal unsetness
+	// so we cannot just truncate the shape even though it would be a lot more efficient
+
+	// ap.shape = ap.shape[:0]
+	// ap.strides = ap.strides[:0]
+	ReturnInts([]int(ap.shape))
+	ReturnInts(ap.strides)
+	ap.zeroOnly()
+}
+
+// side effect free zeroing
+func (ap *AP) zeroOnly() {
+	ap.shape = nil
+	ap.strides = nil
+
 	ap.fin = false
 	ap.o = 0
 	ap.Δ = 0
@@ -137,9 +164,10 @@ func (ap *AP) zeroWithDims(dims int) {
 	ap.strides = BorrowInts(dims)
 }
 
-// Clone clones the *AP. Clearly.
-func (ap *AP) Clone() (retVal *AP) {
-	retVal = BorrowAP(len(ap.shape))
+// Clone clones the *AP. Clearly. It returns AP
+func (ap *AP) Clone() (retVal AP) {
+	retVal = makeAP(cap(ap.shape))
+
 	copy(retVal.shape, ap.shape)
 	copy(retVal.strides, ap.strides)
 
@@ -175,7 +203,7 @@ func (ap *AP) F() bool {
 }
 
 // S returns the metadata of the sliced tensor.
-func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err error) {
+func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err error) {
 	if len(slices) > len(ap.shape) {
 		// error
 		err = errors.Errorf(dimMismatch, len(ap.shape), len(slices))
@@ -239,7 +267,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err e
 
 	if ndEnd-ndStart == 1 {
 		// scalars are a special case
-		newAP = borrowAP()
+		newAP = AP{}
 		newAP.SetShape() // make it a Scalar
 		newAP.lock()
 	} else {
@@ -262,14 +290,14 @@ func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err e
 			newStrides[0] = stride0
 		}
 
-		newAP = NewAP(newShape, newStrides)
+		newAP = MakeAP(newShape, newStrides)
 		newAP.o = order
 	}
 	return
 }
 
 // T returns the transposed metadata based on the given input
-func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
+func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 	// prep axes
 	if len(axes) > 0 && len(axes) != ap.Dims() {
 		err = errors.Errorf(dimMismatch, ap.Dims(), len(axes))
@@ -287,7 +315,7 @@ func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
 
 	// if axes is 0, 1, 2, 3... then no op
 	if monotonic, incr1 := IsMonotonicInts(axes); monotonic && incr1 && axes[0] == 0 {
-		return ap, a, noopError{}
+		return ap.Clone(), a, noopError{}
 	}
 
 	currentShape := ap.shape
@@ -313,9 +341,7 @@ func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
 		}
 	}
 
-	retVal = borrowAP()
-	retVal.shape = shape
-	retVal.strides = strides
+	retVal = MakeAP(shape, strides)
 	if ap.IsVector() {
 		retVal.strides = retVal.strides[:1]
 	}

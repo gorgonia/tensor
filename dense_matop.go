@@ -5,7 +5,7 @@ import "github.com/pkg/errors"
 // T performs a thunked transpose. It doesn't actually do anything, except store extra information about the post-transposed shapes and strides
 // Usually this is more than enough, as BLAS will handle the rest of the transpose
 func (t *Dense) T(axes ...int) (err error) {
-	var transform *AP
+	var transform AP
 	if transform, axes, err = t.AP.T(axes...); err != nil {
 		return handleNoOp(err)
 	}
@@ -15,7 +15,6 @@ func (t *Dense) T(axes ...int) (err error) {
 	if !t.old.IsZero() {
 		if t.IsVector() {
 			// the transform that was calculated was a waste of time - return it to the pool then untranspose
-			ReturnAP(transform)
 			t.UT()
 			return
 		}
@@ -31,7 +30,6 @@ func (t *Dense) T(axes ...int) (err error) {
 
 		// if it is reversed, well, we just restore the backed up one
 		if isReversed {
-			ReturnAP(transform)
 			t.UT()
 			return
 		}
@@ -43,7 +41,7 @@ func (t *Dense) T(axes ...int) (err error) {
 	// swap out the old and the new
 	t.old = t.AP
 	t.transposeWith = axes
-	t.AP = *transform
+	t.AP = transform
 	return nil
 }
 
@@ -61,14 +59,14 @@ func (t *Dense) UT() {
 	if !t.old.IsZero() {
 		ReturnInts(t.transposeWith)
 		t.AP = t.old
-		t.old.zero()
+		t.old.zeroOnly()
 		t.transposeWith = nil
 	}
 }
 
 // SafeT is exactly like T(), except it returns a new *Dense. The data is also copied over, unmoved.
 func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
-	var transform *AP
+	var transform AP
 	if transform, axes, err = t.AP.T(axes...); err != nil {
 		if err = handleNoOp(err); err != nil {
 			return
@@ -80,7 +78,7 @@ func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
 
 	retVal.e = t.e
 	retVal.oe = t.oe
-	retVal.AP = *transform
+	retVal.AP = transform
 	t.AP.CloneTo(&retVal.old)
 	retVal.transposeWith = axes
 
@@ -208,7 +206,7 @@ func (t *Dense) CopyTo(other *Dense) error {
 //
 // The method treats <nil> as equivalent to a colon slice. T.Slice(nil) is equivalent to T[:] in Numpy syntax
 func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
-	var newAP *AP
+	var newAP AP
 	var ndStart, ndEnd int
 
 	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
@@ -220,7 +218,7 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 	view.e = t.e
 	view.oe = t.oe
 	view.flag = t.flag
-	view.AP = *newAP
+	view.AP = newAP
 	view.setParentTensor(t)
 	t.sliceInto(ndStart, ndEnd, &view.array)
 
@@ -235,7 +233,7 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 // The underlying data is the same.
 // This method will override ALL the metadata in view.
 func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error) {
-	var newAP *AP
+	var newAP AP
 	var ndStart, ndEnd int
 
 	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
@@ -249,7 +247,7 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 	view.e = t.e
 	view.oe = t.oe
 	view.flag = t.flag
-	view.AP = *newAP
+	view.AP = newAP
 	view.setParentTensor(t)
 	t.sliceInto(ndStart, ndEnd, &view.array)
 

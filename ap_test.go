@@ -32,46 +32,40 @@ func sli(start int, opt ...int) dummySlice {
 	return dummySlice{start: start, end: end, step: step}
 }
 
-func dummyScalar1() *AP {
-	return &AP{}
-}
+func dummyScalar1() AP { return AP{} }
 
-func dummyScalar2() *AP {
-	return &AP{
-		shape: Shape{1},
-	}
-}
+func dummyScalar2() AP { return AP{shape: Shape{1}} }
 
-func dummyColVec() *AP {
-	return &AP{
+func dummyColVec() AP {
+	return AP{
 		shape:   Shape{5, 1},
 		strides: []int{1},
 	}
 }
 
-func dummyRowVec() *AP {
-	return &AP{
+func dummyRowVec() AP {
+	return AP{
 		shape:   Shape{1, 5},
 		strides: []int{1},
 	}
 }
 
-func dummyVec() *AP {
-	return &AP{
+func dummyVec() AP {
+	return AP{
 		shape:   Shape{5},
 		strides: []int{1},
 	}
 }
 
-func twothree() *AP {
-	return &AP{
+func twothree() AP {
+	return AP{
 		shape:   Shape{2, 3},
 		strides: []int{3, 1},
 	}
 }
 
-func twothreefour() *AP {
-	return &AP{
+func twothreefour() AP {
+	return AP{
 		shape:   Shape{2, 3, 4},
 		strides: []int{12, 4, 1},
 	}
@@ -109,12 +103,12 @@ func TestAccessPatternBasics(t *testing.T) {
 	}
 
 	ap2 := ap.Clone()
-	assert.Equal(ap, ap2)
+	assert.Equal(*ap, ap2)
 }
 
 func TestAccessPatternIsX(t *testing.T) {
 	assert := assert.New(t)
-	var ap *AP
+	var ap AP
 
 	ap = dummyScalar1()
 	assert.True(ap.IsScalar())
@@ -151,7 +145,7 @@ func TestAccessPatternIsX(t *testing.T) {
 
 func TestAccessPatternT(t *testing.T) {
 	assert := assert.New(t)
-	var ap, apT *AP
+	var ap, apT AP
 	var axes []int
 	var err error
 
@@ -220,12 +214,12 @@ var sliceTests = []struct {
 
 func TestAccessPatternS(t *testing.T) {
 	assert := assert.New(t)
-	var ap, apS *AP
+	var ap, apS AP
 	var ndStart, ndEnd int
 	var err error
 
 	for _, sts := range sliceTests {
-		ap = NewAP(sts.shape, sts.shape.calcStrides())
+		ap = MakeAP(sts.shape, sts.shape.calcStrides())
 		if apS, ndStart, ndEnd, err = ap.S(sts.shape.TotalSize(), sts.slices...); err != nil {
 			t.Errorf("%v errored: %v", sts.name, err)
 			continue

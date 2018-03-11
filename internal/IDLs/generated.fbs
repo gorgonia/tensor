@@ -10,15 +10,15 @@ enum Triangle : int {
 }
 
 table AP {
-  shape:[long];
-  strides:[long];
+  shape:[int];
+  strides:[int];
   o:uint;
   t:gorgonia.org.tensor.internal.serialization.pb.Triangle;
 }
 
 table Dense {
-  shape:[long];
-  strides:[long];
+  shape:[int];
+  strides:[int];
   o:uint;
   t:gorgonia.org.tensor.internal.serialization.pb.Triangle;
   type:string;
@@ -26,8 +26,8 @@ table Dense {
 }
 
 table MaskedDense {
-  shape:[long];
-  strides:[long];
+  shape:[int];
+  strides:[int];
   o:uint;
   t:gorgonia.org.tensor.internal.serialization.pb.Triangle;
   type:string;

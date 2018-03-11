@@ -97,12 +97,12 @@ func NewMultIterator(aps ...*AP) *MultIterator {
 			ReturnInts(apStrides) // Borrowed in BroadcastStrides but returned here - dangerous pattern?
 			nBlocks++
 		}
-		ap2 := NewAP(it.shape[:maxDims], it.strides[offset:offset+maxDims])
+		ap2 := MakeAP(it.shape[:maxDims], it.strides[offset:offset+maxDims])
 		ap2.o = ap.o
 		ap2.Δ = ap.Δ
 
 		it.whichBlock[i] = f
-		it.fitArr[nBlocks-1] = newFlatIterator(ap2)
+		it.fitArr[nBlocks-1] = newFlatIterator(&ap2)
 	}
 
 	it.fitArr = it.fitArr[:nBlocks]

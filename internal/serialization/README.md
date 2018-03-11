@@ -18,7 +18,7 @@ Proteus needs to be installed, as does its dependencies.
 # FlatBuffer generation
 1. generate protobuf first
 2. delete the `import "github.com/gogo/protobuf/gogoproto/gogo.proto";` line from the generated protobuf file
-3. `flatc -proto PATH/TO/generated.proto`
+3. `flatc --proto PATH/TO/generated.proto`
 4. place the `generated.fbs` file in the IDLs directory
 4. restore the import line in the `generated.proto` file
 5. From this directory: `flatc --go-namespace fb -g PATH/TO/generated.fbs`

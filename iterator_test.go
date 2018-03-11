@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newAP is  a helper function now
+func newAP(shape Shape, strides []int) *AP {
+	ap := MakeAP(shape, strides)
+	return &ap
+}
+
 var flatIterTests1 = []struct {
 	shape   Shape
 	strides []int
@@ -49,7 +55,7 @@ func TestFlatIterator(t *testing.T) {
 	for i, fit := range flatIterTests1 {
 		nexts = nexts[:0]
 		err = nil
-		ap = NewAP(fit.shape, fit.strides)
+		ap = newAP(fit.shape, fit.strides)
 		it = newFlatIterator(ap)
 		for next, err := it.Next(); err == nil; next, err = it.Next() {
 			nexts = append(nexts, next)
@@ -73,7 +79,7 @@ func TestFlatIteratorReverse(t *testing.T) {
 	for i, fit := range flatIterTests1 {
 		nexts = nexts[:0]
 		err = nil
-		ap = NewAP(fit.shape, fit.strides)
+		ap = newAP(fit.shape, fit.strides)
 		it = newFlatIterator(ap)
 		it.SetReverse()
 		for next, err := it.Next(); err == nil; next, err = it.Next() {
@@ -108,7 +114,7 @@ func TestMultIterator(t *testing.T) {
 		for i, fit := range flatIterTests1 {
 			nexts[0] = nexts[0][:0]
 			err = nil
-			ap[0] = NewAP(fit.shape, fit.strides)
+			ap[0] = newAP(fit.shape, fit.strides)
 			it = NewMultIterator(ap[0])
 			if reverse {
 				it.SetReverse()
@@ -132,7 +138,7 @@ func TestMultIterator(t *testing.T) {
 			fit := flatIterTests1[choices[j]]
 			nexts[j] = nexts[j][:0]
 			err = nil
-			ap[j] = NewAP(fit.shape, fit.strides)
+			ap[j] = newAP(fit.shape, fit.strides)
 		}
 		it = NewMultIterator(ap...)
 		if reverse {
@@ -177,7 +183,7 @@ func TestIteratorInterface(t *testing.T) {
 	for i, fit := range flatIterTests1 {
 		nexts = nexts[:0]
 		err = nil
-		ap = NewAP(fit.shape, fit.strides)
+		ap = newAP(fit.shape, fit.strides)
 		it = NewIterator(ap)
 		for next, err := it.Start(); err == nil; next, err = it.Next() {
 			nexts = append(nexts, next)
@@ -223,7 +229,7 @@ func TestFlatIterator_Chan(t *testing.T) {
 	// basic stuff
 	for i, fit := range flatIterTests1 {
 		nexts = nexts[:0]
-		ap = NewAP(fit.shape, fit.strides)
+		ap = newAP(fit.shape, fit.strides)
 		it = newFlatIterator(ap)
 		ch := it.Chan()
 		for next := range ch {
@@ -242,7 +248,7 @@ func TestFlatIterator_Slice(t *testing.T) {
 	var nexts []int
 
 	for i, fit := range flatIterTests1 {
-		ap = NewAP(fit.shape, fit.strides)
+		ap = newAP(fit.shape, fit.strides)
 		it = newFlatIterator(ap)
 		nexts, err = it.Slice(nil)
 		if _, ok := err.(NoOpError); err != nil && !ok {
@@ -276,7 +282,7 @@ func TestFlatIterator_Coord(t *testing.T) {
 	// var nexts []int
 	var donecount int
 
-	ap = NewAP(Shape{2, 3, 4}, []int{12, 4, 1})
+	ap = newAP(Shape{2, 3, 4}, []int{12, 4, 1})
 	it = newFlatIterator(ap)
 
 	var correct = [][]int{
@@ -315,7 +321,7 @@ func TestFlatIterator_Coord(t *testing.T) {
 // really this is just for completeness sake
 func TestFlatIterator_Reset(t *testing.T) {
 	assert := assert.New(t)
-	ap := NewAP(Shape{2, 3, 4}, []int{12, 4, 1})
+	ap := newAP(Shape{2, 3, 4}, []int{12, 4, 1})
 	it := newFlatIterator(ap)
 
 	it.Next()
@@ -406,7 +412,7 @@ func BenchmarkOldFlatIterator(b *testing.B) {
 
 	// as if T = NewTensor(WithShape(30, 1000, 1000))
 	// then T[:, 0:900:15, 250:750:50]
-	ap := NewAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
+	ap := newAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
 	it := newOldFlatIterator(ap)
 
 	for n := 0; n < b.N; n++ {
@@ -426,7 +432,7 @@ func BenchmarkFlatIterator(b *testing.B) {
 
 	// as if T = NewTensor(WithShape(30, 1000, 1000))
 	// then T[:, 0:900:15, 250:750:50]
-	ap := NewAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
+	ap := newAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
 	it := newFlatIterator(ap)
 
 	for n := 0; n < b.N; n++ {
@@ -450,7 +456,7 @@ func BenchmarkFlatIteratorParallel6(b *testing.B) {
 	it := make([]*FlatIterator, 6)
 
 	for j := 0; j < 6; j++ {
-		ap[j] = NewAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
+		ap[j] = newAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
 		it[j] = newFlatIterator(ap[j])
 	}
 
@@ -476,7 +482,7 @@ func BenchmarkFlatIteratorMulti1(b *testing.B) {
 
 	// as if T = NewTensor(WithShape(30, 1000, 1000))
 	// then T[:, 0:900:15, 250:750:50]
-	ap := NewAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
+	ap := newAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
 
 	it := NewMultIterator(ap)
 
@@ -496,7 +502,7 @@ func BenchmarkFlatIteratorGeneric1(b *testing.B) {
 
 	// as if T = NewTensor(WithShape(30, 1000, 1000))
 	// then T[:, 0:900:15, 250:750:50]
-	ap := NewAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
+	ap := newAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
 
 	it := NewIterator(ap)
 
@@ -519,7 +525,7 @@ func BenchmarkFlatIteratorMulti6(b *testing.B) {
 	ap := make([]*AP, 6)
 
 	for j := 0; j < 6; j++ {
-		ap[j] = NewAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
+		ap[j] = newAP(Shape{30, 60, 10}, []int{1000000, 15000, 50})
 	}
 
 	it := NewMultIterator(ap...)
