@@ -26,11 +26,11 @@ func (rcv *Dense) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *Dense) Shape(j int) int64 {
+func (rcv *Dense) Shape(j int) int32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
-		return rcv._tab.GetInt64(a + flatbuffers.UOffsetT(j*8))
+		return rcv._tab.GetInt32(a + flatbuffers.UOffsetT(j*4))
 	}
 	return 0
 }
@@ -43,11 +43,11 @@ func (rcv *Dense) ShapeLength() int {
 	return 0
 }
 
-func (rcv *Dense) Strides(j int) int64 {
+func (rcv *Dense) Strides(j int) int32 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		a := rcv._tab.Vector(o)
-		return rcv._tab.GetInt64(a + flatbuffers.UOffsetT(j*8))
+		return rcv._tab.GetInt32(a + flatbuffers.UOffsetT(j*4))
 	}
 	return 0
 }
@@ -124,13 +124,13 @@ func DenseAddShape(builder *flatbuffers.Builder, shape flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(shape), 0)
 }
 func DenseStartShapeVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(8, numElems, 8)
+	return builder.StartVector(4, numElems, 4)
 }
 func DenseAddStrides(builder *flatbuffers.Builder, strides flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(strides), 0)
 }
 func DenseStartStridesVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(8, numElems, 8)
+	return builder.StartVector(4, numElems, 4)
 }
 func DenseAddO(builder *flatbuffers.Builder, o uint32) {
 	builder.PrependUint32Slot(2, o, 0)

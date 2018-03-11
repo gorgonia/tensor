@@ -23,8 +23,8 @@ const (
 
 //proteus:generate
 type AP struct {
-	Shape   []int
-	Strides []int
+	Shape   []int32
+	Strides []int32
 
 	O DataOrder
 	T Triangle

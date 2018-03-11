@@ -14,7 +14,9 @@ import (
 	"strconv"
 	"strings"
 
+	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/pkg/errors"
+	"gorgonia.org/tensor/internal/serialization/fb"
 )
 
 type binaryWriter struct {
@@ -867,4 +869,121 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 		return errors.Errorf("%v not yet handled", as)
 	}
 	return errors.Errorf("not yet handled")
+}
+
+func (d *Dense) FBEncode() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(1024)
+
+	fb.DenseStartShapeVector(builder, len(d.shape))
+	for i := len(d.shape) - 1; i >= 0; i-- {
+		builder.PrependInt32(int32(d.shape[i]))
+	}
+	shape := builder.EndVector(len(d.shape))
+
+	fb.DenseStartStridesVector(builder, len(d.strides))
+	for i := len(d.strides) - 1; i >= 0; i-- {
+		builder.PrependInt32(int32(d.strides[i]))
+	}
+	strides := builder.EndVector(len(d.strides))
+
+	var o uint32
+	switch {
+	case d.o.isRowMajor() && d.o.isContiguous():
+		o = 0
+	case d.o.isRowMajor() && !d.o.isContiguous():
+		o = 1
+	case d.o.isColMajor() && d.o.isContiguous():
+		o = 2
+	case d.o.isColMajor() && !d.o.isContiguous():
+		o = 3
+	}
+
+	var triangle int32
+	switch d.Δ {
+	case NotTriangle:
+		triangle = fb.TriangleNOT_TRIANGLE
+	case Upper:
+		triangle = fb.TriangleUPPER
+	case Lower:
+		triangle = fb.TriangleLOWER
+	case Symmetric:
+		triangle = fb.TriangleSYMMETRIC
+	}
+
+	dt := builder.CreateString(d.Dtype().String())
+	data := d.byteSlice()
+
+	fb.DenseStartDataVector(builder, len(data))
+	for i := len(data) - 1; i >= 0; i-- {
+		builder.PrependUint8(data[i])
+	}
+	databyte := builder.EndVector(len(data))
+
+	fb.DenseStart(builder)
+	fb.DenseAddShape(builder, shape)
+	fb.DenseAddStrides(builder, strides)
+	fb.DenseAddO(builder, o)
+	fb.DenseAddT(builder, triangle)
+	fb.DenseAddType(builder, dt)
+	fb.DenseAddData(builder, databyte)
+	serialized := fb.DenseEnd(builder)
+	builder.Finish(serialized)
+
+	return builder.FinishedBytes(), nil
+}
+
+func (d *Dense) FBDecode(buf []byte) error {
+	serialized := fb.GetRootAsDense(buf, 0)
+
+	o := serialized.O()
+	switch o {
+	case 0:
+		d.o = 0
+	case 1:
+		d.o = MakeDataOrder(NonContiguous)
+	case 2:
+		d.o = MakeDataOrder(ColMajor)
+	case 3:
+		d.o = MakeDataOrder(ColMajor, NonContiguous)
+	}
+
+	tri := serialized.T()
+	switch tri {
+	case fb.TriangleNOT_TRIANGLE:
+		d.Δ = NotTriangle
+	case fb.TriangleUPPER:
+		d.Δ = Upper
+	case fb.TriangleLOWER:
+		d.Δ = Lower
+	case fb.TriangleSYMMETRIC:
+		d.Δ = Symmetric
+	}
+
+	d.shape = Shape(BorrowInts(serialized.ShapeLength()))
+	for i := 0; i < serialized.ShapeLength(); i++ {
+		d.shape[i] = int(int32(serialized.Shape(i)))
+	}
+
+	d.strides = BorrowInts(serialized.StridesLength())
+	for i := 0; i < serialized.ShapeLength(); i++ {
+		d.strides[i] = int(serialized.Strides(i))
+	}
+	typ := string(serialized.Type())
+	for _, t := range allTypes.set {
+		if t.String() == typ {
+			d.t = t
+			break
+		}
+	}
+
+	length := serialized.DataLength() / int(d.t.Size())
+	d.array.Ptr = malloc(d.t, length)
+	d.array.L = length
+	d.array.C = length
+
+	// allocated data. Now time to actually copy over the data
+	db := d.byteSlice()
+	copy(db, serialized.DataBytes())
+	d.forcefix()
+	return nil
 }
