@@ -19,23 +19,134 @@ import (
 	"gorgonia.org/tensor/internal/serialization/fb"
 )
 
-type binaryWriter struct {
-	io.Writer
-	error
-	seq int
-}
+/* GOB SERIALIZATION */
 
-func (w binaryWriter) w(x interface{}) {
-	if w.error != nil {
+// GobEncode implements gob.GobEncoder
+func (t *Dense) GobEncode() (p []byte, err error) {
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+
+	if err = encoder.Encode(t.Shape()); err != nil {
 		return
 	}
 
-	binary.Write(w, binary.LittleEndian, x)
+	if err = encoder.Encode(t.Strides()); err != nil {
+		return
+	}
+
+	if err = encoder.Encode(t.AP.o); err != nil {
+		return
+	}
+
+	if err = encoder.Encode(t.AP.Δ); err != nil {
+		return
+	}
+
+	if err = encoder.Encode(t.mask); err != nil {
+		return
+	}
+
+	data := t.Data()
+	if err = encoder.Encode(&data); err != nil {
+		return
+	}
+
+	return buf.Bytes(), err
+}
+
+// GobDecode implements gob.GobDecoder
+func (t *Dense) GobDecode(p []byte) (err error) {
+	buf := bytes.NewBuffer(p)
+	decoder := gob.NewDecoder(buf)
+
+	var shape Shape
+	if err = decoder.Decode(&shape); err != nil {
+		return
+	}
+
+	var strides []int
+	if err = decoder.Decode(&strides); err != nil {
+		return
+	}
+
+	var o DataOrder
+	var tr Triangle
+	if err = decoder.Decode(&o); err == nil {
+		if err = decoder.Decode(&tr); err != nil {
+			return
+		}
+	}
+
+	t.AP.Init(shape, strides)
+	t.AP.o = o
+	t.AP.Δ = tr
+
+	var mask []bool
+	if err = decoder.Decode(&mask); err != nil {
+		return
+	}
+
+	var data interface{}
+	if err = decoder.Decode(&data); err != nil {
+		return
+	}
+
+	t.fromSlice(data)
+	t.addMask(mask)
+	t.fix()
+	if t.e == nil {
+		t.e = StdEng{}
+	}
+	return t.sanity()
+}
+
+/* NPY SERIALIZATION */
+
+var npyDescRE = regexp.MustCompile(`'descr':\s*'([^']*)'`)
+var rowOrderRE = regexp.MustCompile(`'fortran_order':\s*(False|True)`)
+var shapeRE = regexp.MustCompile(`'shape':\s*\(([^\(]*)\)`)
+
+type binaryWriter struct {
+	io.Writer
+	err error
+	seq int
+}
+
+func (w *binaryWriter) w(x interface{}) {
+	if w.err != nil {
+		return
+	}
+
+	w.err = binary.Write(w, binary.LittleEndian, x)
 	w.seq++
 }
 
-func (w binaryWriter) Error() string {
-	return fmt.Sprintf("Error at sequence %d : %v", w.seq, w.error.Error())
+func (w *binaryWriter) Err() error {
+	if w.err == nil {
+		return nil
+	}
+	return errors.Wrapf(w.err, "Sequence %d", w.seq)
+}
+
+type binaryReader struct {
+	io.Reader
+	err error
+	seq int
+}
+
+func (r *binaryReader) Read(data interface{}) {
+	if r.err != nil {
+		return
+	}
+	r.err = binary.Read(r.Reader, binary.LittleEndian, data)
+	r.seq++
+}
+
+func (r *binaryReader) Err() error {
+	if r.err == nil {
+		return nil
+	}
+	return errors.Wrapf(r.err, "Sequence %d", r.seq)
 }
 
 // WriteNpy writes the *Tensor as a numpy compatible serialized file.
@@ -66,8 +177,8 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	bw.w(byte(1))                 // major version
 	bw.w(byte(0))                 // minor version
 	bw.w(uint16(len(header)))     // 4 bytes to denote header length
-	if bw.error != nil {
-		return bw
+	if err = bw.Err(); err != nil {
+		return err
 	}
 	bw.Write([]byte(header))
 
@@ -88,11 +199,159 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 		}
 	}
 
-	if bw.error != nil {
-		return bw
-	}
-	return nil
+	return bw.Err()
 }
+
+// ReadNpy reads NumPy formatted files into a *Dense
+func (t *Dense) ReadNpy(r io.Reader) (err error) {
+	br := binaryReader{Reader: r}
+	var magic [6]byte
+	if br.Read(magic[:]); string(magic[:]) != "\x93NUMPY" {
+		return errors.Errorf("Not a numpy file. Got %q as the magic number instead", string(magic[:]))
+	}
+
+	var version, minor byte
+	if br.Read(&version); version != 1 {
+		return errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
+	}
+
+	if br.Read(&minor); minor != 0 {
+		return errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
+	}
+
+	var headerLen uint16
+	br.Read(&headerLen)
+	header := make([]byte, int(headerLen))
+	br.Read(header)
+	if err = br.Err(); err != nil {
+		return
+	}
+
+	// extract stuff from header
+	var match [][]byte
+	if match = npyDescRE.FindSubmatch(header); match == nil {
+		return errors.New("No dtype information in npy file")
+	}
+
+	// TODO: check for endianness. For now we assume everything is little endian
+	if t.t, err = fromNumpyDtype(string(match[1][1:])); err != nil {
+		return
+	}
+
+	if match = rowOrderRE.FindSubmatch(header); match == nil {
+		return errors.New("No Row Order information found in the numpy file")
+	}
+	if string(match[1]) != "False" {
+		return errors.New("Cannot yet read from Fortran Ordered Numpy files")
+	}
+
+	if match = shapeRE.FindSubmatch(header); match == nil {
+		return errors.New("No shape information found in npy file")
+	}
+	sizesStr := strings.Split(string(match[1]), ",")
+
+	var shape Shape
+	for _, s := range sizesStr {
+		s = strings.Trim(s, " ")
+		if len(s) == 0 {
+			break
+		}
+		var size int
+		if size, err = strconv.Atoi(s); err != nil {
+			return
+		}
+		shape = append(shape, size)
+	}
+
+	size := shape.TotalSize()
+	if t.e == nil {
+		t.e = StdEng{}
+	}
+	t.makeArray(size)
+
+	switch t.t.Kind() {
+	case reflect.Int:
+		data := t.Ints()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Int8:
+		data := t.Int8s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Int16:
+		data := t.Int16s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Int32:
+		data := t.Int32s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Int64:
+		data := t.Int64s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Uint:
+		data := t.Uints()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Uint8:
+		data := t.Uint8s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Uint16:
+		data := t.Uint16s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Uint32:
+		data := t.Uint32s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Uint64:
+		data := t.Uint64s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Float32:
+		data := t.Float32s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Float64:
+		data := t.Float64s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Complex64:
+		data := t.Complex64s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	case reflect.Complex128:
+		data := t.Complex128s()
+		for i := 0; i < size; i++ {
+			br.Read(&data[i])
+		}
+	}
+	if err = br.Err(); err != nil {
+		return err
+	}
+
+	t.AP.zeroWithDims(len(shape))
+	t.setShape(shape...)
+	t.fix()
+	return t.sanity()
+}
+
+/* CSV SERIALIZATION */
 
 // WriteCSV writes the *Dense to a CSV. It accepts an optional string formatting ("%v", "%f", etc...), which controls what is written to the CSV.
 // If tensor is masked, invalid values are replaced by the default fill value.
@@ -154,284 +413,20 @@ func (t *Dense) WriteCSV(w io.Writer, formats ...string) (err error) {
 	return nil
 }
 
-// GobEncode implements gob.GobEncoder
-func (t *Dense) GobEncode() (p []byte, err error) {
-	var buf bytes.Buffer
-	encoder := gob.NewEncoder(&buf)
-
-	if err = encoder.Encode(t.Shape()); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(t.Strides()); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(t.AP.o); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(t.AP.Δ); err != nil {
-		return
-	}
-
-	if err = encoder.Encode(t.mask); err != nil {
-		return
-	}
-
-	data := t.Data()
-	if err = encoder.Encode(&data); err != nil {
-		return
-	}
-
-	return buf.Bytes(), err
-}
-
-// ReadNpy reads NumPy formatted files into a *Dense
-func (t *Dense) ReadNpy(r io.Reader) (err error) {
-	var magic [6]byte
-	if _, err = r.Read(magic[:]); err != nil {
-		return
-	}
-	if string(magic[:]) != "\x93NUMPY" {
-		err = errors.Errorf("Not a numpy file. Got %q as the magic number instead", string(magic[:]))
-		return
-	}
-
-	var version byte
-	if err = binary.Read(r, binary.LittleEndian, &version); err != nil {
-		return
-	}
-	if version != 1 {
-		err = errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
-		return
-	}
-
-	var minor byte
-	if err = binary.Read(r, binary.LittleEndian, &minor); err != nil {
-		return
-	}
-	if minor != 0 {
-		err = errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
-		return
-	}
-
-	var headerLen uint16
-	if err = binary.Read(r, binary.LittleEndian, &headerLen); err != nil {
-		return
-	}
-
-	header := make([]byte, int(headerLen))
-	if _, err = r.Read(header); err != nil {
-		return
-	}
-
-	desc := regexp.MustCompile(`'descr':\s*'([^']*)'`)
-	match := desc.FindSubmatch(header)
-	if match == nil {
-		err = errors.New("No dtype information in npy file")
-		return
-	}
-
-	// TODO: check for endianness. For now we assume everything is little endian
-	var dt Dtype
-	if dt, err = fromNumpyDtype(string(match[1][1:])); err != nil {
-		return
-	}
-	t.t = dt
-
-	rowOrder := regexp.MustCompile(`'fortran_order':\s*(False|True)`)
-	match = rowOrder.FindSubmatch(header)
-	if match == nil {
-		err = errors.New("No Row Order information found in the numpy file")
-		return
-	}
-	if string(match[1]) != "False" {
-		err = errors.New("Cannot yet read from Fortran Ordered Numpy files")
-		return
-	}
-
-	shpRe := regexp.MustCompile(`'shape':\s*\(([^\(]*)\)`)
-	match = shpRe.FindSubmatch(header)
-	if match == nil {
-		err = errors.New("No shape information found in npy file")
-		return
-	}
-	sizesStr := strings.Split(string(match[1]), ",")
-	var shape Shape
-	for _, s := range sizesStr {
-		s = strings.Trim(s, " ")
-		if len(s) == 0 {
-			break
-		}
-		var size int
-		if size, err = strconv.Atoi(s); err != nil {
-			return
-		}
-		shape = append(shape, size)
-	}
-
-	size := shape.TotalSize()
-	if t.e == nil {
-		t.e = StdEng{}
-	}
-
-	t.makeArray(size)
-
-	switch t.t.Kind() {
-	case reflect.Int:
-		data := t.Ints()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Int8:
-		data := t.Int8s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Int16:
-		data := t.Int16s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Int32:
-		data := t.Int32s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Int64:
-		data := t.Int64s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Uint:
-		data := t.Uints()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Uint8:
-		data := t.Uint8s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Uint16:
-		data := t.Uint16s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Uint32:
-		data := t.Uint32s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Uint64:
-		data := t.Uint64s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Float32:
-		data := t.Float32s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Float64:
-		data := t.Float64s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Complex64:
-		data := t.Complex64s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	case reflect.Complex128:
-		data := t.Complex128s()
-		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil {
-				return
-			}
-		}
-	}
-	t.AP.zeroWithDims(len(shape))
-	t.setShape(shape...)
-	t.fix()
-	return t.sanity()
-}
-
-// GobDecode implements gob.GobDecoder
-func (t *Dense) GobDecode(p []byte) (err error) {
-	buf := bytes.NewBuffer(p)
-	decoder := gob.NewDecoder(buf)
-
-	var shape Shape
-	if err = decoder.Decode(&shape); err != nil {
-		return
-	}
-
-	var strides []int
-	if err = decoder.Decode(&strides); err != nil {
-		return
-	}
-
-	var o DataOrder
-	var tr Triangle
-	if err = decoder.Decode(&o); err == nil {
-		if err = decoder.Decode(&tr); err != nil {
-			return
-		}
-	}
-
-	t.AP.Init(shape, strides)
-	t.AP.o = o
-	t.AP.Δ = tr
-
-	var mask []bool
-	if err = decoder.Decode(&mask); err != nil {
-		return
-	}
-
-	var data interface{}
-	if err = decoder.Decode(&data); err != nil {
-		return
-	}
-	t.fromSlice(data)
-	t.addMask(mask)
-	t.fix()
-	return t.sanity()
-}
-
-// convFromStrs conversts a []string to a slice of the Dtype provided
-func convFromStrs(to Dtype, record []string) (interface{}, error) {
+// convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice.
+// If into is nil, then a backing slice will be created.
+func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, error) {
 	var err error
 	switch to.Kind() {
 	case reflect.Int:
 		retVal := make([]int, len(record))
+		var backing []int
+		if into == nil {
+			backing = make([]int, 0, len(record))
+		} else {
+			backing = into.([]int)
+		}
+
 		for i, v := range record {
 			var i64 int64
 			if i64, err = strconv.ParseInt(v, 10, 0); err != nil {
@@ -439,9 +434,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = int(i64)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Int8:
 		retVal := make([]int8, len(record))
+		var backing []int8
+		if into == nil {
+			backing = make([]int8, 0, len(record))
+		} else {
+			backing = into.([]int8)
+		}
+
 		for i, v := range record {
 			var i64 int64
 			if i64, err = strconv.ParseInt(v, 10, 8); err != nil {
@@ -449,9 +452,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = int8(i64)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Int16:
 		retVal := make([]int16, len(record))
+		var backing []int16
+		if into == nil {
+			backing = make([]int16, 0, len(record))
+		} else {
+			backing = into.([]int16)
+		}
+
 		for i, v := range record {
 			var i64 int64
 			if i64, err = strconv.ParseInt(v, 10, 16); err != nil {
@@ -459,9 +470,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = int16(i64)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Int32:
 		retVal := make([]int32, len(record))
+		var backing []int32
+		if into == nil {
+			backing = make([]int32, 0, len(record))
+		} else {
+			backing = into.([]int32)
+		}
+
 		for i, v := range record {
 			var i64 int64
 			if i64, err = strconv.ParseInt(v, 10, 32); err != nil {
@@ -469,9 +488,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = int32(i64)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Int64:
 		retVal := make([]int64, len(record))
+		var backing []int64
+		if into == nil {
+			backing = make([]int64, 0, len(record))
+		} else {
+			backing = into.([]int64)
+		}
+
 		for i, v := range record {
 			var i64 int64
 			if i64, err = strconv.ParseInt(v, 10, 64); err != nil {
@@ -479,9 +506,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = int64(i64)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Uint:
 		retVal := make([]uint, len(record))
+		var backing []uint
+		if into == nil {
+			backing = make([]uint, 0, len(record))
+		} else {
+			backing = into.([]uint)
+		}
+
 		for i, v := range record {
 			var u uint64
 			if u, err = strconv.ParseUint(v, 10, 0); err != nil {
@@ -489,9 +524,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = uint(u)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Uint8:
 		retVal := make([]uint8, len(record))
+		var backing []uint8
+		if into == nil {
+			backing = make([]uint8, 0, len(record))
+		} else {
+			backing = into.([]uint8)
+		}
+
 		for i, v := range record {
 			var u uint64
 			if u, err = strconv.ParseUint(v, 10, 8); err != nil {
@@ -499,9 +542,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = uint8(u)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Uint16:
 		retVal := make([]uint16, len(record))
+		var backing []uint16
+		if into == nil {
+			backing = make([]uint16, 0, len(record))
+		} else {
+			backing = into.([]uint16)
+		}
+
 		for i, v := range record {
 			var u uint64
 			if u, err = strconv.ParseUint(v, 10, 16); err != nil {
@@ -509,9 +560,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = uint16(u)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Uint32:
 		retVal := make([]uint32, len(record))
+		var backing []uint32
+		if into == nil {
+			backing = make([]uint32, 0, len(record))
+		} else {
+			backing = into.([]uint32)
+		}
+
 		for i, v := range record {
 			var u uint64
 			if u, err = strconv.ParseUint(v, 10, 32); err != nil {
@@ -519,9 +578,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = uint32(u)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Uint64:
 		retVal := make([]uint64, len(record))
+		var backing []uint64
+		if into == nil {
+			backing = make([]uint64, 0, len(record))
+		} else {
+			backing = into.([]uint64)
+		}
+
 		for i, v := range record {
 			var u uint64
 			if u, err = strconv.ParseUint(v, 10, 64); err != nil {
@@ -529,9 +596,17 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = uint64(u)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Float32:
 		retVal := make([]float32, len(record))
+		var backing []float32
+		if into == nil {
+			backing = make([]float32, 0, len(record))
+		} else {
+			backing = into.([]float32)
+		}
+
 		for i, v := range record {
 			var f float64
 			if f, err = strconv.ParseFloat(v, 32); err != nil {
@@ -539,15 +614,33 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 			}
 			retVal[i] = float32(f)
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 	case reflect.Float64:
 		retVal := make([]float64, len(record))
+		var backing []float64
+		if into == nil {
+			backing = make([]float64, 0, len(record))
+		} else {
+			backing = into.([]float64)
+		}
+
 		for i, v := range record {
 			if retVal[i], err = strconv.ParseFloat(v, 64); err != nil {
 				return nil, err
 			}
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
+	case reflect.String:
+		var backing []string
+		if into == nil {
+			backing = make([]string, 0, len(record))
+		} else {
+			backing = into.([]string)
+		}
+		backing = append(backing, record...)
+		return backing, nil
 	default:
 		return nil, errors.Errorf(methodNYI, "convFromStrs", to)
 	}
@@ -566,340 +659,62 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 	cr := csv.NewReader(r)
 
 	var record []string
-	var row interface{}
 	var rows, cols int
-
-	switch as.Kind() {
-	case reflect.Int:
-		var backing []int
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Int, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]int)...)
-			cols = len(record)
-			rows++
+	var backing interface{}
+	for {
+		record, err = cr.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return
 		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Int8:
-		var backing []int8
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Int8, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]int8)...)
-			cols = len(record)
-			rows++
+		if backing, err = convFromStrs(as, record, backing); err != nil {
+			return
 		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Int16:
-		var backing []int16
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Int16, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]int16)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Int32:
-		var backing []int32
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Int32, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]int32)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Int64:
-		var backing []int64
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Int64, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]int64)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Uint:
-		var backing []uint
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Uint, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]uint)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Uint8:
-		var backing []uint8
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Uint8, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]uint8)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Uint16:
-		var backing []uint16
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Uint16, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]uint16)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Uint32:
-		var backing []uint32
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Uint32, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]uint32)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Uint64:
-		var backing []uint64
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Uint64, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]uint64)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Float32:
-		var backing []float32
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Float32, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]float32)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.Float64:
-		var backing []float64
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs(Float64, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]float64)...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	case reflect.String:
-		var backing []string
-		for {
-			record, err = cr.Read()
-			if err == io.EOF {
-				break
-			}
-
-			if err != nil {
-				return
-			}
-			backing = append(backing, record...)
-			cols = len(record)
-			rows++
-		}
-		t.fromSlice(backing)
-		t.AP.zero()
-		t.AP.SetShape(rows, cols)
-		return nil
-	default:
-		return errors.Errorf("%v not yet handled", as)
+		cols = len(record)
+		rows++
 	}
+	t.fromSlice(backing)
+	t.AP.zero()
+	t.AP.SetShape(rows, cols)
+	return nil
 	return errors.Errorf("not yet handled")
 }
 
-func (d *Dense) FBEncode() ([]byte, error) {
+/* FB SERIALIZATION */
+
+// FBEncode encodes to a byte slice using flatbuffers.
+//
+// Only natively accessible data can be encided
+func (t *Dense) FBEncode() ([]byte, error) {
 	builder := flatbuffers.NewBuilder(1024)
 
-	fb.DenseStartShapeVector(builder, len(d.shape))
-	for i := len(d.shape) - 1; i >= 0; i-- {
-		builder.PrependInt32(int32(d.shape[i]))
+	fb.DenseStartShapeVector(builder, len(t.shape))
+	for i := len(t.shape) - 1; i >= 0; i-- {
+		builder.PrependInt32(int32(t.shape[i]))
 	}
-	shape := builder.EndVector(len(d.shape))
+	shape := builder.EndVector(len(t.shape))
 
-	fb.DenseStartStridesVector(builder, len(d.strides))
-	for i := len(d.strides) - 1; i >= 0; i-- {
-		builder.PrependInt32(int32(d.strides[i]))
+	fb.DenseStartStridesVector(builder, len(t.strides))
+	for i := len(t.strides) - 1; i >= 0; i-- {
+		builder.PrependInt32(int32(t.strides[i]))
 	}
-	strides := builder.EndVector(len(d.strides))
+	strides := builder.EndVector(len(t.strides))
 
 	var o uint32
 	switch {
-	case d.o.isRowMajor() && d.o.isContiguous():
+	case t.o.isRowMajor() && t.o.isContiguous():
 		o = 0
-	case d.o.isRowMajor() && !d.o.isContiguous():
+	case t.o.isRowMajor() && !t.o.isContiguous():
 		o = 1
-	case d.o.isColMajor() && d.o.isContiguous():
+	case t.o.isColMajor() && t.o.isContiguous():
 		o = 2
-	case d.o.isColMajor() && !d.o.isContiguous():
+	case t.o.isColMajor() && !t.o.isContiguous():
 		o = 3
 	}
 
 	var triangle int32
-	switch d.Δ {
+	switch t.Δ {
 	case NotTriangle:
 		triangle = fb.TriangleNOT_TRIANGLE
 	case Upper:
@@ -910,8 +725,8 @@ func (d *Dense) FBEncode() ([]byte, error) {
 		triangle = fb.TriangleSYMMETRIC
 	}
 
-	dt := builder.CreateString(d.Dtype().String())
-	data := d.byteSlice()
+	dt := builder.CreateString(t.Dtype().String())
+	data := t.byteSlice()
 
 	fb.DenseStartDataVector(builder, len(data))
 	for i := len(data) - 1; i >= 0; i-- {
@@ -932,58 +747,59 @@ func (d *Dense) FBEncode() ([]byte, error) {
 	return builder.FinishedBytes(), nil
 }
 
-func (d *Dense) FBDecode(buf []byte) error {
+// FBDecode decodes a byteslice from a flatbuffer table into a *Dense
+func (t *Dense) FBDecode(buf []byte) error {
 	serialized := fb.GetRootAsDense(buf, 0)
 
 	o := serialized.O()
 	switch o {
 	case 0:
-		d.o = 0
+		t.o = 0
 	case 1:
-		d.o = MakeDataOrder(NonContiguous)
+		t.o = MakeDataOrder(NonContiguous)
 	case 2:
-		d.o = MakeDataOrder(ColMajor)
+		t.o = MakeDataOrder(ColMajor)
 	case 3:
-		d.o = MakeDataOrder(ColMajor, NonContiguous)
+		t.o = MakeDataOrder(ColMajor, NonContiguous)
 	}
 
 	tri := serialized.T()
 	switch tri {
 	case fb.TriangleNOT_TRIANGLE:
-		d.Δ = NotTriangle
+		t.Δ = NotTriangle
 	case fb.TriangleUPPER:
-		d.Δ = Upper
+		t.Δ = Upper
 	case fb.TriangleLOWER:
-		d.Δ = Lower
+		t.Δ = Lower
 	case fb.TriangleSYMMETRIC:
-		d.Δ = Symmetric
+		t.Δ = Symmetric
 	}
 
-	d.shape = Shape(BorrowInts(serialized.ShapeLength()))
+	t.shape = Shape(BorrowInts(serialized.ShapeLength()))
 	for i := 0; i < serialized.ShapeLength(); i++ {
-		d.shape[i] = int(int32(serialized.Shape(i)))
+		t.shape[i] = int(int32(serialized.Shape(i)))
 	}
 
-	d.strides = BorrowInts(serialized.StridesLength())
+	t.strides = BorrowInts(serialized.StridesLength())
 	for i := 0; i < serialized.ShapeLength(); i++ {
-		d.strides[i] = int(serialized.Strides(i))
+		t.strides[i] = int(serialized.Strides(i))
 	}
 	typ := string(serialized.Type())
-	for _, t := range allTypes.set {
-		if t.String() == typ {
-			d.t = t
+	for _, dt := range allTypes.set {
+		if dt.String() == typ {
+			t.t = dt
 			break
 		}
 	}
 
-	length := serialized.DataLength() / int(d.t.Size())
-	d.array.Ptr = malloc(d.t, length)
-	d.array.L = length
-	d.array.C = length
+	if t.e == nil {
+		t.e = StdEng{}
+	}
+	t.makeArray(t.shape.TotalSize())
 
 	// allocated data. Now time to actually copy over the data
-	db := d.byteSlice()
+	db := t.byteSlice()
 	copy(db, serialized.DataBytes())
-	d.forcefix()
-	return nil
+	t.forcefix()
+	return t.sanity()
 }
