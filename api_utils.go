@@ -53,11 +53,11 @@ func SortIndex(in interface{}) (out []int) {
 // SampleIndex samples a slice or a Tensor.
 // TODO: tidy this up.
 func SampleIndex(in interface{}) int {
-	var l int
+	// var l int
 	switch list := in.(type) {
 	case []int:
 		var sum, i int
-		l = len(list)
+		// l = len(list)
 		r := rand.Int()
 		for {
 			sum += list[i]
@@ -69,7 +69,7 @@ func SampleIndex(in interface{}) int {
 	case []float64:
 		var sum float64
 		var i int
-		l = len(list)
+		// l = len(list)
 		r := rand.Float64()
 		for {
 			sum += list[i]
@@ -85,7 +85,7 @@ func SampleIndex(in interface{}) int {
 			var sum float64
 			r := rand.Float64()
 			data := list.Float64s()
-			l = len(data)
+			// l = len(data)
 			for {
 				datum := data[i]
 				if math.IsNaN(datum) || math.IsInf(datum, 0) {
@@ -102,7 +102,7 @@ func SampleIndex(in interface{}) int {
 			var sum float32
 			r := rand.Float32()
 			data := list.Float32s()
-			l = len(data)
+			// l = len(data)
 			for {
 				datum := data[i]
 				if math32.IsNaN(datum) || math32.IsInf(datum, 0) {
@@ -121,5 +121,5 @@ func SampleIndex(in interface{}) int {
 	default:
 		panic("Not yet implemented")
 	}
-	return l - 1
+	return -1
 }

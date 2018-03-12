@@ -558,6 +558,81 @@ func (t *Dense) FBDecode(buf []byte) error {
 }
 `
 
+var pbEncodeDecodeRaw = `// PBEncode encodes the Dense into a protobuf byte slice.
+func (t *Dense) PBEncode() ([]byte, error) {
+	var toSerialize pb.Dense
+	toSerialize.Shape = make([]int32, len(t.shape))
+	for i, v := range t.shape {
+		toSerialize.Shape[i] = int32(v)
+	}
+	toSerialize.Strides = make([]int32, len(t.strides))
+	for i, v := range t.strides {
+		toSerialize.Strides[i] = int32(v)
+	}
+
+	switch {
+	case t.o.isRowMajor() && t.o.isContiguous():
+		toSerialize.O = pb.RowMajorContiguous
+	case t.o.isRowMajor() && !t.o.isContiguous():
+		toSerialize.O = pb.RowMajorNonContiguous
+	case t.o.isColMajor() && t.o.isContiguous():
+		toSerialize.O = pb.ColMajorContiguous
+	case t.o.isColMajor() && !t.o.isContiguous():
+		toSerialize.O = pb.ColMajorNonContiguous
+	}
+	toSerialize.T = pb.Triangle(t.Δ)
+	toSerialize.Type = t.t.String()
+	data := t.byteSlice()
+	toSerialize.Data = make([]byte, len(data))
+	copy(toSerialize.Data, data)
+	return toSerialize.Marshal()
+}
+
+// PBDecode unmarshalls a protobuf byteslice into a *Dense.
+func (t *Dense) PBDecode(buf []byte) error {
+	var toSerialize pb.Dense
+	if err := toSerialize.Unmarshal(buf); err != nil {
+		return err
+	}
+	t.shape = make(Shape, len(toSerialize.Shape))
+	for i, v := range toSerialize.Shape {
+		t.shape[i] = int(v)
+	}
+	t.strides = make([]int, len(toSerialize.Strides))
+	for i, v := range toSerialize.Strides {
+		t.strides[i] = int(v)
+	}
+
+	switch toSerialize.O {
+	case pb.RowMajorContiguous:
+	case pb.RowMajorNonContiguous:
+		t.o = MakeDataOrder(NonContiguous)
+	case pb.ColMajorContiguous:
+		t.o = MakeDataOrder(ColMajor)
+	case pb.ColMajorNonContiguous:
+		t.o = MakeDataOrder(ColMajor, NonContiguous)
+	}
+	t.Δ = Triangle(toSerialize.T)
+	typ := string(toSerialize.Type)
+	for _, dt := range allTypes.set {
+		if dt.String() == typ {
+			t.t = dt
+			break
+		}
+	}
+
+	if t.e == nil {
+		t.e = StdEng{}
+	}
+	t.makeArray(t.shape.TotalSize())
+
+	// allocated data. Now time to actually copy over the data
+	db := t.byteSlice()
+	copy(db, toSerialize.Data)
+	return t.sanity()
+}
+`
+
 var (
 	readNpy   *template.Template
 	gobEncode *template.Template
@@ -595,6 +670,10 @@ func generateDenseIO(f io.Writer, generic Kinds) {
 
 	fmt.Fprintln(f, "/* FB SERIALIZATION */\n")
 	fmt.Fprintln(f, fbEncodeDecodeRaw)
+	fmt.Fprint(f, "\n")
+
+	fmt.Fprintln(f, "/* PB SERIALIZATION */\n")
+	fmt.Fprintln(f, pbEncodeDecodeRaw)
 	fmt.Fprint(f, "\n")
 
 }
