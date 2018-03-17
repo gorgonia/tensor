@@ -115,6 +115,8 @@ func main() {
 	// native iterators
 	pipeline(tensorPkgLoc, "iterator_native.go", Kinds{allKinds}, generateNativeIterators)
 	pipeline(tensorPkgLoc, "iterator_native_test.go", Kinds{allKinds}, generateNativeIteratorTests)
+	pipeline(tensorPkgLoc, "iterator_native2.go", Kinds{allKinds}, generateNativeSelect)
+	pipeline(tensorPkgLoc, "iterator_native2_test.go", Kinds{allKinds}, generateNativeSelectTests)
 }
 
 func pipeline(pkg, filename string, kinds Kinds, fns ...func(io.Writer, Kinds)) {
