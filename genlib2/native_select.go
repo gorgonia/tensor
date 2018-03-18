@@ -10,10 +10,10 @@ const checkNativeSelectable = `func checkNativeSelectable(t *Dense, axis int, dt
 	if !t.IsNativelyAccessible() {
 		return errors.New("Cannot select on non-natively accessible data")
 	}
-	if axis >= t.shape.Dims() && !(t.IsScalar() && axis == 0) {
-		return errors.Errorf("Cannot select on axis %d. Shape is %v", axis, t.shape)
+	if axis >= t.Shape().Dims() && !(t.IsScalar() && axis == 0) {
+		return errors.Errorf("Cannot select on axis %d. Shape is %v", axis, t.Shape())
 	}
-	if t.DataOrder().isColMajor() || t.RequiresIterator() {
+	if t.F() || t.RequiresIterator() {
 		return errors.Errorf("Not yet implemented: native select for colmajor or unpacked matrices")
 	}
 	if t.Dtype() != dt {
@@ -22,26 +22,26 @@ const checkNativeSelectable = `func checkNativeSelectable(t *Dense, axis int, dt
 	return nil
 }
 `
-const nativeSelectRaw = `// NativeSelect{{short .}} creates a slice of flat data types. See Example of NativeSelectF64.
-func NativeSelect{{short .}}(t *Dense, axis int) (retVal [][]{{asType .}}, err error) {
+const nativeSelectRaw = `// Select{{short .}} creates a slice of flat data types. See Example of NativeSelectF64.
+func Select{{short .}}(t *Dense, axis int) (retVal [][]{{asType .}}, err error) {
 	if err := checkNativeSelectable(t, axis, {{reflectKind .}}); err != nil {
 		return nil, err
 	}
 
-	switch t.shape.Dims() {
+	switch t.Shape().Dims() {
 	case 0, 1:
 		retVal = make([][]{{asType .}}, 1)
 		retVal[0] = t.{{sliceOf .}}
 	case 2:
 		if axis == 0 {
-			return NativeMatrix{{short .}}(t)
+			return Matrix{{short .}}(t)
 		}
 		fallthrough
 	default:
-		// size := t.shape[axis]
+		// size := t.Shape()[axis]
 		data := t.{{sliceOf .}}
-		stride := t.strides[axis]
-		upper := ProdInts(t.shape[:axis+1])
+		stride := t.Strides()[axis]
+		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]{{asType .}}, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
 			hdr := &reflect.SliceHeader{
@@ -58,54 +58,54 @@ func NativeSelect{{short .}}(t *Dense, axis int) (retVal [][]{{asType .}}, err e
 	return
 }
 `
-const nativeSelectTestRaw = `func TestNativeSelect{{short .}}(t *testing.T) {
+const nativeSelectTestRaw = `func TestSelect{{short .}}(t *testing.T) {
 	assert := assert.New(t)
 	var T *Dense
 	var err error
 	var x [][]{{asType .}}
 	T = New(Of({{reflectKind .}}), WithShape(2, 3, 4, 5), )
-	if x, err = NativeSelect{{short .}}(T, 1); err != nil {
+	if x, err = Select{{short .}}(T, 1); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(6, len(x))
 	assert.Equal(20, len(x[0]))
 
 	T = New(Of({{reflectKind .}}), WithShape(2, 3, 4, 5), )
-	if x, err = NativeSelect{{short .}}(T, 0); err != nil {
+	if x, err = Select{{short .}}(T, 0); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(2, len(x))
 	assert.Equal(60, len(x[0]))
 
 	T = New(Of({{reflectKind .}}), WithShape(2, 3, 4, 5), )
-	if x, err = NativeSelect{{short .}}(T, 3); err != nil {
+	if x, err = Select{{short .}}(T, 3); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(120, len(x))
 	assert.Equal(1, len(x[0]))
 
 	T = New(Of({{reflectKind .}}), WithShape(2, 3), )
-	if x, err = NativeSelect{{short .}}(T, 0); err != nil {
+	if x, err = Select{{short .}}(T, 0); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(2, len(x))
 	assert.Equal(3, len(x[0]))
 
 	T = New(Of({{reflectKind .}}), WithShape(2, 3), )
-	if x, err = NativeSelect{{short .}}(T, 1); err != nil {
+	if x, err = Select{{short .}}(T, 1); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(6, len(x))
 	assert.Equal(1, len(x[0]))
 
 	T = New(FromScalar({{if eq .String "bool" -}}false{{else if eq .String "string" -}}""{{else -}}{{asType .}}(0) {{end -}} ))
-	if x, err = NativeSelect{{short .}}(T, 0); err != nil {
+	if x, err = Select{{short .}}(T, 0); err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(1, len(x))
 	assert.Equal(1, len(x[0]))
 
-	if _, err = NativeSelect{{short .}}(T, 10); err == nil{
+	if _, err = Select{{short .}}(T, 10); err == nil{
 		t.Fatal("Expected errors")
 	}
 }
@@ -122,6 +122,7 @@ func init() {
 }
 
 func generateNativeSelect(f io.Writer, ak Kinds) {
+	fmt.Fprintf(f, importUnqualifiedTensor)
 	fmt.Fprintf(f, "%v\n", checkNativeSelectable)
 	ks := filter(ak.Kinds, isSpecialized)
 	for _, k := range ks {
@@ -132,6 +133,7 @@ func generateNativeSelect(f io.Writer, ak Kinds) {
 }
 
 func generateNativeSelectTests(f io.Writer, ak Kinds) {
+	fmt.Fprintf(f, importUnqualifiedTensor)
 	ks := filter(ak.Kinds, isSpecialized)
 	for _, k := range ks {
 		NativeSelectTest.Execute(f, k)

@@ -105,25 +105,25 @@ func init() {
 
 var at1, at2 float64
 
-func BenchmarkAtWithNativeIterator(b *testing.B) {
-	T := New(WithShape(100, 100), Of(Float64))
-	it, err := NativeMatrixF64(T)
-	if err != nil {
-		b.Fatalf("Error: %v", err)
-	}
+// func BenchmarkAtWithNativeIterator(b *testing.B) {
+// 	T := New(WithShape(100, 100), Of(Float64))
+// 	it, err := NativeMatrixF64(T)
+// 	if err != nil {
+// 		b.Fatalf("Error: %v", err)
+// 	}
 
-	var j int
-	for i := 0; i < b.N; i++ {
+// 	var j int
+// 	for i := 0; i < b.N; i++ {
 
-		if j >= len(atCoords) {
-			j = 0
-		}
+// 		if j >= len(atCoords) {
+// 			j = 0
+// 		}
 
-		at := atCoords[j]
-		at1 = it[at[0]][at[1]]
-		j++
-	}
-}
+// 		at := atCoords[j]
+// 		at1 = it[at[0]][at[1]]
+// 		j++
+// 	}
+// }
 
 func BenchmarkAt(b *testing.B) {
 	T := New(WithShape(100, 100), Of(Float64))
