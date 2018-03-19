@@ -9,21 +9,45 @@ import (
 const writeNpyRaw = `
 type binaryWriter struct {
 	io.Writer
-	error
+	err error
 	seq int
 }
 
-func (w binaryWriter) w(x interface{}) {
-	if w.error != nil {
+func (w *binaryWriter) w(x interface{}) {
+	if w.err != nil {
 		return
 	}
 
-	binary.Write(w, binary.LittleEndian, x)
+	w.err = binary.Write(w, binary.LittleEndian, x)
 	w.seq++
 }
 
-func (w binaryWriter) Error() string {
-	return fmt.Sprintf("Error at sequence %d : %v", w.seq, w.error.Error())	
+func (w *binaryWriter) Err() error {
+	if w.err == nil {
+		return nil
+	}
+	return errors.Wrapf(w.err, "Sequence %d", w.seq)
+}
+
+type binaryReader struct {
+	io.Reader
+	err error
+	seq int
+}
+
+func (r *binaryReader) Read(data interface{}) {
+	if r.err != nil {
+		return
+	}
+	r.err = binary.Read(r.Reader, binary.LittleEndian, data)
+	r.seq++
+}
+
+func (r *binaryReader) Err() error {
+	if r.err == nil {
+		return nil
+	}
+	return errors.Wrapf(r.err, "Sequence %d", r.seq)
 }
 
 // WriteNpy writes the *Tensor as a numpy compatible serialized file.
@@ -54,8 +78,8 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	bw.w(byte(1))             // major version
 	bw.w(byte(0))             // minor version
 	bw.w(uint16(len(header))) // 4 bytes to denote header length
-	if bw.error != nil {
-		return bw
+	if err = bw.Err() ; err != nil {
+		return err
 	}
 	bw.Write([]byte(header))
 
@@ -76,10 +100,7 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 		}
 	}
 
-	if bw.error != nil {
-		return bw
-	}
-	return nil
+		return bw.Err()
 }
 `
 
@@ -203,7 +224,7 @@ func (t *Dense) GobDecode(p []byte) (err error){
 		}
 	}
 
-	t.AP = NewAP(shape, strides)
+	t.AP.Init(shape, strides)
 	t.AP.o = o
 	t.AP.Δ = tr
 
@@ -216,84 +237,69 @@ func (t *Dense) GobDecode(p []byte) (err error){
 	if err = decoder.Decode(&data); err != nil {
 		return
 	}
+	
 	t.fromSlice(data)
 	t.addMask(mask)
 	t.fix()
+	if t.e == nil {
+		t.e = StdEng{}
+	}
 	return t.sanity()
 }
 `
+const npyDescRE = `var npyDescRE = regexp.MustCompile(` + "`" + `'descr':` + `\` + `s*'([^']*)'` + "`" + ")"
+const rowOrderRE = `var rowOrderRE = regexp.MustCompile(` + "`" + `'fortran_order':\s*(False|True)` + "`)"
+const shapeRE = `var shapeRE = regexp.MustCompile(` + "`" + `'shape':\s*\(([^\(]*)\)` + "`)"
 
 const readNpyRaw = `// ReadNpy reads NumPy formatted files into a *Dense
 func (t *Dense) ReadNpy(r io.Reader) (err error){
+	br := binaryReader{Reader: r}
 	var magic [6]byte
-	if _, err = r.Read(magic[:]); err != nil {
-		return
-	}
-	if string(magic[:]) != "\x93NUMPY" {
-		err = errors.Errorf("Not a numpy file. Got %q as the magic number instead", string(magic[:]))
-		return
+	if br.Read(magic[:]); string(magic[:]) != "\x93NUMPY" {
+		return errors.Errorf("Not a numpy file. Got %q as the magic number instead", string(magic[:]))
 	}
 
-	var version byte
-	if err = binary.Read(r, binary.LittleEndian, &version); err != nil {
-		return
-	}
-	if version != 1 {
-		err = errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
-		return
+	var version, minor byte
+	if br.Read(&version); version != 1 {
+		return errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
 	}
 
-	var minor byte
-	if err = binary.Read(r, binary.LittleEndian, &minor); err != nil {
-		return
-	}
-	if minor != 0 {
-		err = errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
-		return
+	if br.Read(&minor); minor != 0 {
+		return errors.New("Only verion 1.0 of numpy's serialization format is currently supported (65535 bytes ought to be enough for a header)")
 	}
 
 	var headerLen uint16
-	if err = binary.Read(r, binary.LittleEndian, &headerLen); err != nil {
-		return
-	}
-
+	br.Read(&headerLen)
 	header := make([]byte, int(headerLen))
-	if _, err = r.Read(header); err != nil {
+	br.Read(header)
+	if err = br.Err(); err != nil {
 		return
 	}
 
-	desc := regexp.MustCompile(` + "`'descr':" + `\s` + "*'([^']*)'`" + `)
-	match := desc.FindSubmatch(header)
-	if match == nil {
-		err = errors.New("No dtype information in npy file")
-		return
+	// extract stuff from header
+	var match [][]byte
+	if match = npyDescRE.FindSubmatch(header); match == nil {
+		return errors.New("No dtype information in npy file")
 	}
 
 	// TODO: check for endianness. For now we assume everything is little endian
-	var dt Dtype
-	if dt, err = fromNumpyDtype(string(match[1][1:])); err != nil {
+	if t.t, err = fromNumpyDtype(string(match[1][1:])); err != nil {
 		return
 	}
-	t.t = dt
 
-	rowOrder := regexp.MustCompile(` + "`'fortran_order':" + `\s` + "*(False|True)`" + `)
-	match = rowOrder.FindSubmatch(header)
-	if match == nil {
-		err = errors.New("No Row Order information found in the numpy file")
-		return
+	if match = rowOrderRE.FindSubmatch(header); match == nil {
+		return errors.New("No Row Order information found in the numpy file")
 	}
 	if string(match[1]) != "False" {
-		err = errors.New("Cannot yet read from Fortran Ordered Numpy files")
-		return
+		return errors.New("Cannot yet read from Fortran Ordered Numpy files")
 	}
 
-	shpRe := regexp.MustCompile(` + "`'shape':" + `\s*\(([^\(]*)\)` + "`" + `)
-	match = shpRe.FindSubmatch(header)
-	if match == nil {
-		err = errors.New("No shape information found in npy file")
-		return
+	if match = shapeRE.FindSubmatch(header); match == nil {
+		return  errors.New("No shape information found in npy file")
 	}
 	sizesStr := strings.Split(string(match[1]), ",")
+	
+
 	var shape Shape
 	for _, s := range sizesStr {
 		s = strings.Trim(s, " ")
@@ -311,7 +317,6 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 	if t.e == nil {
 		t.e = StdEng{}
 	}
-	
 	t.makeArray(size)
 
 	switch t.t.Kind() {
@@ -319,21 +324,24 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 	case reflect.{{reflectKind .}}:
 		data := t.{{sliceOf .}}
 		for i := 0; i < size; i++ {
-			if err = binary.Read(r, binary.LittleEndian, &data[i]); err != nil{
-				return
-			}
+			br.Read(&data[i])
 		}
 	{{end -}}
 	}
-	t.AP = BorrowAP(len(shape))
+	if err = br.Err(); err != nil {
+		return err
+	}
+
+	t.AP.zeroWithDims(len(shape))
 	t.setShape(shape...)
 	t.fix()
 	return t.sanity()
 }
 `
 
-const readCSVRaw = `// convFromStrs conversts a []string to a slice of the Dtype provided
-func convFromStrs(to Dtype, record []string) (interface{}, error) {
+const readCSVRaw = `// convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice. 
+// If into is nil, then a backing slice will be created.
+func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, error) {
 	var err error
 	switch to.Kind() {
 		{{range .Kinds -}}
@@ -341,6 +349,13 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 		{{if isOrd . -}}
 	case reflect.{{reflectKind .}}:
 		retVal := make([]{{asType .}}, len(record))
+		var backing []{{asType .}}
+		if into == nil {
+			backing = make([]{{asType .}}, 0, len(record))
+		}else{
+			backing = into.([]{{asType .}})
+		}
+
 		for i, v := range record {
 			{{if eq .String "float64" -}}
 				if retVal[i], err = strconv.ParseFloat(v, 64); err != nil {
@@ -366,10 +381,20 @@ func convFromStrs(to Dtype, record []string) (interface{}, error) {
 				retVal[i] = {{asType .}}(u)
 			{{end -}}
 		}
-		return retVal, nil
+		backing = append(backing, retVal...)
+		return backing, nil
 		{{end -}}
 		{{end -}}
 		{{end -}}
+	case reflect.String:
+		var backing []string
+		if into == nil {
+			backing = make([]string, 0, len(record))
+		}else{
+			backing = into.([]string)
+		}
+		backing = append(backing, record...)
+		return backing, nil
 	default:
 		return nil,errors.Errorf(methodNYI, "convFromStrs", to)
 	}
@@ -388,62 +413,223 @@ func (t *Dense) ReadCSV(r io.Reader, opts ...FuncOpt) (err error) {
 	cr := csv.NewReader(r)
 
 	var record []string
-	var row interface{}
 	var rows, cols int
-
-	switch as.Kind() {
-		{{range .Kinds -}}
-		{{if isNumber . -}}
-		{{if isOrd . -}}
-	case reflect.{{reflectKind .}}:
-		var backing []{{asType .}}
-		for {
-			record, err = cr.Read()
-			if err == io.EOF{
-				break
-			}
-
-			if err != nil {
-				return
-			}
-
-			if row, err = convFromStrs({{asType . | strip | title}}, record); err != nil {
-				return
-			}
-			backing = append(backing, row.([]{{asType .}})...)
-			cols = len(record)
-			rows++
+	var backing interface{}
+	for {
+		record, err = cr.Read()
+		if err == io.EOF{
+			break
+		} else 	if err != nil {
+			return
 		}
-		t.fromSlice(backing)
-		t.AP = new(AP)
-		t.AP.SetShape(rows, cols)
-		return nil
-		{{end -}}
-		{{end -}}
-		{{end -}}
-	case reflect.String:
-		var backing []string
-		for {
-			record, err = cr.Read()
-			if err == io.EOF{
-				break
-			}
-
-			if err != nil {
-				return
-			}
-			backing = append(backing, record...)
-			cols = len(record)
-			rows++
+		if backing, err = convFromStrs(as, record, backing); err != nil {
+			return
 		}
-		t.fromSlice(backing)
-		t.AP = new(AP)
-		t.AP.SetShape(rows, cols)
-		return nil
-	default:
-		return errors.Errorf("%v not yet handled", as)
+		cols = len(record)
+		rows++
 	}
+	t.fromSlice(backing)
+	t.AP.zero()
+	t.AP.SetShape(rows, cols)
+	return nil
 	return errors.Errorf("not yet handled")
+}
+`
+
+var fbEncodeDecodeRaw = `// FBEncode encodes to a byte slice using flatbuffers.
+//
+// Only natively accessible data can be encided
+func (t *Dense) FBEncode() ([]byte, error) {
+	builder := flatbuffers.NewBuilder(1024)
+
+	fb.DenseStartShapeVector(builder, len(t.shape))
+	for i := len(t.shape) - 1; i >= 0; i-- {
+		builder.PrependInt32(int32(t.shape[i]))
+	}
+	shape := builder.EndVector(len(t.shape))
+
+	fb.DenseStartStridesVector(builder, len(t.strides))
+	for i := len(t.strides) - 1; i >= 0; i-- {
+		builder.PrependInt32(int32(t.strides[i]))
+	}
+	strides := builder.EndVector(len(t.strides))
+
+	var o uint32
+	switch {
+	case t.o.isRowMajor() && t.o.isContiguous():
+		o = 0
+	case t.o.isRowMajor() && !t.o.isContiguous():
+		o = 1
+	case t.o.isColMajor() && t.o.isContiguous():
+		o = 2
+	case t.o.isColMajor() && !t.o.isContiguous():
+		o = 3
+	}
+
+	var triangle int32
+	switch t.Δ {
+	case NotTriangle:
+		triangle = fb.TriangleNOT_TRIANGLE
+	case Upper:
+		triangle = fb.TriangleUPPER
+	case Lower:
+		triangle = fb.TriangleLOWER
+	case Symmetric:
+		triangle = fb.TriangleSYMMETRIC
+	}
+
+	dt := builder.CreateString(t.Dtype().String())
+	data := t.byteSlice()
+
+	fb.DenseStartDataVector(builder, len(data))
+	for i := len(data) - 1; i >= 0; i-- {
+		builder.PrependUint8(data[i])
+	}
+	databyte := builder.EndVector(len(data))
+
+	fb.DenseStart(builder)
+	fb.DenseAddShape(builder, shape)
+	fb.DenseAddStrides(builder, strides)
+	fb.DenseAddO(builder, o)
+	fb.DenseAddT(builder, triangle)
+	fb.DenseAddType(builder, dt)
+	fb.DenseAddData(builder, databyte)
+	serialized := fb.DenseEnd(builder)
+	builder.Finish(serialized)
+
+	return builder.FinishedBytes(), nil
+}
+
+// FBDecode decodes a byteslice from a flatbuffer table into a *Dense
+func (t *Dense) FBDecode(buf []byte) error {
+	serialized := fb.GetRootAsDense(buf, 0)
+
+	o := serialized.O()
+	switch o {
+	case 0:
+		t.o = 0
+	case 1:
+		t.o = MakeDataOrder(NonContiguous)
+	case 2:
+		t.o = MakeDataOrder(ColMajor)
+	case 3:
+		t.o = MakeDataOrder(ColMajor, NonContiguous)
+	}
+
+	tri := serialized.T()
+	switch tri {
+	case fb.TriangleNOT_TRIANGLE:
+		t.Δ = NotTriangle
+	case fb.TriangleUPPER:
+		t.Δ = Upper
+	case fb.TriangleLOWER:
+		t.Δ = Lower
+	case fb.TriangleSYMMETRIC:
+		t.Δ = Symmetric
+	}
+
+	t.shape = Shape(BorrowInts(serialized.ShapeLength()))
+	for i := 0; i < serialized.ShapeLength(); i++ {
+		t.shape[i] = int(int32(serialized.Shape(i)))
+	}
+
+	t.strides = BorrowInts(serialized.StridesLength())
+	for i := 0; i < serialized.ShapeLength(); i++ {
+		t.strides[i] = int(serialized.Strides(i))
+	}
+	typ := string(serialized.Type())
+	for _, dt := range allTypes.set {
+		if dt.String() == typ {
+			t.t = dt
+			break
+		}
+	}
+
+	if t.e == nil {
+		t.e = StdEng{}
+	}
+	t.makeArray(t.shape.TotalSize())
+
+	// allocated data. Now time to actually copy over the data
+	db := t.byteSlice()
+	copy(db, serialized.DataBytes())
+	t.forcefix()
+	return t.sanity()
+}
+`
+
+var pbEncodeDecodeRaw = `// PBEncode encodes the Dense into a protobuf byte slice.
+func (t *Dense) PBEncode() ([]byte, error) {
+	var toSerialize pb.Dense
+	toSerialize.Shape = make([]int32, len(t.shape))
+	for i, v := range t.shape {
+		toSerialize.Shape[i] = int32(v)
+	}
+	toSerialize.Strides = make([]int32, len(t.strides))
+	for i, v := range t.strides {
+		toSerialize.Strides[i] = int32(v)
+	}
+
+	switch {
+	case t.o.isRowMajor() && t.o.isContiguous():
+		toSerialize.O = pb.RowMajorContiguous
+	case t.o.isRowMajor() && !t.o.isContiguous():
+		toSerialize.O = pb.RowMajorNonContiguous
+	case t.o.isColMajor() && t.o.isContiguous():
+		toSerialize.O = pb.ColMajorContiguous
+	case t.o.isColMajor() && !t.o.isContiguous():
+		toSerialize.O = pb.ColMajorNonContiguous
+	}
+	toSerialize.T = pb.Triangle(t.Δ)
+	toSerialize.Type = t.t.String()
+	data := t.byteSlice()
+	toSerialize.Data = make([]byte, len(data))
+	copy(toSerialize.Data, data)
+	return toSerialize.Marshal()
+}
+
+// PBDecode unmarshalls a protobuf byteslice into a *Dense.
+func (t *Dense) PBDecode(buf []byte) error {
+	var toSerialize pb.Dense
+	if err := toSerialize.Unmarshal(buf); err != nil {
+		return err
+	}
+	t.shape = make(Shape, len(toSerialize.Shape))
+	for i, v := range toSerialize.Shape {
+		t.shape[i] = int(v)
+	}
+	t.strides = make([]int, len(toSerialize.Strides))
+	for i, v := range toSerialize.Strides {
+		t.strides[i] = int(v)
+	}
+
+	switch toSerialize.O {
+	case pb.RowMajorContiguous:
+	case pb.RowMajorNonContiguous:
+		t.o = MakeDataOrder(NonContiguous)
+	case pb.ColMajorContiguous:
+		t.o = MakeDataOrder(ColMajor)
+	case pb.ColMajorNonContiguous:
+		t.o = MakeDataOrder(ColMajor, NonContiguous)
+	}
+	t.Δ = Triangle(toSerialize.T)
+	typ := string(toSerialize.Type)
+	for _, dt := range allTypes.set {
+		if dt.String() == typ {
+			t.t = dt
+			break
+		}
+	}
+
+	if t.e == nil {
+		t.e = StdEng{}
+	}
+	t.makeArray(t.shape.TotalSize())
+
+	// allocated data. Now time to actually copy over the data
+	db := t.byteSlice()
+	copy(db, toSerialize.Data)
+	return t.sanity()
 }
 `
 
@@ -464,15 +650,30 @@ func init() {
 func generateDenseIO(f io.Writer, generic Kinds) {
 	mk := Kinds{Kinds: filter(generic.Kinds, isNumber)}
 
-	// writes
-	fmt.Fprintln(f, writeNpyRaw)
-	fmt.Fprint(f, "\n")
-	fmt.Fprintln(f, writeCSVRaw)
-	fmt.Fprint(f, "\n")
+	fmt.Fprintln(f, "/* GOB SERIALIZATION */\n")
 	gobEncode.Execute(f, mk)
-
-	// reads
-	readNpy.Execute(f, mk)
 	gobDecode.Execute(f, mk)
+	fmt.Fprint(f, "\n")
+
+	fmt.Fprintln(f, "/* NPY SERIALIZATION */\n")
+	fmt.Fprintln(f, npyDescRE)
+	fmt.Fprintln(f, rowOrderRE)
+	fmt.Fprintln(f, shapeRE)
+	fmt.Fprintln(f, writeNpyRaw)
+	readNpy.Execute(f, mk)
+	fmt.Fprint(f, "\n")
+
+	fmt.Fprintln(f, "/* CSV SERIALIZATION */\n")
+	fmt.Fprintln(f, writeCSVRaw)
 	readCSV.Execute(f, mk)
+	fmt.Fprint(f, "\n")
+
+	fmt.Fprintln(f, "/* FB SERIALIZATION */\n")
+	fmt.Fprintln(f, fbEncodeDecodeRaw)
+	fmt.Fprint(f, "\n")
+
+	fmt.Fprintln(f, "/* PB SERIALIZATION */\n")
+	fmt.Fprintln(f, pbEncodeDecodeRaw)
+	fmt.Fprint(f, "\n")
+
 }
