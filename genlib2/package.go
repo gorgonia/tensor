@@ -9,6 +9,8 @@ func writePkgName(f io.Writer, pkg string) {
 	switch pkg {
 	case tensorPkgLoc:
 		fmt.Fprintf(f, "// %s\n\npackage tensor\n\n", genmsg)
+	case nativePkgLoc:
+		fmt.Fprintf(f, "// %s\n\npackage native\n\n", genmsg)
 	case execLoc:
 		fmt.Fprintf(f, "// %s\n\npackage execution\n\n", genmsg)
 	case storageLoc:
@@ -17,3 +19,6 @@ func writePkgName(f io.Writer, pkg string) {
 		fmt.Fprintf(f, "// %s\n\npackage unknown\n\n", genmsg)
 	}
 }
+
+const importUnqualifiedTensor = `import . "gorgonia.org/tensor"
+`
