@@ -100,7 +100,7 @@ const transitivityBodyRaw = `transFn := func(q *Dense) bool {
 	return true
 }
 if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-	t.Error("Transitivity test for {{.Name}} failed: %v", err)
+	t.Errorf("Transitivity test for {{.Name}} failed: %v", err)
 }
 `
 
@@ -146,7 +146,7 @@ const transitivityMixedBodyRaw = `transFn := func(q *Dense) bool {
 	return true
 }
 if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-	t.Error("Transitivity test for {{.Name}} failed: %v", err)
+	t.Errorf("Transitivity test for {{.Name}} failed: %v", err)
 }
 `
 
@@ -182,7 +182,7 @@ const symmetryBodyRaw = `symFn := func(q *Dense) bool {
 
 }
 if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-	t.Error("Transitivity test for {{.Name}} failed: %v", err)
+	t.Errorf("Transitivity test for {{.Name}} failed: %v", err)
 }
 `
 
@@ -216,7 +216,7 @@ const symmetryMixedBodyRaw = `symFn := func(q *Dense) bool {
 
 }
 if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-	t.Error("Symmetry test for {{.Name}} failed: %v", err)
+	t.Errorf("Symmetry test for {{.Name}} failed: %v", err)
 }
 `
 
