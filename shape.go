@@ -153,18 +153,7 @@ func (s Shape) Clone() Shape {
 
 // IsScalar returns true if the access pattern indicates it's a scalar value
 func (s Shape) IsScalar() bool {
-	if len(s) == 0 {
-		return true
-	}
-	prod := 1
-	for _, v := range s {
-		if v == 0 {
-			continue
-		}
-		prod *= v
-	}
-
-	return prod == 1
+	return len(s) == 0 || (len(s) == 1 && s[0] == 1)
 }
 
 // IsVector returns whether the access pattern falls into one of three possible definitions of vectors:
