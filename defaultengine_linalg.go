@@ -439,17 +439,10 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		return errors.Wrapf(err, opFail, "StdEng.MatMul")
 	}
 
-	tA, tB := blas.NoTrans, blas.NoTrans
-
-	if !ad.oldAP().IsZero() {
-		tA = blas.Trans
-	}
-
-	// Special case if b is (1, N)
-	if !bd.oldAP().IsZero() || bd.IsRowVec() {
-		tB = blas.Trans
-	}
-
+	// get result shapes. k is the shared dimension
+	// a is (m, k)
+	// b is (k, n)
+	// c is (m, n)
 	var m, n, k int
 	m = ad.Shape()[0]
 	k = ad.Shape()[1]
@@ -460,29 +453,45 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	ldb := bd.ostrides()[0]
 	ldc := pd.ostrides()[0]
 
-	// special case: if a is (1, N) x (N, M), then we can just use GEMV
-	if ad.IsRowVec() {
+	// check for trans
+	tA, tB := blas.NoTrans, blas.NoTrans
+	if !bd.oldAP().IsZero() {
 		tB = blas.Trans
-		if !bd.oldAP().IsZero() {
-			tB = blas.NoTrans
-		}
-		m = bd.Shape()[0]
-		n = bd.Shape()[1]
-		switch A := ad.Data().(type) {
-		case []float64:
-			B := bd.Float64s()
-			C := pd.Float64s()
-			alpha, beta := float64(1), float64(0)
-			whichblas.Dgemv(tB, m, n, alpha, B, ldb, A, lda, beta, C, ldc)
-		case []float32:
-			B := bd.Float32s()
-			C := pd.Float32s()
-			alpha, beta := float32(1), float32(0)
-			whichblas.Sgemv(tB, m, n, alpha, B, ldb, A, lda, beta, C, ldc)
-		default:
-			return errors.Errorf(typeNYI, "matMul a is row vec", ad.Data())
-		}
-		return
+	}
+	if !ad.oldAP().IsZero() {
+		tA = blas.Trans
+	}
+
+	// fix LDA
+	switch {
+	case ad.IsColVec() && tA == blas.NoTrans:
+		lda = ad.Shape()[1]
+	case ad.IsColVec() && tA == blas.Trans:
+		lda = ad.Shape()[0]
+	case ad.IsRowVec() && tA == blas.NoTrans:
+		lda = ad.Shape()[1]
+	case ad.IsRowVec() && tA == blas.Trans:
+		lda = ad.Shape()[0]
+	}
+
+	// fix LDB
+	switch {
+	case bd.IsColVec() && tB == blas.NoTrans:
+		ldb = bd.Shape()[1]
+	case bd.IsColVec() && tB == blas.Trans:
+		ldb = bd.Shape()[0]
+	case bd.IsRowVec() && tB == blas.NoTrans:
+		ldb = bd.Shape()[1]
+	case bd.IsRowVec() && tB == blas.Trans:
+		ldb = bd.Shape()[0]
+	}
+
+	// fix LDC
+	switch {
+	case pd.IsColVec():
+		ldc = pd.Shape()[1]
+	case pd.IsRowVec():
+		ldc = pd.Shape()[1]
 	}
 
 	switch A := ad.Data().(type) {
