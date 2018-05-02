@@ -356,9 +356,9 @@ func (ap *AP) unlock() { ap.fin = false }
 func (ap *AP) calcStrides() []int {
 	switch {
 	case ap.o.isRowMajor():
-		return ap.shape.calcStrides()
+		return ap.shape.CalcStrides()
 	case ap.o.isColMajor():
-		return ap.shape.calcStridesColMajor()
+		return ap.shape.CalcStridesColMajor()
 	}
 	panic("unreachable")
 }

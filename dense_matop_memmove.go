@@ -27,9 +27,9 @@ func (t *Dense) Transpose() error {
 	// important! because the strides would have changed once the underlying data changed
 	var expStrides []int
 	if t.AP.o.isColMajor() {
-		expStrides = expShape.calcStridesColMajor()
+		expStrides = expShape.CalcStridesColMajor()
 	} else {
-		expStrides = expShape.calcStrides()
+		expStrides = expShape.CalcStrides()
 	}
 	defer ReturnInts(expStrides)
 	defer func() {

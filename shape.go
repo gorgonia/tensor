@@ -24,7 +24,8 @@ func (s Shape) TotalSize() int {
 	return ProdInts([]int(s))
 }
 
-func (s Shape) calcStrides() []int {
+// CalcStrides calculates the default strides for a shape
+func (s Shape) CalcStrides() []int {
 	if s.IsScalar() {
 		return nil
 	}
@@ -48,9 +49,9 @@ func (s Shape) calcStrides() []int {
 	return retVal
 }
 
-// calcStridesWithMask is similar to calcStrides, except that it has an argument, masks. It is used to mask out given dimensions
+// CalcStridesWithMask is similar to CalcStrides, except that it has an argument, masks. It is used to mask out given dimensions
 // during calculation of stride
-func (s Shape) calcStridesWithMask(mask []bool) []int {
+func (s Shape) CalcStridesWithMask(mask []bool) []int {
 	if s.IsScalar() {
 		return nil
 	}
@@ -84,7 +85,8 @@ func (s Shape) calcStridesWithMask(mask []bool) []int {
 	return retVal
 }
 
-func (s Shape) calcStridesColMajor() []int {
+// CalcStridesColMajor is like CalcStrides, but assumes a col major layout
+func (s Shape) CalcStridesColMajor() []int {
 	if s.IsScalar() {
 		return nil
 	}

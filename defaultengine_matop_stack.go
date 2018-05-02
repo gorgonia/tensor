@@ -29,9 +29,9 @@ func (e StdEng) StackDense(t DenseTensor, axis int, others ...DenseTensor) (retV
 	info := t.Info()
 	var newStrides []int
 	if info.o.isColMajor() {
-		newStrides = newShape.calcStridesColMajor()
+		newStrides = newShape.CalcStridesColMajor()
 	} else {
-		newStrides = newShape.calcStrides()
+		newStrides = newShape.CalcStrides()
 
 	}
 	ap := MakeAP(newShape, newStrides)
