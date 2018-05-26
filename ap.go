@@ -202,12 +202,14 @@ func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err e
 	} else {
 
 		// drop any dimension with size 1, except the last dimension
+		offset := 0
 		for d := 0; d < dims; d++ {
-			if newShape[d] == 1 /*&& d != t.dims-1  && dims > 2*/ {
+			if newShape[d] == 1 && offset+d <= len(slices)-1 && slices[offset+d] != nil /*&& d != t.dims-1  && dims > 2*/ {
 				newShape = append(newShape[:d], newShape[d+1:]...)
 				newStrides = append(newStrides[:d], newStrides[d+1:]...)
 				d--
 				dims--
+				offset++
 			}
 		}
 
