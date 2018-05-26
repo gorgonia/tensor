@@ -221,12 +221,14 @@ func (s Shape) S(slices ...Slice) (retVal Shape, err error) {
 	}
 
 	// drop any dimension with size 1, except the last dimension
+	offset := 0
 	dims := s.Dims()
 	for d := 0; d < dims; d++ {
-		if retVal[d] == 1 /*&& d != t.dims-1  && dims > 2*/ {
+		if retVal[d] == 1 && offset+d <= len(slices)-1 && slices[offset+d] != nil /*&& d != t.dims-1  && dims > 2*/ {
 			retVal = append(retVal[:d], retVal[d+1:]...)
 			d--
 			dims--
+			offset++
 		}
 	}
 
