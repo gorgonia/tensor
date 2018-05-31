@@ -31,11 +31,11 @@ func (s Shape) CalcStrides() []int {
 	}
 
 	retVal := BorrowInts(len(s))
-	if s.IsVector() {
-		retVal[0] = 1
-		retVal = retVal[:1]
-		return retVal
-	}
+	// if s.IsVector() {
+	// 	retVal[0] = 1
+	// 	retVal = retVal[:1]
+	// 	return retVal
+	// }
 
 	acc := 1
 	for i := len(s) - 1; i >= 0; i-- {
@@ -176,6 +176,9 @@ func (s Shape) IsMatrix() bool { return len(s) == 2 }
 // Dims returns the number of dimensions in the shape
 func (s Shape) Dims() int { return len(s) }
 
+// DimSize returns the size of the dimension wanted.
+//
+// This method implemnents the DimSizer interface in Gorgonia.
 func (s Shape) DimSize(d int) (size int, err error) {
 	if (s.IsScalar() && d != 0) || (!s.IsScalar() && d >= len(s)) {
 		err = errors.Errorf(dimMismatch, len(s), d)

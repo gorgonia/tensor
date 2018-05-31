@@ -2,7 +2,10 @@ package tensor
 
 import (
 	// "log"
+	"log"
 	"runtime"
+
+	"github.com/kr/pretty"
 )
 
 func requiresOrderedIterator(e Engine, t Tensor) bool {
@@ -160,7 +163,7 @@ func newFlatIterator(ap *AP) *FlatIterator {
 		strides0: strides0,
 
 		isScalar: ap.IsScalar(),
-		isVector: ap.IsVector(),
+		isVector: len(ap.strides) == 1,
 	}
 }
 
@@ -477,10 +480,12 @@ func (it *FlatIterator) Reset() {
 		switch {
 		case it.IsScalar():
 			it.nextIndex = 0
-		case it.IsRowVec():
-			it.nextIndex = (it.shape[1] - 1) * it.strides[0]
-		case it.IsColVec(), it.IsVector():
+		case it.isVector:
 			it.nextIndex = (it.shape[0] - 1) * it.strides[0]
+		// case it.IsRowVec():
+		// 	it.nextIndex = (it.shape[1] - 1) * it.strides[0]
+		// case it.IsColVec(), it.IsVector():
+		// 	it.nextIndex = (it.shape[0] - 1) * it.strides[0]
 		default:
 			it.nextIndex = 0
 			for i := range it.track {
@@ -553,7 +558,15 @@ func (it *FlatMaskedIterator) NextValid() (int, int, error) {
 		mult = -1
 	}
 
-	for i, err := it.Next(); err == nil; i, err = it.Next() {
+	var i int
+	var err error
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("i %d |%d |%# v ", i, len(it.mask), pretty.Formatter(it))
+			panic(r)
+		}
+	}()
+	for i, err = it.Next(); err == nil; i, err = it.Next() {
 		count++
 		if !(it.mask[i]) {
 			return i, mult * count, err

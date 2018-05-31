@@ -231,12 +231,13 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 
 		size := ap.shape[i]
 		var stride int
-		if ap.IsVector() {
-			// handles non-vanilla vectors
-			stride = ap.strides[0]
-		} else {
-			stride = ap.strides[i]
-		}
+		stride = ap.strides[i]
+		// if ap.IsVector() {
+		// 	// handles non-vanilla vectors
+		// 	stride = ap.strides[0]
+		// } else {
+		// 	stride = ap.strides[i]
+		// }
 
 		var start, end, step int
 		if start, end, step, err = SliceDetails(sl, size); err != nil {
@@ -283,14 +284,15 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 				offset++
 			}
 		}
+		// log.Printf("AP %v Strides %v", ap, newStrides)
 
-		//fix up strides
-		if newShape.IsColVec() {
-			stride0 := newStrides[0]
-			ReturnInts(newStrides)
-			newStrides = BorrowInts(1)
-			newStrides[0] = stride0
-		}
+		// //fix up strides
+		// if newShape.IsColVec() {
+		// 	stride0 := newStrides[0]
+		// 	ReturnInts(newStrides)
+		// 	newStrides = BorrowInts(1)
+		// 	newStrides[0] = stride0
+		// }
 
 		newAP = MakeAP(newShape, newStrides)
 		newAP.o = order
@@ -344,9 +346,9 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 	}
 
 	retVal = MakeAP(shape, strides)
-	if ap.IsVector() {
-		retVal.strides = retVal.strides[:1]
-	}
+	// if ap.IsVector() {
+	// 	retVal.strides = retVal.strides[:1]
+	// }
 	retVal.fin = true
 	return
 }
