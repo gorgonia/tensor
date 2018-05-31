@@ -210,6 +210,12 @@ var sliceTests = []struct {
 	{"A[1:3]", Shape{4, 5}, []Slice{sli(1, 3)}, 5, 15, Shape{2, 5}, []int{5, 1}, true},
 	{"A[0:10] (intentionally over)", Shape{4, 5}, []Slice{sli(0, 10)}, 0, 20, Shape{4, 5}, []int{5, 1}, true}, // as if nothing happened
 	{"A[:, 1:3]", Shape{4, 5}, []Slice{nil, sli(1, 3)}, 1, 18, Shape{4, 2}, []int{5, 1}, false},
+
+	// tensor
+	{"tensor[0, :, :]", Shape{1,2,2}, []Slice{rs{0, 1, 1},nil,nil}, 0, 4, Shape{2,2}, []int{2,1},true},
+	{"tensor[:, 0, :]", Shape{1,2,2}, []Slice{nil, rs{0, 1, 1},nil}, 0,2,Shape{1,2}, []int{4,1},false},
+	{"tensor[0, :, :, :]", Shape{1,1,2,2}, []Slice{rs{0, 1, 1},nil,nil,nil}, 0, 4, Shape{1,2,2}, []int{4,2,1},true},
+	{"tensor[0,]", Shape{1,1,2,2}, []Slice{rs{0, 1, 1}}, 0, 4, Shape{1,2,2}, []int{4,2,1},true},
 }
 
 func TestAccessPatternS(t *testing.T) {
