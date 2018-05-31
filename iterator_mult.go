@@ -107,6 +107,12 @@ func NewMultIterator(aps ...*AP) *MultIterator {
 
 	it.fitArr = it.fitArr[:nBlocks]
 	it.strides = it.strides[:nBlocks*maxDims]
+	// fill 0s with 1s
+	for i := range it.strides {
+		if it.strides[i] == 0 {
+			it.strides[i] = 1
+		}
+	}
 
 	it.fit0 = it.fitArr[0]
 	for _, f := range it.fitArr {
@@ -220,7 +226,9 @@ func (it *MultIterator) Next() (int, error) {
 	}
 	it.done = false
 	for _, f := range it.fitArr {
-		f.Next()
+		if _, err := f.Next(); err != nil {
+			return -1, err
+		}
 		it.done = it.done || f.done
 	}
 	for i, j := range it.whichBlock {

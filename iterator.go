@@ -1,8 +1,6 @@
 package tensor
 
 import (
-	// "log"
-
 	"runtime"
 )
 
