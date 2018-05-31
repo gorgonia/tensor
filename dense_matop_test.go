@@ -135,10 +135,10 @@ var transposeTests = []struct {
 	correctData     interface{}
 }{
 	{"c.T()", Shape{4, 1}, nil, []float64{0, 1, 2, 3},
-		Shape{1, 4}, []int{1}, []int{1}, []float64{0, 1, 2, 3}},
+		Shape{1, 4}, []int{1, 1}, []int{4, 1}, []float64{0, 1, 2, 3}},
 
 	{"r.T()", Shape{1, 4}, nil, []float32{0, 1, 2, 3},
-		Shape{4, 1}, []int{1}, []int{1}, []float32{0, 1, 2, 3}},
+		Shape{4, 1}, []int{4, 1}, []int{1, 1}, []float32{0, 1, 2, 3}},
 
 	{"v.T()", Shape{4}, nil, []int{0, 1, 2, 3},
 		Shape{4}, []int{1}, []int{1}, []int{0, 1, 2, 3}},
@@ -216,10 +216,10 @@ func TestDense_Transpose(t *testing.T) {
 		}
 
 		assert.True(tts.correctShape.Eq(T.Shape()), "Transpose %v Expected shape: %v. Got %v", tts.name, tts.correctShape, T.Shape())
-		assert.Equal(tts.correctStrides, T.Strides())
+		assert.Equal(tts.correctStrides, T.Strides(), "Transpose %v. Expected stride: %v. Got %v", tts.name, tts.correctStrides, T.Strides())
 		T.Transpose()
 		assert.True(tts.correctShape.Eq(T.Shape()), "Transpose %v Expected shape: %v. Got %v", tts.name, tts.correctShape, T.Shape())
-		assert.Equal(tts.correctStrides2, T.Strides(), "Transpose %v - Wrong strides", tts.name)
+		assert.Equal(tts.correctStrides2, T.Strides(), "Transpose2 %v - Expected stride %v. Got %v", tts.name, tts.correctStrides2, T.Strides())
 		assert.Equal(tts.correctData, T.Data(), "Transpose %v", tts.name)
 	}
 

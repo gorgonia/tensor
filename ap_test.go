@@ -77,7 +77,7 @@ func TestAccessPatternBasics(t *testing.T) {
 
 	ap.SetShape(1, 2)
 	assert.Equal(Shape{1, 2}, ap.Shape())
-	assert.Equal([]int{1}, ap.Strides())
+	assert.Equal([]int{2, 1}, ap.Strides())
 	assert.Equal(2, ap.Dims())
 	assert.Equal(2, ap.Size())
 
@@ -94,11 +94,11 @@ func TestAccessPatternBasics(t *testing.T) {
 	ap.unlock()
 	ap.SetShape(1, 2)
 	assert.Equal(Shape{1, 2}, ap.Shape())
-	assert.Equal([]int{1}, ap.Strides())
+	assert.Equal([]int{2, 1}, ap.Strides())
 	assert.Equal(2, ap.Dims())
 	assert.Equal(2, ap.Size())
 
-	if ap.String() != "Shape: (1, 2), Stride: [1], Lock: false" {
+	if ap.String() != "Shape: (1, 2), Stride: [2 1], Lock: false" {
 		t.Errorf("AP formatting error. Got %q", ap.String())
 	}
 
@@ -212,10 +212,10 @@ var sliceTests = []struct {
 	{"A[:, 1:3]", Shape{4, 5}, []Slice{nil, sli(1, 3)}, 1, 18, Shape{4, 2}, []int{5, 1}, false},
 
 	// tensor
-	{"tensor[0, :, :]", Shape{1,2,2}, []Slice{rs{0, 1, 1},nil,nil}, 0, 4, Shape{2,2}, []int{2,1},true},
-	{"tensor[:, 0, :]", Shape{1,2,2}, []Slice{nil, rs{0, 1, 1},nil}, 0,2,Shape{1,2}, []int{4,1},false},
-	{"tensor[0, :, :, :]", Shape{1,1,2,2}, []Slice{rs{0, 1, 1},nil,nil,nil}, 0, 4, Shape{1,2,2}, []int{4,2,1},true},
-	{"tensor[0,]", Shape{1,1,2,2}, []Slice{rs{0, 1, 1}}, 0, 4, Shape{1,2,2}, []int{4,2,1},true},
+	{"tensor[0, :, :]", Shape{1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil}, 0, 4, Shape{2, 2}, []int{2, 1}, true},
+	{"tensor[:, 0, :]", Shape{1, 2, 2}, []Slice{nil, rs{0, 1, 1}, nil}, 0, 2, Shape{1, 2}, []int{4, 1}, false},
+	{"tensor[0, :, :, :]", Shape{1, 1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil, nil}, 0, 4, Shape{1, 2, 2}, []int{4, 2, 1}, true},
+	{"tensor[0,]", Shape{1, 1, 2, 2}, []Slice{rs{0, 1, 1}}, 0, 4, Shape{1, 2, 2}, []int{4, 2, 1}, true},
 }
 
 func TestAccessPatternS(t *testing.T) {

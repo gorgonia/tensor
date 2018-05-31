@@ -2,10 +2,8 @@ package tensor
 
 import (
 	// "log"
-	"log"
-	"runtime"
 
-	"github.com/kr/pretty"
+	"runtime"
 )
 
 func requiresOrderedIterator(e Engine, t Tensor) bool {
@@ -143,16 +141,10 @@ type FlatIterator struct {
 func newFlatIterator(ap *AP) *FlatIterator {
 	var strides0 int
 
-	if ap.IsVector() {
+	if len(ap.strides) == 1 {
 		strides0 = ap.strides[0]
 	}
 	// else if ap.o.isColMajor() {
-	// 	defer func() {
-	// 		if r := recover(); r != nil {
-	// 			log.Printf("STRIDES %v", ap)
-	// 			panic(r)
-	// 		}
-	// 	}()
 	// 	strides0 = ap.strides[len(ap.strides)-1]
 	// }
 
@@ -317,7 +309,6 @@ func (it *FlatIterator) singlePrevious() (int, error) {
 	if tracked < 0 {
 		it.done = true
 	}
-
 	return it.lastIndex, nil
 }
 
@@ -409,6 +400,7 @@ func (it *FlatIterator) ndPrevious() (int, error) {
 	return it.lastIndex, nil
 }
 
+// TODO v0.9.0
 func (it *FlatIterator) colMajorNDPrevious() (int, error) {
 	return 0, nil
 }
@@ -483,8 +475,8 @@ func (it *FlatIterator) Reset() {
 		case it.isVector:
 			it.nextIndex = (it.shape[0] - 1) * it.strides[0]
 		// case it.IsRowVec():
-		// 	it.nextIndex = (it.shape[1] - 1) * it.strides[0]
-		// case it.IsColVec(), it.IsVector():
+		// 	it.nextIndex = (it.shape[1] - 1) * it.strides[1]
+		// case it.IsColVec():
 		// 	it.nextIndex = (it.shape[0] - 1) * it.strides[0]
 		default:
 			it.nextIndex = 0
@@ -558,15 +550,7 @@ func (it *FlatMaskedIterator) NextValid() (int, int, error) {
 		mult = -1
 	}
 
-	var i int
-	var err error
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("i %d |%d |%# v ", i, len(it.mask), pretty.Formatter(it))
-			panic(r)
-		}
-	}()
-	for i, err = it.Next(); err == nil; i, err = it.Next() {
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		count++
 		if !(it.mask[i]) {
 			return i, mult * count, err

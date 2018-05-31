@@ -20,8 +20,8 @@ var flatIterTests1 = []struct {
 }{
 	{ScalarShape(), []int{}, []int{0}},                  // scalar
 	{Shape{5}, []int{1}, []int{0, 1, 2, 3, 4}},          // vector
-	{Shape{5, 1}, []int{1}, []int{0, 1, 2, 3, 4}},       // colvec
-	{Shape{1, 5}, []int{1}, []int{0, 1, 2, 3, 4}},       // rowvec
+	{Shape{5, 1}, []int{1, 1}, []int{0, 1, 2, 3, 4}},    // colvec
+	{Shape{1, 5}, []int{5, 1}, []int{0, 1, 2, 3, 4}},    // rowvec
 	{Shape{2, 3}, []int{3, 1}, []int{0, 1, 2, 3, 4, 5}}, // basic mat
 	{Shape{3, 2}, []int{1, 3}, []int{0, 3, 1, 4, 2, 5}}, // basic mat, transposed
 	{Shape{2}, []int{2}, []int{0, 2}},                   // basic 2x2 mat, sliced: Mat[:, 1]
@@ -33,6 +33,11 @@ var flatIterTests1 = []struct {
 	{Shape{4, 2, 3}, []int{1, 12, 4}, []int{0, 4, 8, 12, 16, 20, 1, 5, 9, 13, 17, 21, 2, 6, 10, 14, 18, 22, 3, 7, 11, 15, 19, 23}}, // basic 3-Tensor (under (2, 0, 1) transpose)
 	{Shape{3, 2, 4}, []int{4, 12, 1}, []int{0, 1, 2, 3, 12, 13, 14, 15, 4, 5, 6, 7, 16, 17, 18, 19, 8, 9, 10, 11, 20, 21, 22, 23}}, // basic 3-Tensor (under (1, 0, 2) transpose)
 	{Shape{4, 3, 2}, []int{1, 4, 12}, []int{0, 12, 4, 16, 8, 20, 1, 13, 5, 17, 9, 21, 2, 14, 6, 18, 10, 22, 3, 15, 7, 19, 11, 23}}, // basic 3-Tensor (under (2, 1, 0) transpose)
+
+	// ARTIFICIAL CASES - TODO
+	// These cases should be impossible to reach in normal operation
+	// You would have to specially construct these
+	// {Shape{1, 5}, []int{1}, []int{0, 1, 2, 3, 4}},       // rowvec - NEARLY IMPOSSIBLE CASE- TODO
 }
 
 var flatIterSlices = []struct {
