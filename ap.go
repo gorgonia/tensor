@@ -346,6 +346,7 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 	}
 
 	retVal = MakeAP(shape, strides)
+	retVal.o = ap.o
 	// if ap.IsVector() {
 	// 	retVal.strides = retVal.strides[:1]
 	// }

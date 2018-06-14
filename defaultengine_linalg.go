@@ -404,10 +404,20 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 	n := ad.oshape()[1]
 
 	tA := blas.NoTrans
-	if !ad.oldAP().IsZero() {
+	do := a.DataOrder()
+	z := ad.oldAP().IsZero()
+	switch {
+	case do.isRowMajor() && z:
+	case do.isRowMajor() && !z:
 		tA = blas.Trans
+	case do.isColMajor() && z:
+		tA = blas.Trans
+		m, n = n, m
+	case do.isColMajor() && !z:
+		m, n = n, m
 	}
-	lda := ad.ostrides()[0]
+	lda := n
+
 	incX, incY := 1, 1 // step size
 
 	switch A := ad.Data().(type) {

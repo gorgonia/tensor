@@ -10,6 +10,7 @@ import (
 type linalgTest struct {
 	a, b           interface{}
 	shapeA, shapeB Shape
+	transA, transB bool
 
 	reuse, incr    interface{}
 	shapeR, shapeI Shape
@@ -118,89 +119,94 @@ func TestDense_Inner(t *testing.T) {
 
 var matVecMulTests = []linalgTest{
 	// Float64s
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, false, false},
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3, 1},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3, 1}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, false, false},
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{1, 3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{1, 3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, false, false},
 
+	// float64s with transposed matrix
+	{Range(Float64, 0, 6), Range(Float64, 0, 2), Shape{2, 3}, Shape{2}, true, false,
+		Range(Float64, 52, 55), Range(Float64, 100, 103), Shape{3}, Shape{3},
+		[]float64{3, 4, 5}, []float64{103, 105, 107}, []float64{106, 109, 112}, Shape{3}, false, false, false},
+
 	// Float32s
-	{Range(Float32, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float32, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float32, 52, 54), Range(Float32, 100, 102), Shape{2}, Shape{2},
 		[]float32{5, 14}, []float32{105, 115}, []float32{110, 129}, Shape{2}, false, false, false},
-	{Range(Float32, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3, 1},
+	{Range(Float32, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3, 1}, false, false,
 		Range(Float32, 52, 54), Range(Float32, 100, 102), Shape{2}, Shape{2},
 		[]float32{5, 14}, []float32{105, 115}, []float32{110, 129}, Shape{2}, false, false, false},
-	{Range(Float32, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{1, 3},
+	{Range(Float32, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{1, 3}, false, false,
 		Range(Float32, 52, 54), Range(Float32, 100, 102), Shape{2}, Shape{2},
 		[]float32{5, 14}, []float32{105, 115}, []float32{110, 129}, Shape{2}, false, false, false},
 
 	// stupids : unpossible shapes (wrong A)
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{6}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{6}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	//stupids: bad A shape
-	{Range(Float64, 0, 8), Range(Float64, 0, 3), Shape{4, 2}, Shape{3},
+	{Range(Float64, 0, 8), Range(Float64, 0, 3), Shape{4, 2}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	//stupids: bad B shape
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	//stupids: bad reuse
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 55), Range(Float64, 100, 102), Shape{3}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, false, true},
 
 	//stupids: bad incr shape
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 105), Shape{2}, Shape{5},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, true, false},
 
 	// stupids: type mismatch A and B
-	{Range(Float64, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 103), Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	// stupids: type mismatch A and B
-	{Range(Float32, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float32, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 103), Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	// stupids: type mismatch A and B
-	{Range(Float64, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float32, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 103), Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	// stupids: type mismatch A and B
-	{Range(Float32, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float32, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 103), Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	// stupids: type mismatch A and B (non-Float)
-	{Range(Float64, 0, 6), Range(Int, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Int, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float64, 100, 103), Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, true, false, false},
 
 	// stupids: type mismatch, reuse
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float32, 52, 54), Range(Float64, 100, 102), Shape{2}, Shape{2},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, false, true},
 
 	// stupids: type mismatch, incr
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), Range(Float32, 100, 103), Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, true, false},
 
 	// stupids: type mismatch, incr not a Number
-	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3},
+	{Range(Float64, 0, 6), Range(Float64, 0, 3), Shape{2, 3}, Shape{3}, false, false,
 		Range(Float64, 52, 54), []bool{true, true, true}, Shape{2}, Shape{3},
 		[]float64{5, 14}, []float64{105, 115}, []float64{110, 129}, Shape{2}, false, true, false},
 }
@@ -211,6 +217,12 @@ func TestDense_MatVecMul(t *testing.T) {
 		a := New(WithBacking(mvmt.a), WithShape(mvmt.shapeA...))
 		b := New(WithBacking(mvmt.b), WithShape(mvmt.shapeB...))
 
+		if mvmt.transA {
+			if err := a.T(); err != nil {
+				t.Error(err)
+				continue
+			}
+		}
 		T, err := a.MatVecMul(b)
 		if checkErr(t, mvmt.err, err, "Safe", i) {
 			continue
@@ -251,89 +263,89 @@ func TestDense_MatVecMul(t *testing.T) {
 
 var matMulTests = []linalgTest{
 	// Float64s
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, false, false, false},
 
 	// Float32s
-	{Range(Float32, 0, 6), Range(Float32, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float32, 0, 6), Range(Float32, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float32, 52, 56), Range(Float32, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float32{10, 13, 28, 40}, []float32{110, 114, 130, 143}, []float32{120, 127, 158, 183}, Shape{2, 2}, false, false, false},
 
 	// Edge cases - Row Vecs (Float64)
-	{Range(Float64, 0, 2), Range(Float64, 0, 3), Shape{2, 1}, Shape{1, 3},
+	{Range(Float64, 0, 2), Range(Float64, 0, 3), Shape{2, 1}, Shape{1, 3}, false, false,
 		Range(Float64, 10, 16), Range(Float64, 100, 106), Shape{2, 3}, Shape{2, 3},
 		[]float64{0, 0, 0, 0, 1, 2}, []float64{100, 101, 102, 103, 105, 107}, []float64{100, 101, 102, 103, 106, 109}, Shape{2, 3}, false, false, false},
-	{Range(Float64, 0, 2), Range(Float64, 0, 6), Shape{1, 2}, Shape{2, 3},
+	{Range(Float64, 0, 2), Range(Float64, 0, 6), Shape{1, 2}, Shape{2, 3}, false, false,
 		Range(Float64, 10, 13), Range(Float64, 100, 103), Shape{1, 3}, Shape{1, 3},
 		[]float64{3, 4, 5}, []float64{103, 105, 107}, []float64{106, 109, 112}, Shape{1, 3}, false, false, false},
-	{Range(Float64, 0, 2), Range(Float64, 0, 2), Shape{1, 2}, Shape{2, 1},
+	{Range(Float64, 0, 2), Range(Float64, 0, 2), Shape{1, 2}, Shape{2, 1}, false, false,
 		Range(Float64, 0, 1), Range(Float64, 100, 101), Shape{1, 1}, Shape{1, 1},
 		[]float64{1}, []float64{101}, []float64{102}, Shape{1, 1}, false, false, false},
 
 	// Edge cases - Row Vecs (Float32)
-	{Range(Float32, 0, 2), Range(Float32, 0, 3), Shape{2, 1}, Shape{1, 3},
+	{Range(Float32, 0, 2), Range(Float32, 0, 3), Shape{2, 1}, Shape{1, 3}, false, false,
 		Range(Float32, 10, 16), Range(Float32, 100, 106), Shape{2, 3}, Shape{2, 3},
 		[]float32{0, 0, 0, 0, 1, 2}, []float32{100, 101, 102, 103, 105, 107}, []float32{100, 101, 102, 103, 106, 109}, Shape{2, 3}, false, false, false},
-	{Range(Float32, 0, 2), Range(Float32, 0, 6), Shape{1, 2}, Shape{2, 3},
+	{Range(Float32, 0, 2), Range(Float32, 0, 6), Shape{1, 2}, Shape{2, 3}, false, false,
 		Range(Float32, 10, 13), Range(Float32, 100, 103), Shape{1, 3}, Shape{1, 3},
 		[]float32{3, 4, 5}, []float32{103, 105, 107}, []float32{106, 109, 112}, Shape{1, 3}, false, false, false},
-	{Range(Float32, 0, 2), Range(Float32, 0, 2), Shape{1, 2}, Shape{2, 1},
+	{Range(Float32, 0, 2), Range(Float32, 0, 2), Shape{1, 2}, Shape{2, 1}, false, false,
 		Range(Float32, 0, 1), Range(Float32, 100, 101), Shape{1, 1}, Shape{1, 1},
 		[]float32{1}, []float32{101}, []float32{102}, Shape{1, 1}, false, false, false},
 
 	// stupids - bad shape (not matrices):
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{6},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{6}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, true, false, false},
 
 	// stupids - bad shape (incompatible shapes):
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{6, 1},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{6, 1}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, true, false, false},
 
 	// stupids - bad shape (bad reuse shape):
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 57), Range(Float64, 100, 104), Shape{5}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, false, false, true},
 
 	// stupids - bad shape (bad incr shape):
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{4},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, false, true, false},
 
 	// stupids - type mismatch (a,b)
-	{Range(Float64, 0, 6), Range(Float32, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float32, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, true, false, false},
 
 	// stupids - type mismatch (a,b)
-	{Range(Float32, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float32, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, true, false, false},
 
 	// stupids type mismatch (b not float)
-	{Range(Float64, 0, 6), Range(Int, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Int, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, true, false, false},
 
 	// stupids type mismatch (a not float)
-	{Range(Int, 0, 6), Range(Int, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Int, 0, 6), Range(Int, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, true, false, false},
 
 	// stupids: type mismatch (incr)
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float32, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, false, true, false},
 
 	// stupids: type mismatch (reuse)
-	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float64, 0, 6), Range(Float64, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float32, 52, 56), Range(Float64, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float64{10, 13, 28, 40}, []float64{110, 114, 130, 143}, []float64{120, 127, 158, 183}, Shape{2, 2}, false, false, true},
 
 	// stupids: type mismatch (reuse)
-	{Range(Float32, 0, 6), Range(Float32, 0, 6), Shape{2, 3}, Shape{3, 2},
+	{Range(Float32, 0, 6), Range(Float32, 0, 6), Shape{2, 3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 56), Range(Float32, 100, 104), Shape{2, 2}, Shape{2, 2},
 		[]float32{10, 13, 28, 40}, []float32{110, 114, 130, 143}, []float32{120, 127, 158, 183}, Shape{2, 2}, false, false, true},
 }
@@ -382,55 +394,55 @@ func TestDense_MatMul(t *testing.T) {
 
 var outerTests = []linalgTest{
 	// Float64s
-	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3},
+	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		false, false, false},
 
 	// Float32s
-	{Range(Float32, 0, 3), Range(Float32, 0, 3), Shape{3}, Shape{3},
+	{Range(Float32, 0, 3), Range(Float32, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float32, 52, 61), Range(Float32, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float32{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float32{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float32{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		false, false, false},
 
 	// stupids - a or b not vector
-	{Range(Float64, 0, 3), Range(Float64, 0, 6), Shape{3}, Shape{3, 2},
+	{Range(Float64, 0, 3), Range(Float64, 0, 6), Shape{3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		true, false, false},
 
 	//	stupids - bad incr shape
-	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3},
+	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 106), Shape{3, 3}, Shape{3, 2},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		false, true, false},
 
 	// stupids - bad reuse shape
-	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3},
+	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 58), Range(Float64, 100, 109), Shape{3, 2}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		false, false, true},
 
 	// stupids - b not Float
-	{Range(Float64, 0, 3), Range(Int, 0, 3), Shape{3}, Shape{3},
+	{Range(Float64, 0, 3), Range(Int, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		true, false, false},
 
 	// stupids - a not Float
-	{Range(Int, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3},
+	{Range(Int, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		true, false, false},
 
 	// stupids - a-b type mismatch
-	{Range(Float64, 0, 3), Range(Float32, 0, 3), Shape{3}, Shape{3},
+	{Range(Float64, 0, 3), Range(Float32, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		true, false, false},
 
 	// stupids a-b type mismatch
-	{Range(Float32, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3},
+	{Range(Float32, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		true, false, false},
