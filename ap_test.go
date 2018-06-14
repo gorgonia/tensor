@@ -225,7 +225,7 @@ func TestAccessPatternS(t *testing.T) {
 	var err error
 
 	for _, sts := range sliceTests {
-		ap = MakeAP(sts.shape, sts.shape.CalcStrides())
+		ap = MakeAP(sts.shape, sts.shape.CalcStrides(), 0, 0)
 		if apS, ndStart, ndEnd, err = ap.S(sts.shape.TotalSize(), sts.slices...); err != nil {
 			t.Errorf("%v errored: %v", sts.name, err)
 			continue

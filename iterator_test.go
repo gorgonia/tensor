@@ -8,7 +8,7 @@ import (
 
 // newAP is  a helper function now
 func newAP(shape Shape, strides []int) *AP {
-	ap := MakeAP(shape, strides)
+	ap := MakeAP(shape, strides, 0, 0)
 	return &ap
 }
 

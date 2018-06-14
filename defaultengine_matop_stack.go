@@ -34,9 +34,7 @@ func (e StdEng) StackDense(t DenseTensor, axis int, others ...DenseTensor) (retV
 		newStrides = newShape.CalcStrides()
 
 	}
-	ap := MakeAP(newShape, newStrides)
-	ap.o = info.o
-	ap.Δ = info.Δ
+	ap := MakeAP(newShape, newStrides, info.o, info.Δ)
 
 	allNoMat := !t.RequiresIterator()
 	for _, ot := range others {

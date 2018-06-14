@@ -34,10 +34,12 @@ func makeAP(size int) AP {
 }
 
 // MakeAP creates an AP, given the shape and strides.
-func MakeAP(shape Shape, strides []int) AP {
+func MakeAP(shape Shape, strides []int, o DataOrder, Δ Triangle) AP {
 	return AP{
 		shape:   shape,
 		strides: strides,
+		o:       o,
+		Δ:       Δ,
 		fin:     true,
 	}
 }
@@ -284,18 +286,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 				offset++
 			}
 		}
-		// log.Printf("AP %v Strides %v", ap, newStrides)
-
-		// //fix up strides
-		// if newShape.IsColVec() {
-		// 	stride0 := newStrides[0]
-		// 	ReturnInts(newStrides)
-		// 	newStrides = BorrowInts(1)
-		// 	newStrides[0] = stride0
-		// }
-
-		newAP = MakeAP(newShape, newStrides)
-		newAP.o = order
+		newAP = MakeAP(newShape, newStrides, order, ap.Δ)
 	}
 	return
 }
@@ -345,11 +336,7 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 		}
 	}
 
-	retVal = MakeAP(shape, strides)
-	retVal.o = ap.o
-	// if ap.IsVector() {
-	// 	retVal.strides = retVal.strides[:1]
-	// }
+	retVal = MakeAP(shape, strides, ap.o, ap.Δ)
 	retVal.fin = true
 	return
 }
