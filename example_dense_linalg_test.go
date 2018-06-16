@@ -18,20 +18,6 @@ func ExampleDense_MatMul() {
 
 	fmt.Printf("T2:\n%v", T2)
 
-	// Slice T0 to only take a (2, 3) on the upper quadrant
-	// T3 := T0[0:3, 0:2]
-	T3, err := T0.Slice(makeRS(0, 3), makeRS(0, 2))
-	handleErr(err)
-	fmt.Printf("T3:\n%v", T3)
-
-	T4, err := T1.Slice(makeRS(13, 15), makeRS(8, 10))
-	handleErr(err)
-	fmt.Printf("T4:\n%v", T4)
-
-	T5, err := T3.(*Dense).MatMul(T4)
-	handleErr(err)
-	fmt.Printf("T3xT4:\n%v", T5)
-
 	// Output:
 	// T2:
 	// ⎡  5600    5495    5390    5285  ...   4970    4865    4760    4655⎤
@@ -45,17 +31,7 @@ func ExampleDense_MatMul() {
 	// ⎢131600  129920  128240  126560  ... 121520  119840  118160  116480⎥
 	// ⎢149600  147695  145790  143885  ... 138170  136265  134360  132455⎥
 	// ⎣167600  165470  163340  161210  ... 154820  152690  150560  148430⎦
-	// T3:
-	// ⎡ 0   1⎤
-	// ⎢15  16⎥
-	// ⎣30  31⎦
-	// T4:
-	// ⎡12  11⎤
-	// ⎣ 2   1⎦
-	// T3xT4:
-	// ⎡  2    1⎤
-	// ⎢212  181⎥
-	// ⎣422  361⎦
+
 }
 
 func ExampleDense_MatVecMul() {
@@ -117,4 +93,59 @@ func ExampleDense_MatVecMul_rowMajorSliced() {
 	// T4:
 	// [261  441]
 
+}
+
+func ExampleDense_MatMul_sliced() {
+	//ASPIRATIONAL TODO: incX and incY of different sizes
+	handleErr := func(err error) {
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	T0 := New(WithShape(10, 15), WithBacking(Range(Float64, 0, 150)))
+	T1 := New(WithShape(15, 10), WithBacking(Range(Float64, 150, 0)))
+	T2, err := MatMul(T0, T1)
+	handleErr(err)
+
+	fmt.Printf("T2:\n%v", T2)
+
+	// Slice T0 to only take a (2, 3) on the upper quadrant
+	// T3 := T0[0:3, 0:2]
+	T3, err := T0.Slice(makeRS(0, 3), makeRS(0, 2))
+	handleErr(err)
+	fmt.Printf("T3:\n%v", T3)
+
+	T4, err := T1.Slice(makeRS(13, 15), makeRS(8, 10))
+	handleErr(err)
+	fmt.Printf("T4:\n%v", T4)
+
+	T5, err := T3.(*Dense).MatMul(T4)
+	handleErr(err)
+	fmt.Printf("T3xT4:\n%v", T5)
+
+	// Outputz:
+	// T2:
+	// ⎡  5600    5495    5390    5285  ...   4970    4865    4760    4655⎤
+	// ⎢ 23600   23270   22940   22610  ...  21620   21290   20960   20630⎥
+	// ⎢ 41600   41045   40490   39935  ...  38270   37715   37160   36605⎥
+	// ⎢ 59600   58820   58040   57260  ...  54920   54140   53360   52580⎥
+	// .
+	// .
+	// .
+	// ⎢113600  112145  110690  109235  ... 104870  103415  101960  100505⎥
+	// ⎢131600  129920  128240  126560  ... 121520  119840  118160  116480⎥
+	// ⎢149600  147695  145790  143885  ... 138170  136265  134360  132455⎥
+	// ⎣167600  165470  163340  161210  ... 154820  152690  150560  148430⎦
+	// T3:
+	// ⎡ 0   1⎤
+	// ⎢15  16⎥
+	// ⎣30  31⎦
+	// T4:
+	// ⎡12  11⎤
+	// ⎣ 2   1⎦
+	// T3xT4:
+	// ⎡  2    1⎤
+	// ⎢212  181⎥
+	// ⎣422  361⎦
 }

@@ -89,6 +89,9 @@ func (t *Dense) MatVecMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err err
 
 	if retVal == nil {
 		retVal = recycledDense(t.t, expectedShape)
+		if t.o.isColMajor() {
+			AsFortran(nil)(retVal)
+		}
 	}
 
 	e := t.e
@@ -135,6 +138,9 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 
 	if retVal == nil {
 		retVal = recycledDense(t.t, expectedShape)
+		if t.o.isColMajor() {
+			AsFortran(nil)(retVal)
+		}
 	}
 
 	e := t.e

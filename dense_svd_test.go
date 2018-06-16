@@ -82,7 +82,6 @@ func testSVD(T, T2, s, u, v *Dense, t string, i int) (err error) {
 	}
 
 	shape := T2.Shape()
-	fmt.Println(shape)
 	if t == "thin" {
 		shape = Shape{MinInt(shape[0], shape[1]), MinInt(shape[0], shape[1])}
 	}

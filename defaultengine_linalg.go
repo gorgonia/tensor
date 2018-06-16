@@ -498,62 +498,80 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		ldc = prealloc.Shape()[1]
 	}
 
-	lda = ad.ostrides()[0]
-	ldb = bd.ostrides()[0]
-	ldc = pd.ostrides()[0]
+	// lda = ad.ostrides()[0]
+	// ldb = bd.ostrides()[0]
+	// ldc = pd.ostrides()[0]
 
 	// check for trans
 	tA, tB := blas.NoTrans, blas.NoTrans
-	if !bd.oldAP().IsZero() {
-		tB = blas.Trans
-	}
 	if !ad.oldAP().IsZero() {
 		tA = blas.Trans
+		if ado.isRowMajor() {
+			lda = m
+		} else {
+			lda = k
+		}
+	}
+	if !bd.oldAP().IsZero() {
+		tB = blas.Trans
+		if bdo.isRowMajor() {
+			ldb = bd.Shape()[0]
+		} else {
+			ldb = bd.Shape()[1]
+		}
 	}
 
-	// fix LDA
-	switch {
-	case ad.IsColVec() && tA == blas.NoTrans:
-		lda = ad.Shape()[1]
-	case ad.IsColVec() && tA == blas.Trans:
-		lda = ad.Shape()[0]
-	case ad.IsRowVec() && tA == blas.NoTrans:
-		lda = ad.Shape()[1]
-	case ad.IsRowVec() && tA == blas.Trans:
-		lda = ad.Shape()[0]
-	}
+	// // fix LDA
+	// switch {
+	// case ad.IsColVec() && tA == blas.NoTrans:
+	// 	lda = ad.Shape()[1]
+	// case ad.IsColVec() && tA == blas.Trans:
+	// 	lda = ad.Shape()[0]
+	// case ad.IsRowVec() && tA == blas.NoTrans:
+	// 	lda = ad.Shape()[1]
+	// case ad.IsRowVec() && tA == blas.Trans:
+	// 	lda = ad.Shape()[0]
+	// }
 
-	// fix LDB
-	switch {
-	case bd.IsColVec() && tB == blas.NoTrans:
-		ldb = bd.Shape()[1]
-	case bd.IsColVec() && tB == blas.Trans:
-		ldb = bd.Shape()[0]
-	case bd.IsRowVec() && tB == blas.NoTrans:
-		ldb = bd.Shape()[1]
-	case bd.IsRowVec() && tB == blas.Trans:
-		ldb = bd.Shape()[0]
-	}
+	// // fix LDB
+	// switch {
+	// case bd.IsColVec() && tB == blas.NoTrans:
+	// 	ldb = bd.Shape()[1]
+	// case bd.IsColVec() && tB == blas.Trans:
+	// 	ldb = bd.Shape()[0]
+	// case bd.IsRowVec() && tB == blas.NoTrans:
+	// 	ldb = bd.Shape()[1]
+	// case bd.IsRowVec() && tB == blas.Trans:
+	// 	ldb = bd.Shape()[0]
+	// }
 
-	// fix LDC
-	switch {
-	case pd.IsColVec():
-		ldc = pd.Shape()[1]
-	case pd.IsRowVec():
-		ldc = pd.Shape()[1]
-	}
+	// // fix LDC
+	// switch {
+	// case pd.IsColVec():
+	// 	ldc = pd.Shape()[1]
+	// case pd.IsRowVec():
+	// 	ldc = pd.Shape()[1]
+	// }
 
 	switch A := ad.Data().(type) {
 	case []float64:
 		B := bd.Float64s()
 		C := pd.Float64s()
 		alpha, beta := float64(1), float64(0)
-		whichblas.Dgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+		if ado.isColMajor() && bdo.isColMajor() {
+			whichblas.Dgemm(tA, tB, n, m, k, alpha, B, ldb, A, lda, beta, C, ldc)
+		} else {
+			whichblas.Dgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+		}
 	case []float32:
 		B := bd.Float32s()
 		C := pd.Float32s()
 		alpha, beta := float32(1), float32(0)
-		whichblas.Sgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+		if ado.isColMajor() && bdo.isColMajor() {
+			whichblas.Sgemm(tA, tB, n, m, k, alpha, B, ldb, A, lda, beta, C, ldc)
+		} else {
+			whichblas.Sgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+		}
 	default:
 		return errors.Errorf(typeNYI, "matMul", ad.Data())
 	}
