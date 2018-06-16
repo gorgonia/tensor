@@ -406,19 +406,30 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 	tA := blas.NoTrans
 	do := a.DataOrder()
 	z := ad.oldAP().IsZero()
+
+	var lda int
 	switch {
 	case do.isRowMajor() && z:
+		lda = n
 	case do.isRowMajor() && !z:
 		tA = blas.Trans
+		lda = n
 	case do.isColMajor() && z:
 		tA = blas.Trans
+		lda = m
 		m, n = n, m
 	case do.isColMajor() && !z:
+		lda = m
 		m, n = n, m
 	}
-	lda := n
 
 	incX, incY := 1, 1 // step size
+
+	// ASPIRATIONAL TODO: different incX and incY
+	// log.Printf("a %v %v", ad.Strides(), ad.ostrides())
+	// log.Printf("b %v", b.Strides())
+	// incX := a.Strides()[0]
+	// incY = b.Strides()[0]
 
 	switch A := ad.Data().(type) {
 	case []float64:
@@ -449,6 +460,10 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		return errors.Wrapf(err, opFail, "StdEng.MatMul")
 	}
 
+	ado := a.DataOrder()
+	bdo := b.DataOrder()
+	cdo := prealloc.DataOrder()
+
 	// get result shapes. k is the shared dimension
 	// a is (m, k)
 	// b is (k, n)
@@ -459,9 +474,33 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	n = bd.Shape()[1]
 
 	// wrt the strides, we use the original strides, because that's what BLAS needs, instead of calling .Strides()
-	lda := ad.ostrides()[0]
-	ldb := bd.ostrides()[0]
-	ldc := pd.ostrides()[0]
+	// lda in colmajor = number of rows;
+	// lda in row major = number of cols
+	var lda, ldb, ldc int
+	switch {
+	case ado.isColMajor():
+		lda = m
+	case ado.isRowMajor():
+		lda = k
+	}
+
+	switch {
+	case bdo.isColMajor():
+		ldb = bd.Shape()[0]
+	case bdo.isRowMajor():
+		ldb = n
+	}
+
+	switch {
+	case cdo.isColMajor():
+		ldc = prealloc.Shape()[0]
+	case cdo.isRowMajor():
+		ldc = prealloc.Shape()[1]
+	}
+
+	lda = ad.ostrides()[0]
+	ldb = bd.ostrides()[0]
+	ldc = pd.ostrides()[0]
 
 	// check for trans
 	tA, tB := blas.NoTrans, blas.NoTrans
