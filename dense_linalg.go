@@ -144,7 +144,6 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 	}
 
 	e := t.e
-
 	if mm, ok := e.(MatMuler); ok {
 		if err = mm.MatMul(t, other, retVal); err != nil {
 			return
@@ -178,6 +177,9 @@ func (t *Dense) Outer(other Tensor, opts ...FuncOpt) (retVal *Dense, err error) 
 
 	if retVal == nil {
 		retVal = recycledDense(t.t, expectedShape)
+		if t.o.isColMajor() {
+			AsFortran(nil)(retVal)
+		}
 	}
 
 	e := t.e

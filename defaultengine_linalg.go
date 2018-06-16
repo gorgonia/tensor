@@ -588,12 +588,20 @@ func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
 
 	m := ad.Size()
 	n := bd.Size()
+	pdo := pd.DataOrder()
 
 	// the stride of a Vector is always going to be [1],
 	// incX := t.Strides()[0]
 	// incY := other.Strides()[0]
 	incX, incY := 1, 1
-	lda := pd.Strides()[0]
+	// lda := pd.Strides()[0]
+	var lda int
+	switch {
+	case pdo.isColMajor():
+		lda = pd.Shape()[0]
+	case pdo.isRowMajor():
+		lda = pd.Shape()[1]
+	}
 
 	switch x := ad.Data().(type) {
 	case []float64:

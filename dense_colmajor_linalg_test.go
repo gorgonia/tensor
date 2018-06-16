@@ -379,3 +379,105 @@ func TestColMajorDense_MatMul(t *testing.T) {
 		assert.Equal(mmt.correctIncrReuse, T.Data())
 	}
 }
+
+var colMajorOuterTests = []linalgTest{
+	// Float64s
+	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		false, false, false},
+
+	// Float32s
+	{Range(Float32, 0, 3), Range(Float32, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float32, 52, 61), Range(Float32, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float32{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float32{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float32{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		false, false, false},
+
+	// stupids - a or b not vector
+	{Range(Float64, 0, 3), Range(Float64, 0, 6), Shape{3}, Shape{3, 2}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		true, false, false},
+
+	//	stupids - bad incr shape
+	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 106), Shape{3, 3}, Shape{3, 2},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		false, true, false},
+
+	// stupids - bad reuse shape
+	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 58), Range(Float64, 100, 109), Shape{3, 2}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		false, false, true},
+
+	// stupids - b not Float
+	{Range(Float64, 0, 3), Range(Int, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		true, false, false},
+
+	// stupids - a not Float
+	{Range(Int, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		true, false, false},
+
+	// stupids - a-b type mismatch
+	{Range(Float64, 0, 3), Range(Float32, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		true, false, false},
+
+	// stupids a-b type mismatch
+	{Range(Float32, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,
+		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
+		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 103, 106, 101, 105, 109, 102, 107, 112}, []float64{100, 103, 106, 101, 106, 111, 102, 109, 116}, Shape{3, 3},
+		true, false, false},
+}
+
+func TestColMajor_Dense_Outer(t *testing.T) {
+	assert := assert.New(t)
+	for i, ot := range colMajorOuterTests {
+		a := New(WithShape(ot.shapeA...), AsFortran(ot.a))
+		b := New(WithShape(ot.shapeB...), AsFortran(ot.b))
+
+		T, err := a.Outer(b)
+		if checkErr(t, ot.err, err, "Safe", i) {
+			continue
+		}
+		assert.True(ot.correctShape.Eq(T.Shape()))
+		assert.True(T.DataOrder().isColMajor())
+		assert.Equal(ot.correct, T.Data())
+
+		// incr
+		incr := New(WithShape(ot.shapeI...), AsFortran(ot.incr))
+		T, err = a.Outer(b, WithIncr(incr))
+		if checkErr(t, ot.errIncr, err, "WithIncr", i) {
+			continue
+		}
+		assert.True(ot.correctShape.Eq(T.Shape()))
+		assert.True(T.DataOrder().isColMajor())
+		assert.Equal(ot.correctIncr, T.Data())
+
+		// reuse
+		reuse := New(WithShape(ot.shapeR...), AsFortran(ot.reuse))
+		T, err = a.Outer(b, WithReuse(reuse))
+		if checkErr(t, ot.errReuse, err, "WithReuse", i) {
+			continue
+		}
+		assert.True(ot.correctShape.Eq(T.Shape()))
+		assert.True(T.DataOrder().isColMajor())
+		assert.Equal(ot.correct, T.Data())
+
+		// reuse AND incr
+		T, err = a.Outer(b, WithIncr(incr), WithReuse(reuse))
+		if err != nil {
+			t.Errorf("Reuse and Incr error'd %+v", err)
+			continue
+		}
+		assert.True(ot.correctShape.Eq(T.Shape()))
+		assert.True(T.DataOrder().isColMajor())
+		assert.Equal(ot.correctIncrReuse, T.Data())
+	}
+}
