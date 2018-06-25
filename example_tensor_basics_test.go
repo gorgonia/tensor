@@ -134,3 +134,27 @@ func Example_asFortran() {
 	// ⎣3  4  5⎦
 	// Data: [0 3 1 4 2 5]
 }
+
+// The AsDenseDiag construction option creates a dense diagonal matrix from the input, either a slice or a tensor.
+// The resulting shape is automatically inferred from the input vector.
+//
+// This is like Numpy's `diag()` function, except not stupid. Numpy's `diag()` has been a cause of errors because it's somewhat isometric:
+//		>>> np.diag(np.diag(np.array([1,2,3])))
+//		array([1,2,3])
+func Example_asDenseDiag() {
+	T := New(WithShape(3), WithBacking([]int{1, 2, 3}))
+	T1 := New(AsDenseDiag(T))
+	fmt.Printf("T1:\n%v", T1)
+
+	T2 := New(AsDenseDiag([]float64{3.14, 6.28, 11111}))
+	fmt.Printf("T2:\n%v", T2)
+	// Output:
+	// T1:
+	//⎡1  0  0⎤
+	//⎢0  2  0⎥
+	//⎣0  0  3⎦
+	// T2:
+	// ⎡ 3.14      0      0⎤
+	// ⎢    0   6.28      0⎥
+	// ⎣    0      0  11111⎦
+}

@@ -219,3 +219,43 @@ func AsFortran(backing interface{}) ConsOpt {
 	}
 	return f
 }
+
+func AsDenseDiag(backing interface{}) ConsOpt {
+	f := func(t Tensor) {
+		switch tt := t.(type) {
+		case *Dense:
+			if bt, ok := backing.(Tensor); ok {
+				backing = bt.Data()
+			}
+			xT := reflect.TypeOf(backing)
+			if xT.Kind() != reflect.Slice {
+				panic("Expected a slice")
+			}
+			xV := reflect.ValueOf(backing)
+			l := xV.Len()
+			// elT := xT.Elem()
+
+			sli := reflect.MakeSlice(xT, l*l, l*l)
+
+			shape := Shape{l, l}
+			strides := shape.CalcStrides()
+			for i := 0; i < l; i++ {
+				idx, err := Ltoi(shape, strides, i, i)
+				if err != nil {
+					panic(err)
+				}
+
+				at := sli.Index(idx)
+				xi := xV.Index(i)
+				at.Set(xi)
+			}
+
+			tt.fromSliceOrArrayer(sli.Interface())
+			tt.setShape(l, l)
+
+		default:
+			panic("AsDenseDiag is not available as an option for CS")
+		}
+	}
+	return f
+}

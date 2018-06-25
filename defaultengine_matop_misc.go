@@ -2,6 +2,10 @@ package tensor
 
 import "github.com/pkg/errors"
 
+var (
+	_ Diager = StdEng{}
+)
+
 func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	switch tt := t.(type) {
 	case DenseTensor:
@@ -130,14 +134,19 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 	return retVal, nil
 }
 
-func (e StdEng) Diagonal(a DenseTensor) (retVal Tensor, err error) {
+func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
+	a, ok := t.(DenseTensor)
+	if !ok {
+		return nil, errors.Errorf("StdEng only works with DenseTensor for Diagonal()")
+	}
+
 	if a.Dims() != 2 {
 		err = errors.Errorf(dimMismatch, 2, a.Dims())
 		return
 	}
 
 	if err = typeclassCheck(a.Dtype(), numberTypes); err != nil {
-		return nil, errors.Wrap(err, "Trace")
+		return nil, errors.Wrap(err, "Diagonal")
 	}
 
 	rstride := a.Strides()[0]

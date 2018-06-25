@@ -86,6 +86,11 @@ type Repeater interface {
 	Repeat(t Tensor, axis int, repeats ...int) (Tensor, error)
 }
 
+// Diager is any engine that can return a tensor that only contains the diagonal values of the input
+type Diager interface {
+	Diag(a Tensor) (Tensor, error)
+}
+
 /* NUMBER INTERFACES
 All these are expected to be unsafe on the first tensor
 */

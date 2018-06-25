@@ -108,3 +108,10 @@ func Materialize(t Tensor) Tensor {
 		return t
 	}
 }
+
+func Diag(t Tensor) (retVal Tensor, err error) {
+	if d, ok := t.Engine().(Diager); ok {
+		return d.Diag(t)
+	}
+	return nil, errors.Errorf("Unable to perform diagonalization of tensor ")
+}
