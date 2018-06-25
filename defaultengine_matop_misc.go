@@ -129,3 +129,56 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 
 	return retVal, nil
 }
+
+func (e StdEng) Diagonal(a DenseTensor) (retVal Tensor, err error) {
+	if a.Dims() != 2 {
+		err = errors.Errorf(dimMismatch, 2, a.Dims())
+		return
+	}
+
+	if err = typeclassCheck(a.Dtype(), numberTypes); err != nil {
+		return nil, errors.Wrap(err, "Trace")
+	}
+
+	rstride := a.Strides()[0]
+	cstride := a.Strides()[1]
+
+	r := a.Shape()[0]
+	c := a.Shape()[1]
+
+	m := MinInt(r, c)
+	stride := rstride + cstride
+
+	b := a.Clone().(DenseTensor)
+	b.Zero()
+
+	switch a.rtype().Size() {
+	case 1:
+		bdata := b.hdr().Uint8s()
+		adata := a.hdr().Uint8s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	case 2:
+		bdata := b.hdr().Uint16s()
+		adata := a.hdr().Uint16s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	case 4:
+		bdata := b.hdr().Uint32s()
+		adata := a.hdr().Uint32s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	case 8:
+		bdata := b.hdr().Uint64s()
+		adata := a.hdr().Uint64s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	default:
+		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag")
+	}
+	return b, nil
+}
