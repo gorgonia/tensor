@@ -234,7 +234,7 @@ func TestAccessPatternS(t *testing.T) {
 		assert.Equal(sts.correctEnd, ndEnd, "Wrong end: %v. Want %d Got %d", sts.name, sts.correctEnd, ndEnd)
 		assert.True(sts.correctShape.Eq(apS.shape), "Wrong shape: %v. Want %v. Got %v", sts.name, sts.correctShape, apS.shape)
 		assert.Equal(sts.correctStride, apS.strides, "Wrong strides: %v. Want %v. Got %v", sts.name, sts.correctStride, apS.strides)
-		assert.Equal(sts.contiguous, apS.DataOrder().isContiguous(), "Wrong contiguity for %v Want %t.", sts.name, sts.contiguous)
+		assert.Equal(sts.contiguous, apS.DataOrder().IsContiguous(), "Wrong contiguity for %v Want %t.", sts.name, sts.contiguous)
 	}
 }
 

@@ -35,10 +35,10 @@ func TestMemoryFlag(t *testing.T) {
 
 func TestDataOrder(t *testing.T) {
 	var defaultFlag DataOrder
-	if defaultFlag.isColMajor() || defaultFlag.isNotContiguous() {
+	if defaultFlag.IsColMajor() || defaultFlag.IsNotContiguous() {
 		t.Error("Expected default flag to be row major and contiguous")
 	}
-	if !(defaultFlag.isRowMajor() && defaultFlag.isContiguous()) {
+	if !(defaultFlag.IsRowMajor() && defaultFlag.IsContiguous()) {
 		t.Error("Expected default flag to be row major and contiguous")
 	}
 	if defaultFlag.String() != "Contiguous, RowMajor" {
@@ -46,10 +46,10 @@ func TestDataOrder(t *testing.T) {
 	}
 
 	cm := ColMajor
-	if cm.isRowMajor() {
+	if cm.IsRowMajor() {
 		t.Error("colMajor cannot be rowMajor")
 	}
-	if cm.isNotContiguous() {
+	if cm.IsNotContiguous() {
 		t.Error("ColMajor by default is contiguous")
 	}
 	if cm.String() != "Contiguous, ColMajor" {
@@ -58,12 +58,12 @@ func TestDataOrder(t *testing.T) {
 
 	// check toggle
 	rm := cm.toggleColMajor()
-	if rm.isColMajor() {
+	if rm.IsColMajor() {
 		t.Errorf("toggled cm should be rm")
 	}
 
 	cm = rm.toggleColMajor()
-	if cm.isRowMajor() {
+	if cm.IsRowMajor() {
 		t.Errorf("toggled rm should be cm")
 	}
 }

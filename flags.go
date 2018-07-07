@@ -13,9 +13,12 @@ const (
 	// A data can either be Contiguous (0) or NonContiguous (2).
 	// The way DataOrder was designed causes the default to be Contiguous.
 	NonContiguous
+
+	// Transposed indicates that the data has been transposed
+	Transposed
 )
 
-var dataOrderNames = "NonContiguous, RowMajorNonContiguous, ColMajor"
+const dataOrderNames = "NonContiguous, RowMajorNonContiguous, ColMajor"
 
 // MakeDataOrder makes a data order. Typical examples:
 //		MakeDataOrder(DataOrder(0))            // Row Major, contiguous
@@ -32,26 +35,27 @@ func MakeDataOrder(fs ...DataOrder) (retVal DataOrder) {
 	return
 }
 
-func (f DataOrder) isColMajor() bool          { return (f & ColMajor) != 0 }
-func (f DataOrder) isRowMajor() bool          { return !f.isColMajor() }
-func (f DataOrder) isContiguous() bool        { return !f.isNotContiguous() }
-func (f DataOrder) isNotContiguous() bool     { return (f & NonContiguous) != 0 }
+func (f DataOrder) IsColMajor() bool          { return (f & ColMajor) != 0 }
+func (f DataOrder) IsRowMajor() bool          { return !f.IsColMajor() }
+func (f DataOrder) IsContiguous() bool        { return !f.IsNotContiguous() }
+func (f DataOrder) IsNotContiguous() bool     { return (f & NonContiguous) != 0 }
+func (f DataOrder) IsTransposed() bool        { return (f & Transposed) != 0 }
 func (f DataOrder) toggleColMajor() DataOrder { return f ^ (ColMajor) }
 func (f DataOrder) hasSameOrder(other DataOrder) bool {
-	return (f.isColMajor() && other.isColMajor()) || (f.isRowMajor() && other.isRowMajor())
+	return (f.IsColMajor() && other.IsColMajor()) || (f.IsRowMajor() && other.IsRowMajor())
 }
 
 func (f DataOrder) String() string {
 	var start, end int
-	if f.isRowMajor() {
+	if f.IsRowMajor() {
 		end = 23
-		if f.isContiguous() {
+		if f.IsContiguous() {
 			start = 3
 		}
 	} else {
 		end = 46
 		start = 23
-		if f.isContiguous() {
+		if f.IsContiguous() {
 			start = 26
 		}
 	}

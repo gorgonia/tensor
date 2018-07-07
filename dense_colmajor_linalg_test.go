@@ -212,7 +212,7 @@ func TestColMajor_Dense_MatVecMul(t *testing.T) {
 		}
 
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(mvmt.correct, T.Data())
 
 		// incr
@@ -223,7 +223,7 @@ func TestColMajor_Dense_MatVecMul(t *testing.T) {
 		}
 
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(mvmt.correctIncr, T.Data())
 
 		// reuse
@@ -234,7 +234,7 @@ func TestColMajor_Dense_MatVecMul(t *testing.T) {
 		}
 
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(mvmt.correct, T.Data())
 
 		// reuse AND incr
@@ -243,7 +243,7 @@ func TestColMajor_Dense_MatVecMul(t *testing.T) {
 			continue
 		}
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(mvmt.correctIncrReuse, T.Data())
 	}
 }
@@ -348,7 +348,7 @@ func TestColMajorDense_MatMul(t *testing.T) {
 			continue
 		}
 		assert.True(mmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(mmt.correct, T.Data(), "Test %d", i)
 
 		// incr
@@ -447,7 +447,7 @@ func TestColMajor_Dense_Outer(t *testing.T) {
 			continue
 		}
 		assert.True(ot.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(ot.correct, T.Data())
 
 		// incr
@@ -457,7 +457,7 @@ func TestColMajor_Dense_Outer(t *testing.T) {
 			continue
 		}
 		assert.True(ot.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(ot.correctIncr, T.Data())
 
 		// reuse
@@ -467,7 +467,7 @@ func TestColMajor_Dense_Outer(t *testing.T) {
 			continue
 		}
 		assert.True(ot.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(ot.correct, T.Data())
 
 		// reuse AND incr
@@ -477,7 +477,7 @@ func TestColMajor_Dense_Outer(t *testing.T) {
 			continue
 		}
 		assert.True(ot.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isColMajor())
+		assert.True(T.DataOrder().IsColMajor())
 		assert.Equal(ot.correctIncrReuse, T.Data())
 	}
 }

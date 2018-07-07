@@ -31,7 +31,7 @@ type coo struct {
 
 func (c *coo) Len() int { return c.data.L }
 func (c *coo) Less(i, j int) bool {
-	if c.o.isColMajor() {
+	if c.o.IsColMajor() {
 		return c.colMajorLess(i, j)
 	}
 	return c.rowMajorLess(i, j)
@@ -308,7 +308,7 @@ func (t *CS) Iterator() Iterator     { return NewFlatSparseIterator(t) }
 
 func (t *CS) at(coord ...int) (int, bool) {
 	var r, c int
-	if t.o.isColMajor() {
+	if t.o.IsColMajor() {
 		r = coord[1]
 		c = coord[0]
 	} else {
@@ -331,7 +331,7 @@ func (t *CS) Dense() *Dense {
 	}
 
 	d := recycledDense(t.t, t.Shape().Clone())
-	if t.o.isColMajor() {
+	if t.o.IsColMajor() {
 		for i := 0; i < len(t.indptr)-1; i++ {
 			for j := t.indptr[i]; j < t.indptr[i+1]; j++ {
 				d.SetAt(t.Get(j), t.indices[j], i)
@@ -362,14 +362,14 @@ func (t *CS) Indices() []int {
 }
 
 func (t *CS) AsCSR() {
-	if t.o.isRowMajor() {
+	if t.o.IsRowMajor() {
 		return
 	}
 	t.o.toggleColMajor()
 }
 
 func (t *CS) AsCSC() {
-	if t.o.isColMajor() {
+	if t.o.IsColMajor() {
 		return
 	}
 	t.o.toggleColMajor()

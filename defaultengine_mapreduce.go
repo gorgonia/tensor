@@ -102,18 +102,18 @@ func (e StdEng) Reduce(fn interface{}, a Tensor, axis int, defaultValue interfac
 
 	// actual call out to the internal engine
 	switch {
-	case (axis == 0 && at.DataOrder().isRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && at.DataOrder().isColMajor()):
+	case (axis == 0 && at.DataOrder().IsRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && at.DataOrder().IsColMajor()):
 		var size, split int
-		if at.DataOrder().isColMajor() {
+		if at.DataOrder().IsColMajor() {
 			return nil, errors.Errorf("NYI: colmajor")
 		}
 		size = a.Shape()[0]
 		split = a.DataSize() / size
 		storage.CopySliced(typ, dataReuse, 0, split, dataA, 0, split)
 		err = e.E.ReduceFirst(typ, dataA, dataReuse, split, size, fn)
-	case (axis == lastAxis && at.DataOrder().isRowMajor()) || (axis == 0 && at.DataOrder().isColMajor()):
+	case (axis == lastAxis && at.DataOrder().IsRowMajor()) || (axis == 0 && at.DataOrder().IsColMajor()):
 		var dimSize int
-		if at.DataOrder().isColMajor() {
+		if at.DataOrder().IsColMajor() {
 			return nil, errors.Errorf("NYI: colmajor")
 		}
 		dimSize = a.Shape()[axis]
@@ -147,18 +147,18 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 
 	// actual call out to the internal engine
 	switch {
-	case (axis == 0 && at.DataOrder().isRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && at.DataOrder().isColMajor()):
+	case (axis == 0 && at.DataOrder().IsRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && at.DataOrder().IsColMajor()):
 		var size, split int
-		if at.DataOrder().isColMajor() {
+		if at.DataOrder().IsColMajor() {
 			return nil, errors.Errorf("NYI: colmajor")
 		}
 		size = a.Shape()[0]
 		split = a.DataSize() / size
 		storage.CopySliced(typ, dataReuse, 0, split, dataA, 0, split)
 		err = e.E.ReduceFirst(typ, dataA, dataReuse, split, size, firstFn)
-	case (axis == lastAxis && at.DataOrder().isRowMajor()) || (axis == 0 && at.DataOrder().isColMajor()):
+	case (axis == lastAxis && at.DataOrder().IsRowMajor()) || (axis == 0 && at.DataOrder().IsColMajor()):
 		var dimSize int
-		if at.DataOrder().isColMajor() {
+		if at.DataOrder().IsColMajor() {
 			return nil, errors.Errorf("NYI: colmajor")
 		}
 		dimSize = a.Shape()[axis]

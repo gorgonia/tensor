@@ -409,16 +409,16 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 
 	var lda int
 	switch {
-	case do.isRowMajor() && z:
+	case do.IsRowMajor() && z:
 		lda = n
-	case do.isRowMajor() && !z:
+	case do.IsRowMajor() && !z:
 		tA = blas.Trans
 		lda = n
-	case do.isColMajor() && z:
+	case do.IsColMajor() && z:
 		tA = blas.Trans
 		lda = m
 		m, n = n, m
-	case do.isColMajor() && !z:
+	case do.IsColMajor() && !z:
 		lda = m
 		m, n = n, m
 	}
@@ -478,23 +478,23 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	// lda in row major = number of cols
 	var lda, ldb, ldc int
 	switch {
-	case ado.isColMajor():
+	case ado.IsColMajor():
 		lda = m
-	case ado.isRowMajor():
+	case ado.IsRowMajor():
 		lda = k
 	}
 
 	switch {
-	case bdo.isColMajor():
+	case bdo.IsColMajor():
 		ldb = bd.Shape()[0]
-	case bdo.isRowMajor():
+	case bdo.IsRowMajor():
 		ldb = n
 	}
 
 	switch {
-	case cdo.isColMajor():
+	case cdo.IsColMajor():
 		ldc = prealloc.Shape()[0]
-	case cdo.isRowMajor():
+	case cdo.IsRowMajor():
 		ldc = prealloc.Shape()[1]
 	}
 
@@ -506,7 +506,7 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	tA, tB := blas.NoTrans, blas.NoTrans
 	if !ad.oldAP().IsZero() {
 		tA = blas.Trans
-		if ado.isRowMajor() {
+		if ado.IsRowMajor() {
 			lda = m
 		} else {
 			lda = k
@@ -514,51 +514,19 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	}
 	if !bd.oldAP().IsZero() {
 		tB = blas.Trans
-		if bdo.isRowMajor() {
+		if bdo.IsRowMajor() {
 			ldb = bd.Shape()[0]
 		} else {
 			ldb = bd.Shape()[1]
 		}
 	}
 
-	// // fix LDA
-	// switch {
-	// case ad.IsColVec() && tA == blas.NoTrans:
-	// 	lda = ad.Shape()[1]
-	// case ad.IsColVec() && tA == blas.Trans:
-	// 	lda = ad.Shape()[0]
-	// case ad.IsRowVec() && tA == blas.NoTrans:
-	// 	lda = ad.Shape()[1]
-	// case ad.IsRowVec() && tA == blas.Trans:
-	// 	lda = ad.Shape()[0]
-	// }
-
-	// // fix LDB
-	// switch {
-	// case bd.IsColVec() && tB == blas.NoTrans:
-	// 	ldb = bd.Shape()[1]
-	// case bd.IsColVec() && tB == blas.Trans:
-	// 	ldb = bd.Shape()[0]
-	// case bd.IsRowVec() && tB == blas.NoTrans:
-	// 	ldb = bd.Shape()[1]
-	// case bd.IsRowVec() && tB == blas.Trans:
-	// 	ldb = bd.Shape()[0]
-	// }
-
-	// // fix LDC
-	// switch {
-	// case pd.IsColVec():
-	// 	ldc = pd.Shape()[1]
-	// case pd.IsRowVec():
-	// 	ldc = pd.Shape()[1]
-	// }
-
 	switch A := ad.Data().(type) {
 	case []float64:
 		B := bd.Float64s()
 		C := pd.Float64s()
 		alpha, beta := float64(1), float64(0)
-		if ado.isColMajor() && bdo.isColMajor() {
+		if ado.IsColMajor() && bdo.IsColMajor() {
 			whichblas.Dgemm(tA, tB, n, m, k, alpha, B, ldb, A, lda, beta, C, ldc)
 		} else {
 			whichblas.Dgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
@@ -567,7 +535,7 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		B := bd.Float32s()
 		C := pd.Float32s()
 		alpha, beta := float32(1), float32(0)
-		if ado.isColMajor() && bdo.isColMajor() {
+		if ado.IsColMajor() && bdo.IsColMajor() {
 			whichblas.Sgemm(tA, tB, n, m, k, alpha, B, ldb, A, lda, beta, C, ldc)
 		} else {
 			whichblas.Sgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
@@ -597,9 +565,9 @@ func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
 	// lda := pd.Strides()[0]
 	var lda int
 	switch {
-	case pdo.isColMajor():
+	case pdo.IsColMajor():
 		lda = pd.Shape()[0]
-	case pdo.isRowMajor():
+	case pdo.IsRowMajor():
 		lda = pd.Shape()[1]
 	}
 
@@ -645,13 +613,13 @@ func (e StdEng) checkTwoFloatTensors(a, b Tensor) (ad, bd DenseTensor, err error
 
 func (e StdEng) checkThreeFloatTensors(a, b, ret Tensor) (ad, bd, retVal DenseTensor, err error) {
 	if err = e.checkAccessible(a); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors: a is not accessible")
+		return nil, nil, nil, errors.Wrap(err, "checkThreeTensors: a is not accessible")
 	}
 	if err = e.checkAccessible(b); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors: a is not accessible")
+		return nil, nil, nil, errors.Wrap(err, "checkThreeTensors: a is not accessible")
 	}
 	if err = e.checkAccessible(ret); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors: ret is not accessible")
+		return nil, nil, nil, errors.Wrap(err, "checkThreeTensors: ret is not accessible")
 	}
 
 	if a.Dtype() != b.Dtype() || b.Dtype() != ret.Dtype() {

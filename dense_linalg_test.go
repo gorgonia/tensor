@@ -229,7 +229,7 @@ func TestDense_MatVecMul(t *testing.T) {
 		}
 
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isRowMajor())
+		assert.True(T.DataOrder().IsRowMajor())
 		assert.Equal(mvmt.correct, T.Data())
 
 		// incr
@@ -240,7 +240,7 @@ func TestDense_MatVecMul(t *testing.T) {
 		}
 
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isRowMajor())
+		assert.True(T.DataOrder().IsRowMajor())
 		assert.Equal(mvmt.correctIncr, T.Data())
 
 		// reuse
@@ -251,7 +251,7 @@ func TestDense_MatVecMul(t *testing.T) {
 		}
 
 		assert.True(mvmt.correctShape.Eq(T.Shape()))
-		assert.True(T.DataOrder().isRowMajor())
+		assert.True(T.DataOrder().IsRowMajor())
 		assert.Equal(mvmt.correct, T.Data())
 
 		// reuse AND incr

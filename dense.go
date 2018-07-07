@@ -123,7 +123,7 @@ func (t *Dense) Engine() Engine { return t.e }
 
 // Reshape reshapes a *Dense. If the tensors need to be materialized (either it's a view or transpose), it will be materialized before the reshape happens
 func (t *Dense) Reshape(dims ...int) error {
-	if t.viewOf != 0 && t.o.isNotContiguous() {
+	if t.viewOf != 0 && t.o.IsNotContiguous() {
 		return errors.Errorf(methodNYI, "Reshape", "non-contiguous views")
 	}
 
@@ -589,7 +589,7 @@ func (t *Dense) RequiresIterator() bool {
 		return false
 	}
 	// non continuous slice, transpose, or masked. If it's a slice and contiguous, then iterator is not required
-	if !t.o.isContiguous() || !t.old.IsZero() || t.IsMasked() {
+	if !t.o.IsContiguous() || !t.old.IsZero() || t.IsMasked() {
 		return true
 	}
 	return false

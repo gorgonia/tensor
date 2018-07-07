@@ -704,13 +704,13 @@ func (t *Dense) FBEncode() ([]byte, error) {
 
 	var o uint32
 	switch {
-	case t.o.isRowMajor() && t.o.isContiguous():
+	case t.o.IsRowMajor() && t.o.IsContiguous():
 		o = 0
-	case t.o.isRowMajor() && !t.o.isContiguous():
+	case t.o.IsRowMajor() && !t.o.IsContiguous():
 		o = 1
-	case t.o.isColMajor() && t.o.isContiguous():
+	case t.o.IsColMajor() && t.o.IsContiguous():
 		o = 2
-	case t.o.isColMajor() && !t.o.isContiguous():
+	case t.o.IsColMajor() && !t.o.IsContiguous():
 		o = 3
 	}
 
@@ -820,13 +820,13 @@ func (t *Dense) PBEncode() ([]byte, error) {
 	}
 
 	switch {
-	case t.o.isRowMajor() && t.o.isContiguous():
+	case t.o.IsRowMajor() && t.o.IsContiguous():
 		toSerialize.O = pb.RowMajorContiguous
-	case t.o.isRowMajor() && !t.o.isContiguous():
+	case t.o.IsRowMajor() && !t.o.IsContiguous():
 		toSerialize.O = pb.RowMajorNonContiguous
-	case t.o.isColMajor() && t.o.isContiguous():
+	case t.o.IsColMajor() && t.o.IsContiguous():
 		toSerialize.O = pb.ColMajorContiguous
-	case t.o.isColMajor() && !t.o.isContiguous():
+	case t.o.IsColMajor() && !t.o.IsContiguous():
 		toSerialize.O = pb.ColMajorNonContiguous
 	}
 	toSerialize.T = pb.Triangle(t.Δ)

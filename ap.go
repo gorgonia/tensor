@@ -195,14 +195,10 @@ func (ap *AP) CloneTo(dest *AP) {
 func (ap *AP) DataOrder() DataOrder { return ap.o }
 
 // C returns true if the access pattern is C-contiguous array
-func (ap *AP) C() bool {
-	return ap.o.isRowMajor() && ap.o.isContiguous()
-}
+func (ap *AP) C() bool { return ap.o.IsRowMajor() && ap.o.IsContiguous() }
 
 // F returns true if the access pattern is Fortran contiguous array
-func (ap *AP) F() bool {
-	return ap.o.isColMajor() && ap.o.isContiguous()
-}
+func (ap *AP) F() bool { return ap.o.IsColMajor() && ap.o.IsContiguous() }
 
 // S returns the metadata of the sliced tensor.
 func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err error) {
@@ -219,7 +215,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 
 	var outerDim int
 	order := ap.o
-	if ap.o.isRowMajor() || ap.IsVector() {
+	if ap.o.IsRowMajor() || ap.IsVector() {
 		outerDim = 0
 	} else {
 		outerDim = len(ap.shape) - 1
@@ -347,9 +343,9 @@ func (ap *AP) unlock() { ap.fin = false }
 
 func (ap *AP) calcStrides() []int {
 	switch {
-	case ap.o.isRowMajor():
+	case ap.o.IsRowMajor():
 		return ap.shape.CalcStrides()
-	case ap.o.isColMajor():
+	case ap.o.IsColMajor():
 		return ap.shape.CalcStridesColMajor()
 	}
 	panic("unreachable")
