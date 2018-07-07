@@ -18,7 +18,7 @@ const (
 	Transposed
 )
 
-const dataOrderNames = "NonContiguous, RowMajorNonContiguous, ColMajor"
+var dataOrderNames = []rune("NonContiguous, RowMajorᵀNonContiguous, ColMajorᵀ")
 
 // MakeDataOrder makes a data order. Typical examples:
 //		MakeDataOrder(DataOrder(0))            // Row Major, contiguous
@@ -35,12 +35,25 @@ func MakeDataOrder(fs ...DataOrder) (retVal DataOrder) {
 	return
 }
 
-func (f DataOrder) IsColMajor() bool          { return (f & ColMajor) != 0 }
-func (f DataOrder) IsRowMajor() bool          { return !f.IsColMajor() }
-func (f DataOrder) IsContiguous() bool        { return !f.IsNotContiguous() }
-func (f DataOrder) IsNotContiguous() bool     { return (f & NonContiguous) != 0 }
-func (f DataOrder) IsTransposed() bool        { return (f & Transposed) != 0 }
+// IsColMajor returns true if the data order describes a col-major data
+func (f DataOrder) IsColMajor() bool { return (f & ColMajor) != 0 }
+
+// IsRowMajor returns true if the data order describes a row-major data
+func (f DataOrder) IsRowMajor() bool { return !f.IsColMajor() }
+
+// IsContiguous returns true if the data order describes a contiguous data.
+func (f DataOrder) IsContiguous() bool { return !f.IsNotContiguous() }
+
+// IsNotContiguous returns true if the data order describes a noncontiguous data.
+func (f DataOrder) IsNotContiguous() bool { return (f & NonContiguous) != 0 }
+
+// IsTransposed returns true if the data order describes whether the data has been tranposed (but not moved)
+func (f DataOrder) IsTransposed() bool { return (f & Transposed) != 0 }
+
 func (f DataOrder) toggleColMajor() DataOrder { return f ^ (ColMajor) }
+
+func (f DataOrder) clearTransposed() DataOrder { return f &^ (Transposed) }
+
 func (f DataOrder) hasSameOrder(other DataOrder) bool {
 	return (f.IsColMajor() && other.IsColMajor()) || (f.IsRowMajor() && other.IsRowMajor())
 }
@@ -53,13 +66,16 @@ func (f DataOrder) String() string {
 			start = 3
 		}
 	} else {
-		end = 46
-		start = 23
+		end = 47
+		start = 24
 		if f.IsContiguous() {
-			start = 26
+			start = 27
 		}
 	}
-	return dataOrderNames[start:end]
+	if f.IsTransposed() {
+		end++
+	}
+	return string(dataOrderNames[start:end])
 }
 
 // Triangle is a flag representing the "triangle"ness of a matrix

@@ -35,14 +35,22 @@ func TestMemoryFlag(t *testing.T) {
 
 func TestDataOrder(t *testing.T) {
 	var defaultFlag DataOrder
-	if defaultFlag.IsColMajor() || defaultFlag.IsNotContiguous() {
-		t.Error("Expected default flag to be row major and contiguous")
+	if defaultFlag.IsColMajor() || defaultFlag.IsNotContiguous() || defaultFlag.IsTransposed() {
+		t.Error("Expected default flag to be row major and contiguous and not transposed")
 	}
 	if !(defaultFlag.IsRowMajor() && defaultFlag.IsContiguous()) {
 		t.Error("Expected default flag to be row major and contiguous")
 	}
 	if defaultFlag.String() != "Contiguous, RowMajor" {
-		t.Error("Expected string is \"Contiguous, RowMajor\"")
+		t.Errorf("Expected string is \"Contiguous, RowMajor\". Got %q", defaultFlag.String())
+	}
+
+	ncrm := MakeDataOrder(NonContiguous)
+	if ncrm.IsColMajor() || ncrm.IsContiguous() {
+		t.Error("Expected noncontiguous row major.")
+	}
+	if ncrm.String() != "NonContiguous, RowMajor" {
+		t.Errorf("Expected string is \"NonContiguous, RowMajor\". Got %q", defaultFlag.String())
 	}
 
 	cm := ColMajor
@@ -53,7 +61,7 @@ func TestDataOrder(t *testing.T) {
 		t.Error("ColMajor by default is contiguous")
 	}
 	if cm.String() != "Contiguous, ColMajor" {
-		t.Error(`Expected string is "Contiguous, ColMajor"`)
+		t.Errorf(`Expected string is "Contiguous, ColMajor". Got %q`, cm.String())
 	}
 
 	// check toggle
@@ -66,4 +74,17 @@ func TestDataOrder(t *testing.T) {
 	if cm.IsRowMajor() {
 		t.Errorf("toggled rm should be cm")
 	}
+
+	transposed := MakeDataOrder(Transposed)
+	if !transposed.IsTransposed() {
+		t.Error("Expected transposed flag to be set")
+	}
+	if transposed.String() != "Contiguous, RowMajorᵀ" {
+		t.Errorf("Expected string is \"Contiguous, RowMajorᵀ\". Got %q", defaultFlag.String())
+	}
+	untransposed := transposed.clearTransposed()
+	if untransposed != defaultFlag {
+		t.Error("Expected default flag after untransposing")
+	}
+
 }
