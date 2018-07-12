@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 var (
 	_ Diager = StdEng{}
@@ -119,6 +121,31 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 		var v *Dense
 		if v, err = sliceDense(retVal, slices...); err != nil {
 			return nil, errors.Wrap(err, "Unable to slice DenseTensor while performing denseConcat")
+		}
+
+		// TODO FIX THIS UP PROPERLY
+		// gorgonia/gorgonia#218 raised this issue
+
+		if diff := retVal.Shape().Dims() - v.Shape().Dims(); diff > 0 {
+			if v.DataOrder().IsRowMajor() {
+				newShape := v.Shape()
+				newStrides := v.strides
+				for i := 0; i < diff; i++ {
+					newShape = append(newShape, 1)
+					newStrides = append(newStrides, 1)
+				}
+				v.shape = newShape
+				v.strides = newStrides
+			} else {
+				newShape := v.Shape()
+				newStrides := v.strides
+				for i := 0; i < diff; i++ {
+					newShape = append(Shape{1}, newShape...)
+					newStrides = append([]int{1}, newStrides...)
+				}
+				v.shape = newShape
+				v.strides = newStrides
+			}
 		}
 
 		if v.IsVector() && T.IsMatrix() && axis == 0 {
