@@ -354,7 +354,7 @@ func (ap *AP) calcStrides() []int {
 
 // setDataOrder is a method such that any tensor that embeds *AP will have the same method
 func (ap *AP) setDataOrder(o DataOrder) {
-	if !o.hasSameOrder(ap.o) {
+	if !o.HasSameOrder(ap.o) {
 		ap.o = ap.o.toggleColMajor()
 	}
 }

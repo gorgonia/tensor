@@ -54,7 +54,7 @@ func (f DataOrder) toggleColMajor() DataOrder { return f ^ (ColMajor) }
 
 func (f DataOrder) clearTransposed() DataOrder { return f &^ (Transposed) }
 
-func (f DataOrder) hasSameOrder(other DataOrder) bool {
+func (f DataOrder) HasSameOrder(other DataOrder) bool {
 	return (f.IsColMajor() && other.IsColMajor()) || (f.IsRowMajor() && other.IsRowMajor())
 }
 

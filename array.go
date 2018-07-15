@@ -356,7 +356,7 @@ func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 	}
 
 	// if they all don't need iterators, and have the same data order
-	if !dst.RequiresIterator() && !src.RequiresIterator() && dst.DataOrder().hasSameOrder(src.DataOrder()) {
+	if !dst.RequiresIterator() && !src.RequiresIterator() && dst.DataOrder().HasSameOrder(src.DataOrder()) {
 		return copyDense(dst, src), nil
 	}
 

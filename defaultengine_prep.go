@@ -110,8 +110,8 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 	useIter = a.RequiresIterator() ||
 		b.RequiresIterator() ||
 		(reuse != nil && reuse.RequiresIterator()) ||
-		!a.DataOrder().hasSameOrder(b.DataOrder()) ||
-		(reuse != nil && (!a.DataOrder().hasSameOrder(reuse.DataOrder()) || !b.DataOrder().hasSameOrder(reuse.DataOrder())))
+		!a.DataOrder().HasSameOrder(b.DataOrder()) ||
+		(reuse != nil && (!a.DataOrder().HasSameOrder(reuse.DataOrder()) || !b.DataOrder().HasSameOrder(reuse.DataOrder())))
 	if useIter {
 		ait = a.Iterator()
 		bit = b.Iterator()
@@ -146,7 +146,7 @@ func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse 
 	}
 	useIter = a.RequiresIterator() ||
 		(reuse != nil && reuse.RequiresIterator()) ||
-		(reuse != nil && reuse.DataOrder().hasSameOrder(a.DataOrder()))
+		(reuse != nil && reuse.DataOrder().HasSameOrder(a.DataOrder()))
 	if useIter {
 		ait = a.Iterator()
 		if reuse != nil {
@@ -170,7 +170,7 @@ func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse 
 	}
 	useIter = b.RequiresIterator() ||
 		(reuse != nil && reuse.RequiresIterator()) ||
-		(reuse != nil && reuse.DataOrder().hasSameOrder(b.DataOrder()))
+		(reuse != nil && reuse.DataOrder().HasSameOrder(b.DataOrder()))
 	if useIter {
 		bit = b.Iterator()
 		if reuse != nil {
