@@ -310,6 +310,7 @@ func (t *Dense) RollAxis(axis, start int, safe bool) (retVal *Dense, err error) 
 func (t *Dense) transposeIndex(i int, transposePat, strides []int) int {
 	oldCoord, err := Itol(i, t.oshape(), t.ostrides())
 	if err != nil {
+		err = errors.Wrapf(err, "transposeIndex ItoL failure. i %d original shape %v. original strides %v", i, t.oshape(), t.ostrides())
 		panic(err)
 	}
 
