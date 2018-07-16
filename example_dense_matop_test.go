@@ -176,6 +176,8 @@ func ExampleDense_Vstack() {
 	T3 = T1.Clone().(*Dense)
 	if T2, err = T.Vstack(T1, T3); err == nil {
 		fmt.Printf("T.Vstack(T1, T3):\n%v\n", T2)
+	} else {
+		fmt.Printf("====\nerr %v\n%v\n===\n", err, T3.Shape())
 	}
 
 	// Let's look at failure conditions

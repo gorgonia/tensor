@@ -110,9 +110,18 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 	all[0] = a
 	copy(all[1:], Ts)
 
+	// TODO: OPIMIZATION
+	// When (axis == 0 && a is row major and all others is row major) || (axis == last axis of A && all tensors are colmajor)
+	// just flat copy
+	//
+
+	// isOuter  is true when the axis is the outermost axis
+	// isInner is true when the axis is the inner most axis
+	isOuter := axis == 0
+	isInner := axis == (a.Shape().Dims() - 1)
+
 	// special case
 	var start, end int
-
 	for _, T := range all {
 		end += T.Shape()[axis]
 		slices := make([]Slice, axis+1)
@@ -123,12 +132,28 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 			return nil, errors.Wrap(err, "Unable to slice DenseTensor while performing denseConcat")
 		}
 
-		// TODO FIX THIS UP PROPERLY
-		// gorgonia/gorgonia#218 raised this issue
-
-		if diff := retVal.Shape().Dims() - v.Shape().Dims(); diff > 0 {
-			if v.DataOrder().IsRowMajor() {
-				newShape := v.Shape()
+		switch {
+		case v.IsVector() && T.IsMatrix() && axis == 0:
+			v.reshape(v.shape[0], 1)
+		case T.IsRowVec() && axis == 0:
+			T.reshape(T.Shape()[1])
+		case v.Shape().IsScalarEquiv() && T.Shape().IsScalarEquiv():
+			copyArray(v.arrPtr(), T.arrPtr())
+			if mt, ok := T.(MaskedTensor); ok {
+				copy(v.mask, mt.Mask())
+			}
+			continue
+		default:
+			diff := retVal.Shape().Dims() - v.Shape().Dims()
+			if diff > 0 && isOuter {
+				newShape := make(Shape, v.Shape().Dims()+diff)
+				for i := 0; i < diff; i++ {
+					newShape[i] = 1
+				}
+				copy(newShape[diff:], v.Shape())
+				v.reshape(newShape...)
+			} else if diff > 0 && isInner {
+				newShape := v.Shape().Clone()
 				newStrides := v.strides
 				for i := 0; i < diff; i++ {
 					newShape = append(newShape, 1)
@@ -136,25 +161,35 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 				}
 				v.shape = newShape
 				v.strides = newStrides
-			} else {
-				newShape := v.Shape()
-				newStrides := v.strides
-				for i := 0; i < diff; i++ {
-					newShape = append(Shape{1}, newShape...)
-					newStrides = append([]int{1}, newStrides...)
-				}
-				v.shape = newShape
-				v.strides = newStrides
 			}
 		}
 
-		if v.IsVector() && T.IsMatrix() && axis == 0 {
-			v.reshape(v.shape[0], 1)
+		var vmask, Tmask []bool
+		vmask = v.mask
+		v.mask = nil
+		if mt, ok := T.(MaskedTensor); ok && mt.IsMasked() {
+			Tmask = mt.Mask()
+			mt.SetMask(nil)
+
 		}
 
 		if err = assignArray(v, T); err != nil {
 			return nil, errors.Wrap(err, "Unable to assignArray in denseConcat")
 		}
+		// if it's a masked tensor, we copy the mask as well
+		if Tmask != nil {
+			if vmask != nil {
+				if cap(vmask) < len(Tmask) {
+					vmask2 := make([]bool, len(Tmask))
+					copy(vmask2, vmask)
+					vmask = vmask2
+				}
+				copy(vmask, Tmask)
+				v.SetMask(vmask)
+			}
+			// mt.SetMask(Tmask)
+		}
+
 		start = end
 	}
 

@@ -158,6 +158,20 @@ func (s Shape) IsScalar() bool {
 	return len(s) == 0 || (len(s) == 1 && s[0] == 1)
 }
 
+// IsScalarEquiv returns true if the access pattern indicates it's a scalar-like value
+func (s Shape) IsScalarEquiv() bool {
+	if len(s) == 0 {
+		return true
+	}
+	isEquiv := true
+	for i := range s {
+		if s[i] != 1 {
+			return false
+		}
+	}
+	return isEquiv
+}
+
 // IsVector returns whether the access pattern falls into one of three possible definitions of vectors:
 //		vanilla vector (not a row or a col)
 //		column vector
@@ -335,7 +349,7 @@ func (s Shape) Concat(axis int, ss ...Shape) (newShape Shape, err error) {
 			} else {
 				// validate that the rest of the dimensions match up
 				if newShape[d] != shp[d] {
-					err = errors.Errorf(dimMismatch, newShape[d], shp[d])
+					err = errors.Wrapf(errors.Errorf(dimMismatch, newShape[d], shp[d]), "Axis: %d, dimension it failed at: %d", axis, d)
 					return
 				}
 			}

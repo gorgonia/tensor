@@ -623,49 +623,61 @@ func TestDense_RollAxis(t *testing.T) {
 }
 
 var concatTests = []struct {
-	name  string
-	dt    Dtype
-	a     interface{}
-	shape Shape
-	axis  int
+	name   string
+	dt     Dtype
+	a      interface{}
+	b      interface{}
+	shape  Shape
+	shapeB Shape
+	axis   int
 
 	correctShape Shape
 	correctData  interface{}
 }{
 	// Float64
-	{"vector", Float64, nil, Shape{2}, 0, Shape{4}, []float64{0, 1, 0, 1}},
-	{"matrix; axis 0 ", Float64, nil, Shape{2, 2}, 0, Shape{4, 2}, []float64{0, 1, 2, 3, 0, 1, 2, 3}},
-	{"matrix; axis 1 ", Float64, nil, Shape{2, 2}, 1, Shape{2, 4}, []float64{0, 1, 0, 1, 2, 3, 2, 3}},
+	{"vector", Float64, nil, nil, Shape{2}, nil, 0, Shape{4}, []float64{0, 1, 0, 1}},
+	{"matrix; axis 0 ", Float64, nil, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []float64{0, 1, 2, 3, 0, 1, 2, 3}},
+	{"matrix; axis 1 ", Float64, nil, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []float64{0, 1, 0, 1, 2, 3, 2, 3}},
 
 	// Float32
-	{"vector", Float32, nil, Shape{2}, 0, Shape{4}, []float32{0, 1, 0, 1}},
-	{"matrix; axis 0 ", Float32, nil, Shape{2, 2}, 0, Shape{4, 2}, []float32{0, 1, 2, 3, 0, 1, 2, 3}},
-	{"matrix; axis 1 ", Float32, nil, Shape{2, 2}, 1, Shape{2, 4}, []float32{0, 1, 0, 1, 2, 3, 2, 3}},
+	{"vector", Float32, nil, nil, Shape{2}, nil, 0, Shape{4}, []float32{0, 1, 0, 1}},
+	{"matrix; axis 0 ", Float32, nil, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []float32{0, 1, 2, 3, 0, 1, 2, 3}},
+	{"matrix; axis 1 ", Float32, nil, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []float32{0, 1, 0, 1, 2, 3, 2, 3}},
 
 	// Int
-	{"vector", Int, nil, Shape{2}, 0, Shape{4}, []int{0, 1, 0, 1}},
-	{"matrix; axis 0 ", Int, nil, Shape{2, 2}, 0, Shape{4, 2}, []int{0, 1, 2, 3, 0, 1, 2, 3}},
-	{"matrix; axis 1 ", Int, nil, Shape{2, 2}, 1, Shape{2, 4}, []int{0, 1, 0, 1, 2, 3, 2, 3}},
+	{"vector", Int, nil, nil, Shape{2}, nil, 0, Shape{4}, []int{0, 1, 0, 1}},
+	{"matrix; axis 0 ", Int, nil, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []int{0, 1, 2, 3, 0, 1, 2, 3}},
+	{"matrix; axis 1 ", Int, nil, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []int{0, 1, 0, 1, 2, 3, 2, 3}},
 
 	// Int64
-	{"vector", Int64, nil, Shape{2}, 0, Shape{4}, []int64{0, 1, 0, 1}},
-	{"matrix; axis 0 ", Int64, nil, Shape{2, 2}, 0, Shape{4, 2}, []int64{0, 1, 2, 3, 0, 1, 2, 3}},
-	{"matrix; axis 1 ", Int64, nil, Shape{2, 2}, 1, Shape{2, 4}, []int64{0, 1, 0, 1, 2, 3, 2, 3}},
+	{"vector", Int64, nil, nil, Shape{2}, nil, 0, Shape{4}, []int64{0, 1, 0, 1}},
+	{"matrix; axis 0 ", Int64, nil, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []int64{0, 1, 2, 3, 0, 1, 2, 3}},
+	{"matrix; axis 1 ", Int64, nil, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []int64{0, 1, 0, 1, 2, 3, 2, 3}},
 
 	// Int32
-	{"vector", Int32, nil, Shape{2}, 0, Shape{4}, []int32{0, 1, 0, 1}},
-	{"matrix; axis 0 ", Int32, nil, Shape{2, 2}, 0, Shape{4, 2}, []int32{0, 1, 2, 3, 0, 1, 2, 3}},
-	{"matrix; axis 1 ", Int32, nil, Shape{2, 2}, 1, Shape{2, 4}, []int32{0, 1, 0, 1, 2, 3, 2, 3}},
+	{"vector", Int32, nil, nil, Shape{2}, nil, 0, Shape{4}, []int32{0, 1, 0, 1}},
+	{"matrix; axis 0 ", Int32, nil, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []int32{0, 1, 2, 3, 0, 1, 2, 3}},
+	{"matrix; axis 1 ", Int32, nil, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []int32{0, 1, 0, 1, 2, 3, 2, 3}},
 
 	// Byte
-	{"vector", Byte, nil, Shape{2}, 0, Shape{4}, []byte{0, 1, 0, 1}},
-	{"matrix; axis 0 ", Byte, nil, Shape{2, 2}, 0, Shape{4, 2}, []byte{0, 1, 2, 3, 0, 1, 2, 3}},
-	{"matrix; axis 1 ", Byte, nil, Shape{2, 2}, 1, Shape{2, 4}, []byte{0, 1, 0, 1, 2, 3, 2, 3}},
+	{"vector", Byte, nil, nil, Shape{2}, nil, 0, Shape{4}, []byte{0, 1, 0, 1}},
+	{"matrix; axis 0 ", Byte, nil, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []byte{0, 1, 2, 3, 0, 1, 2, 3}},
+	{"matrix; axis 1 ", Byte, nil, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []byte{0, 1, 0, 1, 2, 3, 2, 3}},
 
 	// Bool
-	{"vector", Bool, []bool{true, false}, Shape{2}, 0, Shape{4}, []bool{true, false, true, false}},
-	{"matrix; axis 0 ", Bool, []bool{true, false, true, false}, Shape{2, 2}, 0, Shape{4, 2}, []bool{true, false, true, false, true, false, true, false}},
-	{"matrix; axis 1 ", Bool, []bool{true, false, true, false}, Shape{2, 2}, 1, Shape{2, 4}, []bool{true, false, true, false, true, false, true, false}},
+	{"vector", Bool, []bool{true, false}, nil, Shape{2}, nil, 0, Shape{4}, []bool{true, false, true, false}},
+	{"matrix; axis 0 ", Bool, []bool{true, false, true, false}, nil, Shape{2, 2}, nil, 0, Shape{4, 2}, []bool{true, false, true, false, true, false, true, false}},
+	{"matrix; axis 1 ", Bool, []bool{true, false, true, false}, nil, Shape{2, 2}, nil, 1, Shape{2, 4}, []bool{true, false, true, false, true, false, true, false}},
+
+	// gorgonia/gorgonia#218 related
+	{"matrix; axis 0", Float64, nil, nil, Shape{2, 2}, Shape{1, 2}, 0, Shape{3, 2}, []float64{0, 1, 2, 3, 0, 1}},
+	{"matrix; axis 1", Float64, nil, nil, Shape{2, 2}, Shape{2, 1}, 1, Shape{2, 3}, []float64{0, 1, 0, 2, 3, 1}},
+	{"colvec matrix, axis 0", Float64, nil, nil, Shape{2, 1}, Shape{1, 1}, 0, Shape{3, 1}, []float64{0, 1, 0}},
+	{"rowvec matrix, axis 1", Float64, nil, nil, Shape{1, 2}, Shape{1, 1}, 1, Shape{1, 3}, []float64{0, 1, 0}},
+
+	{"3tensor; axis 0", Float64, nil, nil, Shape{2, 3, 2}, Shape{1, 3, 2}, 0, Shape{3, 3, 2}, []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5}},
+	{"3tensor; axis 2", Float64, nil, nil, Shape{2, 3, 2}, Shape{2, 3, 1}, 2, Shape{2, 3, 3}, []float64{0, 1, 0, 2, 3, 1, 4, 5, 2, 6, 7, 3, 8, 9, 4, 10, 11, 5}},
+	// {"3tensor; axis 1", Float64, nil, nil, Shape{2, 3, 2}, Shape{2, 1, 2}, 1, Shape{2, 4, 2}, []float64{222}},
 }
 
 func TestDense_Concat(t *testing.T) {
@@ -676,15 +688,24 @@ func TestDense_Concat(t *testing.T) {
 
 		if cts.a == nil {
 			T0 = New(WithShape(cts.shape...), WithBacking(Range(cts.dt, 0, cts.shape.TotalSize())))
-			T1 = New(WithShape(cts.shape...), WithBacking(Range(cts.dt, 0, cts.shape.TotalSize())))
 		} else {
 			T0 = New(WithShape(cts.shape...), WithBacking(cts.a))
+		}
+
+		switch {
+		case cts.shapeB == nil && cts.a == nil:
+			T1 = New(WithShape(cts.shape...), WithBacking(Range(cts.dt, 0, cts.shape.TotalSize())))
+		case cts.shapeB == nil && cts.a != nil:
 			T1 = New(WithShape(cts.shape...), WithBacking(cloneArray(cts.a)))
+		case cts.shapeB != nil && cts.b == nil:
+			T1 = New(WithShape(cts.shapeB...), WithBacking(Range(cts.dt, 0, cts.shapeB.TotalSize())))
+		case cts.shapeB != nil && cts.b != nil:
+			T1 = New(WithShape(cts.shapeB...), WithBacking(cts.b))
 		}
 
 		T2, err := T0.Concat(cts.axis, T1)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Test %v failed: %v", cts.name, err)
 			continue
 		}
 		assert.True(cts.correctShape.Eq(T2.Shape()))
@@ -694,24 +715,31 @@ func TestDense_Concat(t *testing.T) {
 	//Masked case
 
 	for _, cts := range concatTests {
-
 		var T0, T1 *Dense
 
 		if cts.a == nil {
 			T0 = New(WithShape(cts.shape...), WithBacking(Range(cts.dt, 0, cts.shape.TotalSize())))
 			T0.MaskedEqual(castToDt(0.0, cts.dt))
-			T1 = New(WithShape(cts.shape...), WithBacking(Range(cts.dt, 0, cts.shape.TotalSize())))
-			T1.MaskedEqual(castToDt(0.0, cts.dt))
 		} else {
 			T0 = New(WithShape(cts.shape...), WithBacking(cts.a))
 			T0.MaskedEqual(castToDt(0.0, cts.dt))
-			T1 = New(WithShape(cts.shape...), WithBacking(cloneArray(cts.a)))
-			T1.MaskedEqual(castToDt(0.0, cts.dt))
 		}
+
+		switch {
+		case cts.shapeB == nil && cts.a == nil:
+			T1 = New(WithShape(cts.shape...), WithBacking(Range(cts.dt, 0, cts.shape.TotalSize())))
+		case cts.shapeB == nil && cts.a != nil:
+			T1 = New(WithShape(cts.shape...), WithBacking(cloneArray(cts.a)))
+		case cts.shapeB != nil && cts.b == nil:
+			T1 = New(WithShape(cts.shapeB...), WithBacking(Range(cts.dt, 0, cts.shapeB.TotalSize())))
+		case cts.shapeB != nil && cts.b != nil:
+			T1 = New(WithShape(cts.shapeB...), WithBacking(cts.b))
+		}
+		T1.MaskedEqual(castToDt(0.0, cts.dt))
 
 		T2, err := T0.Concat(cts.axis, T1)
 		if err != nil {
-			t.Error(err)
+			t.Errorf("Test %v failed: %v", cts.name, err)
 			continue
 		}
 
