@@ -233,11 +233,12 @@ func (t *CS) T(axes ...int) error {
 	}
 	UnsafePermute(axes, []int(t.s))
 	t.o = t.o.toggleColMajor()
+	t.o = MakeDataOrder(t.o, Transposed)
 	return errors.Errorf(methodNYI, "T")
 }
 
 // UT untransposes the CS
-func (t *CS) UT() { t.T() }
+func (t *CS) UT() { t.T(); t.o = t.o.clearTransposed() }
 
 // Transpose is a no-op. The data does not move
 func (t *CS) Transpose() error { return nil }

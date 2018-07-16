@@ -332,7 +332,8 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 		}
 	}
 
-	retVal = MakeAP(shape, strides, ap.o, ap.Δ)
+	o := MakeDataOrder(ap.o, Transposed)
+	retVal = MakeAP(shape, strides, o, ap.Δ)
 	retVal.fin = true
 	return
 }
@@ -353,7 +354,7 @@ func (ap *AP) calcStrides() []int {
 
 // setDataOrder is a method such that any tensor that embeds *AP will have the same method
 func (ap *AP) setDataOrder(o DataOrder) {
-	if !o.hasSameOrder(ap.o) {
+	if !o.HasSameOrder(ap.o) {
 		ap.o = ap.o.toggleColMajor()
 	}
 }

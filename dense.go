@@ -78,9 +78,14 @@ func (t *Dense) addMask(mask []bool) {
 }
 
 func (t *Dense) makeArray(size int) {
-	if am, ok := t.e.(arrayMaker); ok {
-		am.makeArray(&t.array, t.t, size)
+
+	switch te := t.e.(type) {
+	case NonStdEngine:
+		t.flag = MakeMemoryFlag(t.flag, ManuallyManaged)
+	case arrayMaker:
+		te.makeArray(&t.array, t.t, size)
 		return
+	default:
 	}
 
 	mem, err := t.e.Alloc(calcMemSize(t.t, size))

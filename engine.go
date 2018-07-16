@@ -59,6 +59,11 @@ type arrayMaker interface {
 	makeArray(arr *array, t Dtype, size int)
 }
 
+// NonStdEngine are any engines that do not allocate using the default built in allocator
+type NonStdEngine interface {
+	NonStdAlloc() // noop
+}
+
 /* Data Agnostic Execution Engine Methods */
 
 // Transposer is any engine that can perform an unsafe transpose of a tensor.

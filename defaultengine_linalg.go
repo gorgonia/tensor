@@ -426,6 +426,8 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 	incX, incY := 1, 1 // step size
 
 	// ASPIRATIONAL TODO: different incX and incY
+	// TECHNICAL DEBT. TECHDEBT. TECH DEBT
+	// Example use case:
 	// log.Printf("a %v %v", ad.Strides(), ad.ostrides())
 	// log.Printf("b %v", b.Strides())
 	// incX := a.Strides()[0]
@@ -498,10 +500,6 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		ldc = prealloc.Shape()[1]
 	}
 
-	// lda = ad.ostrides()[0]
-	// ldb = bd.ostrides()[0]
-	// ldc = pd.ostrides()[0]
-
 	// check for trans
 	tA, tB := blas.NoTrans, blas.NoTrans
 	if !ad.oldAP().IsZero() {
@@ -566,7 +564,27 @@ func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
 	var lda int
 	switch {
 	case pdo.IsColMajor():
-		lda = pd.Shape()[0]
+		aShape := a.Shape().Clone()
+		bShape := b.Shape().Clone()
+		if err = a.Reshape(aShape[0], 1); err != nil {
+			return err
+		}
+		if err = b.Reshape(1, bShape[0]); err != nil {
+			return err
+		}
+
+		if err = e.MatMul(a, b, prealloc); err != nil {
+			return err
+		}
+
+		if err = b.Reshape(bShape...); err != nil {
+			return
+		}
+		if err = a.Reshape(aShape...); err != nil {
+			return
+		}
+		return nil
+
 	case pdo.IsRowMajor():
 		lda = pd.Shape()[1]
 	}
