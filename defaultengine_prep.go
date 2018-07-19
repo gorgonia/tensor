@@ -17,7 +17,7 @@ func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opt
 	if toReuse {
 		if reuse, err = getDenseTensor(reuseT); err != nil {
 			returnOpOpt(fo)
-			err = errors.Wrapf(err, "Cannot reuse a different type of Tensor in a *Dense-Scalar operation")
+			err = errors.Wrapf(err, "Cannot reuse a Tensor that isn't a DenseTensor. Got %T instead", reuseT)
 			return
 		}
 
