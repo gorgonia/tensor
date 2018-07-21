@@ -173,9 +173,11 @@ func WithEngine(e Engine) ConsOpt {
 			if e != nil && !e.AllocAccessible() {
 				tt.flag = MakeMemoryFlag(tt.flag, NativelyInaccessible)
 			}
-			// if oe, ok := e.(standardEngine); ok {
-			// 	tt.oe = oe
-			// }
+
+			tt.oe = nil
+			if oe, ok := e.(standardEngine); ok {
+				tt.oe = oe
+			}
 		case *CS:
 			tt.e = e
 			if e != nil && !e.AllocAccessible() {
