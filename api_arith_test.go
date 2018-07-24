@@ -41,10 +41,10 @@ func TestFMA(t *testing.T) {
 		y2 := y.Clone().(*Dense)
 
 		we, willFailEq := willerr(a, numberTypes, nil)
-		// _, ok1 := q.Engine().(FMAer)
-		// _, ok2 := q.Engine().(Muler)
-		// _, ok3 := q.Engine().(Adder)
-		// we = we || (!ok1 && (!ok2 || !ok3))
+		_, ok1 := q.Engine().(FMAer)
+		_, ok2 := q.Engine().(Muler)
+		_, ok3 := q.Engine().(Adder)
+		we = we || (!ok1 && (!ok2 || !ok3))
 
 		f, err := FMA(a, x, y)
 		if err, retEarly := qcErrCheck(t, "FMA#1", a, x, we, err); retEarly {
