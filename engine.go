@@ -379,6 +379,20 @@ type Argminer interface {
 	Argmin(t Tensor, axis int) (Tensor, error)
 }
 
+// NaNChecker checks that the tensor contains a NaN
+// Errors are to be returned if the concept of NaN does not apply to the data type.
+// Other errors may also occur. See specific implementations for details
+type NaNChecker interface {
+	HasNaN(t Tensor) (bool, error)
+}
+
+// InfChecker checks that the tensor contains a Inf.
+// Errors are to be returned if the concept of Inf does not apply to the data type.
+// Other errors may also occur. See specific implementations for details
+type InfChecker interface {
+	HasInf(t Tensor) (bool, error)
+}
+
 /* Internal interfaces for faster shit */
 
 type denseArgmaxer interface {
