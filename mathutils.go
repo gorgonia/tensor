@@ -1,4 +1,4 @@
-// +build !noasm
+// +build amd64,!noasm
 
 package tensor
 
