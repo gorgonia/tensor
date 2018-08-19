@@ -4,6 +4,7 @@
 * Naseer Dari (@ndari) - errors and error handling
 * Joe Kabaka (@kabaka0) - masked array functionality
 * Stuart Carnie (@stuartcarnie) - performance optimization for iterators
+* Jorge Landivar (@docmerlin) - performance optimization for `*Dense`
 
 # Contributors
 
@@ -13,8 +14,8 @@
 * David Soller | @3ygun
 * Davor Kapsa | @dvrkps
 * James Michael DuPont | @h4ck3rm1k3
-* Jorge Landivar | @docmerlin
 * Yuanlin Lian | @alienchow
+* Andrew SnodGrass | @pointlander
 
 
 

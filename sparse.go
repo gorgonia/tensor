@@ -31,7 +31,7 @@ type coo struct {
 
 func (c *coo) Len() int { return c.data.L }
 func (c *coo) Less(i, j int) bool {
-	if c.o.isColMajor() {
+	if c.o.IsColMajor() {
 		return c.colMajorLess(i, j)
 	}
 	return c.rowMajorLess(i, j)
@@ -182,13 +182,14 @@ func CSCFromCoord(shape Shape, xs, ys []int, data interface{}) *CS {
 	return t
 }
 
-func (t *CS) Shape() Shape   { return t.s }
-func (t *CS) Strides() []int { return nil }
-func (t *CS) Dtype() Dtype   { return t.t }
-func (t *CS) Dims() int      { return 2 }
-func (t *CS) Size() int      { return t.s.TotalSize() }
-func (t *CS) DataSize() int  { return t.L }
-func (t *CS) Engine() Engine { return t.e }
+func (t *CS) Shape() Shape         { return t.s }
+func (t *CS) Strides() []int       { return nil }
+func (t *CS) Dtype() Dtype         { return t.t }
+func (t *CS) Dims() int            { return 2 }
+func (t *CS) Size() int            { return t.s.TotalSize() }
+func (t *CS) DataSize() int        { return t.L }
+func (t *CS) Engine() Engine       { return t.e }
+func (t *CS) DataOrder() DataOrder { return t.o }
 
 func (t *CS) Slice(...Slice) (View, error) {
 	return nil, errors.Errorf("Slice for sparse tensors not implemented yet")
@@ -232,11 +233,12 @@ func (t *CS) T(axes ...int) error {
 	}
 	UnsafePermute(axes, []int(t.s))
 	t.o = t.o.toggleColMajor()
+	t.o = MakeDataOrder(t.o, Transposed)
 	return errors.Errorf(methodNYI, "T")
 }
 
 // UT untransposes the CS
-func (t *CS) UT() { t.T() }
+func (t *CS) UT() { t.T(); t.o = t.o.clearTransposed() }
 
 // Transpose is a no-op. The data does not move
 func (t *CS) Transpose() error { return nil }
@@ -307,7 +309,7 @@ func (t *CS) Iterator() Iterator     { return NewFlatSparseIterator(t) }
 
 func (t *CS) at(coord ...int) (int, bool) {
 	var r, c int
-	if t.o.isColMajor() {
+	if t.o.IsColMajor() {
 		r = coord[1]
 		c = coord[0]
 	} else {
@@ -330,7 +332,7 @@ func (t *CS) Dense() *Dense {
 	}
 
 	d := recycledDense(t.t, t.Shape().Clone())
-	if t.o.isColMajor() {
+	if t.o.IsColMajor() {
 		for i := 0; i < len(t.indptr)-1; i++ {
 			for j := t.indptr[i]; j < t.indptr[i+1]; j++ {
 				d.SetAt(t.Get(j), t.indices[j], i)
@@ -361,14 +363,14 @@ func (t *CS) Indices() []int {
 }
 
 func (t *CS) AsCSR() {
-	if t.o.isRowMajor() {
+	if t.o.IsRowMajor() {
 		return
 	}
 	t.o.toggleColMajor()
 }
 
 func (t *CS) AsCSC() {
-	if t.o.isColMajor() {
+	if t.o.IsColMajor() {
 		return
 	}
 	t.o.toggleColMajor()

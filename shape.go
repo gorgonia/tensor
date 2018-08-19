@@ -24,17 +24,18 @@ func (s Shape) TotalSize() int {
 	return ProdInts([]int(s))
 }
 
-func (s Shape) calcStrides() []int {
+// CalcStrides calculates the default strides for a shape
+func (s Shape) CalcStrides() []int {
 	if s.IsScalar() {
 		return nil
 	}
 
 	retVal := BorrowInts(len(s))
-	if s.IsVector() {
-		retVal[0] = 1
-		retVal = retVal[:1]
-		return retVal
-	}
+	// if s.IsVector() {
+	// 	retVal[0] = 1
+	// 	retVal = retVal[:1]
+	// 	return retVal
+	// }
 
 	acc := 1
 	for i := len(s) - 1; i >= 0; i-- {
@@ -48,9 +49,9 @@ func (s Shape) calcStrides() []int {
 	return retVal
 }
 
-// calcStridesWithMask is similar to calcStrides, except that it has an argument, masks. It is used to mask out given dimensions
+// CalcStridesWithMask is similar to CalcStrides, except that it has an argument, masks. It is used to mask out given dimensions
 // during calculation of stride
-func (s Shape) calcStridesWithMask(mask []bool) []int {
+func (s Shape) CalcStridesWithMask(mask []bool) []int {
 	if s.IsScalar() {
 		return nil
 	}
@@ -84,7 +85,8 @@ func (s Shape) calcStridesWithMask(mask []bool) []int {
 	return retVal
 }
 
-func (s Shape) calcStridesColMajor() []int {
+// CalcStridesColMajor is like CalcStrides, but assumes a col major layout
+func (s Shape) CalcStridesColMajor() []int {
 	if s.IsScalar() {
 		return nil
 	}
@@ -152,7 +154,23 @@ func (s Shape) Clone() Shape {
 }
 
 // IsScalar returns true if the access pattern indicates it's a scalar value
-func (s Shape) IsScalar() bool { return len(s) == 0 || (len(s) == 1 && s[0] == 1) }
+func (s Shape) IsScalar() bool {
+	return len(s) == 0 || (len(s) == 1 && s[0] == 1)
+}
+
+// IsScalarEquiv returns true if the access pattern indicates it's a scalar-like value
+func (s Shape) IsScalarEquiv() bool {
+	if len(s) == 0 {
+		return true
+	}
+	isEquiv := true
+	for i := range s {
+		if s[i] != 1 {
+			return false
+		}
+	}
+	return isEquiv
+}
 
 // IsVector returns whether the access pattern falls into one of three possible definitions of vectors:
 //		vanilla vector (not a row or a col)
@@ -172,6 +190,9 @@ func (s Shape) IsMatrix() bool { return len(s) == 2 }
 // Dims returns the number of dimensions in the shape
 func (s Shape) Dims() int { return len(s) }
 
+// DimSize returns the size of the dimension wanted.
+//
+// This method implemnents the DimSizer interface in Gorgonia.
 func (s Shape) DimSize(d int) (size int, err error) {
 	if (s.IsScalar() && d != 0) || (!s.IsScalar() && d >= len(s)) {
 		err = errors.Errorf(dimMismatch, len(s), d)
@@ -221,12 +242,14 @@ func (s Shape) S(slices ...Slice) (retVal Shape, err error) {
 	}
 
 	// drop any dimension with size 1, except the last dimension
+	offset := 0
 	dims := s.Dims()
 	for d := 0; d < dims; d++ {
-		if retVal[d] == 1 /*&& d != t.dims-1  && dims > 2*/ {
+		if retVal[d] == 1 && offset+d <= len(slices)-1 && slices[offset+d] != nil /*&& d != t.dims-1  && dims > 2*/ {
 			retVal = append(retVal[:d], retVal[d+1:]...)
 			d--
 			dims--
+			offset++
 		}
 	}
 
@@ -326,7 +349,7 @@ func (s Shape) Concat(axis int, ss ...Shape) (newShape Shape, err error) {
 			} else {
 				// validate that the rest of the dimensions match up
 				if newShape[d] != shp[d] {
-					err = errors.Errorf(dimMismatch, newShape[d], shp[d])
+					err = errors.Wrapf(errors.Errorf(dimMismatch, newShape[d], shp[d]), "Axis: %d, dimension it failed at: %d", axis, d)
 					return
 				}
 			}

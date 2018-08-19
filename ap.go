@@ -26,13 +26,30 @@ type AP struct {
 	Δ Triangle
 }
 
-// NewAP creates a new AP, given the shape and strides
-func NewAP(shape Shape, strides []int) *AP {
-	ap := borrowAP()
+func makeAP(size int) AP {
+	return AP{
+		shape:   Shape(BorrowInts(size)),
+		strides: BorrowInts(size),
+	}
+}
+
+// MakeAP creates an AP, given the shape and strides.
+func MakeAP(shape Shape, strides []int, o DataOrder, Δ Triangle) AP {
+	return AP{
+		shape:   shape,
+		strides: strides,
+		o:       o,
+		Δ:       Δ,
+		fin:     true,
+	}
+}
+
+// Init initalizes an already created AP with a shape and stries.
+// It will panic if AP is nil.
+func (ap *AP) Init(shape Shape, strides []int) {
 	ap.shape = shape
 	ap.strides = strides
 	ap.fin = true
-	return ap
 }
 
 // SetShape is for very specific times when modifying the AP is necessary, such as reshaping and doing I/O related stuff
@@ -46,6 +63,9 @@ func (ap *AP) SetShape(s ...int) {
 	if !ap.fin {
 		// scalars are a special case, we don't want to remove it completely
 		if len(s) == 0 {
+			if ap.shape == nil || ap.strides == nil {
+				ap.shape = Shape{}
+			}
 			ap.shape = ap.shape[:0]
 			ap.strides = ap.strides[:0]
 			return
@@ -102,9 +122,54 @@ func (ap *AP) IsScalar() bool { return ap.shape.IsScalar() }
 // IsMatrix returns true if it's a matrix. This is mostly a convenience method. RowVec and ColVecs are also considered matrices
 func (ap *AP) IsMatrix() bool { return len(ap.shape) == 2 }
 
-// Clone clones the *AP. Clearly.
-func (ap *AP) Clone() (retVal *AP) {
-	retVal = BorrowAP(len(ap.shape))
+// IsZero tell us if the ap has zero size
+func (ap *AP) IsZero() bool {
+	return len(ap.shape) == 0 && len(ap.strides) == 0 && !ap.fin && ap.o == 0 && ap.Δ == 0
+}
+
+// Zero zeros out an AP.
+func (ap *AP) zero() {
+	// log.Printf("ZEROING. Called by %v", string(debug.Stack()))
+
+	// Jorge's original implementation for zeroing a AP is as below
+	// but to cater for the (*Dense).fix() method of the *Dense
+	// a nil shape is used to signal unsetness
+	// so we cannot just truncate the shape even though it would be a lot more efficient
+
+	// ap.shape = ap.shape[:0]
+	// ap.strides = ap.strides[:0]
+	ReturnInts([]int(ap.shape))
+	ReturnInts(ap.strides)
+	ap.zeroOnly()
+}
+
+// side effect free zeroing
+func (ap *AP) zeroOnly() {
+	ap.shape = nil
+	ap.strides = nil
+
+	ap.fin = false
+	ap.o = 0
+	ap.Δ = 0
+}
+
+func (ap *AP) zeroWithDims(dims int) {
+	//ap.shape = BorrowInts(dims)
+	//ap.strides = BorrowInts(dims)
+	if cap(ap.shape) >= dims {
+		ap.shape = ap.shape[:dims]
+	}
+	ap.shape = BorrowInts(dims)
+	if cap(ap.strides) >= dims {
+		ap.strides = ap.strides[:dims]
+	}
+	ap.strides = BorrowInts(dims)
+}
+
+// Clone clones the *AP. Clearly. It returns AP
+func (ap *AP) Clone() (retVal AP) {
+	retVal = makeAP(cap(ap.shape))
+
 	copy(retVal.shape, ap.shape)
 	copy(retVal.strides, ap.strides)
 
@@ -118,21 +183,25 @@ func (ap *AP) Clone() (retVal *AP) {
 	return
 }
 
+func (ap *AP) CloneTo(dest *AP) {
+	dest.shape = append(dest.shape[:0], ap.shape...)
+	dest.strides = append(dest.strides[:0], ap.strides...)
+	dest.fin = ap.fin
+	dest.o = ap.o
+	dest.Δ = ap.Δ
+}
+
 // DataOrder returns the data order of the AP.
 func (ap *AP) DataOrder() DataOrder { return ap.o }
 
 // C returns true if the access pattern is C-contiguous array
-func (ap *AP) C() bool {
-	return ap.o.isRowMajor() && ap.o.isContiguous()
-}
+func (ap *AP) C() bool { return ap.o.IsRowMajor() && ap.o.IsContiguous() }
 
 // F returns true if the access pattern is Fortran contiguous array
-func (ap *AP) F() bool {
-	return ap.o.isColMajor() && ap.o.isContiguous()
-}
+func (ap *AP) F() bool { return ap.o.IsColMajor() && ap.o.IsContiguous() }
 
 // S returns the metadata of the sliced tensor.
-func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err error) {
+func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err error) {
 	if len(slices) > len(ap.shape) {
 		// error
 		err = errors.Errorf(dimMismatch, len(ap.shape), len(slices))
@@ -146,7 +215,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err e
 
 	var outerDim int
 	order := ap.o
-	if ap.o.isRowMajor() || ap.IsVector() {
+	if ap.o.IsRowMajor() || ap.IsVector() {
 		outerDim = 0
 	} else {
 		outerDim = len(ap.shape) - 1
@@ -160,12 +229,13 @@ func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err e
 
 		size := ap.shape[i]
 		var stride int
-		if ap.IsVector() {
-			// handles non-vanilla vectors
-			stride = ap.strides[0]
-		} else {
-			stride = ap.strides[i]
-		}
+		stride = ap.strides[i]
+		// if ap.IsVector() {
+		// 	// handles non-vanilla vectors
+		// 	stride = ap.strides[0]
+		// } else {
+		// 	stride = ap.strides[i]
+		// }
 
 		var start, end, step int
 		if start, end, step, err = SliceDetails(sl, size); err != nil {
@@ -196,37 +266,29 @@ func (ap *AP) S(size int, slices ...Slice) (newAP *AP, ndStart, ndEnd int, err e
 
 	if ndEnd-ndStart == 1 {
 		// scalars are a special case
-		newAP = borrowAP()
+		newAP = AP{}
 		newAP.SetShape() // make it a Scalar
 		newAP.lock()
 	} else {
 
 		// drop any dimension with size 1, except the last dimension
+		offset := 0
 		for d := 0; d < dims; d++ {
-			if newShape[d] == 1 /*&& d != t.dims-1  && dims > 2*/ {
+			if newShape[d] == 1 && offset+d <= len(slices)-1 && slices[offset+d] != nil /*&& d != t.dims-1  && dims > 2*/ {
 				newShape = append(newShape[:d], newShape[d+1:]...)
 				newStrides = append(newStrides[:d], newStrides[d+1:]...)
 				d--
 				dims--
+				offset++
 			}
 		}
-
-		//fix up strides
-		if newShape.IsColVec() {
-			stride0 := newStrides[0]
-			ReturnInts(newStrides)
-			newStrides = BorrowInts(1)
-			newStrides[0] = stride0
-		}
-
-		newAP = NewAP(newShape, newStrides)
-		newAP.o = order
+		newAP = MakeAP(newShape, newStrides, order, ap.Δ)
 	}
 	return
 }
 
 // T returns the transposed metadata based on the given input
-func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
+func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 	// prep axes
 	if len(axes) > 0 && len(axes) != ap.Dims() {
 		err = errors.Errorf(dimMismatch, ap.Dims(), len(axes))
@@ -244,7 +306,7 @@ func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
 
 	// if axes is 0, 1, 2, 3... then no op
 	if monotonic, incr1 := IsMonotonicInts(axes); monotonic && incr1 && axes[0] == 0 {
-		return ap, a, noopError{}
+		return ap.Clone(), a, noopError{}
 	}
 
 	currentShape := ap.shape
@@ -270,12 +332,8 @@ func (ap *AP) T(axes ...int) (retVal *AP, a []int, err error) {
 		}
 	}
 
-	retVal = borrowAP()
-	retVal.shape = shape
-	retVal.strides = strides
-	if ap.IsVector() {
-		retVal.strides = retVal.strides[:1]
-	}
+	o := MakeDataOrder(ap.o, Transposed)
+	retVal = MakeAP(shape, strides, o, ap.Δ)
 	retVal.fin = true
 	return
 }
@@ -286,12 +344,19 @@ func (ap *AP) unlock() { ap.fin = false }
 
 func (ap *AP) calcStrides() []int {
 	switch {
-	case ap.o.isRowMajor():
-		return ap.shape.calcStrides()
-	case ap.o.isColMajor():
-		return ap.shape.calcStridesColMajor()
+	case ap.o.IsRowMajor():
+		return ap.shape.CalcStrides()
+	case ap.o.IsColMajor():
+		return ap.shape.CalcStridesColMajor()
 	}
 	panic("unreachable")
+}
+
+// setDataOrder is a method such that any tensor that embeds *AP will have the same method
+func (ap *AP) setDataOrder(o DataOrder) {
+	if !o.HasSameOrder(ap.o) {
+		ap.o = ap.o.toggleColMajor()
+	}
 }
 
 // TransposeIndex returns the new index given the old index

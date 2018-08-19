@@ -83,18 +83,12 @@ func ReturnTensor(t Tensor) {
 	}
 	switch tt := t.(type) {
 	case *Dense:
-		if tt.old != nil {
-			ReturnAP(tt.old)
-			tt.old = nil
-		}
+		tt.AP.zero()
 
 		if tt.transposeWith != nil {
 			ReturnInts(tt.transposeWith)
 			tt.transposeWith = nil
 		}
-
-		// return AP
-		ReturnAP(tt.AP)
 
 		// array reset
 		tt.t = Dtype{}
@@ -109,7 +103,7 @@ func ReturnTensor(t Tensor) {
 		tt.flag = 0
 
 		// other reset
-		tt.old = nil
+		tt.old.zero()
 		tt.viewOf = 0
 		tt.transposeWith = nil
 
@@ -124,63 +118,14 @@ func ReturnTensor(t Tensor) {
 	}
 }
 
-/* AP POOL */
-
-var apPool = make(chan *AP, PoolSize)
-
-func borrowAP() *AP {
-	select {
-	case ap := <-apPool:
-		return ap
-	default:
-		return new(AP)
-	}
-	// return apPool.Get().(*AP)
-}
-
-// BorrowAP gets an AP from the pool. USE WITH CAUTION.
-func BorrowAP(dims int) *AP {
-	ap := borrowAP()
-	ap.shape = BorrowInts(dims)
-	ap.strides = BorrowInts(dims)
-	ap.shape = ap.shape[:cap(ap.shape)]
-	ap.strides = ap.strides[:cap(ap.strides)]
-	return ap
-}
-
-// ReturnAP returns the AP to the pool. USE WITH CAUTION.
-func ReturnAP(ap *AP) {
-	ReturnInts([]int(ap.shape))
-	ReturnInts(ap.strides)
-	ap.fin = false
-
-	ap.o = 0
-	ap.Δ = 0
-
-	if len(apPool) < cap(apPool) {
-		apPool <- ap
-	}
-	// apPool.Put(ap)
-}
-
 /* ----------------------------------------------------------------
 ------------------ Create Pools
 ------------------------------------------------------------------*/
 
 /* APLIST POOL */
 
-var apListPool [maxAPDims]sync.Pool
-
 // Init function
 func init() {
-	for i := range apListPool {
-		size := i
-		apListPool[i].New = func() interface{} { return make([]*AP, size) }
-	}
-
-	// for i := 0; i < PoolSize; i++ {
-	// 	intsPool <- make([]int, 8, 8)
-	// }
 
 	for i := range intsPool {
 		size := i
@@ -222,11 +167,13 @@ func BorrowInts(size int) []int {
 	if retVal == nil {
 		return make([]int, size)
 	}
+	// log.Printf("Borrowing %p. Called by %v", retVal, string(debug.Stack()))
 	return retVal.([]int)[:size]
 }
 
 // ReturnInts returns a slice from the pool. USE WITH CAUTION.
 func ReturnInts(is []int) {
+	// log.Printf("Returning %p. Called by %v", is, string(debug.Stack()))
 	if is == nil {
 		return
 	}
@@ -291,36 +238,6 @@ func ReturnBools(is []bool) {
 		boolsPool <- is
 	}
 	// boolsPool[size].Put(is)
-}
-
-// BorrowAPList gets an APList from the pool. USE WITH CAUTION.
-func BorrowAPList(size int) []*AP {
-	if size >= 8 {
-		return make([]*AP, size)
-	}
-
-	retVal := apListPool[size].Get()
-	if retVal == nil {
-		return make([]*AP, size)
-	}
-	return retVal.([]*AP)
-}
-
-// ReturnAPList returns the APList to the pool. USE WITH CAUTION.
-func ReturnAPList(aps []*AP) {
-	if aps == nil {
-		return
-	}
-	size := cap(aps)
-	if size >= 8 {
-		return
-	}
-	aps = aps[:cap(aps)]
-	for i := range aps {
-		aps[i] = nil
-	}
-
-	apListPool[size].Put(aps)
 }
 
 // var optPool = make(chan *OpOpt, PoolSize)

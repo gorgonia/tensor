@@ -36,6 +36,7 @@ type Tensor interface {
 	// Data access related
 	RequiresIterator() bool
 	Iterator() Iterator
+	DataOrder() DataOrder
 
 	// ops
 	Slicer
@@ -86,7 +87,6 @@ type Tensor interface {
 // New creates a new Dense Tensor. For sparse arrays use their relevant construction function
 func New(opts ...ConsOpt) *Dense {
 	d := borrowDense()
-	d.AP = new(AP)
 	for _, opt := range opts {
 		opt(d)
 	}

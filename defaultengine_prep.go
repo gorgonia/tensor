@@ -3,9 +3,10 @@ package tensor
 import (
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
+	// "log"
 )
 
-func handleFuncOpts(expShape Shape, expType Dtype, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
+func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
 	fo := ParseFuncOpts(opts...)
 
 	reuseT, incr := fo.IncrReuse()
@@ -16,7 +17,7 @@ func handleFuncOpts(expShape Shape, expType Dtype, strict bool, opts ...FuncOpt)
 	if toReuse {
 		if reuse, err = getDenseTensor(reuseT); err != nil {
 			returnOpOpt(fo)
-			err = errors.Wrapf(err, "Cannot reuse a different type of Tensor in a *Dense-Scalar operation")
+			err = errors.Wrapf(err, "Cannot reuse a Tensor that isn't a DenseTensor. Got %T instead", reuseT)
 			return
 		}
 
@@ -38,6 +39,11 @@ func handleFuncOpts(expShape Shape, expType Dtype, strict bool, opts ...FuncOpt)
 			err = errors.Errorf(shapeMismatch, reuse.Shape(), expShape)
 			err = errors.Wrapf(err, "Cannot use reuse: shape mismatch - reuse.len() %v, expShape.TotalSize() %v", reuse.len(), expShape.TotalSize())
 			return
+		}
+
+		if !incr && reuse != nil {
+			reuse.setDataOrder(o)
+			// err = reuse.reshape(expShape...)
 		}
 
 	}
@@ -101,7 +107,11 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 	}
 
 	// iter
-	useIter = a.RequiresIterator() || b.RequiresIterator() || (reuse != nil && reuse.RequiresIterator())
+	useIter = a.RequiresIterator() ||
+		b.RequiresIterator() ||
+		(reuse != nil && reuse.RequiresIterator()) ||
+		!a.DataOrder().HasSameOrder(b.DataOrder()) ||
+		(reuse != nil && (!a.DataOrder().HasSameOrder(reuse.DataOrder()) || !b.DataOrder().HasSameOrder(reuse.DataOrder())))
 	if useIter {
 		ait = a.Iterator()
 		bit = b.Iterator()
@@ -109,6 +119,7 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 			iit = reuse.Iterator()
 		}
 	}
+	// log.Printf("Use Itrer %v ", useIter)
 
 	// swap
 	if _, ok := a.(*CS); ok {
@@ -133,12 +144,14 @@ func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse 
 	if a.IsScalar() {
 		return
 	}
-	if a.RequiresIterator() || (reuse != nil && reuse.RequiresIterator()) {
+	useIter = a.RequiresIterator() ||
+		(reuse != nil && reuse.RequiresIterator()) ||
+		(reuse != nil && reuse.DataOrder().HasSameOrder(a.DataOrder()))
+	if useIter {
 		ait = a.Iterator()
 		if reuse != nil {
 			iit = reuse.Iterator()
 		}
-		useIter = true
 	}
 	return
 }
@@ -155,12 +168,14 @@ func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse 
 	if b.IsScalar() {
 		return
 	}
-	if b.RequiresIterator() || (reuse != nil && reuse.RequiresIterator()) {
+	useIter = b.RequiresIterator() ||
+		(reuse != nil && reuse.RequiresIterator()) ||
+		(reuse != nil && reuse.DataOrder().HasSameOrder(b.DataOrder()))
+	if useIter {
 		bit = b.Iterator()
 		if reuse != nil {
 			iit = reuse.Iterator()
 		}
-		useIter = true
 	}
 	return
 }

@@ -18,10 +18,8 @@ type array struct {
 
 // makeHeader makes a array Header
 func makeHeader(t Dtype, length int) storage.Header {
-	size := int(calcMemSize(t, length))
-	s := make([]byte, size)
 	return storage.Header{
-		Ptr: unsafe.Pointer(&s[0]),
+		Ptr: malloc(t, length),
 		L:   length,
 		C:   length,
 	}
@@ -75,6 +73,7 @@ func arrayFromSlice(x interface{}) array {
 	}
 }
 
+// fromSlice populates the value from a slice
 func (a *array) fromSlice(x interface{}) {
 	xT := reflect.TypeOf(x)
 	if xT.Kind() != reflect.Slice {
@@ -91,18 +90,43 @@ func (a *array) fromSlice(x interface{}) {
 	a.v = x
 }
 
+// fromSliceOrTensor populates the value from a slice or anything that can form an array
+func (a *array) fromSliceOrArrayer(x interface{}) {
+	if T, ok := x.(arrayer); ok {
+		xp := T.arrPtr()
+
+		// if the underlying array hasn't been allocated, or not enough has been allocated
+		if a.Ptr == nil || a.L < xp.L || a.C < xp.C {
+			a.t = xp.t
+			a.L = xp.L
+			a.C = xp.C
+			a.Ptr = malloc(a.t, a.L)
+		}
+
+		a.t = xp.t
+		a.L = xp.L
+		a.C = xp.C
+		copyArray(a, T.arrPtr())
+		a.v = nil    // tell the GC to release whatever a.v may hold
+		a.forcefix() // fix it such that a.v has a value and is not nil
+		return
+	}
+	a.fromSlice(x)
+}
+
+// fix fills the a.v empty interface{}  if it's not nil
 func (a *array) fix() {
 	if a.v == nil {
-		shdr := reflect.SliceHeader{
-			Data: uintptr(a.Ptr),
-			Len:  a.L,
-			Cap:  a.C,
-		}
-		sliceT := reflect.SliceOf(a.t.Type)
-		ptr := unsafe.Pointer(&shdr)
-		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-		a.v = val.Interface()
+		a.forcefix()
 	}
+}
+
+// forcefix fills the a.v empty interface{}. No checks are made if the thing is empty
+func (a *array) forcefix() {
+	sliceT := reflect.SliceOf(a.t.Type)
+	ptr := unsafe.Pointer(&a.Header)
+	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+	a.v = val.Interface()
 }
 
 // byteSlice casts the underlying slice into a byte slice. Useful for copying and zeroing, but not much else
@@ -132,6 +156,7 @@ func (a *array) sliceInto(i, j int, res *array) {
 	res.fix()
 }
 
+// slice slices an array
 func (a array) slice(start, end int) array {
 	if end > a.L {
 		panic("Index out of range")
@@ -240,6 +265,13 @@ func (a *array) rtype() reflect.Type  { return a.t.Type }
 
 /* MEMORY MOVEMENT STUFF */
 
+// malloc is standard Go allocation of a block of memory - the plus side is that Go manages the memory
+func malloc(t Dtype, length int) unsafe.Pointer {
+	size := int(calcMemSize(t, length))
+	s := make([]byte, size)
+	return unsafe.Pointer(&s[0])
+}
+
 // calcMemSize calulates the memory size of an array (given its size)
 func calcMemSize(dt Dtype, size int) int64 {
 	return int64(dt.Size()) * int64(size)
@@ -288,6 +320,7 @@ func copyDense(dst, src DenseTensor) int {
 	// return copyArray(dst.arr(), src.arr())
 }
 
+// copyDenseSliced copies a DenseTensor, but both are sliced
 func copyDenseSliced(dst DenseTensor, dstart, dend int, src DenseTensor, sstart, send int) int {
 	if dst.Dtype() != src.Dtype() {
 		panic("Cannot copy DenseTensors of different types")
@@ -316,12 +349,14 @@ func copyDenseSliced(dst DenseTensor, dstart, dend int, src DenseTensor, sstart,
 	return copyArraySliced(dst.arr(), dstart, dend, src.arr(), sstart, send)
 }
 
+// copyDenseIter copies a DenseTensor, with iterator
 func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 	if dst.Dtype() != src.Dtype() {
 		panic("Cannot copy Dense arrays of different types")
 	}
 
-	if !dst.RequiresIterator() && !src.RequiresIterator() {
+	// if they all don't need iterators, and have the same data order
+	if !dst.RequiresIterator() && !src.RequiresIterator() && dst.DataOrder().HasSameOrder(src.DataOrder()) {
 		return copyDense(dst, src), nil
 	}
 
@@ -336,6 +371,7 @@ func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 		siter = FlatIteratorFromDense(src)
 	}
 
+	// if it's a masked tensor, we copy the mask as well
 	if ms, ok := src.(MaskedTensor); ok && ms.IsMasked() {
 		if md, ok := dst.(MaskedTensor); ok {
 			dmask := md.Mask()
@@ -388,12 +424,34 @@ func getPointer(a interface{}) unsafe.Pointer {
 	case string:
 		return unsafe.Pointer(&at)
 	case uintptr:
-		return unsafe.Pointer(&at)
+		return unsafe.Pointer(at)
 	case unsafe.Pointer:
 		return at
 
 		// POINTERS
 
+	case *bool:
+		return unsafe.Pointer(at)
+	case *int:
+		return unsafe.Pointer(at)
+	case *int8:
+		return unsafe.Pointer(at)
+	case *int16:
+		return unsafe.Pointer(at)
+	case *int32:
+		return unsafe.Pointer(at)
+	case *int64:
+		return unsafe.Pointer(at)
+	case *uint:
+		return unsafe.Pointer(at)
+	case *uint8:
+		return unsafe.Pointer(at)
+	case *uint16:
+		return unsafe.Pointer(at)
+	case *uint32:
+		return unsafe.Pointer(at)
+	case *uint64:
+		return unsafe.Pointer(at)
 	case *float32:
 		return unsafe.Pointer(at)
 	case *float64:
@@ -402,11 +460,18 @@ func getPointer(a interface{}) unsafe.Pointer {
 		return unsafe.Pointer(at)
 	case *complex128:
 		return unsafe.Pointer(at)
+	case *string:
+		return unsafe.Pointer(at)
+	case *uintptr:
+		return unsafe.Pointer(*at)
+	case *unsafe.Pointer:
+		return *at
 	}
 
 	panic("Cannot get pointer")
 }
 
+// scalarToHeader creates a Header from a scalar value
 func scalarToHeader(a interface{}) *storage.Header {
 	hdr := borrowHeader()
 	hdr.Ptr = getPointer(a)

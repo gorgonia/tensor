@@ -299,6 +299,7 @@ func RegisterFloat(a Dtype) {
 	RegisterOrd(a)
 }
 
+// RegisterOrd registers a dtype as a type that can be typed
 func RegisterOrd(a Dtype) {
 	for _, dt := range ordTypes.set {
 		if dt == a {
@@ -306,8 +307,10 @@ func RegisterOrd(a Dtype) {
 		}
 	}
 	ordTypes.set = append(ordTypes.set, a)
+	RegisterEq(a)
 }
 
+// RegisterEq registers a dtype as a type that can be compared for equality
 func RegisterEq(a Dtype) {
 	for _, dt := range eqTypes.set {
 		if dt == a {
@@ -315,6 +318,26 @@ func RegisterEq(a Dtype) {
 		}
 	}
 	eqTypes.set = append(eqTypes.set, a)
+	Register(a)
+}
+
+// Register registers a new Dtype
+func Register(a Dtype) {
+	for _, dt := range allTypes.set {
+		if a == dt {
+			return
+		}
+	}
+	allTypes.set = append(allTypes.set, a)
+}
+
+func dtypeID(a Dtype) int {
+	for i, v := range allTypes.set {
+		if a == v {
+			return i
+		}
+	}
+	return -1
 }
 
 // NormOrder represents the order of the norm. Ideally, we'd only represent norms with a uint/byte.

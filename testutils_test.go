@@ -240,6 +240,7 @@ func allClose(a, b interface{}, approxFn ...interface{}) bool {
 		return reflect.DeepEqual(a, b)
 	}
 }
+
 func checkErr(t *testing.T, expected bool, err error, name string, id interface{}) (cont bool) {
 	switch {
 	case expected:

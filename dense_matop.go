@@ -5,17 +5,16 @@ import "github.com/pkg/errors"
 // T performs a thunked transpose. It doesn't actually do anything, except store extra information about the post-transposed shapes and strides
 // Usually this is more than enough, as BLAS will handle the rest of the transpose
 func (t *Dense) T(axes ...int) (err error) {
-	var transform *AP
+	var transform AP
 	if transform, axes, err = t.AP.T(axes...); err != nil {
 		return handleNoOp(err)
 	}
 
 	// is there any old transposes that need to be done first?
 	// this is important, because any old transposes for dim >=3 are merely permutations of the strides
-	if t.old != nil {
+	if !t.old.IsZero() {
 		if t.IsVector() {
 			// the transform that was calculated was a waste of time - return it to the pool then untranspose
-			ReturnAP(transform)
 			t.UT()
 			return
 		}
@@ -31,7 +30,6 @@ func (t *Dense) T(axes ...int) (err error) {
 
 		// if it is reversed, well, we just restore the backed up one
 		if isReversed {
-			ReturnAP(transform)
 			t.UT()
 			return
 		}
@@ -58,18 +56,17 @@ func (t *Dense) T(axes ...int) (err error) {
 //
 // Nothing will happen if there was no previous transpose
 func (t *Dense) UT() {
-	if t.old != nil {
-		ReturnAP(t.AP)
+	if !t.old.IsZero() {
 		ReturnInts(t.transposeWith)
 		t.AP = t.old
-		t.old = nil
+		t.old.zeroOnly()
 		t.transposeWith = nil
 	}
 }
 
 // SafeT is exactly like T(), except it returns a new *Dense. The data is also copied over, unmoved.
 func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
-	var transform *AP
+	var transform AP
 	if transform, axes, err = t.AP.T(axes...); err != nil {
 		if err = handleNoOp(err); err != nil {
 			return
@@ -82,7 +79,7 @@ func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
 	retVal.e = t.e
 	retVal.oe = t.oe
 	retVal.AP = transform
-	retVal.old = t.AP.Clone()
+	t.AP.CloneTo(&retVal.old)
 	retVal.transposeWith = axes
 
 	return
@@ -209,7 +206,7 @@ func (t *Dense) CopyTo(other *Dense) error {
 //
 // The method treats <nil> as equivalent to a colon slice. T.Slice(nil) is equivalent to T[:] in Numpy syntax
 func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
-	var newAP *AP
+	var newAP AP
 	var ndStart, ndEnd int
 
 	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
@@ -236,15 +233,14 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 // The underlying data is the same.
 // This method will override ALL the metadata in view.
 func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error) {
-	var newAP *AP
+	var newAP AP
 	var ndStart, ndEnd int
 
 	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
 		return
 	}
 
-	ReturnAP(view.AP)
-	view.AP = nil
+	view.AP.zero()
 	view.array.v = nil // reset
 
 	view.t = t.t
@@ -314,6 +310,7 @@ func (t *Dense) RollAxis(axis, start int, safe bool) (retVal *Dense, err error) 
 func (t *Dense) transposeIndex(i int, transposePat, strides []int) int {
 	oldCoord, err := Itol(i, t.oshape(), t.ostrides())
 	if err != nil {
+		err = errors.Wrapf(err, "transposeIndex ItoL failure. i %d original shape %v. original strides %v", i, t.oshape(), t.ostrides())
 		panic(err)
 	}
 

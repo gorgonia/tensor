@@ -213,7 +213,6 @@ func UnsafePermute(pattern []int, xs ...[]int) (err error) {
 	return nil
 }
 
-
 // CheckSlice checks a slice to see if it's sane
 func CheckSlice(s Slice, size int) error {
 	start := s.Start()
@@ -282,9 +281,8 @@ func reuseCheckShape(reuse DenseTensor, s Shape) (err error) {
 	}
 
 	// clean up any funny things that may be in the reuse
-	if oldAP :=  reuse.oldAP(); oldAP != nil {
-		ReturnAP(oldAP)
-		reuse.setOldAP(nil)
+	if oldAP := reuse.oldAP(); !oldAP.IsZero() {
+		oldAP.zero()
 	}
 
 	if axes := reuse.transposeAxes(); axes != nil {
@@ -308,7 +306,6 @@ func memsetBools(a []bool, v bool) {
 		copy(a[bp:], a[:bp])
 	}
 }
-
 
 /* FOR ILLUSTRATIVE PURPOSES */
 

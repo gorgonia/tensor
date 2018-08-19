@@ -10,7 +10,7 @@ import (
 	"gorgonia.org/vecf32"
 )
 
-func handleFuncOptsF32(expShape Shape, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr bool, err error) {
+func handleFuncOptsF32(expShape Shape, o DataOrder, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr bool, err error) {
 	fo := ParseFuncOpts(opts...)
 
 	reuseT, incr := fo.IncrReuse()
@@ -30,6 +30,12 @@ func handleFuncOptsF32(expShape Shape, opts ...FuncOpt) (reuse DenseTensor, safe
 			err = errors.Wrapf(err, "Cannot use reuse: shape mismatch")
 			return
 		}
+
+		if !incr && reuse != nil {
+			reuse.setDataOrder(o)
+			// err = reuse.reshape(expShape...)
+		}
+
 	}
 	returnOpOpt(fo)
 	return
@@ -175,7 +181,7 @@ func (e Float32Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, err = handleFuncOptsF32(a.Shape(), opts...); err != nil {
+	if reuse, safe, toReuse, incr, err = handleFuncOptsF32(a.Shape(), a.DataOrder(), opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if err = e.checkThree(a, b, reuse); err != nil {

@@ -23,7 +23,7 @@ func TestSaveLoadNumpy(t *testing.T) {
 
 	script := "import numpy as np\nx = np.load('test.npy')\nprint(x)"
 
-	cmd := exec.Command("python2")
+	cmd := exec.Command("python")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		t.Error(err)
@@ -204,5 +204,52 @@ func TestDense_GobEncodeDecode(t *testing.T) {
 		assert.Equal(T.mask, T3.mask)
 
 	}
+}
 
+func TestDense_FBEncodeDecode(t *testing.T) {
+	assert := assert.New(t)
+	for _, gtd := range serializationTestData {
+		T := New(WithShape(2, 2), WithBacking(gtd))
+		buf, err := T.FBEncode()
+		if err != nil {
+			t.Errorf("UNPOSSIBLE!: %v", err)
+			continue
+		}
+
+		T2 := new(Dense)
+		if err = T2.FBDecode(buf); err != nil {
+			t.Errorf("Error while decoding %v: %v", gtd, err)
+			continue
+		}
+
+		assert.Equal(T.Shape(), T2.Shape())
+		assert.Equal(T.Strides(), T2.Strides())
+		assert.Equal(T.Data(), T2.Data())
+
+		// TODO: MASKED ARRAY
+	}
+}
+
+func TestDense_PBEncodeDecode(t *testing.T) {
+	assert := assert.New(t)
+	for _, gtd := range serializationTestData {
+		T := New(WithShape(2, 2), WithBacking(gtd))
+		buf, err := T.PBEncode()
+		if err != nil {
+			t.Errorf("UNPOSSIBLE!: %v", err)
+			continue
+		}
+
+		T2 := new(Dense)
+		if err = T2.PBDecode(buf); err != nil {
+			t.Errorf("Error while decoding %v: %v", gtd, err)
+			continue
+		}
+
+		assert.Equal(T.Shape(), T2.Shape())
+		assert.Equal(T.Strides(), T2.Strides())
+		assert.Equal(T.Data(), T2.Data())
+
+		// TODO: MASKED ARRAY
+	}
 }

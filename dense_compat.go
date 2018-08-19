@@ -394,14 +394,12 @@ func FromMat64(m *mat.Dense, opts ...FuncOpt) *Dense {
 func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 	// checks:
 	if !t.IsNativelyAccessible() {
-		err = errors.Errorf("Cannot convert *Dense to *mat.Dense. Data is inaccessible")
-		return
+		return nil, errors.Errorf("Cannot convert *Dense to *mat.Dense. Data is inaccessible")
 	}
 
 	if !t.IsMatrix() {
 		// error
-		err = errors.Errorf("Cannot convert *Dense to *mat.Dense. Expected number of dimensions: <=2, T has got %d dimensions (Shape: %v)", t.Dims(), t.Shape())
-		return
+		return nil, errors.Errorf("Cannot convert *Dense to *mat.Dense. Expected number of dimensions: <=2, T has got %d dimensions (Shape: %v)", t.Dims(), t.Shape())
 	}
 
 	fo := ParseFuncOpts(opts...)
@@ -420,7 +418,7 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 	case !t.IsMaterializable():
 		data = convToFloat64s(t)
 	default:
-		it := NewFlatIterator(t.AP)
+		it := newFlatIterator(&t.AP)
 		var next int
 		for next, err = it.Next(); err == nil; next, err = it.Next() {
 			if err = handleNoOp(err); err != nil {

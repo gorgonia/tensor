@@ -97,16 +97,19 @@ func NewMultIterator(aps ...*AP) *MultIterator {
 			ReturnInts(apStrides) // Borrowed in BroadcastStrides but returned here - dangerous pattern?
 			nBlocks++
 		}
-		ap2 := NewAP(it.shape[:maxDims], it.strides[offset:offset+maxDims])
-		ap2.o = ap.o
-		ap2.Δ = ap.Δ
-
+		ap2 := MakeAP(it.shape[:maxDims], it.strides[offset:offset+maxDims], ap.o, ap.Δ)
 		it.whichBlock[i] = f
-		it.fitArr[nBlocks-1] = NewFlatIterator(ap2)
+		it.fitArr[nBlocks-1] = newFlatIterator(&ap2)
 	}
 
 	it.fitArr = it.fitArr[:nBlocks]
 	it.strides = it.strides[:nBlocks*maxDims]
+	// fill 0s with 1s
+	for i := range it.strides {
+		if it.strides[i] == 0 {
+			it.strides[i] = 1
+		}
+	}
 
 	it.fit0 = it.fitArr[0]
 	for _, f := range it.fitArr {
@@ -120,7 +123,7 @@ func NewMultIterator(aps ...*AP) *MultIterator {
 
 // MultIteratorFromDense creates a new MultIterator from a list of dense tensors
 func MultIteratorFromDense(tts ...DenseTensor) *MultIterator {
-	aps := BorrowAPList(len(tts))
+	aps := make([]*AP, len(tts))
 	hasMask := BorrowBools(len(tts))
 	defer ReturnBools(hasMask)
 
@@ -155,7 +158,6 @@ func MultIteratorFromDense(tts ...DenseTensor) *MultIterator {
 		}
 	}
 	it.numMasked = numMasked
-	ReturnAPList(aps)
 	return it
 }
 
@@ -221,7 +223,9 @@ func (it *MultIterator) Next() (int, error) {
 	}
 	it.done = false
 	for _, f := range it.fitArr {
-		f.Next()
+		if _, err := f.Next(); err != nil {
+			return -1, err
+		}
 		it.done = it.done || f.done
 	}
 	for i, j := range it.whichBlock {

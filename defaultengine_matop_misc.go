@@ -1,6 +1,12 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
+
+var (
+	_ Diager = StdEng{}
+)
 
 func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	switch tt := t.(type) {
@@ -104,9 +110,18 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 	all[0] = a
 	copy(all[1:], Ts)
 
+	// TODO: OPIMIZATION
+	// When (axis == 0 && a is row major and all others is row major) || (axis == last axis of A && all tensors are colmajor)
+	// just flat copy
+	//
+
+	// isOuter  is true when the axis is the outermost axis
+	// isInner is true when the axis is the inner most axis
+	isOuter := axis == 0
+	isInner := axis == (a.Shape().Dims() - 1)
+
 	// special case
 	var start, end int
-
 	for _, T := range all {
 		end += T.Shape()[axis]
 		slices := make([]Slice, axis+1)
@@ -117,15 +132,124 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 			return nil, errors.Wrap(err, "Unable to slice DenseTensor while performing denseConcat")
 		}
 
-		if v.IsVector() && T.IsMatrix() && axis == 0 {
+		switch {
+		case v.IsVector() && T.IsMatrix() && axis == 0:
 			v.reshape(v.shape[0], 1)
+		case T.IsRowVec() && axis == 0:
+			T.reshape(T.Shape()[1])
+		case v.Shape().IsScalarEquiv() && T.Shape().IsScalarEquiv():
+			copyArray(v.arrPtr(), T.arrPtr())
+			if mt, ok := T.(MaskedTensor); ok {
+				copy(v.mask, mt.Mask())
+			}
+			continue
+		default:
+			diff := retVal.Shape().Dims() - v.Shape().Dims()
+			if diff > 0 && isOuter {
+				newShape := make(Shape, v.Shape().Dims()+diff)
+				for i := 0; i < diff; i++ {
+					newShape[i] = 1
+				}
+				copy(newShape[diff:], v.Shape())
+				v.reshape(newShape...)
+			} else if diff > 0 && isInner {
+				newShape := v.Shape().Clone()
+				newStrides := v.strides
+				for i := 0; i < diff; i++ {
+					newShape = append(newShape, 1)
+					newStrides = append(newStrides, 1)
+				}
+				v.shape = newShape
+				v.strides = newStrides
+			}
+		}
+
+		var vmask, Tmask []bool
+		vmask = v.mask
+		v.mask = nil
+		if mt, ok := T.(MaskedTensor); ok && mt.IsMasked() {
+			Tmask = mt.Mask()
+			mt.SetMask(nil)
+
 		}
 
 		if err = assignArray(v, T); err != nil {
 			return nil, errors.Wrap(err, "Unable to assignArray in denseConcat")
 		}
+		// if it's a masked tensor, we copy the mask as well
+		if Tmask != nil {
+			if vmask != nil {
+				if cap(vmask) < len(Tmask) {
+					vmask2 := make([]bool, len(Tmask))
+					copy(vmask2, vmask)
+					vmask = vmask2
+				}
+				copy(vmask, Tmask)
+				v.SetMask(vmask)
+			}
+			// mt.SetMask(Tmask)
+		}
+
 		start = end
 	}
 
 	return retVal, nil
+}
+
+func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
+	a, ok := t.(DenseTensor)
+	if !ok {
+		return nil, errors.Errorf("StdEng only works with DenseTensor for Diagonal()")
+	}
+
+	if a.Dims() != 2 {
+		err = errors.Errorf(dimMismatch, 2, a.Dims())
+		return
+	}
+
+	if err = typeclassCheck(a.Dtype(), numberTypes); err != nil {
+		return nil, errors.Wrap(err, "Diagonal")
+	}
+
+	rstride := a.Strides()[0]
+	cstride := a.Strides()[1]
+
+	r := a.Shape()[0]
+	c := a.Shape()[1]
+
+	m := MinInt(r, c)
+	stride := rstride + cstride
+
+	b := a.Clone().(DenseTensor)
+	b.Zero()
+
+	switch a.rtype().Size() {
+	case 1:
+		bdata := b.hdr().Uint8s()
+		adata := a.hdr().Uint8s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	case 2:
+		bdata := b.hdr().Uint16s()
+		adata := a.hdr().Uint16s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	case 4:
+		bdata := b.hdr().Uint32s()
+		adata := a.hdr().Uint32s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	case 8:
+		bdata := b.hdr().Uint64s()
+		adata := a.hdr().Uint64s()
+		for i := 0; i < m; i++ {
+			bdata[i] = adata[i*stride]
+		}
+	default:
+		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag")
+	}
+	return b, nil
 }

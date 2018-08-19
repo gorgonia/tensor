@@ -90,36 +90,36 @@ func TestShapeCalcStride(t *testing.T) {
 
 	// scalar shape
 	s = Shape{}
-	assert.Nil(s.calcStrides())
+	assert.Nil(s.CalcStrides())
 
 	s = Shape{1}
-	assert.Nil(s.calcStrides())
+	assert.Nil(s.CalcStrides())
 
 	// vector shape
 	s = Shape{2, 1}
-	assert.Equal([]int{1}, s.calcStrides())
+	assert.Equal([]int{1, 1}, s.CalcStrides())
 
 	s = Shape{1, 2}
-	assert.Equal([]int{1}, s.calcStrides())
+	assert.Equal([]int{2, 1}, s.CalcStrides())
 
 	s = Shape{2}
-	assert.Equal([]int{1}, s.calcStrides())
+	assert.Equal([]int{1}, s.CalcStrides())
 
 	// matrix strides
 	s = Shape{2, 2}
-	assert.Equal([]int{2, 1}, s.calcStrides())
+	assert.Equal([]int{2, 1}, s.CalcStrides())
 
 	s = Shape{5, 2}
-	assert.Equal([]int{2, 1}, s.calcStrides())
+	assert.Equal([]int{2, 1}, s.CalcStrides())
 
 	// 3D strides
 	s = Shape{2, 3, 4}
-	assert.Equal([]int{12, 4, 1}, s.calcStrides())
+	assert.Equal([]int{12, 4, 1}, s.CalcStrides())
 
 	// stupid shape
 	s = Shape{-2, 1, 2}
 	fail := func() {
-		s.calcStrides()
+		s.CalcStrides()
 	}
 	assert.Panics(fail)
 }
@@ -191,6 +191,10 @@ var shapeSliceTests = []struct {
 	{"vec[3]", Shape{2}, []Slice{rs{3, 4, 0}}, nil, true},
 	{"vec[:, 0]", Shape{2}, []Slice{nil, rs{0, 1, 0}}, nil, true},
 	{"vec[1:4:2]", Shape{5}, []Slice{rs{1, 4, 2}}, ScalarShape(), false},
+	{"tensor[0, :, :]", Shape{1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil}, Shape{2, 2}, false},
+	{"tensor[:, 0, :]", Shape{1, 2, 2}, []Slice{nil, rs{0, 1, 1}, nil}, Shape{1, 2}, false},
+	{"tensor[0, :, :, :]", Shape{1, 1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil, nil}, Shape{1, 2, 2}, false},
+	{"tensor[0,]", Shape{1, 1, 2, 2}, []Slice{rs{0, 1, 1}}, Shape{1, 2, 2}, false},
 }
 
 func TestShape_Slice(t *testing.T) {
