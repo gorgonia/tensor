@@ -18,7 +18,7 @@ func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -98,7 +98,7 @@ func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -178,7 +178,7 @@ func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -258,7 +258,7 @@ func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -338,7 +338,7 @@ func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -418,7 +418,7 @@ func (e StdEng) ElNe(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -498,7 +498,7 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -564,7 +564,7 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataB.L == 1 && dataB.L == 1 {
+	if dataA.L == 1 && dataB.L == 1 {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -610,7 +610,7 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -676,7 +676,7 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	}
 
 	// handle special case where A and B have both len 1
-	if dataB.L == 1 && dataB.L == 1 {
+	if dataA.L == 1 && dataB.L == 1 {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -722,7 +722,7 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -788,7 +788,7 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataB.L == 1 && dataB.L == 1 {
+	if dataA.L == 1 && dataB.L == 1 {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -834,7 +834,7 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -900,7 +900,7 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	}
 
 	// handle special case where A and B have both len 1
-	if dataB.L == 1 && dataB.L == 1 {
+	if dataA.L == 1 && dataB.L == 1 {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -942,7 +942,7 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -1008,7 +1008,7 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataB.L == 1 && dataB.L == 1 {
+	if dataA.L == 1 && dataB.L == 1 {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -1050,7 +1050,7 @@ func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 
 	var reuse DenseTensor
 	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), false, opts...); err != nil {
+	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
@@ -1116,7 +1116,7 @@ func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataB.L == 1 && dataB.L == 1 {
+	if dataA.L == 1 && dataB.L == 1 {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)

@@ -59,6 +59,11 @@ type arrayMaker interface {
 	makeArray(arr *array, t Dtype, size int)
 }
 
+// NonStdEngine are any engines that do not allocate using the default built in allocator
+type NonStdEngine interface {
+	NonStdAlloc() // noop
+}
+
 /* Data Agnostic Execution Engine Methods */
 
 // Transposer is any engine that can perform an unsafe transpose of a tensor.
@@ -84,6 +89,11 @@ type DenseStacker interface {
 // Repeater is any engine that can repeat values along the given axis.
 type Repeater interface {
 	Repeat(t Tensor, axis int, repeats ...int) (Tensor, error)
+}
+
+// Diager is any engine that can return a tensor that only contains the diagonal values of the input
+type Diager interface {
+	Diag(a Tensor) (Tensor, error)
 }
 
 /* NUMBER INTERFACES
@@ -367,6 +377,20 @@ type Argmaxer interface {
 // By convention the returned Tensor has Dtype of Int.
 type Argminer interface {
 	Argmin(t Tensor, axis int) (Tensor, error)
+}
+
+// NaNChecker checks that the tensor contains a NaN
+// Errors are to be returned if the concept of NaN does not apply to the data type.
+// Other errors may also occur. See specific implementations for details
+type NaNChecker interface {
+	HasNaN(t Tensor) (bool, error)
+}
+
+// InfChecker checks that the tensor contains a Inf.
+// Errors are to be returned if the concept of Inf does not apply to the data type.
+// Other errors may also occur. See specific implementations for details
+type InfChecker interface {
+	HasInf(t Tensor) (bool, error)
 }
 
 /* Internal interfaces for faster shit */

@@ -1,0 +1,52 @@
+syntax = "proto3";
+package gorgonia.org.tensor.internal.serialization.pb;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.protosizer_all) = true;
+option (gogoproto.sizer_all) = false;
+option go_package = "pb";
+
+message AP {
+	option (gogoproto.goproto_getters) = false;
+	option (gogoproto.typedecl) = false;
+	repeated int32 shape = 1;
+	repeated int32 strides = 2;
+	uint32 o = 3 [(gogoproto.casttype) = "DataOrder"];
+	gorgonia.org.tensor.internal.serialization.pb.Triangle t = 4;
+}
+
+message Dense {
+	option (gogoproto.goproto_getters) = false;
+	option (gogoproto.typedecl) = false;
+	repeated int32 shape = 1;
+	repeated int32 strides = 2;
+	uint32 o = 3 [(gogoproto.casttype) = "DataOrder"];
+	gorgonia.org.tensor.internal.serialization.pb.Triangle t = 4;
+	string type = 5;
+	bytes data = 6;
+}
+
+message MaskedDense {
+	option (gogoproto.goproto_getters) = false;
+	option (gogoproto.typedecl) = false;
+	repeated int32 shape = 1;
+	repeated int32 strides = 2;
+	uint32 o = 3 [(gogoproto.casttype) = "DataOrder"];
+	gorgonia.org.tensor.internal.serialization.pb.Triangle t = 4;
+	string type = 5;
+	bytes data = 6;
+	repeated bool mask = 7;
+	repeated bool mask_is_soft = 8;
+}
+
+enum Triangle {
+	option (gogoproto.enumdecl) = false;
+	option (gogoproto.goproto_enum_prefix) = false;
+	option (gogoproto.goproto_enum_stringer) = false;
+	NOT_TRIANGLE = 0 [(gogoproto.enumvalue_customname) = "NotTriangle"];
+	UPPER = 1 [(gogoproto.enumvalue_customname) = "Upper"];
+	LOWER = 2 [(gogoproto.enumvalue_customname) = "Lower"];
+	SYMMETRIC = 3 [(gogoproto.enumvalue_customname) = "Symmetric"];
+}
+

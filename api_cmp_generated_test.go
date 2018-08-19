@@ -62,7 +62,7 @@ func TestGt(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gt failed: %v", err)
+		t.Errorf("Transitivity test for Gt failed: %v", err)
 	}
 
 }
@@ -120,7 +120,7 @@ func TestGte(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gte failed: %v", err)
+		t.Errorf("Transitivity test for Gte failed: %v", err)
 	}
 
 }
@@ -178,7 +178,7 @@ func TestLt(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lt failed: %v", err)
+		t.Errorf("Transitivity test for Lt failed: %v", err)
 	}
 
 }
@@ -236,7 +236,7 @@ func TestLte(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lte failed: %v", err)
+		t.Errorf("Transitivity test for Lte failed: %v", err)
 	}
 
 }
@@ -294,7 +294,7 @@ func TestEq(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElEq failed: %v", err)
+		t.Errorf("Transitivity test for ElEq failed: %v", err)
 	}
 
 	symFn := func(q *Dense) bool {
@@ -328,7 +328,7 @@ func TestEq(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElEq failed: %v", err)
+		t.Errorf("Transitivity test for ElEq failed: %v", err)
 	}
 }
 func TestNe(t *testing.T) {
@@ -363,7 +363,7 @@ func TestNe(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElNe failed: %v", err)
+		t.Errorf("Transitivity test for ElNe failed: %v", err)
 	}
 }
 func TestGt_assame(t *testing.T) {
@@ -422,7 +422,7 @@ func TestGt_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gt failed: %v", err)
+		t.Errorf("Transitivity test for Gt failed: %v", err)
 	}
 
 }
@@ -482,7 +482,7 @@ func TestGte_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gte failed: %v", err)
+		t.Errorf("Transitivity test for Gte failed: %v", err)
 	}
 
 }
@@ -542,7 +542,7 @@ func TestLt_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lt failed: %v", err)
+		t.Errorf("Transitivity test for Lt failed: %v", err)
 	}
 
 }
@@ -602,7 +602,7 @@ func TestLte_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lte failed: %v", err)
+		t.Errorf("Transitivity test for Lte failed: %v", err)
 	}
 
 }
@@ -662,7 +662,7 @@ func TestEq_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElEq failed: %v", err)
+		t.Errorf("Transitivity test for ElEq failed: %v", err)
 	}
 
 	symFn := func(q *Dense) bool {
@@ -699,7 +699,7 @@ func TestEq_assame(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElEq failed: %v", err)
+		t.Errorf("Transitivity test for ElEq failed: %v", err)
 	}
 }
 func TestNe_assame(t *testing.T) {
@@ -737,7 +737,7 @@ func TestNe_assame(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElNe failed: %v", err)
+		t.Errorf("Transitivity test for ElNe failed: %v", err)
 	}
 }
 func TestGtScalar(t *testing.T) {
@@ -792,7 +792,7 @@ func TestGtScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gt failed: %v", err)
+		t.Errorf("Transitivity test for Gt failed: %v", err)
 	}
 
 }
@@ -848,7 +848,7 @@ func TestGteScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gte failed: %v", err)
+		t.Errorf("Transitivity test for Gte failed: %v", err)
 	}
 
 }
@@ -904,7 +904,7 @@ func TestLtScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lt failed: %v", err)
+		t.Errorf("Transitivity test for Lt failed: %v", err)
 	}
 
 }
@@ -960,7 +960,7 @@ func TestLteScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lte failed: %v", err)
+		t.Errorf("Transitivity test for Lte failed: %v", err)
 	}
 
 }
@@ -1016,7 +1016,7 @@ func TestEqScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElEq failed: %v", err)
+		t.Errorf("Transitivity test for ElEq failed: %v", err)
 	}
 
 	symFn := func(q *Dense) bool {
@@ -1048,7 +1048,7 @@ func TestEqScalar(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Symmetry test for ElEq failed: %v", err)
+		t.Errorf("Symmetry test for ElEq failed: %v", err)
 	}
 }
 func TestNeScalar(t *testing.T) {
@@ -1081,7 +1081,7 @@ func TestNeScalar(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Symmetry test for ElNe failed: %v", err)
+		t.Errorf("Symmetry test for ElNe failed: %v", err)
 	}
 }
 func TestGtScalar_assame(t *testing.T) {
@@ -1138,7 +1138,7 @@ func TestGtScalar_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gt failed: %v", err)
+		t.Errorf("Transitivity test for Gt failed: %v", err)
 	}
 
 }
@@ -1196,7 +1196,7 @@ func TestGteScalar_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Gte failed: %v", err)
+		t.Errorf("Transitivity test for Gte failed: %v", err)
 	}
 
 }
@@ -1254,7 +1254,7 @@ func TestLtScalar_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lt failed: %v", err)
+		t.Errorf("Transitivity test for Lt failed: %v", err)
 	}
 
 }
@@ -1312,7 +1312,7 @@ func TestLteScalar_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for Lte failed: %v", err)
+		t.Errorf("Transitivity test for Lte failed: %v", err)
 	}
 
 }
@@ -1370,7 +1370,7 @@ func TestEqScalar_assame(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(transFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Transitivity test for ElEq failed: %v", err)
+		t.Errorf("Transitivity test for ElEq failed: %v", err)
 	}
 
 	symFn := func(q *Dense) bool {
@@ -1405,7 +1405,7 @@ func TestEqScalar_assame(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Symmetry test for ElEq failed: %v", err)
+		t.Errorf("Symmetry test for ElEq failed: %v", err)
 	}
 }
 func TestNeScalar_assame(t *testing.T) {
@@ -1441,6 +1441,6 @@ func TestNeScalar_assame(t *testing.T) {
 
 	}
 	if err := quick.Check(symFn, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Error("Symmetry test for ElNe failed: %v", err)
+		t.Errorf("Symmetry test for ElNe failed: %v", err)
 	}
 }

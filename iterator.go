@@ -1,6 +1,8 @@
 package tensor
 
-import "runtime"
+import (
+	"runtime"
+)
 
 func requiresOrderedIterator(e Engine, t Tensor) bool {
 	if t.IsScalar() {
@@ -70,7 +72,7 @@ func NewIterator(aps ...*AP) Iterator {
 	case 0:
 		return nil
 	case 1:
-		return NewFlatIterator(aps[0])
+		return newFlatIterator(aps[0])
 	default:
 		return NewMultIterator(aps...)
 	}
@@ -111,8 +113,8 @@ func iteratorLoadAP(it Iterator, ap *AP) {
 
 /* FLAT ITERATOR */
 
-// FlatIterator is an iterator that iterates over Tensors. It utilizes the *AP
-// of a Tensor to determine what the next index is.
+// FlatIterator is an iterator that iterates over Tensors according to the data's layout.
+// It utilizes the *AP of a Tensor to determine what the next index is.
 // This data structure is similar to Numpy's flatiter, with some standard Go based restrictions of course
 // (such as, not allowing negative indices)
 type FlatIterator struct {
@@ -129,16 +131,20 @@ type FlatIterator struct {
 
 	isScalar bool
 	isVector bool
+
+	outerFirst bool
 }
 
-// NewFlatIterator creates a new FlatIterator.
-func NewFlatIterator(ap *AP) *FlatIterator {
+// newFlatIterator creates a new FlatIterator.
+func newFlatIterator(ap *AP) *FlatIterator {
 	var strides0 int
-	if ap.IsVector() {
-		strides0 = ap.strides[0]
-	} else if ap.o.isColMajor() {
+
+	if len(ap.strides) == 1 {
 		strides0 = ap.strides[0]
 	}
+	// else if ap.o.isColMajor() {
+	// 	strides0 = ap.strides[len(ap.strides)-1]
+	// }
 
 	return &FlatIterator{
 		AP:       ap,
@@ -147,13 +153,13 @@ func NewFlatIterator(ap *AP) *FlatIterator {
 		strides0: strides0,
 
 		isScalar: ap.IsScalar(),
-		isVector: ap.IsVector(),
+		isVector: len(ap.strides) == 1,
 	}
 }
 
 // FlatIteratorFromDense creates a new FlatIterator from a dense tensor
 func FlatIteratorFromDense(tt DenseTensor) *FlatIterator {
-	return NewFlatIterator(tt.Info())
+	return newFlatIterator(tt.Info())
 }
 
 // SetReverse initializes iterator to run backwards
@@ -200,6 +206,9 @@ func (it *FlatIterator) Next() (int, error) {
 		if it.reverse {
 			return it.ndPrevious()
 		}
+		if it.outerFirst {
+			return it.colMajorNDNext()
+		}
 		return it.ndNext()
 	}
 }
@@ -232,6 +241,11 @@ func (it *FlatIterator) NextValid() (int, int, error) {
 		if it.reverse {
 			a, err := it.ndPrevious()
 			return a, -1, err
+		}
+
+		if it.outerFirst {
+			a, err := it.colMajorNDNext()
+			return a, 1, err
 		}
 		a, err := it.ndNext()
 		return a, 1, err
@@ -293,7 +307,6 @@ func (it *FlatIterator) singlePrevious() (int, error) {
 	if tracked < 0 {
 		it.done = true
 	}
-
 	return it.lastIndex, nil
 }
 
@@ -332,7 +345,39 @@ func (it *FlatIterator) ndNext() (int, error) {
 }
 
 func (it *FlatIterator) colMajorNDNext() (int, error) {
-	return 0, nil
+	// the reason for this weird looking bits of code is because the SSA compiler doesn't
+	// know how to optimize for this bit of code, not keeping things in registers correctly
+	// @stuartcarnie optimized this iout to great effect
+
+	v := len(it.shape) - 1
+	nextIndex := it.nextIndex
+	it.lastIndex = nextIndex
+
+	// the following 3 lines causes the compiler to perform bounds check here,
+	// instead of being done in the loop
+	coord := it.shape[:v+1]
+	track := it.track[:v+1]
+	strides := it.strides[:v+1]
+	for i := 0; i <= v; i++ {
+		track[i]++
+		shapeI := coord[i]
+		strideI := strides[i]
+
+		if track[i] == shapeI {
+			if i == v {
+				it.done = true
+			}
+			track[i] = 0
+
+			nextIndex -= (shapeI - 1) * strideI
+			continue
+		}
+		nextIndex += strideI
+		break
+	}
+	it.nextIndex = nextIndex
+	return it.lastIndex, nil
+
 }
 
 func (it *FlatIterator) ndPrevious() (int, error) {
@@ -353,6 +398,7 @@ func (it *FlatIterator) ndPrevious() (int, error) {
 	return it.lastIndex, nil
 }
 
+// TODO v0.9.0
 func (it *FlatIterator) colMajorNDPrevious() (int, error) {
 	return 0, nil
 }
@@ -424,10 +470,12 @@ func (it *FlatIterator) Reset() {
 		switch {
 		case it.IsScalar():
 			it.nextIndex = 0
-		case it.IsRowVec():
-			it.nextIndex = (it.shape[1] - 1) * it.strides[0]
-		case it.IsColVec(), it.IsVector():
+		case it.isVector:
 			it.nextIndex = (it.shape[0] - 1) * it.strides[0]
+		// case it.IsRowVec():
+		// 	it.nextIndex = (it.shape[1] - 1) * it.strides[1]
+		// case it.IsColVec():
+		// 	it.nextIndex = (it.shape[0] - 1) * it.strides[0]
 		default:
 			it.nextIndex = 0
 			for i := range it.track {

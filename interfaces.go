@@ -76,7 +76,6 @@ type DenseTensor interface {
 	Tensor
 	Info() *AP
 
-	DataOrder() DataOrder
 	IsMatrix() bool
 	IsVector() bool
 	IsRowVec() bool
@@ -89,6 +88,7 @@ type DenseTensor interface {
 	rtype() reflect.Type
 	reshape(dims ...int) error
 
+	setDataOrder(o DataOrder)
 	isTransposed() bool
 	ostrides() []int
 	oshape() Shape

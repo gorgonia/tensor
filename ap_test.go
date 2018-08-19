@@ -32,46 +32,40 @@ func sli(start int, opt ...int) dummySlice {
 	return dummySlice{start: start, end: end, step: step}
 }
 
-func dummyScalar1() *AP {
-	return &AP{}
-}
+func dummyScalar1() AP { return AP{} }
 
-func dummyScalar2() *AP {
-	return &AP{
-		shape: Shape{1},
-	}
-}
+func dummyScalar2() AP { return AP{shape: Shape{1}} }
 
-func dummyColVec() *AP {
-	return &AP{
+func dummyColVec() AP {
+	return AP{
 		shape:   Shape{5, 1},
 		strides: []int{1},
 	}
 }
 
-func dummyRowVec() *AP {
-	return &AP{
+func dummyRowVec() AP {
+	return AP{
 		shape:   Shape{1, 5},
 		strides: []int{1},
 	}
 }
 
-func dummyVec() *AP {
-	return &AP{
+func dummyVec() AP {
+	return AP{
 		shape:   Shape{5},
 		strides: []int{1},
 	}
 }
 
-func twothree() *AP {
-	return &AP{
+func twothree() AP {
+	return AP{
 		shape:   Shape{2, 3},
 		strides: []int{3, 1},
 	}
 }
 
-func twothreefour() *AP {
-	return &AP{
+func twothreefour() AP {
+	return AP{
 		shape:   Shape{2, 3, 4},
 		strides: []int{12, 4, 1},
 	}
@@ -83,7 +77,7 @@ func TestAccessPatternBasics(t *testing.T) {
 
 	ap.SetShape(1, 2)
 	assert.Equal(Shape{1, 2}, ap.Shape())
-	assert.Equal([]int{1}, ap.Strides())
+	assert.Equal([]int{2, 1}, ap.Strides())
 	assert.Equal(2, ap.Dims())
 	assert.Equal(2, ap.Size())
 
@@ -100,21 +94,21 @@ func TestAccessPatternBasics(t *testing.T) {
 	ap.unlock()
 	ap.SetShape(1, 2)
 	assert.Equal(Shape{1, 2}, ap.Shape())
-	assert.Equal([]int{1}, ap.Strides())
+	assert.Equal([]int{2, 1}, ap.Strides())
 	assert.Equal(2, ap.Dims())
 	assert.Equal(2, ap.Size())
 
-	if ap.String() != "Shape: (1, 2), Stride: [1], Lock: false" {
-		t.Error("AP formatting error. Got %q", ap.String())
+	if ap.String() != "Shape: (1, 2), Stride: [2 1], Lock: false" {
+		t.Errorf("AP formatting error. Got %q", ap.String())
 	}
 
 	ap2 := ap.Clone()
-	assert.Equal(ap, ap2)
+	assert.Equal(*ap, ap2)
 }
 
 func TestAccessPatternIsX(t *testing.T) {
 	assert := assert.New(t)
-	var ap *AP
+	var ap AP
 
 	ap = dummyScalar1()
 	assert.True(ap.IsScalar())
@@ -151,7 +145,7 @@ func TestAccessPatternIsX(t *testing.T) {
 
 func TestAccessPatternT(t *testing.T) {
 	assert := assert.New(t)
-	var ap, apT *AP
+	var ap, apT AP
 	var axes []int
 	var err error
 
@@ -216,16 +210,22 @@ var sliceTests = []struct {
 	{"A[1:3]", Shape{4, 5}, []Slice{sli(1, 3)}, 5, 15, Shape{2, 5}, []int{5, 1}, true},
 	{"A[0:10] (intentionally over)", Shape{4, 5}, []Slice{sli(0, 10)}, 0, 20, Shape{4, 5}, []int{5, 1}, true}, // as if nothing happened
 	{"A[:, 1:3]", Shape{4, 5}, []Slice{nil, sli(1, 3)}, 1, 18, Shape{4, 2}, []int{5, 1}, false},
+
+	// tensor
+	{"tensor[0, :, :]", Shape{1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil}, 0, 4, Shape{2, 2}, []int{2, 1}, true},
+	{"tensor[:, 0, :]", Shape{1, 2, 2}, []Slice{nil, rs{0, 1, 1}, nil}, 0, 2, Shape{1, 2}, []int{4, 1}, false},
+	{"tensor[0, :, :, :]", Shape{1, 1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil, nil}, 0, 4, Shape{1, 2, 2}, []int{4, 2, 1}, true},
+	{"tensor[0,]", Shape{1, 1, 2, 2}, []Slice{rs{0, 1, 1}}, 0, 4, Shape{1, 2, 2}, []int{4, 2, 1}, true},
 }
 
 func TestAccessPatternS(t *testing.T) {
 	assert := assert.New(t)
-	var ap, apS *AP
+	var ap, apS AP
 	var ndStart, ndEnd int
 	var err error
 
 	for _, sts := range sliceTests {
-		ap = NewAP(sts.shape, sts.shape.calcStrides())
+		ap = MakeAP(sts.shape, sts.shape.CalcStrides(), 0, 0)
 		if apS, ndStart, ndEnd, err = ap.S(sts.shape.TotalSize(), sts.slices...); err != nil {
 			t.Errorf("%v errored: %v", sts.name, err)
 			continue
@@ -234,7 +234,7 @@ func TestAccessPatternS(t *testing.T) {
 		assert.Equal(sts.correctEnd, ndEnd, "Wrong end: %v. Want %d Got %d", sts.name, sts.correctEnd, ndEnd)
 		assert.True(sts.correctShape.Eq(apS.shape), "Wrong shape: %v. Want %v. Got %v", sts.name, sts.correctShape, apS.shape)
 		assert.Equal(sts.correctStride, apS.strides, "Wrong strides: %v. Want %v. Got %v", sts.name, sts.correctStride, apS.strides)
-		assert.Equal(sts.contiguous, apS.DataOrder().isContiguous(), "Wrong contiguity for %v Want %t.", sts.name, sts.contiguous)
+		assert.Equal(sts.contiguous, apS.DataOrder().IsContiguous(), "Wrong contiguity for %v Want %t.", sts.name, sts.contiguous)
 	}
 }
 

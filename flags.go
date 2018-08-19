@@ -13,7 +13,12 @@ const (
 	// A data can either be Contiguous (0) or NonContiguous (2).
 	// The way DataOrder was designed causes the default to be Contiguous.
 	NonContiguous
+
+	// Transposed indicates that the data has been transposed
+	Transposed
 )
+
+var dataOrderNames = []rune("NonContiguous, RowMajorᵀNonContiguous, ColMajorᵀ")
 
 // MakeDataOrder makes a data order. Typical examples:
 //		MakeDataOrder(DataOrder(0))            // Row Major, contiguous
@@ -30,13 +35,47 @@ func MakeDataOrder(fs ...DataOrder) (retVal DataOrder) {
 	return
 }
 
-func (f DataOrder) isColMajor() bool          { return (f & ColMajor) != 0 }
-func (f DataOrder) isRowMajor() bool          { return !f.isColMajor() }
-func (f DataOrder) isContiguous() bool        { return !f.isNotContiguous() }
-func (f DataOrder) isNotContiguous() bool     { return (f & NonContiguous) != 0 }
+// IsColMajor returns true if the data order describes a col-major data
+func (f DataOrder) IsColMajor() bool { return (f & ColMajor) != 0 }
+
+// IsRowMajor returns true if the data order describes a row-major data
+func (f DataOrder) IsRowMajor() bool { return !f.IsColMajor() }
+
+// IsContiguous returns true if the data order describes a contiguous data.
+func (f DataOrder) IsContiguous() bool { return !f.IsNotContiguous() }
+
+// IsNotContiguous returns true if the data order describes a noncontiguous data.
+func (f DataOrder) IsNotContiguous() bool { return (f & NonContiguous) != 0 }
+
+// IsTransposed returns true if the data order describes whether the data has been tranposed (but not moved)
+func (f DataOrder) IsTransposed() bool { return (f & Transposed) != 0 }
+
 func (f DataOrder) toggleColMajor() DataOrder { return f ^ (ColMajor) }
-func (f DataOrder) hasSameOrder(other DataOrder) bool {
-	return (f.isColMajor() && other.isColMajor()) || (f.isRowMajor() && other.isRowMajor())
+
+func (f DataOrder) clearTransposed() DataOrder { return f &^ (Transposed) }
+
+func (f DataOrder) HasSameOrder(other DataOrder) bool {
+	return (f.IsColMajor() && other.IsColMajor()) || (f.IsRowMajor() && other.IsRowMajor())
+}
+
+func (f DataOrder) String() string {
+	var start, end int
+	if f.IsRowMajor() {
+		end = 23
+		if f.IsContiguous() {
+			start = 3
+		}
+	} else {
+		end = 47
+		start = 24
+		if f.IsContiguous() {
+			start = 27
+		}
+	}
+	if f.IsTransposed() {
+		end++
+	}
+	return string(dataOrderNames[start:end])
 }
 
 // Triangle is a flag representing the "triangle"ness of a matrix

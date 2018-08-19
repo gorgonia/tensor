@@ -10,6 +10,7 @@ type ConsOpt func(Tensor)
 
 // Of is a construction option for a Tensor.
 func Of(a Dtype) ConsOpt {
+	Register(a)
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
@@ -172,9 +173,11 @@ func WithEngine(e Engine) ConsOpt {
 			if e != nil && !e.AllocAccessible() {
 				tt.flag = MakeMemoryFlag(tt.flag, NativelyInaccessible)
 			}
-			// if oe, ok := e.(standardEngine); ok {
-			// 	tt.oe = oe
-			// }
+
+			tt.oe = nil
+			if oe, ok := e.(standardEngine); ok {
+				tt.oe = oe
+			}
 		case *CS:
 			tt.e = e
 			if e != nil && !e.AllocAccessible() {
@@ -185,14 +188,75 @@ func WithEngine(e Engine) ConsOpt {
 	return f
 }
 
-func AsFortran() ConsOpt {
+// AsFortran creates a *Dense with a col-major layout.
+// If the optional backing argument is passed, the backing is assumed to be C-order (row major), and
+// it will be transposed before being used.
+func AsFortran(backing interface{}) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			if tt.AP == nil {
-				// create AP
+			if backing != nil {
+				// put the data into the tensor, then make a clone tensor to transpose
+				tt.fromSliceOrArrayer(backing)
+				// create a temporary tensor, to which the transpose will be done
+				tmp := NewDense(tt.Dtype(), tt.shape.Clone())
+				copyArray(tmp.arrPtr(), tt.arrPtr())
+				tmp.T()
+				tmp.Transpose()
+				// copy the data back to the current tensor
+				copyArray(tt.arrPtr(), tmp.arrPtr())
+				// cleanup: return the temporary tensor back to the pool
+				ReturnTensor(tmp)
 			}
+
 			tt.AP.o = MakeDataOrder(tt.AP.o, ColMajor)
+			if tt.AP.shape != nil {
+				ReturnInts(tt.AP.strides)
+				tt.AP.strides = nil
+				tt.AP.strides = tt.AP.calcStrides()
+			}
+		case *CS:
+			panic("AsFortran is not an available option for Compressed Sparse layouts")
+		}
+	}
+	return f
+}
+
+func AsDenseDiag(backing interface{}) ConsOpt {
+	f := func(t Tensor) {
+		switch tt := t.(type) {
+		case *Dense:
+			if bt, ok := backing.(Tensor); ok {
+				backing = bt.Data()
+			}
+			xT := reflect.TypeOf(backing)
+			if xT.Kind() != reflect.Slice {
+				panic("Expected a slice")
+			}
+			xV := reflect.ValueOf(backing)
+			l := xV.Len()
+			// elT := xT.Elem()
+
+			sli := reflect.MakeSlice(xT, l*l, l*l)
+
+			shape := Shape{l, l}
+			strides := shape.CalcStrides()
+			for i := 0; i < l; i++ {
+				idx, err := Ltoi(shape, strides, i, i)
+				if err != nil {
+					panic(err)
+				}
+
+				at := sli.Index(idx)
+				xi := xV.Index(i)
+				at.Set(xi)
+			}
+
+			tt.fromSliceOrArrayer(sli.Interface())
+			tt.setShape(l, l)
+
+		default:
+			panic("AsDenseDiag is not available as an option for CS")
 		}
 	}
 	return f

@@ -51,6 +51,9 @@ func (e StdEng) denseTranspose1(a DenseTensor, expStrides []int) {
 	var i int
 
 	data := a.hdr().Uint8s()
+	if len(data) < 4 {
+		return
+	}
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 
@@ -87,6 +90,9 @@ func (e StdEng) denseTranspose2(a DenseTensor, expStrides []int) {
 	var i int
 
 	data := a.hdr().Uint16s()
+	if len(data) < 4 {
+		return
+	}
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 
@@ -123,6 +129,9 @@ func (e StdEng) denseTranspose4(a DenseTensor, expStrides []int) {
 	var i int
 
 	data := a.hdr().Uint32s()
+	if len(data) < 4 {
+		return
+	}
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 
@@ -159,6 +168,9 @@ func (e StdEng) denseTranspose8(a DenseTensor, expStrides []int) {
 	var i int
 
 	data := a.hdr().Uint64s()
+	if len(data) < 4 {
+		return
+	}
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 		if track.IsSet(i) && track.IsSet(dest) {
@@ -195,6 +207,9 @@ func (e StdEng) denseTransposeString(a DenseTensor, expStrides []int) {
 	var i int
 
 	data := a.hdr().Strings()
+	if len(data) < 4 {
+		return
+	}
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 
@@ -233,6 +248,9 @@ func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
 	tmp := make([]byte, typeSize, typeSize)
 	var i int
 	data := storage.AsByteSlice(a.hdr(), rtype)
+	if len(data) < 4*typeSize {
+		return
+	}
 	for i = 1; ; {
 		dest := a.transposeIndex(i, axes, expStrides)
 		start := typeSize * i

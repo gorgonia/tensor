@@ -44,7 +44,7 @@ func (e StdEng) denseTranspose1(a DenseTensor, expStrides []int) {
 	u8s := tmpArr.Uint8s()
 
 	orig := a.hdr().Uint8s()
-	it := NewFlatIterator(a.Info())
+	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		u8s[j] = orig[i]
@@ -59,7 +59,7 @@ func (e StdEng) denseTranspose2(a DenseTensor, expStrides []int) {
 	u16s := tmpArr.Uint16s()
 
 	orig := a.hdr().Uint16s()
-	it := NewFlatIterator(a.Info())
+	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		u16s[j] = orig[i]
@@ -74,7 +74,7 @@ func (e StdEng) denseTranspose4(a DenseTensor, expStrides []int) {
 	u32s := tmpArr.Uint32s()
 
 	orig := a.hdr().Uint32s()
-	it := NewFlatIterator(a.Info())
+	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		u32s[j] = orig[i]
@@ -89,7 +89,7 @@ func (e StdEng) denseTranspose8(a DenseTensor, expStrides []int) {
 	u64s := tmpArr.Uint64s()
 
 	orig := a.hdr().Uint64s()
-	it := NewFlatIterator(a.Info())
+	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		u64s[j] = orig[i]
@@ -104,7 +104,7 @@ func (e StdEng) denseTransposeString(a DenseTensor, expStrides []int) {
 	strs := tmpArr.Strings()
 
 	orig := a.hdr().Strings()
-	it := NewFlatIterator(a.Info())
+	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		strs[j] = orig[i]
@@ -122,7 +122,7 @@ func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
 	arbs := tmpArr.byteSlice()
 
 	orig := storage.AsByteSlice(a.hdr(), rtype)
-	it := NewFlatIterator(a.Info())
+	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {
 		srcStart := i * typeSize

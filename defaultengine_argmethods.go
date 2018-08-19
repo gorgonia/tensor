@@ -59,17 +59,21 @@ func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err e
 	if _, ok := err.(NoOpError); !ok && err != nil {
 		return
 	} else if ok {
-		newAP = t.Info().Clone()
+		t.Info().CloneTo(&newAP)
 	}
-	defer ReturnAP(newAP)
 
 	it := IteratorFromDense(t)
-	iteratorLoadAP(it, newAP)
+	iteratorLoadAP(it, &newAP)
 
 	lastSize := it.Shape()[len(it.Shape())-1]
 	newShape := it.Shape().Clone()
 	newShape = newShape[:len(newShape)-1]
-	defer ReturnInts(newShape)
+
+	// cleanup
+	defer func() {
+		newAP.zero()
+		ReturnInts(newShape)
+	}()
 
 	if mt, ok := t.(MaskedTensor); ok && mt.IsMasked() {
 		mask := mt.Mask()
@@ -144,15 +148,19 @@ func (e StdEng) argminDenseTensor(t DenseTensor, axis int) (retVal *Dense, err e
 	} else if ok {
 		newAP = t.Info().Clone()
 	}
-	defer ReturnAP(newAP)
 
 	it := IteratorFromDense(t)
-	iteratorLoadAP(it, newAP)
+	iteratorLoadAP(it, &newAP)
 
 	lastSize := it.Shape()[len(it.Shape())-1]
 	newShape := it.Shape().Clone()
 	newShape = newShape[:len(newShape)-1]
-	defer ReturnInts(newShape)
+
+	// cleanup
+	defer func() {
+		newAP.zero()
+		ReturnInts(newShape)
+	}()
 
 	if mt, ok := t.(MaskedTensor); ok && mt.IsMasked() {
 		mask := mt.Mask()

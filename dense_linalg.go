@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 // Trace returns the trace of the matrix (i.e. the sum of the diagonal elements). It only works for matrices
 func (t *Dense) Trace() (retVal interface{}, err error) {
@@ -87,6 +89,9 @@ func (t *Dense) MatVecMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err err
 
 	if retVal == nil {
 		retVal = recycledDense(t.t, expectedShape)
+		if t.o.IsColMajor() {
+			AsFortran(nil)(retVal)
+		}
 	}
 
 	e := t.e
@@ -133,10 +138,12 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 
 	if retVal == nil {
 		retVal = recycledDense(t.t, expectedShape)
+		if t.o.IsColMajor() {
+			AsFortran(nil)(retVal)
+		}
 	}
 
 	e := t.e
-
 	if mm, ok := e.(MatMuler); ok {
 		if err = mm.MatMul(t, other, retVal); err != nil {
 			return
@@ -170,6 +177,9 @@ func (t *Dense) Outer(other Tensor, opts ...FuncOpt) (retVal *Dense, err error) 
 
 	if retVal == nil {
 		retVal = recycledDense(t.t, expectedShape)
+		if t.o.IsColMajor() {
+			AsFortran(nil)(retVal)
+		}
 	}
 
 	e := t.e
@@ -310,7 +320,6 @@ func (t *Dense) TensorMul(other Tensor, axesA, axesB []int) (retVal *Dense, err 
 		return
 	}
 	doOther.Transpose()
-
 	if err = doOther.Reshape(newShapeO...); err != nil {
 		return
 	}

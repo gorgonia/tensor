@@ -6,8 +6,9 @@ import (
 	. "gorgonia.org/tensor"
 )
 
-// There are times where it is more effective to use native Go slice semantics to do work (for example, when performing batch work over kernels)
-// NativeIterators are useful for this purpose.
+// There are times where it is more effective to use native Go slice semantics to do work (for example, when performing batch work over kernels).
+// Iterators are useful for this purpose. This package provides iterators for the standard types
+// However, custom types are also available. See Vector, Matrix and Tensor3 examples.
 func Example_iterator() {
 	var T *Dense
 	T = New(WithShape(2, 3), WithBacking(Range(Float64, 0, 6)))
@@ -26,7 +27,7 @@ func Example_iterator() {
 }
 
 // The NativeSelect function squashes the dimensions, and returns an iterator in native Go slice semantics.
-func Exampleselect() {
+func Example_select() {
 	// Selection is a bit of an interesting use case. Sometimes you don't want to iterate through the layers.
 	//
 	// For example, in a number of use cases where you have a 4-Tensor, you'd typically reshape it to some
