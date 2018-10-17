@@ -360,8 +360,11 @@ func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 		return copyDense(dst, src), nil
 	}
 
-	if !dst.IsNativelyAccessible() || !src.IsNativelyAccessible() {
-		return 0, errors.Errorf(inaccessibleData, "copy")
+	if !dst.IsNativelyAccessible() {
+		return 0, errors.Errorf(inaccessibleData, dst)
+	}
+	if !src.IsNativelyAccessible() {
+		return 0, errors.Errorf(inaccessibleData, src)
 	}
 
 	if diter == nil {

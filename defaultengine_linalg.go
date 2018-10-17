@@ -313,7 +313,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 	var t *Dense
 	var ok bool
 	if err = e.checkAccessible(a); err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "opFail", "SVD")
+		return nil, nil, nil, errors.Wrapf(err, "%v %v", "opFail", "SVD")
 	}
 	if t, ok = a.(*Dense); !ok {
 		return nil, nil, nil, errors.Errorf("StdEng only performs SVDs for DenseTensors. Got %T instead", a)
