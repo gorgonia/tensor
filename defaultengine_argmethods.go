@@ -8,7 +8,7 @@ func (e StdEng) Argmax(t Tensor, axis int) (retVal Tensor, err error) {
 	case DenseTensor:
 		return e.argmaxDenseTensor(tt, axis)
 	default:
-		return nil, errors.Errorf(typeNYI, "StdEng.Argmax", t)
+		return nil, &ErrNotImplemented{errors.Errorf(typeNYI, "StdEng.Argmax", t)}
 	}
 }
 
@@ -95,7 +95,7 @@ func (e StdEng) Argmin(t Tensor, axis int) (retVal Tensor, err error) {
 	case DenseTensor:
 		return e.argminDenseTensor(tt, axis)
 	default:
-		return nil, errors.Errorf(typeNYI, "StdEng.Argmin", t)
+		return nil, &ErrNotImplemented{errors.Errorf(typeNYI, "StdEng.Argmin", t)}
 	}
 }
 

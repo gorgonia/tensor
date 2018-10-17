@@ -105,7 +105,7 @@ func (e StdEng) Reduce(fn interface{}, a Tensor, axis int, defaultValue interfac
 	case (axis == 0 && at.DataOrder().IsRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && at.DataOrder().IsColMajor()):
 		var size, split int
 		if at.DataOrder().IsColMajor() {
-			return nil, errors.Errorf("NYI: colmajor")
+			return nil, &ErrNotImplemented{errors.Errorf("NYI: colmajor")}
 		}
 		size = a.Shape()[0]
 		split = a.DataSize() / size
@@ -114,7 +114,7 @@ func (e StdEng) Reduce(fn interface{}, a Tensor, axis int, defaultValue interfac
 	case (axis == lastAxis && at.DataOrder().IsRowMajor()) || (axis == 0 && at.DataOrder().IsColMajor()):
 		var dimSize int
 		if at.DataOrder().IsColMajor() {
-			return nil, errors.Errorf("NYI: colmajor")
+			return nil, &ErrNotImplemented{errors.Errorf("NYI: colmajor")}
 		}
 		dimSize = a.Shape()[axis]
 		err = e.E.ReduceLast(typ, dataA, dataReuse, dimSize, defaultValue, fn)
@@ -150,7 +150,7 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 	case (axis == 0 && at.DataOrder().IsRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && at.DataOrder().IsColMajor()):
 		var size, split int
 		if at.DataOrder().IsColMajor() {
-			return nil, errors.Errorf("NYI: colmajor")
+			return nil, &ErrNotImplemented{errors.Errorf("NYI: colmajor")}
 		}
 		size = a.Shape()[0]
 		split = a.DataSize() / size
@@ -159,7 +159,7 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 	case (axis == lastAxis && at.DataOrder().IsRowMajor()) || (axis == 0 && at.DataOrder().IsColMajor()):
 		var dimSize int
 		if at.DataOrder().IsColMajor() {
-			return nil, errors.Errorf("NYI: colmajor")
+			return nil, &ErrNotImplemented{errors.Errorf("NYI: colmajor")}
 		}
 		dimSize = a.Shape()[axis]
 		err = e.E.ReduceLast(typ, dataA, dataReuse, dimSize, defaultValue, lastFn)

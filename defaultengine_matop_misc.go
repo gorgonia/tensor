@@ -13,7 +13,7 @@ func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	case DenseTensor:
 		return e.denseRepeat(tt, axis, repeats)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, &ErrNotImplemented{errors.Errorf("NYI")}
 	}
 }
 
@@ -81,7 +81,7 @@ func (e StdEng) Concat(t Tensor, axis int, others ...Tensor) (retVal Tensor, err
 		}
 		return e.denseConcat(tt, axis, denses)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, &ErrNotImplemented{errors.Errorf("NYI")}
 	}
 }
 
@@ -249,7 +249,7 @@ func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 			bdata[i] = adata[i*stride]
 		}
 	default:
-		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag")
+		return nil, &ErrNotImplemented{errors.Errorf(typeNYI, "Arbitrary sized diag")}
 	}
 	return b, nil
 }

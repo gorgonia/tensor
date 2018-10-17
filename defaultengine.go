@@ -30,7 +30,7 @@ func (e StdEng) Memset(mem Memory, val interface{}) error {
 	if ms, ok := mem.(MemSetter); ok {
 		return ms.Memset(val)
 	}
-	return errors.Errorf("Cannot memset %v with StdEng")
+	return errors.Errorf("Cannot memset %v with StdEng", val)
 }
 
 func (e StdEng) Memclr(mem Memory) {

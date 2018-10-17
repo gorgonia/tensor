@@ -193,7 +193,7 @@ func (t *Dense) CopyTo(other *Dense) error {
 	}
 
 	// TODO: use copyDenseIter
-	return errors.Errorf(methodNYI, "CopyTo", "views")
+	return &ErrNotImplemented{errors.Errorf(methodNYI, "CopyTo", "views")}
 }
 
 // Slice performs slicing on the *Dense Tensor. It returns a view which shares the same underlying memory as the original *Dense.

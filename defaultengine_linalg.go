@@ -445,7 +445,7 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 		alpha, beta := float32(1), float32(0)
 		whichblas.Sgemv(tA, m, n, alpha, A, lda, x, incX, beta, y, incY)
 	default:
-		return errors.Errorf(typeNYI, "matVecMul", bd.Data())
+		return &ErrNotImplemented{errors.Errorf(typeNYI, "matVecMul", bd.Data())}
 	}
 
 	return nil
@@ -539,7 +539,7 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 			whichblas.Sgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
 		}
 	default:
-		return errors.Errorf(typeNYI, "matMul", ad.Data())
+		return &ErrNotImplemented{errors.Errorf(typeNYI, "matMul", ad.Data())}
 	}
 	return
 }
@@ -601,7 +601,7 @@ func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
 		alpha := float32(1)
 		whichblas.Sger(m, n, alpha, x, incX, y, incY, A, lda)
 	default:
-		return errors.Errorf(typeNYI, "outer", b.Data())
+		return &ErrNotImplemented{errors.Errorf(typeNYI, "outer", b.Data())}
 	}
 	return nil
 }

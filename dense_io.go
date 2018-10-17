@@ -643,7 +643,7 @@ func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, err
 		backing = append(backing, record...)
 		return backing, nil
 	default:
-		return nil, errors.Errorf(methodNYI, "convFromStrs", to)
+		return nil, &ErrNotImplemented{errors.Errorf(methodNYI, "convFromStrs", to)}
 	}
 }
 

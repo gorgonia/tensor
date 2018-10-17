@@ -33,6 +33,15 @@ type errorIndices []int
 func (e errorIndices) Indices() []int { return []int(e) }
 func (e errorIndices) Error() string  { return fmt.Sprintf("Error in indices %v", []int(e)) }
 
+// ErrNotImplemented is triggered when something is not implemented (yet)
+type ErrNotImplemented struct {
+	err error
+}
+
+func (e *ErrNotImplemented) Error() string {
+	return e.err.Error()
+}
+
 const (
 	emptyTensor       = "Tensor is uninitialized (no shape, no data)"
 	dimMismatch       = "Dimension mismatch. Expected %d, got %d"
@@ -59,7 +68,7 @@ const (
 	unknownState      = "Unknown state reached: Safe %t, Incr %t, Reuse %t"
 	unsupportedDtype  = "Array of %v is unsupported for %v"
 	maskRequired      = "Masked array type required for %v"
-	inaccessibleData = "Data in %p inaccessble"
+	inaccessibleData  = "Data in %p inaccessble"
 
 	methodNYI = "%q not yet implemented for %v"
 	typeNYI   = "%q not yet implemented for interactions with %T"

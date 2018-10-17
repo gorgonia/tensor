@@ -129,7 +129,7 @@ func (t *Dense) Engine() Engine { return t.e }
 // Reshape reshapes a *Dense. If the tensors need to be materialized (either it's a view or transpose), it will be materialized before the reshape happens
 func (t *Dense) Reshape(dims ...int) error {
 	if t.viewOf != 0 && t.o.IsNotContiguous() {
-		return errors.Errorf(methodNYI, "Reshape", "non-contiguous views")
+		return &ErrNotImplemented{errors.Errorf(methodNYI, "Reshape", "non-contiguous views")}
 	}
 
 	if !t.old.IsZero() {
