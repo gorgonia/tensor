@@ -84,6 +84,15 @@ type Tensor interface {
 	arrayer
 }
 
+// Must indicates a Tensor must be created. If there isn't a tensor created, or there was an error,
+// it subsumes the error, and immediately panics
+func Must(t Tensor, err error) Tensor {
+	if err != nil || t == nil {
+		panic(err)
+	}
+	return t
+}
+
 // New creates a new Dense Tensor. For sparse arrays use their relevant construction function
 func New(opts ...ConsOpt) *Dense {
 	d := borrowDense()
