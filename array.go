@@ -33,20 +33,10 @@ func makeArray(t Dtype, length int) array {
 
 // makeArrayFromHeader makes an array given a header
 func makeArrayFromHeader(hdr storage.Header, t Dtype) array {
-	// build a type of []T
-	shdr := reflect.SliceHeader{
-		Data: uintptr(hdr.Ptr),
-		Len:  hdr.L,
-		Cap:  hdr.C,
-	}
-	sliceT := reflect.SliceOf(t.Type)
-	ptr := unsafe.Pointer(&shdr)
-	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-
 	return array{
 		Header: hdr,
 		t:      t,
-		v:      val.Interface(),
+		v:      nil,
 	}
 }
 
@@ -233,7 +223,22 @@ func (a *array) MemSize() uintptr { return uintptr(a.L) * a.t.Size() }
 func (a *array) Pointer() unsafe.Pointer { return a.Ptr }
 
 // Data returns the representation of a slice.
-func (a array) Data() interface{} { return a.v }
+func (a array) Data() interface{} {
+	if a.v == nil {
+		// build a type of []T
+		shdr := reflect.SliceHeader{
+			Data: uintptr(a.Header.Ptr),
+			Len:  a.Header.L,
+			Cap:  a.Header.C,
+		}
+		sliceT := reflect.SliceOf(a.t.Type)
+		ptr := unsafe.Pointer(&shdr)
+		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+		a.v = val.Interface()
+
+	}
+	return a.v
+}
 
 // Zero zeroes out the underlying array of the *Dense tensor.
 func (a array) Zero() {
