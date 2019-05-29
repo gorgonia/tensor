@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"os"
 	"os/exec"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,10 +46,12 @@ func TestSaveLoadNumpy(t *testing.T) {
 		t.Error(err)
 	}
 
-	expected := "[[ 1.  5.]\n [10. -1.]]\n"
+	expected := `\[\[\s*1\.\s*5\.\]\n \[\s*10\.\s*-1\.\]\]\n`
+	if ok, _ := regexp.Match(expected, buf.Bytes()); !ok {
+		t.Errorf("Did not successfully read numpy file, \n%q\n%q", buf.String(), expected)
+	}
 
 	if buf.String() != expected {
-		t.Errorf("Did not successfully read numpy file, \n%q\n%q", buf.String(), expected)
 	}
 
 	// cleanup
