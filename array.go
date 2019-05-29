@@ -224,13 +224,13 @@ func (a *array) swap(i, j int) {
 /* *Array is a Memory */
 
 // Uintptr returns the pointer of the first value of the slab
-func (t *array) Uintptr() uintptr { return uintptr(t.Ptr) }
+func (a *array) Uintptr() uintptr { return uintptr(a.Ptr) }
 
 // MemSize returns how big the slice is in bytes
-func (t *array) MemSize() uintptr { return uintptr(t.L) * t.t.Size() }
+func (a *array) MemSize() uintptr { return uintptr(a.L) * a.t.Size() }
 
 // Pointer returns the pointer of the first value of the slab, as an unsafe.Pointer
-func (t *array) Pointer() unsafe.Pointer { return t.Ptr }
+func (a *array) Pointer() unsafe.Pointer { return a.Ptr }
 
 // Data returns the representation of a slice.
 func (a array) Data() interface{} { return a.v }
