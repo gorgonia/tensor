@@ -45,7 +45,7 @@ func TestSaveLoadNumpy(t *testing.T) {
 		t.Error(err)
 	}
 
-	expected := "[[  1.   5.]\n [ 10.  -1.]]\n"
+	expected := "[[ 1.  5.]\n [10. -1.]]\n"
 
 	if buf.String() != expected {
 		t.Errorf("Did not successfully read numpy file, \n%q\n%q", buf.String(), expected)
