@@ -249,7 +249,7 @@ func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 			bdata[i] = adata[i*stride]
 		}
 	default:
-		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag")
+		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag", t)
 	}
 	return b, nil
 }
