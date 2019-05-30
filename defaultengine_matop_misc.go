@@ -8,6 +8,7 @@ var (
 	_ Diager = StdEng{}
 )
 
+// Repeat ...
 func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	switch tt := t.(type) {
 	case DenseTensor:
@@ -54,16 +55,40 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 	}
 
 	var destStart, srcStart int
+	// fastCopy is not bypassing the copyDenseSliced method to populate the output tensor
+	var fastCopy bool
+	// we need an engine for fastCopying...
+	if e := t.Engine(); e != nil {
+		fastCopy = true
+	}
+	// In this case, let's not implement the fast copy to keep the code readable
+	if ms, ok := t.(MaskedTensor); ok && ms.IsMasked() {
+		fastCopy = false
+	}
+
 	for i := 0; i < outers; i++ {
 		for j := 0; j < size; j++ {
 			var tmp int
+
 			tmp = repeats[j]
+			var tSlice array
+			if fastCopy {
+				tSlice = t.arr().slice(srcStart, t.len())
+			}
 
 			for k := 0; k < tmp; k++ {
 				if srcStart >= t.len() || destStart+stride > d.len() {
 					break
 				}
-				copyDenseSliced(d, destStart, d.len(), t, srcStart, t.len())
+				if fastCopy {
+					dSlice := d.arr().slice(destStart, d.len())
+					err := t.Engine().Memcpy(&dSlice, &tSlice)
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					copyDenseSliced(d, destStart, d.len(), t, srcStart, t.len())
+				}
 				destStart += newStride
 			}
 			srcStart += stride
@@ -72,6 +97,7 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 	return d, nil
 }
 
+// Concat tensors
 func (e StdEng) Concat(t Tensor, axis int, others ...Tensor) (retVal Tensor, err error) {
 	switch tt := t.(type) {
 	case DenseTensor:
@@ -196,6 +222,7 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 	return retVal, nil
 }
 
+// Diag ...
 func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 	a, ok := t.(DenseTensor)
 	if !ok {
