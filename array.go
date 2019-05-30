@@ -33,20 +33,10 @@ func makeArray(t Dtype, length int) array {
 
 // makeArrayFromHeader makes an array given a header
 func makeArrayFromHeader(hdr storage.Header, t Dtype) array {
-	// build a type of []T
-	shdr := reflect.SliceHeader{
-		Data: uintptr(hdr.Ptr),
-		Len:  hdr.L,
-		Cap:  hdr.C,
-	}
-	sliceT := reflect.SliceOf(t.Type)
-	ptr := unsafe.Pointer(&shdr)
-	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-
 	return array{
 		Header: hdr,
 		t:      t,
-		v:      val.Interface(),
+		v:      nil,
 	}
 }
 
@@ -224,16 +214,31 @@ func (a *array) swap(i, j int) {
 /* *Array is a Memory */
 
 // Uintptr returns the pointer of the first value of the slab
-func (t *array) Uintptr() uintptr { return uintptr(t.Ptr) }
+func (a *array) Uintptr() uintptr { return uintptr(a.Ptr) }
 
 // MemSize returns how big the slice is in bytes
-func (t *array) MemSize() uintptr { return uintptr(t.L) * t.t.Size() }
+func (a *array) MemSize() uintptr { return uintptr(a.L) * a.t.Size() }
 
 // Pointer returns the pointer of the first value of the slab, as an unsafe.Pointer
-func (t *array) Pointer() unsafe.Pointer { return t.Ptr }
+func (a *array) Pointer() unsafe.Pointer { return a.Ptr }
 
 // Data returns the representation of a slice.
-func (a array) Data() interface{} { return a.v }
+func (a array) Data() interface{} {
+	if a.v == nil {
+		// build a type of []T
+		shdr := reflect.SliceHeader{
+			Data: uintptr(a.Header.Ptr),
+			Len:  a.Header.L,
+			Cap:  a.Header.C,
+		}
+		sliceT := reflect.SliceOf(a.t.Type)
+		ptr := unsafe.Pointer(&shdr)
+		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+		a.v = val.Interface()
+
+	}
+	return a.v
+}
 
 // Zero zeroes out the underlying array of the *Dense tensor.
 func (a array) Zero() {
@@ -360,8 +365,11 @@ func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 		return copyDense(dst, src), nil
 	}
 
-	if !dst.IsNativelyAccessible() || !src.IsNativelyAccessible() {
-		return 0, errors.Errorf(inaccessibleData, "copy")
+	if !dst.IsNativelyAccessible() {
+		return 0, errors.Errorf(inaccessibleData, dst)
+	}
+	if !src.IsNativelyAccessible() {
+		return 0, errors.Errorf(inaccessibleData, src)
 	}
 
 	if diter == nil {

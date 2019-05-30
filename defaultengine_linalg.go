@@ -287,7 +287,6 @@ func (e StdEng) Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	var rd *Dense
 	if rd, err = a.TensorMul(b, axesA, axesB); err != nil {
 		panic(err)
-		return
 	}
 
 	if reuse != nil {
@@ -313,7 +312,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 	var t *Dense
 	var ok bool
 	if err = e.checkAccessible(a); err != nil {
-		return nil, nil, nil, errors.Wrapf(err, "opFail", "SVD")
+		return nil, nil, nil, errors.Wrapf(err, "opFail %v", "SVD")
 	}
 	if t, ok = a.(*Dense); !ok {
 		return nil, nil, nil, errors.Errorf("StdEng only performs SVDs for DenseTensors. Got %T instead", a)
