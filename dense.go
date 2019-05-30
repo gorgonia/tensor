@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	"reflect"
 	"unsafe"
 
 	"github.com/pkg/errors"
@@ -111,6 +112,19 @@ func (t *Dense) Dtype() Dtype { return t.t }
 func (t *Dense) Data() interface{} {
 	if t.IsScalar() {
 		return t.Get(0)
+	}
+	if t.v == nil {
+		// build a type of []T
+		shdr := reflect.SliceHeader{
+			Data: uintptr(t.Header.Ptr),
+			Len:  t.Header.L,
+			Cap:  t.Header.C,
+		}
+		sliceT := reflect.SliceOf(t.t.Type)
+		ptr := unsafe.Pointer(&shdr)
+		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+		t.v = val.Interface()
+
 	}
 	return t.v
 }
