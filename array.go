@@ -259,7 +259,7 @@ func (a array) Zero() {
 	ptr := uintptr(a.Ptr)
 	for i := 0; i < a.L; i++ {
 		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t, unsafe.Pointer(want))
+		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(reflect.Zero(a.t))
 	}
