@@ -70,7 +70,7 @@ func (a *array) Set(i int, x interface{}) {
 		xv := reflect.ValueOf(x)
 		ptr := uintptr(a.Ptr)
 		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t, unsafe.Pointer(want))
+		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -117,7 +117,7 @@ func (a *array) Get(i int) interface{} {
 		return a.GetUnsafePointer(i)
 	default:
 		at := uintptr(a.Ptr) + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t, unsafe.Pointer(at))
+		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}
@@ -294,7 +294,7 @@ func (a *array) Memset(x interface{}) error {
 	ptr := uintptr(a.Ptr)
 	for i := 0; i < a.L; i++ {
 		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t, unsafe.Pointer(want))
+		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -489,7 +489,7 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t, unsafe.Pointer(want))
+			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
 			val = reflect.Indirect(val)
 			val.Set(xv)
 		}
@@ -754,7 +754,7 @@ func (t *array) zeroIter(it Iterator) (err error) {
 		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t, unsafe.Pointer(want))
+			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
 			val = reflect.Indirect(val)
 			val.Set(reflect.Zero(t.t))
 		}
