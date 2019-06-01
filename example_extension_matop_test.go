@@ -39,6 +39,7 @@ func Example_TransposeExtension() {
 			LongStruct{3, 3, 3, 3, 3},
 		}),
 	)
+
 	fmt.Printf("Before:\n%v\n", T)
 	retVal, _ := tensor.Transpose(T) // an alternative would be to use T.T(); T.Transpose()
 	fmt.Printf("After:\n%v\n", retVal)
