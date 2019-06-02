@@ -413,30 +413,16 @@ var repeatTests = []repeatTest{
 	},
 }
 
-func benchmarkDenseRepeat(tst repeatTest, b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		tst.tensor.Repeat(tst.axis, tst.repeats...)
+func BenchmarkDenseRepeat(b *testing.B) {
+	for _, tst := range repeatTests {
+		tst := tst
+		b.Run(tst.name, func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				tst.tensor.Repeat(tst.axis, tst.repeats...)
+			}
+		})
 	}
 }
-func BenchmarkDense_Repeat0(b *testing.B)  { benchmarkDenseRepeat(repeatTests[0], b) }
-func BenchmarkDense_Repeat1(b *testing.B)  { benchmarkDenseRepeat(repeatTests[1], b) }
-func BenchmarkDense_Repeat2(b *testing.B)  { benchmarkDenseRepeat(repeatTests[2], b) }
-func BenchmarkDense_Repeat3(b *testing.B)  { benchmarkDenseRepeat(repeatTests[3], b) }
-func BenchmarkDense_Repeat4(b *testing.B)  { benchmarkDenseRepeat(repeatTests[4], b) }
-func BenchmarkDense_Repeat5(b *testing.B)  { benchmarkDenseRepeat(repeatTests[5], b) }
-func BenchmarkDense_Repeat6(b *testing.B)  { benchmarkDenseRepeat(repeatTests[6], b) }
-func BenchmarkDense_Repeat7(b *testing.B)  { benchmarkDenseRepeat(repeatTests[7], b) }
-func BenchmarkDense_Repeat8(b *testing.B)  { benchmarkDenseRepeat(repeatTests[8], b) }
-func BenchmarkDense_Repeat9(b *testing.B)  { benchmarkDenseRepeat(repeatTests[9], b) }
-func BenchmarkDense_Repeat10(b *testing.B) { benchmarkDenseRepeat(repeatTests[10], b) }
-func BenchmarkDense_Repeat11(b *testing.B) { benchmarkDenseRepeat(repeatTests[11], b) }
-func BenchmarkDense_Repeat12(b *testing.B) { benchmarkDenseRepeat(repeatTests[12], b) }
-func BenchmarkDense_Repeat13(b *testing.B) { benchmarkDenseRepeat(repeatTests[13], b) }
-func BenchmarkDense_Repeat14(b *testing.B) { benchmarkDenseRepeat(repeatTests[14], b) }
-func BenchmarkDense_Repeat15(b *testing.B) { benchmarkDenseRepeat(repeatTests[15], b) }
-func BenchmarkDense_Repeat16(b *testing.B) { benchmarkDenseRepeat(repeatTests[16], b) }
-func BenchmarkDense_Repeat17(b *testing.B) { benchmarkDenseRepeat(repeatTests[17], b) }
-func BenchmarkDense_Repeat18(b *testing.B) { benchmarkDenseRepeat(repeatTests[18], b) }
 
 func TestDense_Repeat(t *testing.T) {
 	assert := assert.New(t)
