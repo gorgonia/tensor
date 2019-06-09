@@ -448,6 +448,49 @@ func TestDense_Repeat(t *testing.T) {
 	}
 }
 
+func TestDense_Repeat_Slow(t *testing.T) {
+	rt2 := make([]repeatTest, len(repeatTests))
+	for i, rt := range repeatTests {
+		rt2[i] = repeatTest{
+			name:    rt.name,
+			ne:      rt.ne,
+			axis:    rt.axis,
+			repeats: rt.repeats,
+			correct: rt.correct,
+			shape:   rt.shape,
+			err:     rt.err,
+			tensor:  rt.tensor.Clone().(*Dense),
+		}
+	}
+	for i := range rt2 {
+		maskLen := rt2[i].tensor.len()
+		mask := make([]bool, maskLen)
+		rt2[i].tensor.mask = mask
+	}
+
+	assert := assert.New(t)
+
+	for i, test := range rt2 {
+		T, err := test.tensor.Repeat(test.axis, test.repeats...)
+		if checkErr(t, test.err, err, "Repeat", i) {
+			continue
+		}
+
+		var D DenseTensor
+		if D, err = getDenseTensor(T); err != nil {
+			t.Errorf("Expected Repeat to return a *Dense. got %v of %T instead", T, T)
+			continue
+		}
+
+		if test.ne {
+			assert.NotEqual(test.tensor, D, test.name)
+		}
+
+		assert.Equal(test.correct, D.Data(), test.name)
+		assert.Equal(test.shape, D.Shape(), test.name)
+	}
+}
+
 func TestDense_CopyTo(t *testing.T) {
 	assert := assert.New(t)
 	var T, T2 *Dense
