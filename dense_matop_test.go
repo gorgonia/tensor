@@ -287,7 +287,7 @@ func TestTUT(t *testing.T) {
 	assert.Nil(T.transposeWith)
 }
 
-var repeatTests = []struct {
+type repeatTest struct {
 	name    string
 	tensor  *Dense
 	ne      bool // should assert tensor not equal
@@ -297,7 +297,9 @@ var repeatTests = []struct {
 	correct interface{}
 	shape   Shape
 	err     bool
-}{
+}
+
+var repeatTests = []repeatTest{
 	{"Scalar Repeat on axis 0", New(FromScalar(true)),
 		true, 0, []int{3},
 		[]bool{true, true, true},
@@ -415,6 +417,49 @@ func TestDense_Repeat(t *testing.T) {
 	assert := assert.New(t)
 
 	for i, test := range repeatTests {
+		T, err := test.tensor.Repeat(test.axis, test.repeats...)
+		if checkErr(t, test.err, err, "Repeat", i) {
+			continue
+		}
+
+		var D DenseTensor
+		if D, err = getDenseTensor(T); err != nil {
+			t.Errorf("Expected Repeat to return a *Dense. got %v of %T instead", T, T)
+			continue
+		}
+
+		if test.ne {
+			assert.NotEqual(test.tensor, D, test.name)
+		}
+
+		assert.Equal(test.correct, D.Data(), test.name)
+		assert.Equal(test.shape, D.Shape(), test.name)
+	}
+}
+
+func TestDense_Repeat_Slow(t *testing.T) {
+	rt2 := make([]repeatTest, len(repeatTests))
+	for i, rt := range repeatTests {
+		rt2[i] = repeatTest{
+			name:    rt.name,
+			ne:      rt.ne,
+			axis:    rt.axis,
+			repeats: rt.repeats,
+			correct: rt.correct,
+			shape:   rt.shape,
+			err:     rt.err,
+			tensor:  rt.tensor.Clone().(*Dense),
+		}
+	}
+	for i := range rt2 {
+		maskLen := rt2[i].tensor.len()
+		mask := make([]bool, maskLen)
+		rt2[i].tensor.mask = mask
+	}
+
+	assert := assert.New(t)
+
+	for i, test := range rt2 {
 		T, err := test.tensor.Repeat(test.axis, test.repeats...)
 		if checkErr(t, test.err, err, "Repeat", i) {
 			continue
