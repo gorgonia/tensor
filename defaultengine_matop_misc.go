@@ -8,6 +8,11 @@ var (
 	_ Diager = StdEng{}
 )
 
+type fastcopier interface {
+	fastCopyDenseRepeat(t DenseTensor, d *Dense, outers, size, stride, newStride int, repeats []int) error
+}
+
+// Repeat ...
 func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	switch tt := t.(type) {
 	case DenseTensor:
@@ -54,6 +59,29 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 	}
 
 	var destStart, srcStart int
+	// fastCopy is not bypassing the copyDenseSliced method to populate the output tensor
+	var fastCopy bool
+	var fce fastcopier
+	// we need an engine for fastCopying...
+	e := t.Engine()
+	// e can never be nil. Error would have occured elsewhere
+	var ok bool
+	if fce, ok = e.(fastcopier); ok {
+		fastCopy = true
+	}
+
+	// In this case, let's not implement the fast copy to keep the code readable
+	if ms, ok := t.(MaskedTensor); ok && ms.IsMasked() {
+		fastCopy = false
+	}
+
+	if fastCopy {
+		if err := fce.fastCopyDenseRepeat(t, d, outers, size, stride, newStride, repeats); err != nil {
+			return nil, err
+		}
+		return d, nil
+	}
+
 	for i := 0; i < outers; i++ {
 		for j := 0; j < size; j++ {
 			var tmp int
@@ -72,6 +100,32 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 	return d, nil
 }
 
+func (StdEng) fastCopyDenseRepeat(t DenseTensor, d *Dense, outers, size, stride, newStride int, repeats []int) error {
+	var destStart, srcStart int
+	for i := 0; i < outers; i++ {
+		for j := 0; j < size; j++ {
+			var tmp int
+			tmp = repeats[j]
+			var tSlice array
+			tSlice = t.arr().slice(srcStart, t.len())
+
+			for k := 0; k < tmp; k++ {
+				if srcStart >= t.len() || destStart+stride > d.len() {
+					break
+				}
+				dSlice := d.arr().slice(destStart, d.len())
+				if err := t.Engine().Memcpy(&dSlice, &tSlice); err != nil {
+					return err
+				}
+				destStart += newStride
+			}
+			srcStart += stride
+		}
+	}
+	return nil
+}
+
+// Concat tensors
 func (e StdEng) Concat(t Tensor, axis int, others ...Tensor) (retVal Tensor, err error) {
 	switch tt := t.(type) {
 	case DenseTensor:
@@ -196,6 +250,7 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 	return retVal, nil
 }
 
+// Diag ...
 func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 	a, ok := t.(DenseTensor)
 	if !ok {
