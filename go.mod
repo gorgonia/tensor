@@ -12,6 +12,6 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/xtgo/set v1.0.0 // indirect
 	gonum.org/v1/gonum v0.0.0-20190902003836-43865b531bee
-	gorgonia.org/vecf32 v0.7.0
-	gorgonia.org/vecf64 v0.7.0
+	gorgonia.org/vecf32 v0.9.0
+	gorgonia.org/vecf64 v0.9.0
 )
