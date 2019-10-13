@@ -44,7 +44,7 @@ func MakeAP(shape Shape, strides []int, o DataOrder, Δ Triangle) AP {
 	}
 }
 
-// Init initalizes an already created AP with a shape and stries.
+// Init initializes an already created AP with a shape and stries.
 // It will panic if AP is nil.
 func (ap *AP) Init(shape Shape, strides []int) {
 	ap.shape = shape
