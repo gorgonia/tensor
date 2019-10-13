@@ -156,7 +156,7 @@ And here's a visual representation of the `*Dense`.
 
 ![dense](https://github.com/gorgonia/tensor/blob/master/media/dense.png?raw=true)
 
-`*Dense` draws its inspiration from Go's slice. Underlying it all is a flat array, and access to elements are controlled by `*AP`. Where a Go is able to store its metadata in a 3-word stucture (obiviating the need to allocate memory), a `*Dense` unfortunately needs to allocate some memory. The majority of the data is stored in the `*AP` structure, which contains metadata such as shape, stride, and methods for accessing the array.
+`*Dense` draws its inspiration from Go's slice. Underlying it all is a flat array, and access to elements are controlled by `*AP`. Where a Go is able to store its metadata in a 3-word structure (obviating the need to allocate memory), a `*Dense` unfortunately needs to allocate some memory. The majority of the data is stored in the `*AP` structure, which contains metadata such as shape, stride, and methods for accessing the array.
 
 `*Dense` embeds an `array` (not to be confused with Go's array), which is an abstracted data structure that looks like this:
 
