@@ -64,7 +64,7 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 	var fce fastcopier
 	// we need an engine for fastCopying...
 	e := t.Engine()
-	// e can never be nil. Error would have occured elsewhere
+	// e can never be nil. Error would have occurred elsewhere
 	var ok bool
 	if fce, ok = e.(fastcopier); ok {
 		fastCopy = true
