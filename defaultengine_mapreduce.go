@@ -2,8 +2,10 @@ package tensor
 
 import (
 	"reflect"
+	"sort"
 
 	"github.com/pkg/errors"
+
 	"gorgonia.org/tensor/internal/execution"
 	"gorgonia.org/tensor/internal/storage"
 )
@@ -176,99 +178,23 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 }
 
 func (e StdEng) Sum(a Tensor, along ...int) (retVal Tensor, err error) {
-	switch at := a.(type) {
-	case *Dense:
-		hdr := at.hdr()
-		typ := at.t.Type
-		monotonic, incr1 := IsMonotonicInts(along) // if both are true, then it means all axes are accounted for, then it'll return a scalar value
-		if (monotonic && incr1 && len(along) == a.Dims()) || len(along) == 0 {
-			var ret interface{}
-			if ret, err = execution.MonotonicSum(typ, hdr); err != nil {
-				return
-			}
-			return New(FromScalar(ret)), nil
-		}
-		var firstFn, lastFn, defaultFn interface{}
-		if firstFn, lastFn, defaultFn, err = execution.SumMethods(typ); err != nil {
-			return
-		}
-		defaultVal := reflect.Zero(typ).Interface()
-
-		retVal = a
-		prev := -1
-		dims := len(retVal.Shape())
-
-		for _, axis := range along {
-			if prev == -1 {
-				prev = axis
-			}
-			if axis > prev {
-				axis--
-			}
-
-			if axis >= dims {
-				err = errors.Errorf(dimMismatch, retVal.Dims(), axis)
-				return
-			}
-			if retVal, err = e.OptimizedReduce(retVal, axis, firstFn, lastFn, defaultFn, defaultVal); err != nil {
-				return
-			}
-		}
-		return
-
-	default:
-		return nil, errors.Errorf("Cannot perform Sum on %T", a)
-	}
+	return e.reduce("Sum", execution.MonotonicSum, execution.SumMethods, a, along...)
 }
 
 func (e StdEng) Min(a Tensor, along ...int) (retVal Tensor, err error) {
-	switch at := a.(type) {
-	case *Dense:
-		hdr := at.hdr()
-		typ := at.t.Type
-		monotonic, incr1 := IsMonotonicInts(along) // if both are true, then it means all axes are accounted for, then it'll return a scalar value
-		if (monotonic && incr1 && len(along) == a.Dims()) || len(along) == 0 {
-			var ret interface{}
-			if ret, err = execution.MonotonicMin(typ, hdr); err != nil {
-				return
-			}
-			return New(FromScalar(ret)), nil
-		}
-		var firstFn, lastFn, defaultFn interface{}
-		if firstFn, lastFn, defaultFn, err = execution.MinMethods(typ); err != nil {
-			return
-		}
-		defaultVal := reflect.Zero(typ).Interface()
-
-		retVal = a
-		prev := -1
-		dims := len(retVal.Shape())
-
-		for _, axis := range along {
-			if prev == -1 {
-				prev = axis
-			}
-			if axis > prev {
-				axis--
-			}
-
-			if axis >= dims {
-				err = errors.Errorf(dimMismatch, retVal.Dims(), axis)
-				return
-			}
-
-			if retVal, err = e.OptimizedReduce(retVal, axis, firstFn, lastFn, defaultFn, defaultVal); err != nil {
-				return
-			}
-		}
-		return
-
-	default:
-		return nil, errors.Errorf("Cannot perform Min on %T", a)
-	}
+	return e.reduce("Min", execution.MonotonicMin, execution.MinMethods, a, along...)
 }
 
 func (e StdEng) Max(a Tensor, along ...int) (retVal Tensor, err error) {
+	return e.reduce("Max", execution.MonotonicMax, execution.MaxMethods, a, along...)
+}
+
+func (e StdEng) reduce(
+	op string,
+	monotonicMethod func(t reflect.Type, a *storage.Header) (interface{}, error),
+	methods func(t reflect.Type) (interface{}, interface{}, interface{}, error),
+	a Tensor,
+	along ...int) (retVal Tensor, err error) {
 	switch at := a.(type) {
 	case *Dense:
 		hdr := at.hdr()
@@ -276,30 +202,25 @@ func (e StdEng) Max(a Tensor, along ...int) (retVal Tensor, err error) {
 		monotonic, incr1 := IsMonotonicInts(along) // if both are true, then it means all axes are accounted for, then it'll return a scalar value
 		if (monotonic && incr1 && len(along) == a.Dims()) || len(along) == 0 {
 			var ret interface{}
-			if ret, err = execution.MonotonicMax(typ, hdr); err != nil {
+			if ret, err = monotonicMethod(typ, hdr); err != nil {
 				return
 			}
 			return New(FromScalar(ret)), nil
 		}
 		var firstFn, lastFn, defaultFn interface{}
-		if firstFn, lastFn, defaultFn, err = execution.MaxMethods(typ); err != nil {
+		if firstFn, lastFn, defaultFn, err = methods(typ); err != nil {
 			return
 		}
 		defaultVal := reflect.Zero(typ).Interface()
 
 		retVal = a
-		prev := -1
-		dims := len(retVal.Shape())
+		dimsReduced := 0
+		sort.Slice(along, func(i, j int) bool { return along[i] < along[j] })
 
 		for _, axis := range along {
-			if prev == -1 {
-				prev = axis
-			}
-			if axis > prev {
-				axis--
-			}
-
-			if axis >= dims {
+			axis -= dimsReduced
+			dimsReduced++
+			if axis >= retVal.Dims() {
 				err = errors.Errorf(dimMismatch, retVal.Dims(), axis)
 				return
 			}
@@ -311,8 +232,9 @@ func (e StdEng) Max(a Tensor, along ...int) (retVal Tensor, err error) {
 		return
 
 	default:
-		return nil, errors.Errorf("Cannot perform Max on %T", a)
+		return nil, errors.Errorf("Cannot perform %s on %T", op, a)
 	}
+
 }
 
 func (StdEng) prepReduce(a Tensor, axis int, opts ...FuncOpt) (at, reuse DenseTensor, dataA, dataReuse *storage.Header, err error) {
