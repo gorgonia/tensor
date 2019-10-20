@@ -152,3 +152,59 @@ func TestFMA(t *testing.T) {
 	assert.Equal(t, f.Data(), f2.Data())
 
 }
+
+func TestMulScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{2}))
+	b := New(WithBacking([]float64{3}))
+	var correct interface{} = 6.0
+
+	res, err := Mul(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Mul(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{3, 2}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{6, 4}
+
+	res, err = Mul(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Mul(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{3, 5}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{21, 10}
+
+	res, err = Mul(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Mul(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}

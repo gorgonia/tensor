@@ -150,24 +150,25 @@ func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				return nil, errors.New("Neither engines of either operand support Mul")
 
 			} else { // one of the operands is a scalar
-				var leftTensor bool
-				if at.Shape().IsScalar() {
-					leftTensor = false // a Scalar-Tensor * b Tensor
-				} else {
-					leftTensor = true // a Tensor * b Scalar-Tensor
+				// Exchange only if the 2nd term is not a scalar
+				if !bt.Shape().IsScalar() {
+					// a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
 				}
 
 				if oe != nil {
-					return oe.MulScalar(at, bt, leftTensor, opts...)
+					return oe.MulScalar(at, bt, true, opts...)
 				}
 				if oe = bt.standardEngine(); oe != nil {
-					return oe.MulScalar(at, bt, leftTensor, opts...)
+					return oe.MulScalar(at, bt, true, opts...)
 				}
 				if muler, ok = at.Engine().(Muler); ok {
-					return muler.MulScalar(at, bt, leftTensor, opts...)
+					return muler.MulScalar(at, bt, true, opts...)
 				}
 				if muler, ok = bt.Engine().(Muler); ok {
-					return muler.MulScalar(at, bt, leftTensor, opts...)
+					return muler.MulScalar(at, bt, true, opts...)
 				}
 				return nil, errors.New("Neither engines of either operand support Mul")
 			}
