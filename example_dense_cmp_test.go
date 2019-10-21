@@ -25,7 +25,7 @@ func ExampleDense_Gt_basic() {
 	T3, _ = V.Gt(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
 
-	// Simliarly for tensors that return the same type
+	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
 	V = sliced.(*Dense)
@@ -197,7 +197,7 @@ func ExampleDense_Gte_basic() {
 	T3, _ = V.Gte(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
 
-	// Simliarly for tensors that return the same type
+	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
 	V = sliced.(*Dense)
@@ -369,7 +369,7 @@ func ExampleDense_Lt_basic() {
 	T3, _ = V.Lt(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
 
-	// Simliarly for tensors that return the same type
+	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
 	V = sliced.(*Dense)
@@ -540,7 +540,7 @@ func ExampleDense_Lte_basic() {
 	T3, _ = V.Lte(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
 
-	// Simliarly for tensors that return the same type
+	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
 	V = sliced.(*Dense)
@@ -712,7 +712,7 @@ func ExampleDense_ElEq_basic() {
 	T3, _ = V.ElEq(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
 
-	// Simliarly for tensors that return the same type
+	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
 	V = sliced.(*Dense)
@@ -885,7 +885,7 @@ func ExampleDense_ElNe_basic() {
 	T3, _ = V.ElNe(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
 
-	// Simliarly for tensors that return the same type
+	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
 	V = sliced.(*Dense)
