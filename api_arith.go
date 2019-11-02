@@ -26,7 +26,7 @@ func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor multiplication
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor addition
 				if oe != nil {
 					return oe.Add(at, bt, opts...)
 				}
@@ -107,7 +107,7 @@ func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor multiplication
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor substraction
 				if oe != nil {
 					return oe.Sub(at, bt, opts...)
 				}
@@ -271,7 +271,7 @@ func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor multiplication
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor division
 				if oe != nil {
 					return oe.Div(at, bt, opts...)
 				}
@@ -352,7 +352,7 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor multiplication
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor exponentiation
 				if oe != nil {
 					return oe.Pow(at, bt, opts...)
 				}
@@ -419,7 +419,7 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	panic("Unreachable")
 }
 
-// Mod performs elementwise exponentiation on the Tensor(s). These operations are supported:
+// Mod performs elementwise modulo on the Tensor(s). These operations are supported:
 //		Mod(*Dense, scalar)
 //		Mod(scalar, *Dense)
 //		Mod(*Dense, *Dense)
@@ -433,7 +433,7 @@ func Mod(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor multiplication
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor modulo
 				if oe != nil {
 					return oe.Mod(at, bt, opts...)
 				}
