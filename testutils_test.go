@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"bytes"
 	"errors"
 	"math"
 	"math/cmplx"
@@ -562,3 +563,12 @@ func qcEqCheck(t *testing.T, dt Dtype, willFailEq bool, correct, got interface{}
 	}
 	return true
 }
+
+// DummyState is a dummy fmt.State, used to debug things
+type DummyState struct {
+	*bytes.Buffer
+}
+
+func (d *DummyState) Width() (int, bool)     { return 0, false }
+func (d *DummyState) Precision() (int, bool) { return 0, false }
+func (d *DummyState) Flag(c int) bool        { return false }
