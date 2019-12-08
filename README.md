@@ -218,8 +218,10 @@ One could argue that this sidesteps the compiler's type checking system, deferri
 Currently, the tensor package supports limited type of genericity - limited to a tensor of any primitive type. 
 
 # How This Package is Developed #
-Much of the code in this package is generated. The code to generate them is in the directory `genlib2`. 
+Much of the code in this package is generated. The code to generate them is in the directory `genlib2`. `genlib2` requires [`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports) binary to be available in the $PATH.
 
+## Tests ##
+Tests require python with numpy installed. You can select which python intepreter is being used by setting the environment variable `PYTHON_COMMAND` accordingly. The default value is `python`.
 
 ## Things Knowingly Untested For ##
 - `complex64` and `complex128` are excluded from quick check generation process [Issue #11](https://github.com/gorgonia/tensor/issues/11)
