@@ -26,19 +26,46 @@ func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if oe != nil {
-				return oe.Add(at, bt, opts...)
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor addition
+				if oe != nil {
+					return oe.Add(at, bt, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.Add(at, bt, opts...)
+				}
+				if adder, ok = at.Engine().(Adder); ok {
+					return adder.Add(at, bt, opts...)
+				}
+				if adder, ok = bt.Engine().(Adder); ok {
+					return adder.Add(at, bt, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Add")
+
+			} else { // at least one of the operands is a scalar
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if oe != nil {
+					return oe.AddScalar(at, bt, leftTensor, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.AddScalar(at, bt, leftTensor, opts...)
+				}
+				if adder, ok = at.Engine().(Adder); ok {
+					return adder.AddScalar(at, bt, leftTensor, opts...)
+				}
+				if adder, ok = bt.Engine().(Adder); ok {
+					return adder.AddScalar(at, bt, leftTensor, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Add")
 			}
-			if oe = bt.standardEngine(); oe != nil {
-				return oe.Add(at, bt, opts...)
-			}
-			if adder, ok = at.Engine().(Adder); ok {
-				return adder.Add(at, bt, opts...)
-			}
-			if adder, ok = bt.Engine().(Adder); ok {
-				return adder.Add(at, bt, opts...)
-			}
-			return nil, errors.New("Neither engines of either operand support Add")
 
 		default:
 			if oe != nil {
@@ -80,19 +107,46 @@ func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if oe != nil {
-				return oe.Sub(at, bt, opts...)
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor substraction
+				if oe != nil {
+					return oe.Sub(at, bt, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.Sub(at, bt, opts...)
+				}
+				if suber, ok = at.Engine().(Suber); ok {
+					return suber.Sub(at, bt, opts...)
+				}
+				if suber, ok = bt.Engine().(Suber); ok {
+					return suber.Sub(at, bt, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Sub")
+
+			} else { // at least one of the operands is a scalar
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if oe != nil {
+					return oe.SubScalar(at, bt, leftTensor, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.SubScalar(at, bt, leftTensor, opts...)
+				}
+				if suber, ok = at.Engine().(Suber); ok {
+					return suber.SubScalar(at, bt, leftTensor, opts...)
+				}
+				if suber, ok = bt.Engine().(Suber); ok {
+					return suber.SubScalar(at, bt, leftTensor, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Sub")
 			}
-			if oe = bt.standardEngine(); oe != nil {
-				return oe.Sub(at, bt, opts...)
-			}
-			if suber, ok = at.Engine().(Suber); ok {
-				return suber.Sub(at, bt, opts...)
-			}
-			if suber, ok = bt.Engine().(Suber); ok {
-				return suber.Sub(at, bt, opts...)
-			}
-			return nil, errors.New("Neither engines of either operand support Sub")
 
 		default:
 			if oe != nil {
@@ -149,10 +203,13 @@ func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				}
 				return nil, errors.New("Neither engines of either operand support Mul")
 
-			} else { // one of the operands is a scalar
+			} else { // at least one of the operands is a scalar
 				var leftTensor bool
-				if at.Shape().IsScalar() {
+				if !bt.Shape().IsScalar() {
 					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
 				} else {
 					leftTensor = true // a Tensor * b Scalar-Tensor
 				}
@@ -214,19 +271,46 @@ func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if oe != nil {
-				return oe.Div(at, bt, opts...)
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor division
+				if oe != nil {
+					return oe.Div(at, bt, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.Div(at, bt, opts...)
+				}
+				if diver, ok = at.Engine().(Diver); ok {
+					return diver.Div(at, bt, opts...)
+				}
+				if diver, ok = bt.Engine().(Diver); ok {
+					return diver.Div(at, bt, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Div")
+
+			} else { // at least one of the operands is a scalar
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if oe != nil {
+					return oe.DivScalar(at, bt, leftTensor, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.DivScalar(at, bt, leftTensor, opts...)
+				}
+				if diver, ok = at.Engine().(Diver); ok {
+					return diver.DivScalar(at, bt, leftTensor, opts...)
+				}
+				if diver, ok = bt.Engine().(Diver); ok {
+					return diver.DivScalar(at, bt, leftTensor, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Div")
 			}
-			if oe = bt.standardEngine(); oe != nil {
-				return oe.Div(at, bt, opts...)
-			}
-			if diver, ok = at.Engine().(Diver); ok {
-				return diver.Div(at, bt, opts...)
-			}
-			if diver, ok = bt.Engine().(Diver); ok {
-				return diver.Div(at, bt, opts...)
-			}
-			return nil, errors.New("Neither engines of either operand support Div")
 
 		default:
 			if oe != nil {
@@ -268,19 +352,46 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if oe != nil {
-				return oe.Pow(at, bt, opts...)
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor exponentiation
+				if oe != nil {
+					return oe.Pow(at, bt, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.Pow(at, bt, opts...)
+				}
+				if power, ok = at.Engine().(Power); ok {
+					return power.Pow(at, bt, opts...)
+				}
+				if power, ok = bt.Engine().(Power); ok {
+					return power.Pow(at, bt, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Pow")
+
+			} else { // at least one of the operands is a scalar
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if oe != nil {
+					return oe.PowScalar(at, bt, leftTensor, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.PowScalar(at, bt, leftTensor, opts...)
+				}
+				if power, ok = at.Engine().(Power); ok {
+					return power.PowScalar(at, bt, leftTensor, opts...)
+				}
+				if power, ok = bt.Engine().(Power); ok {
+					return power.PowScalar(at, bt, leftTensor, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Pow")
 			}
-			if oe = bt.standardEngine(); oe != nil {
-				return oe.Pow(at, bt, opts...)
-			}
-			if power, ok = at.Engine().(Power); ok {
-				return power.Pow(at, bt, opts...)
-			}
-			if power, ok = bt.Engine().(Power); ok {
-				return power.Pow(at, bt, opts...)
-			}
-			return nil, errors.New("Neither engines of either operand support Pow")
 
 		default:
 			if oe != nil {
@@ -308,7 +419,7 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	panic("Unreachable")
 }
 
-// Mod performs elementwise exponentiation on the Tensor(s). These operations are supported:
+// Mod performs elementwise modulo on the Tensor(s). These operations are supported:
 //		Mod(*Dense, scalar)
 //		Mod(scalar, *Dense)
 //		Mod(*Dense, *Dense)
@@ -322,19 +433,46 @@ func Mod(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		oe = at.standardEngine()
 		switch bt := b.(type) {
 		case Tensor:
-			if oe != nil {
-				return oe.Mod(at, bt, opts...)
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor modulo
+				if oe != nil {
+					return oe.Mod(at, bt, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.Mod(at, bt, opts...)
+				}
+				if moder, ok = at.Engine().(Moder); ok {
+					return moder.Mod(at, bt, opts...)
+				}
+				if moder, ok = bt.Engine().(Moder); ok {
+					return moder.Mod(at, bt, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Mod")
+
+			} else { // at least one of the operands is a scalar
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if oe != nil {
+					return oe.ModScalar(at, bt, leftTensor, opts...)
+				}
+				if oe = bt.standardEngine(); oe != nil {
+					return oe.ModScalar(at, bt, leftTensor, opts...)
+				}
+				if moder, ok = at.Engine().(Moder); ok {
+					return moder.ModScalar(at, bt, leftTensor, opts...)
+				}
+				if moder, ok = bt.Engine().(Moder); ok {
+					return moder.ModScalar(at, bt, leftTensor, opts...)
+				}
+				return nil, errors.New("Neither engines of either operand support Mod")
 			}
-			if oe = bt.standardEngine(); oe != nil {
-				return oe.Mod(at, bt, opts...)
-			}
-			if moder, ok = at.Engine().(Moder); ok {
-				return moder.Mod(at, bt, opts...)
-			}
-			if moder, ok = bt.Engine().(Moder); ok {
-				return moder.Mod(at, bt, opts...)
-			}
-			return nil, errors.New("Neither engines of either operand support Mod")
 
 		default:
 			if oe != nil {
