@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"gorgonia.org/tensor/internal/execution"
 )
 
@@ -139,6 +138,9 @@ var sumTests = []struct {
 	{"A.Sum(0,1) for int8", Int8, Shape{2, 3}, []int{0, 1}, ScalarShape(), int8(15)},
 	{"A.Sum(1,0) for int8", Int8, Shape{2, 3}, []int{1, 0}, ScalarShape(), int8(15)},
 	{"3T.Sum(1,2) for int8", Int8, Shape{2, 3, 4}, []int{1, 2}, Shape{2}, []int8{66, -46}},
+	{"4T.Sum() for int8", Int8, Shape{2, 2, 2, 2}, []int{}, ScalarShape(), int8(120)},
+	{"4T.Sum(1,3) for int8", Int8, Shape{2, 2, 2, 2}, []int{1, 3}, Shape{2, 2}, []int8{10, 18, 42, 50}},
+	{"4T.Sum(0, 2, 3) for int8", Int8, Shape{2, 2, 2, 2}, []int{0, 2, 3}, Shape{2}, []int8{44, 76}},
 	{"common case: T.Sum() for int16", Int16, Shape{2, 3}, []int{}, ScalarShape(), int16(15)},
 	{"A.Sum(0) for int16", Int16, Shape{2, 3}, []int{0}, Shape{3}, []int16{3, 5, 7}},
 	{"A.Sum(1) for int16", Int16, Shape{2, 3}, []int{1}, Shape{2}, []int16{3, 12}},

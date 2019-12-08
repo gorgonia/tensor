@@ -24,7 +24,13 @@ func TestSaveLoadNumpy(t *testing.T) {
 
 	script := "import numpy as np\nx = np.load('test.npy')\nprint(x)"
 
-	cmd := exec.Command("python")
+	// Configurable python command, in order to be able to use python or python3
+	pythonCommand := os.Getenv("PYTHON_COMMAND")
+	if pythonCommand == "" {
+		pythonCommand = "python"
+	}
+
+	cmd := exec.Command(pythonCommand)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		t.Error(err)
@@ -40,6 +46,7 @@ func TestSaveLoadNumpy(t *testing.T) {
 
 	if err = cmd.Start(); err != nil {
 		t.Error(err)
+		t.Logf("Do you have a python with numpy installed? You can change the python interpreter by setting the environment variable PYTHON_COMMAND. Current value: PYTHON_COMMAND=%s", pythonCommand)
 	}
 
 	if err := cmd.Wait(); err != nil {

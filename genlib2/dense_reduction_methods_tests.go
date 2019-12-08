@@ -23,6 +23,9 @@ const testDenseSumRaw = `var sumTests = []struct {
 	{"A.Sum(0,1) for {{.}}", {{asType . | title}}, Shape{2,3},[]int{0, 1}, ScalarShape(), {{asType .}}(15)},
 	{"A.Sum(1,0) for {{.}}", {{asType . | title}},  Shape{2,3},[]int{1, 0}, ScalarShape(), {{asType .}}(15)},
 	{"3T.Sum(1,2) for {{.}}", {{asType . | title}}, Shape{2,3,4}, []int{1,2}, Shape{2}, []{{asType .}}{66, {{if eq .String "int8"}}-46{{else}}210{{end}} }},
+	{"4T.Sum() for {{.}}", {{asType . | title}},  Shape{2, 2, 2, 2},[]int{}, ScalarShape(), {{asType .}}(120)},
+	{"4T.Sum(1,3) for {{.}}", {{asType . | title}}, Shape{2, 2, 2, 2}, []int{1, 3}, Shape{2, 2}, []{{asType .}}{10, 18, 42, 50}},
+	{"4T.Sum(0, 2, 3) for {{.}}", {{asType . | title}}, Shape{2, 2, 2, 2}, []int{0, 2, 3}, Shape{2}, []{{asType .}}{44, 76}},
 	{{end -}}
 	{{end -}}
 }
@@ -65,6 +68,9 @@ const testDenseMaxRaw = `var maxTests = []struct {
 	{"A.Max(0,1)", {{asType . | title}}, Shape{2,3},[]int{0, 1}, ScalarShape(), {{asType .}}(5)},
 	{"A.Max(1,0)", {{asType . | title}}, Shape{2,3},[]int{1, 0}, ScalarShape(), {{asType .}}(5)},
 	{"3T.Max(1,2)", {{asType . | title}}, Shape{2,3,4}, []int{1,2}, Shape{2}, []{{asType .}}{11, 23} },
+	{"4T.Max()", {{asType . | title}},  Shape{2, 2, 2, 2},[]int{}, ScalarShape(), {{asType .}}(15)},
+	{"4T.Max(1,3)", {{asType . | title}}, Shape{2, 2, 2, 2}, []int{1, 3}, Shape{2, 2}, []{{asType .}}{5, 7, 13, 15}},
+	{"4T.Max(0, 2, 3)", {{asType . | title}}, Shape{2, 2, 2, 2}, []int{0, 2, 3}, Shape{2}, []{{asType .}}{11, 15}},
 	{{end -}}
 	{{end -}}
 	{{end -}}
@@ -108,6 +114,9 @@ const testDenseMinRaw = `var minTests = []struct {
 	{"A.Min(0,1)", {{asType .|title}}, Shape{2,3}, []int{0, 1}, ScalarShape(), {{asType .}}(0)},
 	{"A.Min(1,0)", {{asType .|title}}, Shape{2,3}, []int{1, 0}, ScalarShape(), {{asType .}}(0)},
 	{"3T.Min(1,2)", {{asType . | title}}, Shape{2,3,4}, []int{1,2}, Shape{2}, []{{asType .}}{0,12} },
+	{"4T.Min()", {{asType . | title}},  Shape{2, 2, 2, 2},[]int{}, ScalarShape(), {{asType .}}(0)},
+	{"4T.Min(1,3)", {{asType . | title}}, Shape{2, 2, 2, 2}, []int{1, 3}, Shape{2, 2}, []{{asType .}}{0, 2, 8, 10}},
+	{"4T.Min(0, 2, 3)", {{asType . | title}}, Shape{2, 2, 2, 2}, []int{0, 2, 3}, Shape{2}, []{{asType .}}{0, 4}},
 	{{end -}}
 	{{end -}}
 	{{end -}}
