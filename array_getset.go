@@ -68,8 +68,7 @@ func (a *array) Set(i int, x interface{}) {
 		a.SetUnsafePointer(i, xv)
 	default:
 		xv := reflect.ValueOf(x)
-		ptr := uintptr(a.Ptr)
-		want := ptr + uintptr(i)*a.t.Size()
+		want := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
 		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(xv)
@@ -116,8 +115,8 @@ func (a *array) Get(i int) interface{} {
 	case reflect.UnsafePointer:
 		return a.GetUnsafePointer(i)
 	default:
-		at := uintptr(a.Ptr) + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
+		at := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
+		val := reflect.NewAt(a.t.Type, at)
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}

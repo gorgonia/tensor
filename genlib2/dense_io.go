@@ -56,7 +56,7 @@ func (r *binaryReader) Err() error {
 // http://docs.scipy.org/doc/numpy/neps/npy-format.html
 //
 // Gorgonia specifically uses Version 1.0, as 65535 bytes should be more than enough for the headers.
-// The values are written in little endian order, because let's face it - 
+// The values are written in little endian order, because let's face it -
 // 90% of the world's computers are running on x86+ processors.
 //
 // This method does not close the writer. Closing (if needed) is deferred to the caller
@@ -64,7 +64,7 @@ func (r *binaryReader) Err() error {
 func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	var npdt string
 	if npdt, err = t.t.numpyDtype(); err != nil{
-		return 
+		return
 	}
 
 	header := "{'descr': '<%v', 'fortran_order': False, 'shape': %v}"
@@ -86,7 +86,7 @@ func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	bw.seq = 0
 	if t.IsMasked(){
 		fillval:=t.FillValue()
-		it := FlatMaskedIteratorFromDense(t)    	
+		it := FlatMaskedIteratorFromDense(t)
 		for i, err := it.Next(); err == nil; i, err = it.Next() {
 			if t.mask[i] {
 				bw.w(fillval)
@@ -119,7 +119,7 @@ func (t *Dense) WriteCSV(w io.Writer, formats ...string) (err error) {
 	}
 
 	cw := csv.NewWriter(w)
-	it := IteratorFromDense(t)	
+	it := IteratorFromDense(t)
 	coord := it.Coord()
 
 	// rows := t.Shape()[0]
@@ -195,7 +195,7 @@ func (t *Dense) GobEncode() (p []byte, err error){
 	if err = encoder.Encode(&data); err != nil {
 		return
 	}
-	
+
 	return buf.Bytes(), err
 }
 `
@@ -205,7 +205,7 @@ func (t *Dense) GobDecode(p []byte) (err error){
 	buf := bytes.NewBuffer(p)
 	decoder := gob.NewDecoder(buf)
 
-	
+
 	var shape Shape
 	if err = decoder.Decode(&shape); err != nil {
 		return
@@ -232,12 +232,12 @@ func (t *Dense) GobDecode(p []byte) (err error){
 	if err = decoder.Decode(&mask); err != nil {
 		return
 	}
-	
+
 	var data interface{}
 	if err = decoder.Decode(&data); err != nil {
 		return
 	}
-	
+
 	t.fromSlice(data)
 	t.addMask(mask)
 	t.fix()
@@ -298,7 +298,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 		return  errors.New("No shape information found in npy file")
 	}
 	sizesStr := strings.Split(string(match[1]), ",")
-	
+
 
 	var shape Shape
 	for _, s := range sizesStr {
@@ -339,7 +339,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 }
 `
 
-const readCSVRaw = `// convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice. 
+const readCSVRaw = `// convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice.
 // If into is nil, then a backing slice will be created.
 func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, error) {
 	var err error
@@ -456,13 +456,13 @@ func (t *Dense) FBEncode() ([]byte, error) {
 
 	var o uint32
 	switch {
-	case t.o.isRowMajor() && t.o.isContiguous():
+	case t.o.IsRowMajor() && t.o.IsContiguous():
 		o = 0
-	case t.o.isRowMajor() && !t.o.isContiguous():
+	case t.o.IsRowMajor() && !t.o.IsContiguous():
 		o = 1
-	case t.o.isColMajor() && t.o.isContiguous():
+	case t.o.IsColMajor() && t.o.IsContiguous():
 		o = 2
-	case t.o.isColMajor() && !t.o.isContiguous():
+	case t.o.IsColMajor() && !t.o.IsContiguous():
 		o = 3
 	}
 
@@ -571,13 +571,13 @@ func (t *Dense) PBEncode() ([]byte, error) {
 	}
 
 	switch {
-	case t.o.isRowMajor() && t.o.isContiguous():
+	case t.o.IsRowMajor() && t.o.IsContiguous():
 		toSerialize.O = pb.RowMajorContiguous
-	case t.o.isRowMajor() && !t.o.isContiguous():
+	case t.o.IsRowMajor() && !t.o.IsContiguous():
 		toSerialize.O = pb.RowMajorNonContiguous
-	case t.o.isColMajor() && t.o.isContiguous():
+	case t.o.IsColMajor() && t.o.IsContiguous():
 		toSerialize.O = pb.ColMajorContiguous
-	case t.o.isColMajor() && !t.o.isContiguous():
+	case t.o.IsColMajor() && !t.o.IsContiguous():
 		toSerialize.O = pb.ColMajorNonContiguous
 	}
 	toSerialize.T = pb.Triangle(t.Δ)
