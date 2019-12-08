@@ -152,3 +152,299 @@ func TestFMA(t *testing.T) {
 	assert.Equal(t, f.Data(), f2.Data())
 
 }
+
+func TestMulScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{2}))
+	b := New(WithBacking([]float64{3}))
+	var correct interface{} = 6.0
+
+	res, err := Mul(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Mul(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{3, 2}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{6, 4}
+
+	res, err = Mul(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Mul(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{3, 5}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{21, 10}
+
+	res, err = Mul(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Mul(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}
+
+func TestDivScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{6}))
+	b := New(WithBacking([]float64{2}))
+	var correct interface{} = 3.0
+
+	res, err := Div(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{6, 4}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{3, 2}
+
+	res, err = Div(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor-scalar
+	a = New(WithBacking([]float64{6}))
+	b = New(WithBacking([]float64{3, 2}))
+	correct = []float64{2, 3}
+
+	res, err = Div(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{21, 10}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{3, 5}
+
+	res, err = Div(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}
+
+func TestAddScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{2}))
+	b := New(WithBacking([]float64{3}))
+	var correct interface{} = 5.0
+
+	res, err := Add(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Add(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{3, 2}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{5, 4}
+
+	res, err = Add(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Add(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{3, 5}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{10, 7}
+
+	res, err = Add(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Add(b, a)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}
+
+func TestSubScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{6}))
+	b := New(WithBacking([]float64{2}))
+	var correct interface{} = 4.0
+
+	res, err := Sub(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{6, 4}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{4, 2}
+
+	res, err = Sub(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor-scalar
+	a = New(WithBacking([]float64{6}))
+	b = New(WithBacking([]float64{3, 2}))
+	correct = []float64{3, 4}
+
+	res, err = Sub(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{21, 10}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{14, 8}
+
+	res, err = Sub(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}
+
+func TestModScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{5}))
+	b := New(WithBacking([]float64{2}))
+	var correct interface{} = 1.0
+
+	res, err := Mod(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{5, 4}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{1, 0}
+
+	res, err = Mod(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor-scalar
+	a = New(WithBacking([]float64{5}))
+	b = New(WithBacking([]float64{3, 2}))
+	correct = []float64{2, 1}
+
+	res, err = Mod(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{22, 10}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{1, 0}
+
+	res, err = Mod(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}
+
+func TestPowScalarScalar(t *testing.T) {
+	// scalar-scalar
+	a := New(WithBacking([]float64{6}))
+	b := New(WithBacking([]float64{2}))
+	var correct interface{} = 36.0
+
+	res, err := Pow(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-tensor
+	a = New(WithBacking([]float64{6, 4}))
+	b = New(WithBacking([]float64{2}))
+	correct = []float64{36, 16}
+
+	res, err = Pow(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor-scalar
+	a = New(WithBacking([]float64{6}))
+	b = New(WithBacking([]float64{3, 2}))
+	correct = []float64{216, 36}
+
+	res, err = Pow(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// tensor - tensor
+	a = New(WithBacking([]float64{3, 10}))
+	b = New(WithBacking([]float64{7, 2}))
+	correct = []float64{2187, 100}
+
+	res, err = Pow(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+}

@@ -114,7 +114,7 @@ const agg2BodyRaw = `if useIter {
 			retVal = a
 		default:
 		{{if .VV -}}
-			if swap{
+			if swap {
 				retVal = b.Clone().(Tensor)
 			}else{
 				retVal = a.Clone().(Tensor)
@@ -124,7 +124,7 @@ const agg2BodyRaw = `if useIter {
 			retVal = a.Clone().(Tensor)
 			if leftTensor {
 				err = e.E.{{.Name}}Iter(typ, retVal.hdr(), dataB, ait, bit)
-			}else {
+			} else {
 				err = e.E.{{.Name}}Iter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		{{end -}}
@@ -166,8 +166,8 @@ const agg2BodyRaw = `if useIter {
 			retVal = a.Clone().(Tensor)
 			if leftTensor {
 				err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
-			}else {
-				err = e.E.{{.Name}}(typ, dataA, retVal.hdr())	
+			} else {
+				err = e.E.{{.Name}}(typ, dataA, retVal.hdr())
 			}
 		{{end -}}
 	}

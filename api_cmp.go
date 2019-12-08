@@ -17,12 +17,30 @@ func Lt(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		lter, ok = at.Engine().(Lter)
 		switch bt := b.(type) {
 		case Tensor:
-			if !ok {
-				if lter, ok = bt.Engine().(Lter); !ok {
-					return nil, errors.Errorf("Neither operands have engines that support Lt")
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor comparison
+				if !ok {
+					if lter, ok = bt.Engine().(Lter); !ok {
+						return nil, errors.Errorf("Neither operands have engines that support Lt")
+					}
 				}
+
+				return lter.Lt(at, bt, opts...)
+			} else {
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if !ok {
+					return nil, errors.Errorf("Engine does not support Lt")
+				}
+				return lter.LtScalar(at, bt, leftTensor, opts...)
 			}
-			return lter.Lt(at, bt, opts...)
 		default:
 			if !ok {
 				return nil, errors.Errorf("Engine does not support Lt")
@@ -55,12 +73,29 @@ func Gt(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		gter, ok = at.Engine().(Gter)
 		switch bt := b.(type) {
 		case Tensor:
-			if !ok {
-				if gter, ok = bt.Engine().(Gter); !ok {
-					return nil, errors.Errorf("Neither operands have engines that support Gt")
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor comparison
+				if !ok {
+					if gter, ok = bt.Engine().(Gter); !ok {
+						return nil, errors.Errorf("Neither operands have engines that support Gt")
+					}
 				}
+				return gter.Gt(at, bt, opts...)
+			} else {
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if !ok {
+					return nil, errors.Errorf("Engine does not support Gt")
+				}
+				return gter.GtScalar(at, bt, leftTensor, opts...)
 			}
-			return gter.Gt(at, bt, opts...)
 		default:
 			if !ok {
 				return nil, errors.Errorf("Engine does not support Gt")
@@ -93,12 +128,30 @@ func Lte(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		lteer, ok = at.Engine().(Lteer)
 		switch bt := b.(type) {
 		case Tensor:
-			if !ok {
-				if lteer, ok = bt.Engine().(Lteer); !ok {
-					return nil, errors.Errorf("Neither operands have engines that support Lte")
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor comparison
+				if !ok {
+					if lteer, ok = bt.Engine().(Lteer); !ok {
+						return nil, errors.Errorf("Neither operands have engines that support Lte")
+					}
 				}
+				return lteer.Lte(at, bt, opts...)
+			} else {
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if !ok {
+					return nil, errors.Errorf("Engine does not support Lte")
+				}
+				return lteer.LteScalar(at, bt, leftTensor, opts...)
 			}
-			return lteer.Lte(at, bt, opts...)
+
 		default:
 			if !ok {
 				return nil, errors.Errorf("Engine does not support Lte")
@@ -131,12 +184,29 @@ func Gte(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		gteer, ok = at.Engine().(Gteer)
 		switch bt := b.(type) {
 		case Tensor:
-			if !ok {
-				if gteer, ok = bt.Engine().(Gteer); !ok {
-					return nil, errors.Errorf("Neither operands have engines that support Gte")
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor comparison
+				if !ok {
+					if gteer, ok = bt.Engine().(Gteer); !ok {
+						return nil, errors.Errorf("Neither operands have engines that support Gte")
+					}
 				}
+				return gteer.Gte(at, bt, opts...)
+			} else {
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if !ok {
+					return nil, errors.Errorf("Engine does not support Gte")
+				}
+				return gteer.GteScalar(at, bt, leftTensor, opts...)
 			}
-			return gteer.Gte(at, bt, opts...)
 		default:
 			if !ok {
 				return nil, errors.Errorf("Engine does not support Gte")
@@ -169,12 +239,30 @@ func ElEq(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		eleqer, ok = at.Engine().(ElEqer)
 		switch bt := b.(type) {
 		case Tensor:
-			if !ok {
-				if eleqer, ok = bt.Engine().(ElEqer); !ok {
-					return nil, errors.Errorf("Neither operands have engines that support ElEq")
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor comparison
+				if !ok {
+					if eleqer, ok = bt.Engine().(ElEqer); !ok {
+						return nil, errors.Errorf("Neither operands have engines that support ElEq")
+					}
 				}
+				return eleqer.ElEq(at, bt, opts...)
+			} else {
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false // a Scalar-Tensor * b Tensor
+					tmp := at
+					at = bt
+					bt = tmp
+				} else {
+					leftTensor = true // a Tensor * b Scalar-Tensor
+				}
+
+				if !ok {
+					return nil, errors.Errorf("Engine does not support ElEq")
+				}
+				return eleqer.EqScalar(at, bt, leftTensor, opts...)
 			}
-			return eleqer.ElEq(at, bt, opts...)
+
 		default:
 			if !ok {
 				return nil, errors.Errorf("Engine does not support ElEq")
