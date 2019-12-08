@@ -26,15 +26,15 @@ func (a *array) Get(i int) interface{} {
 		{{end -}}
 	{{end -}}
 	default:
-		at := uintptr(a.Ptr) + uintptr(i) * a.t.Size()
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
+		at := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i) * a.t.Size())
+		val := reflect.NewAt(a.t.Type, at)
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}
 }
 
 `
-const setRaw = `// Set sets the value of the underlying array at the index i. 
+const setRaw = `// Set sets the value of the underlying array at the index i.
 func (a *array) Set(i int, x interface{}) {
 	switch a.t.Kind() {
 	{{range .Kinds -}}
@@ -47,8 +47,7 @@ func (a *array) Set(i int, x interface{}) {
 	{{end -}}
 	default:
 		xv := reflect.ValueOf(x)
-		ptr := uintptr(a.Ptr)
-		want := ptr + uintptr(i)*a.t.Size()
+		want := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
 		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(xv)
@@ -75,7 +74,7 @@ func (a *array) Memset(x interface{}) error {
 		{{end -}}
 	{{end -}}
 	}
-	
+
 	xv := reflect.ValueOf(x)
 	ptr := uintptr(a.Ptr)
 	for i := 0; i < a.L; i++ {
@@ -192,7 +191,7 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 		}
 		data := t.{{sliceOf .}}
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
-			data[i] = xv	
+			data[i] = xv
 		}
 		err = handleNoOp(err)
 		{{end -}}

@@ -110,8 +110,7 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 			xv := reflect.New(xt)
 			xvi := reflect.Indirect(xv)
 			xvi.Set(reflect.ValueOf(x))
-			ptr := xv.Pointer()
-			uptr := unsafe.Pointer(ptr)
+			uptr := unsafe.Pointer(xv.Pointer())
 
 			tt.array.Ptr = uptr
 			tt.array.L = 1

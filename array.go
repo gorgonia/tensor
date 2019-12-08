@@ -49,8 +49,7 @@ func arrayFromSlice(x interface{}) array {
 	elT := xT.Elem()
 
 	xV := reflect.ValueOf(x)
-	ptr := xV.Pointer()
-	uptr := unsafe.Pointer(ptr)
+	uptr := unsafe.Pointer(xV.Pointer())
 
 	return array{
 		Header: storage.Header{
@@ -71,8 +70,8 @@ func (a *array) fromSlice(x interface{}) {
 	}
 	elT := xT.Elem()
 	xV := reflect.ValueOf(x)
-	ptr := xV.Pointer()
-	uptr := unsafe.Pointer(ptr)
+	uptr := unsafe.Pointer(xV.Pointer())
+
 	a.Ptr = uptr
 	a.L = xV.Len()
 	a.C = xV.Cap()
@@ -127,7 +126,6 @@ func (a array) byteSlice() []byte {
 // sliceInto creates a slice. Instead of returning an array, which would cause a lot of reallocations, sliceInto expects a array to
 // already have been created. This allows repetitive actions to be done without having to have many pointless allocation
 func (a *array) sliceInto(i, j int, res *array) {
-	base := uintptr(a.Ptr)
 	c := a.C
 
 	if i < 0 || j < i || j > c {
@@ -138,10 +136,10 @@ func (a *array) sliceInto(i, j int, res *array) {
 	res.C = c - i
 
 	if c-1 > 0 {
-		res.Ptr = storage.ElementAt(i, unsafe.Pointer(base), a.t.Size())
+		res.Ptr = storage.ElementAt(i, a.Ptr, a.t.Size())
 	} else {
 		// don't advance pointer
-		res.Ptr = unsafe.Pointer(base)
+		res.Ptr = a.Ptr
 	}
 	res.fix()
 }
