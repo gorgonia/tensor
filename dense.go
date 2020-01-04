@@ -354,6 +354,12 @@ func (t *Dense) ShallowClone() *Dense {
 	t.AP.CloneTo(&retVal.AP)
 	retVal.flag = t.flag
 	retVal.array = t.array
+
+	retVal.old = t.old
+	retVal.transposeWith = t.transposeWith
+	retVal.viewOf = t.viewOf
+	retVal.mask = t.mask
+	retVal.maskIsSoft = t.maskIsSoft
 	return retVal
 }
 
