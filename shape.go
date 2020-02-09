@@ -6,6 +6,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Axis represents a shape's axis.
+type Axis int
+
 var scalarShape = Shape{}
 
 // ScalarShape represents a scalar. It has no dimensions, no sizes
