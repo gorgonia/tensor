@@ -140,6 +140,7 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 // Memory must be manually managed by the caller.
 // Tensors called with this construction option will not be returned to any pool - rather, all references to the pointers will be null'd.
 // Use with caution.
+//go:nocheckptr
 func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {

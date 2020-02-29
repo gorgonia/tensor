@@ -331,7 +331,7 @@ func (t *CS) Dense() *Dense {
 		// use
 	}
 
-	d := recycledDense(t.t, t.Shape().Clone())
+	d := recycledDense(t.t, t.Shape().Clone(), WithEngine(t.e))
 	if t.o.IsColMajor() {
 		for i := 0; i < len(t.indptr)-1; i++ {
 			for j := t.indptr[i]; j < t.indptr[i+1]; j++ {
