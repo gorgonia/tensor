@@ -33,7 +33,7 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 		axis = 0
 	}
 
-	d := recycledDense(t.Dtype(), newShape)
+	d := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
 
 	var outers int
 	if t.IsScalar() {
@@ -155,7 +155,7 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 		return nil, errors.Wrap(err, "Unable to find new shape that results from concatenation")
 	}
 
-	retVal := recycledDense(a.Dtype(), newShape)
+	retVal := recycledDense(a.Dtype(), newShape, WithEngine(e))
 	if isMasked {
 		retVal.makeMask()
 	}

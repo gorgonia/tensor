@@ -355,7 +355,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 
 	// extract values
 	var um, vm mat.Dense
-	s = recycledDense(Float64, Shape{MinInt(t.Shape()[0], t.Shape()[1])})
+	s = recycledDense(Float64, Shape{MinInt(t.Shape()[0], t.Shape()[1])}, WithEngine(e))
 	svd.Values(s.Data().([]float64))
 	if uv {
 		svd.UTo(&um)

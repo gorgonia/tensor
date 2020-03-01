@@ -73,7 +73,7 @@ func (t *Dense) SafeT(axes ...int) (retVal *Dense, err error) {
 		}
 	}
 
-	retVal = recycledDense(t.t, Shape{t.len()})
+	retVal = recycledDense(t.t, Shape{t.len()}, WithEngine(t.e))
 	copyDense(retVal, t)
 
 	retVal.e = t.e
