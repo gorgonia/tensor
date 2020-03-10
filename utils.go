@@ -55,11 +55,11 @@ func ProdInts(a []int) (retVal int) {
 // 	if len(a) != len(b) {
 // 		return false
 // 	}
-
+//
 // 	if (a == nil) != (b == nil) {
 // 		return false
 // 	}
-
+//
 // 	b = b[:len(a)]
 // 	for i, v := range a {
 // 		if v != b[i] {
