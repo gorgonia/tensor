@@ -1,6 +1,8 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func ExampleDense_Slice() {
 	var T Tensor
@@ -204,4 +206,32 @@ func ExampleDense_Vstack() {
 	//
 	// Vstacking (4) with (1, 2): Tensor has to be at least 2 dimensions
 	// Vstacking (1, 2) with (4): Tensor has to be at least 2 dimensions
+}
+
+func ExampleRepeatReuse() {
+	var T, T1 *Dense
+	T = New(WithBacking([]float64{1, 2, 3, 4}), WithShape(1, 4))
+	T1 = New(Of(Float64), WithShape(3, 4))
+
+	var T2 Tensor
+	var err error
+	if T2, err = RepeatReuse(T, T1, 0, 3); err != nil {
+		fmt.Printf("Err %v", err)
+	}
+	fmt.Printf("RepeatReuse(T, T1):\n%v", T2)
+	fmt.Printf("T1 == T2: %t\n", T1 == T2)
+
+	// But if your reuse is wrongly shaped, an error occurs
+	T1 = New(Of(Float64), WithShape(1, 4)) // too small
+	if _, err = RepeatReuse(T, T1, 0, 3); err != nil {
+		fmt.Printf("Expected Error: %v\n", err)
+	}
+
+	// Output:
+	// RepeatReuse(T, T1):
+	// ⎡1  2  3  4⎤
+	// ⎢1  2  3  4⎥
+	// ⎣1  2  3  4⎦
+	// T1 == T2: true
+	// Expected Error: Reuse shape is (1, 4). Expected shape is (3, 4)
 }
