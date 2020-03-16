@@ -235,3 +235,57 @@ func ExampleRepeatReuse() {
 	// T1 == T2: true
 	// Expected Error: Reuse shape is (1, 4). Expected shape is (3, 4)
 }
+
+func ExampleRepeat_uncommonUses() {
+	T := New(WithBacking([]int{1, 2, 3, 4, 5, 6}), WithShape(2, 3))
+	fmt.Printf("T:\n%v", T)
+
+	fmt.Println("Axis 0 has 2 elements. So we will need to write the number of times each element is to be repeated")
+	fmt.Println("Here, Repeat(T, 0, 3, 2) results in this:")
+	T1, err := Repeat(T, 0, 3, 2)
+	if err != nil {
+		fmt.Printf("Err %v", err)
+	}
+	fmt.Printf("%v", T1)
+	fmt.Println("Observe the 0th element ([1 2 3]) has been repeated 3 times, and the 1st element ([4 5 6]) has been repeated twice")
+	fmt.Println("")
+
+	fmt.Println("We can also repeat on Axis 1. Now along Axis 1 there are 3 elements: ([1 4], [2 5], [3 6])")
+	fmt.Println("So we have to specify how many times to repeat each element.")
+	fmt.Println("Repeat(T, 1, 2, 3, 2) yields the following result:")
+	T1, err = Repeat(T, 1, 2, 3, 2)
+	if err != nil {
+		fmt.Printf("Err %v", err)
+	}
+	fmt.Printf("%v", T1)
+	fmt.Println("Once again, observe that the 1st element ([2 5]) has been repeated 3 times, while the rest have been repeated twice")
+	/*
+	   // TODO break this out to another example
+	   	T1, err = Repeat(T, AllAxes, 2, 3, 2, 2, 2, 2)
+	   	if err != nil {
+	   		fmt.Printf("Err %v", err)
+	   	}
+	   	fmt.Printf("%#v", T1)
+	*/
+
+	// Output:
+	// T:
+	// ⎡1  2  3⎤
+	// ⎣4  5  6⎦
+	// Axis 0 has 2 elements. So we will need to write the number of times each element is to be repeated
+	// Here, Repeat(T, 0, 3, 2) results in this:
+	// ⎡1  2  3⎤
+	// ⎢1  2  3⎥
+	// ⎢1  2  3⎥
+	// ⎢4  5  6⎥
+	// ⎣4  5  6⎦
+	// Observe the 0th element ([1 2 3]) has been repeated 3 times, and the 1st element ([4 5 6]) has been repeated twice
+	//
+	// We can also repeat on Axis 1. Now along Axis 1 there are 3 elements: ([1 4], [2 5], [3 6])
+	// So we have to specify how many times to repeat each element.
+	// Repeat(T, 1, 2, 3, 2) yields the following result:
+	// ⎡1  1  2  2  2  3  3⎤
+	// ⎣4  4  5  5  5  6  6⎦
+	// Once again, observe that the 1st element ([2 5]) has been repeated 3 times, while the rest have been repeated twice
+
+}

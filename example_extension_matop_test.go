@@ -24,7 +24,7 @@ func (ss s) Start() int { return int(ss) }
 func (ss s) End() int   { return int(ss) + 1 }
 func (ss s) Step() int  { return 1 }
 
-func ExampleTranspose_Extension() {
+func ExampleTranspose_extension() {
 	// For documentation if you're reading this on godoc:
 	//
 	// type LongStruct struct {
