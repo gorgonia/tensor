@@ -105,6 +105,9 @@ func assertDense(t Tensor) (*Dense, error) {
 	if retVal, ok := t.(*Dense); ok {
 		return retVal, nil
 	}
+	if retVal, ok := t.(Densor); ok {
+		return retVal.Dense(), nil
+	}
 	return nil, errors.Errorf("%T is not *Dense", t)
 }
 

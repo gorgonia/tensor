@@ -16,25 +16,56 @@ type fastcopier interface {
 func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	switch tt := t.(type) {
 	case DenseTensor:
-		return e.denseRepeat(tt, axis, repeats)
+		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
+		if err != nil {
+			return nil, err
+		}
+		rr := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
+		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
 	default:
 		return nil, errors.Errorf("NYI")
 	}
 }
 
-func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseTensor, err error) {
-	var newShape Shape
-	var size int
-	if newShape, repeats, size, err = t.Shape().Repeat(axis, repeats...); err != nil {
-		return nil, errors.Wrap(err, "Unable to get repeated shape")
-	}
+// RepeatReuse is like Repeat, but with a provided reuse Tensor. The reuseTensor must be of the same type as the input t.
+func (e StdEng) RepeatReuse(t Tensor, reuse Tensor, axis int, repeats ...int) (Tensor, error) {
+	switch tt := t.(type) {
+	case DenseTensor:
+		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
+		if err != nil {
+			return nil, err
+		}
 
+		rr, ok := reuse.(DenseTensor)
+		if !ok {
+			return nil, errors.Errorf("t is a DenseTensor but reuse is of %T", reuse)
+		}
+		if !reuse.Shape().Eq(newShape) {
+			return nil, errors.Errorf("Reuse shape is %v. Expected shape is %v", reuse.Shape(), newShape)
+		}
+		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
+	default:
+		return nil, errors.Errorf("NYI")
+	}
+}
+
+func (StdEng) denseRepeatCheck(t Tensor, axis int, repeats []int) (newShape Shape, newRepeats []int, newAxis, size int, err error) {
+	if newShape, newRepeats, size, err = t.Shape().Repeat(axis, repeats...); err != nil {
+		return nil, nil, -1, -1, errors.Wrap(err, "Unable to get repeated shape")
+	}
+	newAxis = axis
 	if axis == AllAxes {
-		axis = 0
+		newAxis = 0
 	}
 
-	d := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
+	return
+}
 
+func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, repeats []int) (retVal DenseTensor, err error) {
+	d, err := assertDense(reuse)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Repeat reuse is not a *Dense")
+	}
 	var outers int
 	if t.IsScalar() {
 		outers = 1
