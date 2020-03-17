@@ -2,7 +2,7 @@ package tensor
 
 import "fmt"
 
-func Example_Sum() {
+func ExampleSum() {
 	T := New(WithBacking([]float64{0, 1, 2, 3}), WithShape(2, 2))
 	fmt.Printf("T:\n%v\n", T)
 
@@ -31,7 +31,7 @@ func Example_Sum() {
 	// Summed along (1, 0): 6
 }
 
-func Example_Argmax() {
+func ExampleArgmax() {
 	T := New(WithBacking([]float64{0, 100, 200, 3}), WithShape(2, 2))
 	fmt.Printf("T:\n%v\n", T)
 
@@ -49,7 +49,7 @@ func Example_Argmax() {
 	// Argmax is *tensor.Dense of int
 }
 
-func Example_Argmin() {
+func ExampleArgmin() {
 	T := New(WithBacking([]float64{0, 100, 200, 3}), WithShape(2, 2))
 	fmt.Printf("T:\n%v\n", T)
 

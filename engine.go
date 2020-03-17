@@ -89,6 +89,7 @@ type DenseStacker interface {
 // Repeater is any engine that can repeat values along the given axis.
 type Repeater interface {
 	Repeat(t Tensor, axis int, repeats ...int) (Tensor, error)
+	RepeatReuse(t Tensor, reuse Tensor, axis int, repeeats ...int) (Tensor, error)
 }
 
 // Diager is any engine that can return a tensor that only contains the diagonal values of the input
