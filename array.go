@@ -9,6 +9,26 @@ import (
 	"gorgonia.org/tensor/internal/storage"
 )
 
+//go:notinheap
+type rawdata []byte
+
+// array2 is a type that will not be allocated on the heap. This is useful for operational stuff - no unnecessary allocations required.
+
+//go:notinheap
+type array2 struct {
+	storage.Header
+	t Dtype
+	v interface{}
+}
+
+func (a array2) toarray() array {
+	return array{
+		Header: a.Header,
+		t:      a.t,
+		v:      a.v,
+	}
+}
+
 // array is the underlying generic array.
 type array struct {
 	storage.Header             // the header - the Go representation (a slice)
@@ -145,7 +165,7 @@ func (a *array) sliceInto(i, j int, res *array) {
 }
 
 // slice slices an array
-func (a array) slice(start, end int) array {
+func (a array) slice(start, end int) array2 {
 	if end > a.L {
 		panic("Index out of range")
 	}
@@ -169,7 +189,11 @@ func (a array) slice(start, end int) array {
 		C:   C,
 	}
 
-	return makeArrayFromHeader(hdr, a.t)
+	return array2{
+		Header: hdr,
+		t:      a.t,
+		v:      nil,
+	}
 }
 
 // swap swaps the elements i and j in the array
@@ -271,7 +295,7 @@ func (a *array) rtype() reflect.Type  { return a.t.Type }
 // malloc is standard Go allocation of a block of memory - the plus side is that Go manages the memory
 func malloc(t Dtype, length int) unsafe.Pointer {
 	size := int(calcMemSize(t, length))
-	s := make([]byte, size)
+	s := make(rawdata, size)
 	return unsafe.Pointer(&s[0])
 }
 
@@ -342,11 +366,43 @@ func copyDenseSliced(dst DenseTensor, dstart, dend int, src DenseTensor, sstart,
 		}
 	}
 	if e := src.Engine(); e != nil {
-		d := dst.arr().slice(dstart, dend)
-		s := src.arr().slice(sstart, send)
-		if err := e.Memcpy(&d, &s); err != nil {
-			panic(err)
+		darr := dst.arr()
+		sarr := src.arr()
+		d := darr.slice(dstart, dend)
+		s := sarr.slice(sstart, send)
+
+		switch e.(type) {
+		case NonStdEngine:
+			da := d.toarray()
+			sa := s.toarray()
+			if err := e.Memcpy(&da, &sa); err != nil {
+				panic(err)
+			}
+		default:
+			// THIS IS AN OPTIMIZATION. REVISIT WHEN NEEDED.
+			//
+			// THE PURPOSE of this optimization is to make this perform better under
+			// default circumstances.
+			//
+			// The original code simply uses t.Engine().Memcpy(&dSlice, &tSlice).
+			// A variant can still be seen in the NonStdEngine case above.
+			//
+			// The `array.slice()` method has been optimized to return `array2`, which is a
+			// non-heap allocated type.
+			// a value of `array2` cannot have its address taken - e.g.
+			// 	var a array2
+			// 	doSomething(&a) // ← this cannot be done
+			//
+			// We *could* make `array2` implement Memory. But then a lot of runtime.convT2I and
+			// runtime.convI2T would be called. Which defeats the purpose of making things fast.
+			//
+			// So instead, we check to see if the Engine uses standard allocation methods.
+			// Typically this means `StdEng`.
+			//
+			// If so, we directly use storage.Copy instead of using the engine
+			storage.Copy(d.t.Type, &d.Header, &s.Header)
 		}
+
 		return d.Len()
 	}
 	return copyArraySliced(dst.arr(), dstart, dend, src.arr(), sstart, send)

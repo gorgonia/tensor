@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/tensor/internal/storage"
 )
 
 var (
@@ -106,6 +107,11 @@ func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, 
 		fastCopy = false
 	}
 
+	// if d is not a fastcopier, then we also cannot use fast copy
+	if _, ok := d.Engine().(fastcopier); !ok {
+		fastCopy = false
+	}
+
 	if fastCopy {
 		if err := fce.fastCopyDenseRepeat(t, d, outers, size, stride, newStride, repeats); err != nil {
 			return nil, err
@@ -131,23 +137,26 @@ func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, 
 	return d, nil
 }
 
-func (StdEng) fastCopyDenseRepeat(t DenseTensor, d *Dense, outers, size, stride, newStride int, repeats []int) error {
+func (e StdEng) fastCopyDenseRepeat(t DenseTensor, d *Dense, outers, size, stride, newStride int, repeats []int) error {
 	var destStart, srcStart int
 	for i := 0; i < outers; i++ {
 		for j := 0; j < size; j++ {
 			var tmp int
 			tmp = repeats[j]
-			var tSlice array
-			tSlice = t.arr().slice(srcStart, t.len())
+			var tSlice array2
+			tarr := t.arr()
+			tSlice = tarr.slice(srcStart, t.len())
 
 			for k := 0; k < tmp; k++ {
 				if srcStart >= t.len() || destStart+stride > d.len() {
 					break
 				}
-				dSlice := d.arr().slice(destStart, d.len())
-				if err := t.Engine().Memcpy(&dSlice, &tSlice); err != nil {
-					return err
-				}
+				arr := d.arr()
+				dSlice := arr.slice(destStart, d.len())
+
+				// THIS IS AN OPTIMIZATION. REVISIT WHEN NEEDED.
+				storage.Copy(dSlice.t.Type, &dSlice.Header, &tSlice.Header)
+
 				destStart += newStride
 			}
 			srcStart += stride
