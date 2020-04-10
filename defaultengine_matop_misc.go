@@ -137,22 +137,85 @@ func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, 
 	return d, nil
 }
 
-func (e StdEng) fastCopyDenseRepeat(t DenseTensor, d *Dense, outers, size, stride, newStride int, repeats []int) error {
+func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, stride, newStride int, repeats []int) error {
+	sarr := src.arr()
+	darr := dest.arr()
+
 	var destStart, srcStart int
 	for i := 0; i < outers; i++ {
+		// faster shortcut for common case.
+		//
+		// Consider a case where:
+		// 	a := ⎡ 1 ⎤
+		//	     ⎢ 2 ⎥
+		//	     ⎢ 3 ⎥
+		//	     ⎣ 4 ⎦
+		// a has a shape of (4, 1). it is a *Dense.
+		//
+		// Now assume we want to repeat it on axis 1, 3 times. We want to repeat it into `b`,
+		// which is already allocated and zeroed, as shown below
+		//
+		// 	b := ⎡ 0 0 0 ⎤
+		//	     ⎢ 0 0 0 ⎥
+		//	     ⎢ 0 0 0 ⎥
+		//	     ⎣ 0 0 0 ⎦
+		//
+		// Now, both `a` and `b` have a stride of 1.
+		//
+		// The desired result is:
+		// 	b := ⎡ 1 1 1 ⎤
+		//	     ⎢ 2 2 2 ⎥
+		//	     ⎢ 3 3 3 ⎥
+		//	     ⎣ 4 4 4 ⎦
+		///
+		// Observe that this is simply broadcasting (copying) a[0] (a scalar value) to the row b[0], and so on and so forth.
+		// This can be done without knowing the full type - we simply copy the bytes over.
+		if stride == 1 && newStride == 1 {
+			for sz := 0; sz < size; sz++ {
+				tmp := repeats[sz]
+
+				// first we get the bounds of the src and the dest
+				// the srcStart and destStart are the indices assuming a flat array of []T
+				// we need to get the byte slice equivalent.
+				bSrcStart := srcStart * int(sarr.t.Size())
+				bSrcEnd := (srcStart + stride) * int(sarr.t.Size())
+				bDestStart := destStart * int(darr.t.Size())
+				bDestEnd := (destStart + tmp) * int(darr.t.Size())
+
+				// then we get the data as a slice of raw bytes
+				sBS := storage.AsByteSlice(&sarr.Header, sarr.t.Type)
+				dBS := storage.AsByteSlice(&darr.Header, darr.t.Type)
+
+				// recall that len(src) < len(dest)
+				// it's easier to understand if we define the ranges.
+				sRange := sBS[bSrcStart:bSrcEnd]
+				dRange := dBS[bDestStart:bDestEnd]
+
+				for i := 0; i < len(dRange); i += len(sRange) {
+					copy(dRange[i:], sRange)
+				}
+				srcStart += stride
+				destStart += tmp
+			}
+
+			// we can straightaway broadcast
+
+			continue
+		}
+
 		for j := 0; j < size; j++ {
 			var tmp int
 			tmp = repeats[j]
 			var tSlice array2
-			tarr := t.arr()
-			tSlice = tarr.slice(srcStart, t.len())
+
+			tSlice = sarr.slice(srcStart, src.len())
 
 			for k := 0; k < tmp; k++ {
-				if srcStart >= t.len() || destStart+stride > d.len() {
+				if srcStart >= src.len() || destStart+stride > dest.len() {
 					break
 				}
-				arr := d.arr()
-				dSlice := arr.slice(destStart, d.len())
+
+				dSlice := darr.slice(destStart, destStart+newStride)
 
 				// THIS IS AN OPTIMIZATION. REVISIT WHEN NEEDED.
 				storage.Copy(dSlice.t.Type, &dSlice.Header, &tSlice.Header)
