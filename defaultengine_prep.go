@@ -119,7 +119,6 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 			iit = reuse.Iterator()
 		}
 	}
-	// log.Printf("Use Itrer %v ", useIter)
 
 	// swap
 	if _, ok := a.(*CS); ok {
@@ -146,7 +145,7 @@ func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse 
 	}
 	useIter = a.RequiresIterator() ||
 		(reuse != nil && reuse.RequiresIterator()) ||
-		(reuse != nil && reuse.DataOrder().HasSameOrder(a.DataOrder()))
+		(reuse != nil && !reuse.DataOrder().HasSameOrder(a.DataOrder()))
 	if useIter {
 		ait = a.Iterator()
 		if reuse != nil {
@@ -170,7 +169,8 @@ func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse 
 	}
 	useIter = b.RequiresIterator() ||
 		(reuse != nil && reuse.RequiresIterator()) ||
-		(reuse != nil && reuse.DataOrder().HasSameOrder(b.DataOrder()))
+		(reuse != nil && !reuse.DataOrder().HasSameOrder(b.DataOrder()))
+
 	if useIter {
 		bit = b.Iterator()
 		if reuse != nil {
