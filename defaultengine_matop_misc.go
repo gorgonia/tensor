@@ -188,9 +188,11 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 
 				// recall that len(src) < len(dest)
 				// it's easier to understand if we define the ranges.
+				// Less prone to errors.
 				sRange := sBS[bSrcStart:bSrcEnd]
 				dRange := dBS[bDestStart:bDestEnd]
 
+				// finally we copy things.
 				for i := 0; i < len(dRange); i += len(sRange) {
 					copy(dRange[i:], sRange)
 				}
