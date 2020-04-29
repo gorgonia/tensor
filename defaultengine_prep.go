@@ -40,6 +40,14 @@ func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opt
 			err = errors.Wrapf(err, "Cannot use reuse: shape mismatch - reuse.len() %v, expShape.TotalSize() %v", reuse.len(), expShape.TotalSize())
 			return
 		}
+		if !reuse.Shape().Eq(expShape) {
+			cloned := expShape.Clone()
+			if err = reuse.Reshape(cloned...); err != nil {
+				return
+
+			}
+			ReturnInts([]int(cloned))
+		}
 
 		if !incr && reuse != nil {
 			reuse.setDataOrder(o)
