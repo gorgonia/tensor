@@ -45,8 +45,8 @@ type fmtState struct {
 
 	meta bool
 	flat bool
-	ext  bool
-	comp bool
+	ext  bool // extended (i.e no elision)
+	comp bool // compact
 	c    rune // c is here mainly for struct packing reasons
 
 	w, p int // width and precision
