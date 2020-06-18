@@ -13,6 +13,14 @@ func Repeat(t Tensor, axis int, repeats ...int) (retVal Tensor, err error) {
 	return nil, errors.New("Engine does not support Repeat")
 }
 
+// RepeatReuse repeats a Tensor along the axis and the given number of repeats, and puts the results in the provided reuse tensor. If the reuse tensor is not correctly sized, then  an error will be given // ???? , but the results will still be valid.
+func RepeatReuse(t, reuse Tensor, axis int, repeats ...int) (retval Tensor, err error) {
+	if r, ok := t.Engine().(Repeater); ok {
+		return r.RepeatReuse(t, reuse, axis, repeats...)
+	}
+	return nil, errors.New("Engine does not support Repeat")
+}
+
 // T safely transposes a Tensor. It returns a tensor that is not a view of the input tensor - rather, the data is all copied.
 func T(t Tensor, axes ...int) (retVal Tensor, err error) {
 	switch tt := t.(type) {

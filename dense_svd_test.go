@@ -104,7 +104,7 @@ func testSVD(T, T2, s, u, v *Dense, t string, i int) (err error) {
 	return nil
 }
 
-func Example_DenseSVD() {
+func ExampleDense_SVD() {
 	T := New(
 		WithShape(4, 5),
 		WithBacking([]float64{1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0}),
