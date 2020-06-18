@@ -87,12 +87,12 @@ func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
 
 func AsByteSlice(a *Header, t reflect.Type) []byte {
 	size := a.L * int(t.Size())
-	hdr := reflect.SliceHeader{
-		Data: uintptr(a.Ptr),
-		Len:  size,
-		Cap:  size,
-	}
-	return *(*[]byte)(unsafe.Pointer(&hdr))
+	b := make([]byte, 0)
+	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	hdr.Data = uintptr(a.Ptr)
+	hdr.Cap = size
+	hdr.Len = size
+	return b
 }
 
 // Element gets the pointer of ith element

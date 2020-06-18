@@ -605,7 +605,7 @@ func (t *Dense) SetMask(mask []bool) {
 }
 
 func (t *Dense) slice(start, end int) {
-	t.array = t.array.slice(start, end)
+	t.array = t.array.slice(start, end).toarray()
 }
 
 // RequiresIterator indicates if an iterator is required to read the data in *Dense in the correct fashion

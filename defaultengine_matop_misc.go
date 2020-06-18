@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/tensor/internal/storage"
 )
 
 var (
@@ -16,25 +17,56 @@ type fastcopier interface {
 func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 	switch tt := t.(type) {
 	case DenseTensor:
-		return e.denseRepeat(tt, axis, repeats)
+		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
+		if err != nil {
+			return nil, err
+		}
+		rr := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
+		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
 	default:
 		return nil, errors.Errorf("NYI")
 	}
 }
 
-func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseTensor, err error) {
-	var newShape Shape
-	var size int
-	if newShape, repeats, size, err = t.Shape().Repeat(axis, repeats...); err != nil {
-		return nil, errors.Wrap(err, "Unable to get repeated shape")
-	}
+// RepeatReuse is like Repeat, but with a provided reuse Tensor. The reuseTensor must be of the same type as the input t.
+func (e StdEng) RepeatReuse(t Tensor, reuse Tensor, axis int, repeats ...int) (Tensor, error) {
+	switch tt := t.(type) {
+	case DenseTensor:
+		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
+		if err != nil {
+			return nil, err
+		}
 
+		rr, ok := reuse.(DenseTensor)
+		if !ok {
+			return nil, errors.Errorf("t is a DenseTensor but reuse is of %T", reuse)
+		}
+		if !reuse.Shape().Eq(newShape) {
+			return nil, errors.Errorf("Reuse shape is %v. Expected shape is %v", reuse.Shape(), newShape)
+		}
+		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
+	default:
+		return nil, errors.Errorf("NYI")
+	}
+}
+
+func (StdEng) denseRepeatCheck(t Tensor, axis int, repeats []int) (newShape Shape, newRepeats []int, newAxis, size int, err error) {
+	if newShape, newRepeats, size, err = t.Shape().Repeat(axis, repeats...); err != nil {
+		return nil, nil, -1, -1, errors.Wrap(err, "Unable to get repeated shape")
+	}
+	newAxis = axis
 	if axis == AllAxes {
-		axis = 0
+		newAxis = 0
 	}
 
-	d := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
+	return
+}
 
+func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, repeats []int) (retVal DenseTensor, err error) {
+	d, err := assertDense(reuse)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Repeat reuse is not a *Dense")
+	}
 	var outers int
 	if t.IsScalar() {
 		outers = 1
@@ -75,6 +107,11 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 		fastCopy = false
 	}
 
+	// if d is not a fastcopier, then we also cannot use fast copy
+	if _, ok := d.Engine().(fastcopier); !ok {
+		fastCopy = false
+	}
+
 	if fastCopy {
 		if err := fce.fastCopyDenseRepeat(t, d, outers, size, stride, newStride, repeats); err != nil {
 			return nil, err
@@ -100,23 +137,91 @@ func (StdEng) denseRepeat(t DenseTensor, axis int, repeats []int) (retVal DenseT
 	return d, nil
 }
 
-func (StdEng) fastCopyDenseRepeat(t DenseTensor, d *Dense, outers, size, stride, newStride int, repeats []int) error {
+func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, stride, newStride int, repeats []int) error {
+	sarr := src.arr()
+	darr := dest.arr()
+
 	var destStart, srcStart int
 	for i := 0; i < outers; i++ {
+		// faster shortcut for common case.
+		//
+		// Consider a case where:
+		// 	a := ⎡ 1 ⎤
+		//	     ⎢ 2 ⎥
+		//	     ⎢ 3 ⎥
+		//	     ⎣ 4 ⎦
+		// a has a shape of (4, 1). it is a *Dense.
+		//
+		// Now assume we want to repeat it on axis 1, 3 times. We want to repeat it into `b`,
+		// which is already allocated and zeroed, as shown below
+		//
+		// 	b := ⎡ 0 0 0 ⎤
+		//	     ⎢ 0 0 0 ⎥
+		//	     ⎢ 0 0 0 ⎥
+		//	     ⎣ 0 0 0 ⎦
+		//
+		// Now, both `a` and `b` have a stride of 1.
+		//
+		// The desired result is:
+		// 	b := ⎡ 1 1 1 ⎤
+		//	     ⎢ 2 2 2 ⎥
+		//	     ⎢ 3 3 3 ⎥
+		//	     ⎣ 4 4 4 ⎦
+		///
+		// Observe that this is simply broadcasting (copying) a[0] (a scalar value) to the row b[0], and so on and so forth.
+		// This can be done without knowing the full type - we simply copy the bytes over.
+		if stride == 1 && newStride == 1 {
+			for sz := 0; sz < size; sz++ {
+				tmp := repeats[sz]
+
+				// first we get the bounds of the src and the dest
+				// the srcStart and destStart are the indices assuming a flat array of []T
+				// we need to get the byte slice equivalent.
+				bSrcStart := srcStart * int(sarr.t.Size())
+				bSrcEnd := (srcStart + stride) * int(sarr.t.Size())
+				bDestStart := destStart * int(darr.t.Size())
+				bDestEnd := (destStart + tmp) * int(darr.t.Size())
+
+				// then we get the data as a slice of raw bytes
+				sBS := storage.AsByteSlice(&sarr.Header, sarr.t.Type)
+				dBS := storage.AsByteSlice(&darr.Header, darr.t.Type)
+
+				// recall that len(src) < len(dest)
+				// it's easier to understand if we define the ranges.
+				// Less prone to errors.
+				sRange := sBS[bSrcStart:bSrcEnd]
+				dRange := dBS[bDestStart:bDestEnd]
+
+				// finally we copy things.
+				for i := 0; i < len(dRange); i += len(sRange) {
+					copy(dRange[i:], sRange)
+				}
+				srcStart += stride
+				destStart += tmp
+			}
+
+			// we can straightaway broadcast
+
+			continue
+		}
+
 		for j := 0; j < size; j++ {
 			var tmp int
 			tmp = repeats[j]
-			var tSlice array
-			tSlice = t.arr().slice(srcStart, t.len())
+			var tSlice array2
+
+			tSlice = sarr.slice(srcStart, src.len())
 
 			for k := 0; k < tmp; k++ {
-				if srcStart >= t.len() || destStart+stride > d.len() {
+				if srcStart >= src.len() || destStart+stride > dest.len() {
 					break
 				}
-				dSlice := d.arr().slice(destStart, d.len())
-				if err := t.Engine().Memcpy(&dSlice, &tSlice); err != nil {
-					return err
-				}
+
+				dSlice := darr.slice(destStart, destStart+newStride)
+
+				// THIS IS AN OPTIMIZATION. REVISIT WHEN NEEDED.
+				storage.Copy(dSlice.t.Type, &dSlice.Header, &tSlice.Header)
+
 				destStart += newStride
 			}
 			srcStart += stride
