@@ -381,4 +381,4 @@ func (t *CS) IsManuallyManaged() bool    { return t.f.manuallyManaged() }
 
 func (t *CS) arr() array                     { return t.array }
 func (t *CS) arrPtr() *array                 { return &t.array }
-func (t *CS) standardEngine() standardEngine { return nil }
+func (t *CS) standardEngine() StandardEngine { return nil }

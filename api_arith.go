@@ -19,7 +19,7 @@ import (
 // If the Unsafe flag is passed in, the data of the first tensor will be overwritten
 func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var adder Adder
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
@@ -100,7 +100,7 @@ func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 // If the Unsafe flag is passed in, the data of the first tensor will be overwritten
 func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var suber Suber
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
@@ -181,7 +181,7 @@ func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 // If the Unsafe flag is passed in, the data of the first tensor will be overwritten
 func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var muler Muler
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
@@ -264,7 +264,7 @@ func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 // If the Unsafe flag is passed in, the data of the first tensor will be overwritten
 func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var diver Diver
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
@@ -345,7 +345,7 @@ func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 // If the Unsafe flag is passed in, the data of the first tensor will be overwritten
 func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var power Power
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
@@ -426,7 +426,7 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 // If the Unsafe flag is passed in, the data of the first tensor will be overwritten
 func Mod(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var moder Moder
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
@@ -570,13 +570,64 @@ func MatMul(a, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 		err = errors.Errorf(dtypeMismatch, a.Dtype(), b.Dtype())
 		return
 	}
-
-	switch at := a.(type) {
-	case *Dense:
-		bt := b.(*Dense)
-		return at.MatMul(bt, opts...)
+	ad, aok := a.(*Dense)
+	_, bok := b.(*Dense)
+	if aok && bok {
+		// fast path
+		return ad.MatMul(b, opts...)
 	}
-	panic("Unreachable")
+
+	// check that both are matrices
+	if !a.Shape().IsMatrix() || !b.Shape().IsMatrix() {
+		err = errors.Errorf("MatMul requires both operands to be matrices. Got t's shape: %v, other's shape: %v", a.Shape(), b.Shape())
+		return
+	}
+
+	// checks that t is mxk matrix
+	var m, n, k int
+	m = a.Shape()[0]
+	k = a.Shape()[1]
+	n = b.Shape()[1]
+
+	// check shape
+	if k != b.Shape()[0] {
+		err = errors.Errorf(shapeMismatch, a.Shape(), b.Shape())
+		return
+	}
+
+	// check whether retVal has the same size as the resulting matrix would be: mxn
+	expectedShape := Shape{m, n}
+
+	// find an engine
+	aEng, aok := a.Engine().(MatMuler)
+	bEng, bok := b.Engine().(MatMuler)
+	mm := aEng
+	var eng Engine = a.Engine()
+	if !aok {
+		mm = bEng
+		eng = b.Engine()
+		if !bok {
+			return nil, errors.Errorf("Neither a or b have an engine that is a MatMuler. a: %T, b: %T", a.Engine(), b.Engine())
+		}
+	}
+
+	// parse function options, and get a preallocated value
+	var reuse *Dense
+	fo := ParseFuncOpts(opts...)
+	defer returnOpOpt(fo)
+	if reuse, err = handleReuse(fo.Reuse(), expectedShape); err != nil {
+		err = errors.Wrapf(err, opFail, "MatMul")
+		return
+	}
+
+	if reuse == nil {
+		reuse = recycledDense(a.Dtype(), expectedShape, WithEngine(eng))
+	}
+	retVal = reuse
+	if err = mm.MatMul(a, b, retVal); err != nil {
+		return
+	}
+	return handleIncr(retVal.(*Dense), fo.Reuse(), fo.Incr(), expectedShape)
 }
 
 // MatVecMul performs matrix-vector multiplication between two Tensors. `a` is expected to be a matrix, and `b` is expected to be a vector

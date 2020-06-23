@@ -393,7 +393,7 @@ func handleReuse(reuse Tensor, expectedShape Shape) (retVal *Dense, err error) {
 		}
 		return
 	}
-	return
+	return nil, nil
 }
 
 // handleIncr is the cleanup step for when there is an Tensor to increment. If the result tensor is the same as the reuse Tensor, the result tensor gets returned to the pool

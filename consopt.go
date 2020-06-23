@@ -175,7 +175,7 @@ func WithEngine(e Engine) ConsOpt {
 			}
 
 			tt.oe = nil
-			if oe, ok := e.(standardEngine); ok {
+			if oe, ok := e.(StandardEngine); ok {
 				tt.oe = oe
 			}
 		case *CS:

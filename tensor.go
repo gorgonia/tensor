@@ -54,10 +54,6 @@ type Tensor interface {
 	Eq
 	Cloner
 
-	// type overloading methods
-	IsScalar() bool
-	ScalarValue() interface{}
-
 	// engine/memory related stuff
 	// all Tensors should be able to be expressed of as a slab of memory
 	// Note: the size of each element can be acquired by T.Dtype().Size()
@@ -78,9 +74,12 @@ type Tensor interface {
 	//gob.GobEncoder
 	//gob.GobDecoder
 
-	standardEngine() standardEngine
+	standardEngine() StandardEngine
 	headerer
 	arrayer
+
+	// TO BE DEPRECATED
+	ScalarRep
 }
 
 // New creates a new Dense Tensor. For sparse arrays use their relevant construction function

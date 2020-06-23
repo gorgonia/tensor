@@ -12,6 +12,10 @@ import (
 //go:notinheap
 type rawdata []byte
 
+func (d rawdata) Uintptr() uintptr        { return uintptr(unsafe.Pointer(&d[0])) }
+func (d rawdata) MemSize() uintptr        { return uintptr(len(d)) }
+func (d rawdata) Pointer() unsafe.Pointer { return unsafe.Pointer(&d[0]) }
+
 // array2 is a type that will not be allocated on the heap. This is useful for operational stuff - no unnecessary allocations required.
 
 //go:notinheap

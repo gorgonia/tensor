@@ -13,6 +13,17 @@ import (
 )
 
 var _ Tensor = Scalar{}
+var _ ScalarRep = Scalar{}
+var _ ScalarRep = ScalarDense{}
+
+// ScalarDense wraps a *Dense to provide a typesafe alternative for a scalar to be represented in a *Dense.
+type ScalarDense struct {
+	*Dense
+}
+
+func (s ScalarDense) IsScalar() bool { return true }
+
+func (s ScalarDense) ScalarValue() interface{} { return s.Dense.Data() }
 
 // Scalar is a representation of a scalar value on the CPU.
 type Scalar struct{ v interface{} }
@@ -71,9 +82,10 @@ func (s Scalar) String() string             { return fmt.Sprintf("%v", s) }
 func (s Scalar) WriteNpy(io.Writer) error { return errors.Errorf(methodNYI, "WriteNpy", "Scalar") }
 func (s Scalar) ReadNpy(io.Reader) error  { return errors.Errorf(methodNYI, "ReadNypy", "Scalar") }
 func (s Scalar) GobEncode() ([]byte, error) {
+	// TODO
 	return nil, errors.Errorf(methodNYI, "GobEncode", "Scalar")
 }
-func (s Scalar) GobDecode([]byte) error { return errors.Errorf(methodNYI, "GobDecode", "Scalar") }
+func (s Scalar) GobDecode([]byte) error { return errors.Errorf(methodNYI, "GobDecode", "Scalar") } // TODO
 
 func (s Scalar) standardEngine() standardEngine { return StdEng{} }
 func (s Scalar) hdr() *storage.Header           { return nil }
