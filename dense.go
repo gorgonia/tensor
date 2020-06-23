@@ -19,7 +19,7 @@ type Dense struct {
 
 	flag MemoryFlag
 	e    Engine         // execution engine for the *Dense
-	oe   standardEngine // optimized engine
+	oe   StandardEngine // optimized engine
 
 	// backup AP. When a transpose is done, the old *AP is backed up here, for easy untransposes
 	old           AP
@@ -86,7 +86,9 @@ func (t *Dense) makeArray(size int) {
 	case arrayMaker:
 		te.makeArray(&t.array, t.t, size)
 		return
+	case StandardEngine:
 	default:
+
 	}
 
 	mem, err := t.e.Alloc(calcMemSize(t.t, size))
@@ -273,7 +275,7 @@ func (t *Dense) fix() {
 		t.e = StdEng{}
 	}
 
-	if oe, ok := t.e.(standardEngine); ok {
+	if oe, ok := t.e.(StandardEngine); ok {
 		t.oe = oe
 	}
 
@@ -622,4 +624,4 @@ func (t *Dense) RequiresIterator() bool {
 
 func (t *Dense) Iterator() Iterator { return IteratorFromDense(t) }
 
-func (t *Dense) standardEngine() standardEngine { return t.oe }
+func (t *Dense) standardEngine() StandardEngine { return t.oe }

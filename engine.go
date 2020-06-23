@@ -29,7 +29,7 @@ type Engine interface {
 	WorksWith(order DataOrder) bool           // WorksWith returns true if the data order can be directly worked with
 }
 
-type standardEngine interface {
+type StandardEngine interface {
 	Engine
 
 	Adder

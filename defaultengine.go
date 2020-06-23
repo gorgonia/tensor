@@ -24,7 +24,7 @@ func (e StdEng) makeArray(arr *array, t Dtype, size int) {
 }
 
 func (e StdEng) AllocAccessible() bool             { return true }
-func (e StdEng) Alloc(size int64) (Memory, error)  { return nil, noopError{} }
+func (e StdEng) Alloc(size int64) (Memory, error)  { return make(rawdata, size), nil }
 func (e StdEng) Free(mem Memory, size int64) error { return nil }
 func (e StdEng) Memset(mem Memory, val interface{}) error {
 	if ms, ok := mem.(MemSetter); ok {
