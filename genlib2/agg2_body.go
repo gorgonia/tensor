@@ -164,11 +164,10 @@ const agg2BodyRaw = `if useIter {
 			err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
 		{{else -}}
 			retVal = a.Clone().(Tensor)
-			if leftTensor {
-				err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
-			} else {
-				err = e.E.{{.Name}}(typ, dataA, retVal.hdr())
+			if !leftTensor {
+				storage.Fill(typ, retVal.hdr(), dataA)
 			}
+			err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
 		{{end -}}
 	}
 	{{if not .VV -}}returnHeader(scalarHeader){{end}}
