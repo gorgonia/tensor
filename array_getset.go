@@ -512,6 +512,7 @@ func (a array) Eq(other interface{}) bool {
 				return false
 			}
 		*/
+
 		// same exact thing
 		if uintptr(oa.Ptr) == uintptr(a.Ptr) {
 			return true

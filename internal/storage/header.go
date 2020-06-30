@@ -56,6 +56,23 @@ func CopySliced(t reflect.Type, dst *Header, dstart, dend int, src *Header, ssta
 	return copied / size
 }
 
+func Fill(t reflect.Type, dst, src *Header) int {
+	dstBA := AsByteSlice(dst, t)
+	srcBA := AsByteSlice(src, t)
+	size := int(t.Size())
+	lenSrc := len(srcBA)
+
+	dstart := 0
+	for {
+		copied := copy(dstBA[dstart:], srcBA)
+		dstart += copied
+		if copied < lenSrc {
+			break
+		}
+	}
+	return dstart / size
+}
+
 func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
 	dstBA := AsByteSlice(dst, t)
 	srcBA := AsByteSlice(src, t)

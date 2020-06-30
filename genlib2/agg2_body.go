@@ -16,7 +16,7 @@ const cmpPrepRaw = `var safe, same bool
 const arithPrepRaw = `var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
-	}	
+	}
 `
 
 const prepVVRaw = `if err = binaryCheck(a, b, {{.TypeClassCheck | lower}}Types); err != nil {
@@ -88,7 +88,7 @@ const agg2BodyRaw = `if useIter {
 		case incr:
 			err = e.E.{{.Name}}IterIncr(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
-		{{if .VV -}}	
+		{{if .VV -}}
 		case toReuse:
 			storage.CopyIter(typ,dataReuse, dataA, iit, ait)
 			ait.Reset()
@@ -149,10 +149,20 @@ const agg2BodyRaw = `if useIter {
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.{{.Name}}(typ, dataA, dataReuse)
+		{{if not .VV -}}
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
+		{{end -}}
 		retVal = reuse
 	{{end -}}
 	case !safe:
 		err = e.E.{{.Name}}(typ, dataA, dataB)
+		{{if not .VV -}}
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
+		{{end -}}
 		retVal = a
 	default:
 		{{if .VV -}}
@@ -164,11 +174,10 @@ const agg2BodyRaw = `if useIter {
 			err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
 		{{else -}}
 			retVal = a.Clone().(Tensor)
-			if leftTensor {
-				err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
-			} else {
-				err = e.E.{{.Name}}(typ, dataA, retVal.hdr())
+			if !leftTensor {
+				storage.Fill(typ, retVal.hdr(), dataA)
 			}
+			err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
 		{{end -}}
 	}
 	{{if not .VV -}}returnHeader(scalarHeader){{end}}
@@ -195,7 +204,7 @@ const agg2CmpBodyRaw = `// check to see if anything needs to be created
 		reuse = NewDense(Bool, a.Shape().Clone(), WithEngine(e))
 		dataReuse =  reuse.hdr()
 		if useIter{
-		iit = IteratorFromDense(reuse)	
+		iit = IteratorFromDense(reuse)
 		}
 	}
 
@@ -247,7 +256,7 @@ const agg2CmpBodyRaw = `// check to see if anything needs to be created
 			err = e.E.{{.Inv}}Same(typ, dataReuse, dataA)
 			retVal = reuse
 			return
-		}	
+		}
 	}
 	{{end -}}
 
