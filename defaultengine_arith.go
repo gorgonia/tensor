@@ -481,9 +481,15 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Add(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Add(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
@@ -661,9 +667,15 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Mul(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Mul(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
@@ -748,9 +760,15 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Div(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Div(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
@@ -835,9 +853,15 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Pow(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Pow(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
@@ -922,9 +946,15 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Mod(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Mod(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
