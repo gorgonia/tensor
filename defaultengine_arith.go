@@ -568,9 +568,15 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Sub(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Sub(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
