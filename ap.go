@@ -246,8 +246,11 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 		// a slice where start == end is []
 		ndStart = ndStart + start*stride
 		ndEnd = ndEnd - (size-end)*stride
+
 		if step > 0 {
-			newShape[i] = (end - start) / step
+			if newShape[i] = (end - start) / step; (end-start)%step > 0 && i > 0 {
+				newShape[i]++
+			}
 			newStrides[i] = stride * step
 
 			//fix
