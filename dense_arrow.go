@@ -12,6 +12,7 @@ import (
 // FromArrowArray converts an "arrow/array".Interface into a Tensor.
 func FromArrowArray(a arrowArray.Interface) *Dense {
 	a.Retain()
+	defer a.Release()
 
 	r := a.Len()
 
