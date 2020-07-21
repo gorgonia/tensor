@@ -238,16 +238,24 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 `
 
 var (
-	conversions *template.Template
-	compats     *template.Template
+	conversions  *template.Template
+	compats      *template.Template
+	compatsArrow *template.Template
 )
 
 func init() {
 	conversions = template.Must(template.New("conversions").Funcs(funcs).Parse(conversionsRaw))
 	compats = template.Must(template.New("compat").Funcs(funcs).Parse(compatRaw))
+	compatsArrow = template.Must(template.New("compat_arrow").Funcs(funcs).Parse(compatArrowRaw))
 }
 
 func generateDenseCompat(f io.Writer, generic Kinds) {
 	conversions.Execute(f, generic)
 	compats.Execute(f, generic)
+	arrowData := ArrowData{
+		BinaryTypes:     arrowBinaryTypes,
+		FixedWidthTypes: arrowFixedWidthTypes,
+		PrimitiveTypes:  arrowPrimitiveTypes,
+	}
+	compatsArrow.Execute(f, arrowData)
 }
