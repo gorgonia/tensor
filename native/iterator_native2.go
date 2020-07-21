@@ -53,8 +53,8 @@ func SelectB(t *Dense, axis int) (retVal [][]bool, err error) {
 			s := make([]bool, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -91,8 +91,8 @@ func SelectI(t *Dense, axis int) (retVal [][]int, err error) {
 			s := make([]int, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -129,8 +129,8 @@ func SelectI8(t *Dense, axis int) (retVal [][]int8, err error) {
 			s := make([]int8, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -167,8 +167,8 @@ func SelectI16(t *Dense, axis int) (retVal [][]int16, err error) {
 			s := make([]int16, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -205,8 +205,8 @@ func SelectI32(t *Dense, axis int) (retVal [][]int32, err error) {
 			s := make([]int32, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -243,8 +243,8 @@ func SelectI64(t *Dense, axis int) (retVal [][]int64, err error) {
 			s := make([]int64, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -281,8 +281,8 @@ func SelectU(t *Dense, axis int) (retVal [][]uint, err error) {
 			s := make([]uint, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -319,8 +319,8 @@ func SelectU8(t *Dense, axis int) (retVal [][]uint8, err error) {
 			s := make([]uint8, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -357,8 +357,8 @@ func SelectU16(t *Dense, axis int) (retVal [][]uint16, err error) {
 			s := make([]uint16, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -395,8 +395,8 @@ func SelectU32(t *Dense, axis int) (retVal [][]uint32, err error) {
 			s := make([]uint32, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -433,8 +433,8 @@ func SelectU64(t *Dense, axis int) (retVal [][]uint64, err error) {
 			s := make([]uint64, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -471,8 +471,8 @@ func SelectF32(t *Dense, axis int) (retVal [][]float32, err error) {
 			s := make([]float32, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -509,8 +509,8 @@ func SelectF64(t *Dense, axis int) (retVal [][]float64, err error) {
 			s := make([]float64, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -547,8 +547,8 @@ func SelectC64(t *Dense, axis int) (retVal [][]complex64, err error) {
 			s := make([]complex64, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -585,8 +585,8 @@ func SelectC128(t *Dense, axis int) (retVal [][]complex128, err error) {
 			s := make([]complex128, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
@@ -623,8 +623,8 @@ func SelectStr(t *Dense, axis int) (retVal [][]string, err error) {
 			s := make([]string, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
