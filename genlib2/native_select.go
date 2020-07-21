@@ -44,12 +44,12 @@ func Select{{short .}}(t *Dense, axis int) (retVal [][]{{asType .}}, err error) 
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]{{asType .}}, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]{{asType .}})(unsafe.Pointer(hdr)))
+			s := make([]{{asType .}}, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
