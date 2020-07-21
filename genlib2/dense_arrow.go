@@ -21,7 +21,33 @@ func FromArrowArray(a arrowArray.Interface) *Dense {
 	}
 
 	switch a.DataType() {
-	{{range .ArrowData.PrimitiveTypes -}}
+	{{range .BinaryTypes -}}
+	case arrow.BinaryTypes.{{.}}:
+		{{if eq . "String" -}}
+			backing := make([]string, a.Len())
+			for i := 0; i < len(backing); i++ {
+				backing[i] = a.Value(i)
+			}
+		{{else -}}
+			backing := a.(*arrowArray.{{.}}).{{.}}Values()
+		{{end -}}
+		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
+		return retVal
+	{{end -}}
+	{{range .FixedWidthTypes -}}
+	case arrow.FixedWidthTypes.{{.}}:
+		{{if eq . "Boolean" -}}
+			backing := make([]bool, a.Len())
+			for i := 0; i < len(backing); i++ {
+				backing[i] = a.Value(i)
+			}
+		{{else -}}
+			backing := a.(*arrowArray.{{.}}).{{.}}Values()
+		{{end -}}
+		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
+		return retVal
+	{{end -}}
+	{{range .PrimitiveTypes -}}
 	case arrow.PrimitiveTypes.{{.}}:
 		backing := a.(*arrowArray.{{.}}).{{.}}Values()
 		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
