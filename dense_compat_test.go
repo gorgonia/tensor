@@ -5,6 +5,9 @@ package tensor
 import (
 	"testing"
 
+	arrow "github.com/apache/arrow/go/arrow"
+	arrowArray "github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/stretchr/testify/assert"
 	"gonum.org/v1/gonum/mat"
 )
@@ -103,5 +106,204 @@ func TestFromMat64(t *testing.T) {
 			backing[0] = 1000
 			assert.Equal(backing, T.Float64s(), "test %d - unsafe float64", i)
 		}
+	}
+}
+
+var toArrowArrayTests = []struct {
+	data  interface{}
+	dt    arrow.DataType
+	shape Shape
+}{
+	{
+		data:  Range(Int8, 0, 6),
+		dt:    arrow.PrimitiveTypes.Int8,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Int16, 0, 6),
+		dt:    arrow.PrimitiveTypes.Int16,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Int32, 0, 6),
+		dt:    arrow.PrimitiveTypes.Int32,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Int64, 0, 6),
+		dt:    arrow.PrimitiveTypes.Int64,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Uint8, 0, 6),
+		dt:    arrow.PrimitiveTypes.Uint8,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Uint16, 0, 6),
+		dt:    arrow.PrimitiveTypes.Uint16,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Uint32, 0, 6),
+		dt:    arrow.PrimitiveTypes.Uint32,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Uint64, 0, 6),
+		dt:    arrow.PrimitiveTypes.Uint64,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Float32, 0, 6),
+		dt:    arrow.PrimitiveTypes.Float32,
+		shape: Shape{6, 1},
+	},
+	{
+		data:  Range(Float64, 0, 6),
+		dt:    arrow.PrimitiveTypes.Float64,
+		shape: Shape{6, 1},
+	},
+}
+
+func TestFromArrowArray(t *testing.T) {
+	assert := assert.New(t)
+	var T *Dense
+	pool := memory.NewGoAllocator()
+
+	for i, taat := range toArrowArrayTests {
+		var m arrowArray.Interface
+
+		switch taat.dt {
+		case arrow.PrimitiveTypes.Int8:
+			b := arrowArray.NewInt8Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Int8, 0, 6).([]int8),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Int16:
+			b := arrowArray.NewInt16Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Int16, 0, 6).([]int16),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Int32:
+			b := arrowArray.NewInt32Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Int32, 0, 6).([]int32),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Int64:
+			b := arrowArray.NewInt64Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Int64, 0, 6).([]int64),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Uint8:
+			b := arrowArray.NewUint8Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Uint8, 0, 6).([]uint8),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Uint16:
+			b := arrowArray.NewUint16Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Uint16, 0, 6).([]uint16),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Uint32:
+			b := arrowArray.NewUint32Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Uint32, 0, 6).([]uint32),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Uint64:
+			b := arrowArray.NewUint64Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Uint64, 0, 6).([]uint64),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Float32:
+			b := arrowArray.NewFloat32Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Float32, 0, 6).([]float32),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		case arrow.PrimitiveTypes.Float64:
+			b := arrowArray.NewFloat64Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range(Float64, 0, 6).([]float64),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+
+		T = FromArrowArray(m)
+		switch taat.dt {
+		case arrow.PrimitiveTypes.Int8:
+			conv := taat.data.([]int8)
+			assert.Equal(conv, T.Int8s(), "test %d: []int8 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Int16:
+			conv := taat.data.([]int16)
+			assert.Equal(conv, T.Int16s(), "test %d: []int16 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Int32:
+			conv := taat.data.([]int32)
+			assert.Equal(conv, T.Int32s(), "test %d: []int32 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Int64:
+			conv := taat.data.([]int64)
+			assert.Equal(conv, T.Int64s(), "test %d: []int64 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Uint8:
+			conv := taat.data.([]uint8)
+			assert.Equal(conv, T.Uint8s(), "test %d: []uint8 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Uint16:
+			conv := taat.data.([]uint16)
+			assert.Equal(conv, T.Uint16s(), "test %d: []uint16 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Uint32:
+			conv := taat.data.([]uint32)
+			assert.Equal(conv, T.Uint32s(), "test %d: []uint32 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Uint64:
+			conv := taat.data.([]uint64)
+			assert.Equal(conv, T.Uint64s(), "test %d: []uint64 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Float32:
+			conv := taat.data.([]float32)
+			assert.Equal(conv, T.Float32s(), "test %d: []float32 from %v", i, taat.dt)
+		case arrow.PrimitiveTypes.Float64:
+			conv := taat.data.([]float64)
+			assert.Equal(conv, T.Float64s(), "test %d: []float64 from %v", i, taat.dt)
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+		assert.True(T.Shape().Eq(taat.shape))
 	}
 }
