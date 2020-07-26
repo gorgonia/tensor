@@ -70,7 +70,7 @@ func MatrixB(t *Dense) (retVal [][]bool, err error) {
 	return
 }
 
-// Tensor3B converts a *Dense into a [][][]bool.
+// Tensor3B converts a *Dense into a  [][][]bool.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3B(t *Dense) (retVal [][][]bool, err error) {
 	if err = checkNativeIterable(t, 3, Bool); err != nil {
@@ -140,7 +140,7 @@ func MatrixI(t *Dense) (retVal [][]int, err error) {
 	return
 }
 
-// Tensor3I converts a *Dense into a [][][]int.
+// Tensor3I converts a *Dense into a  [][][]int.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I(t *Dense) (retVal [][][]int, err error) {
 	if err = checkNativeIterable(t, 3, Int); err != nil {
@@ -210,7 +210,7 @@ func MatrixI8(t *Dense) (retVal [][]int8, err error) {
 	return
 }
 
-// Tensor3I8 converts a *Dense into a [][][]int8.
+// Tensor3I8 converts a *Dense into a  [][][]int8.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I8(t *Dense) (retVal [][][]int8, err error) {
 	if err = checkNativeIterable(t, 3, Int8); err != nil {
@@ -280,7 +280,7 @@ func MatrixI16(t *Dense) (retVal [][]int16, err error) {
 	return
 }
 
-// Tensor3I16 converts a *Dense into a [][][]int16.
+// Tensor3I16 converts a *Dense into a  [][][]int16.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I16(t *Dense) (retVal [][][]int16, err error) {
 	if err = checkNativeIterable(t, 3, Int16); err != nil {
@@ -350,7 +350,7 @@ func MatrixI32(t *Dense) (retVal [][]int32, err error) {
 	return
 }
 
-// Tensor3I32 converts a *Dense into a [][][]int32.
+// Tensor3I32 converts a *Dense into a  [][][]int32.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I32(t *Dense) (retVal [][][]int32, err error) {
 	if err = checkNativeIterable(t, 3, Int32); err != nil {
@@ -420,7 +420,7 @@ func MatrixI64(t *Dense) (retVal [][]int64, err error) {
 	return
 }
 
-// Tensor3I64 converts a *Dense into a [][][]int64.
+// Tensor3I64 converts a *Dense into a  [][][]int64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I64(t *Dense) (retVal [][][]int64, err error) {
 	if err = checkNativeIterable(t, 3, Int64); err != nil {
@@ -490,7 +490,7 @@ func MatrixU(t *Dense) (retVal [][]uint, err error) {
 	return
 }
 
-// Tensor3U converts a *Dense into a [][][]uint.
+// Tensor3U converts a *Dense into a  [][][]uint.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U(t *Dense) (retVal [][][]uint, err error) {
 	if err = checkNativeIterable(t, 3, Uint); err != nil {
@@ -560,7 +560,7 @@ func MatrixU8(t *Dense) (retVal [][]uint8, err error) {
 	return
 }
 
-// Tensor3U8 converts a *Dense into a [][][]uint8.
+// Tensor3U8 converts a *Dense into a  [][][]uint8.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U8(t *Dense) (retVal [][][]uint8, err error) {
 	if err = checkNativeIterable(t, 3, Uint8); err != nil {
@@ -630,7 +630,7 @@ func MatrixU16(t *Dense) (retVal [][]uint16, err error) {
 	return
 }
 
-// Tensor3U16 converts a *Dense into a [][][]uint16.
+// Tensor3U16 converts a *Dense into a  [][][]uint16.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U16(t *Dense) (retVal [][][]uint16, err error) {
 	if err = checkNativeIterable(t, 3, Uint16); err != nil {
@@ -700,7 +700,7 @@ func MatrixU32(t *Dense) (retVal [][]uint32, err error) {
 	return
 }
 
-// Tensor3U32 converts a *Dense into a [][][]uint32.
+// Tensor3U32 converts a *Dense into a  [][][]uint32.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U32(t *Dense) (retVal [][][]uint32, err error) {
 	if err = checkNativeIterable(t, 3, Uint32); err != nil {
@@ -770,7 +770,7 @@ func MatrixU64(t *Dense) (retVal [][]uint64, err error) {
 	return
 }
 
-// Tensor3U64 converts a *Dense into a [][][]uint64.
+// Tensor3U64 converts a *Dense into a  [][][]uint64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U64(t *Dense) (retVal [][][]uint64, err error) {
 	if err = checkNativeIterable(t, 3, Uint64); err != nil {
@@ -840,7 +840,7 @@ func MatrixF32(t *Dense) (retVal [][]float32, err error) {
 	return
 }
 
-// Tensor3F32 converts a *Dense into a [][][]float32.
+// Tensor3F32 converts a *Dense into a  [][][]float32.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3F32(t *Dense) (retVal [][][]float32, err error) {
 	if err = checkNativeIterable(t, 3, Float32); err != nil {
@@ -910,7 +910,7 @@ func MatrixF64(t *Dense) (retVal [][]float64, err error) {
 	return
 }
 
-// Tensor3F64 converts a *Dense into a [][][]float64.
+// Tensor3F64 converts a *Dense into a  [][][]float64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3F64(t *Dense) (retVal [][][]float64, err error) {
 	if err = checkNativeIterable(t, 3, Float64); err != nil {
@@ -980,7 +980,7 @@ func MatrixC64(t *Dense) (retVal [][]complex64, err error) {
 	return
 }
 
-// Tensor3C64 converts a *Dense into a [][][]complex64.
+// Tensor3C64 converts a *Dense into a  [][][]complex64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3C64(t *Dense) (retVal [][][]complex64, err error) {
 	if err = checkNativeIterable(t, 3, Complex64); err != nil {
@@ -1050,7 +1050,7 @@ func MatrixC128(t *Dense) (retVal [][]complex128, err error) {
 	return
 }
 
-// Tensor3C128 converts a *Dense into a [][][]complex128.
+// Tensor3C128 converts a *Dense into a  [][][]complex128.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3C128(t *Dense) (retVal [][][]complex128, err error) {
 	if err = checkNativeIterable(t, 3, Complex128); err != nil {
@@ -1120,7 +1120,7 @@ func MatrixStr(t *Dense) (retVal [][]string, err error) {
 	return
 }
 
-// Tensor3Str converts a *Dense into a [][][]string.
+// Tensor3Str converts a *Dense into a  [][][]string.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3Str(t *Dense) (retVal [][][]string, err error) {
 	if err = checkNativeIterable(t, 3, String); err != nil {

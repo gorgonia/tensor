@@ -452,15 +452,15 @@ func FromArrowArray(a arrowArray.Interface) *Dense {
 
 	switch a.DataType() {
 	case arrow.BinaryTypes.String:
-		backing := make([]string, a.Len())
-		for i := 0; i < len(backing); i++ {
+		backing := make([]string, r)
+		for i := 0; i < r; i++ {
 			backing[i] = a.(*arrowArray.String).Value(i)
 		}
 		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
 		return retVal
 	case arrow.FixedWidthTypes.Boolean:
-		backing := make([]bool, a.Len())
-		for i := 0; i < len(backing); i++ {
+		backing := make([]bool, r)
+		for i := 0; i < r; i++ {
 			backing[i] = a.(*arrowArray.Boolean).Value(i)
 		}
 		retVal := New(WithBacking(backing, mask), WithShape(r, 1))

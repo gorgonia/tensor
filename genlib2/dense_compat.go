@@ -267,8 +267,8 @@ func FromArrowArray(a arrowArray.Interface) *Dense {
 	{{range .BinaryTypes -}}
 	case arrow.BinaryTypes.{{.}}:
 		{{if eq . "String" -}}
-			backing := make([]string, a.Len())
-			for i := 0; i < len(backing); i++ {
+			backing := make([]string, r)
+			for i := 0; i < r; i++ {
 				backing[i] = a.(*arrowArray.{{.}}).Value(i)
 			}
 		{{else -}}
@@ -280,8 +280,8 @@ func FromArrowArray(a arrowArray.Interface) *Dense {
 	{{range .FixedWidthTypes -}}
 	case arrow.FixedWidthTypes.{{.}}:
 		{{if eq . "Boolean" -}}
-			backing := make([]bool, a.Len())
-			for i := 0; i < len(backing); i++ {
+			backing := make([]bool, r)
+			for i := 0; i < r; i++ {
 				backing[i] = a.(*arrowArray.{{.}}).Value(i)
 			}
 		{{else -}}
@@ -320,7 +320,7 @@ func init() {
 
 func generateDenseCompat(f io.Writer, generic Kinds) {
 	// NOTE(poopoothegorilla): an alias is needed for the Arrow Array pkg to prevent naming
-	// colisions
+	// collisions
 	importsArrow.Execute(f, generic)
 	conversions.Execute(f, generic)
 	compats.Execute(f, generic)
