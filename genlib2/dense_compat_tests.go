@@ -94,14 +94,77 @@ func TestFromMat64(t *testing.T){
 }
 `
 
+const compatArrowTestsRaw = `var toArrowArrayTests = []struct{
+	data interface{}
+	dt arrow.DataType
+	shape Shape
+}{
+	{{range .PrimitiveTypes -}}
+	{
+		data: Range({{.}}, 0, 6),
+		dt: arrow.PrimitiveTypes.{{ . }},
+		shape: Shape{6,1},
+	},
+	{{end -}}
+}
+func TestFromArrowArray(t *testing.T){
+	assert := assert.New(t)
+	var T *Dense
+	pool := memory.NewGoAllocator()
+
+	for i, taat := range toArrowArrayTests {
+		var m arrowArray.Interface
+
+		switch taat.dt {
+		{{range .PrimitiveTypes -}}
+		case arrow.PrimitiveTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range({{ . }}, 0, 6).([]{{lower . }}),
+				nil, // TODO(poopoothegorilla): add valid bitmask
+			)
+			m = b.NewArray()
+			defer m.Release()
+		{{end -}}
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+
+		T = FromArrowArray(m)
+		switch taat.dt {
+		{{range .PrimitiveTypes -}}
+		case arrow.PrimitiveTypes.{{ . }}:
+			conv := taat.data.([]{{lower . }})
+			assert.Equal(conv, T.{{ . }}s(), "test %d: []{{lower . }} from %v", i, taat.dt)
+		{{end -}}
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+		assert.True(T.Shape().Eq(taat.shape))
+	}
+}
+`
+
 var (
-	compatTests *template.Template
+	compatTests      *template.Template
+	compatArrowTests *template.Template
 )
 
 func init() {
 	compatTests = template.Must(template.New("testCompat").Funcs(funcs).Parse(compatTestsRaw))
+	compatArrowTests = template.Must(template.New("testArrowCompat").Funcs(funcs).Parse(compatArrowTestsRaw))
 }
 
 func generateDenseCompatTests(f io.Writer, generic Kinds) {
+	// NOTE(poopoothegorilla): an alias is needed for the Arrow Array pkg to prevent naming
+	// colisions
+	importsArrow.Execute(f, generic)
 	compatTests.Execute(f, generic)
+	arrowData := ArrowData{
+		BinaryTypes:     arrowBinaryTypes,
+		FixedWidthTypes: arrowFixedWidthTypes,
+		PrimitiveTypes:  arrowPrimitiveTypes,
+	}
+	compatArrowTests.Execute(f, arrowData)
 }
