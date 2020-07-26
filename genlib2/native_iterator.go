@@ -65,7 +65,7 @@ func Matrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 	return
 }
 
-// Tensor3{{short .}} converts a *Dense into a [][][]{{asType .}}.
+// Tensor3{{short .}} converts a *Dense into a  [][][]{{asType .}}.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 3, {{reflectKind .}}); err != nil {
@@ -94,7 +94,8 @@ func Tensor3{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 		}
 	}
 	return
-}`
+}
+`
 
 const nativeIterTestRaw = `func Test_Vector{{short .}}(t *testing.T) {
 	assert := assert.New(t)

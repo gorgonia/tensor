@@ -163,7 +163,7 @@ func init() {
 
 func generateDenseCompatTests(f io.Writer, generic Kinds) {
 	// NOTE(poopoothegorilla): an alias is needed for the Arrow Array pkg to prevent naming
-	// colisions
+	// collisions
 	importsArrow.Execute(f, generic)
 	compatTests.Execute(f, generic)
 	arrowData := ArrowData{
