@@ -96,12 +96,14 @@ func TestFromMat64(t *testing.T){
 
 const compatArrowTestsRaw = `var toArrowArrayTests = []struct{
 	data interface{}
+	valid []bool
 	dt arrow.DataType
 	shape Shape
 }{
 	{{range .PrimitiveTypes -}}
 	{
 		data: Range({{.}}, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt: arrow.PrimitiveTypes.{{ . }},
 		shape: Shape{6,1},
 	},
@@ -122,7 +124,7 @@ func TestFromArrowArray(t *testing.T){
 			defer b.Release()
 			b.AppendValues(
 				Range({{ . }}, 0, 6).([]{{lower . }}),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -140,6 +142,9 @@ func TestFromArrowArray(t *testing.T){
 		{{end -}}
 		default:
 			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+		for i, invalid := range T.Mask() {
+			assert.Equal(taat.valid[i], !invalid)
 		}
 		assert.True(T.Shape().Eq(taat.shape))
 	}
