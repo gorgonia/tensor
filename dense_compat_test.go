@@ -111,56 +111,67 @@ func TestFromMat64(t *testing.T) {
 
 var toArrowArrayTests = []struct {
 	data  interface{}
+	valid []bool
 	dt    arrow.DataType
 	shape Shape
 }{
 	{
 		data:  Range(Int8, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Int8,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Int16, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Int16,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Int32, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Int32,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Int64, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Int64,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Uint8, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Uint8,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Uint16, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Uint16,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Uint32, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Uint32,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Uint64, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Uint64,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Float32, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Float32,
 		shape: Shape{6, 1},
 	},
 	{
 		data:  Range(Float64, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
 		dt:    arrow.PrimitiveTypes.Float64,
 		shape: Shape{6, 1},
 	},
@@ -180,7 +191,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Int8, 0, 6).([]int8),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -189,7 +200,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Int16, 0, 6).([]int16),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -198,7 +209,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Int32, 0, 6).([]int32),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -207,7 +218,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Int64, 0, 6).([]int64),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -216,7 +227,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Uint8, 0, 6).([]uint8),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -225,7 +236,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Uint16, 0, 6).([]uint16),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -234,7 +245,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Uint32, 0, 6).([]uint32),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -243,7 +254,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Uint64, 0, 6).([]uint64),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -252,7 +263,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Float32, 0, 6).([]float32),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -261,7 +272,7 @@ func TestFromArrowArray(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				Range(Float64, 0, 6).([]float64),
-				nil, // TODO(poopoothegorilla): add valid bitmask
+				taat.valid,
 			)
 			m = b.NewArray()
 			defer m.Release()
@@ -303,6 +314,9 @@ func TestFromArrowArray(t *testing.T) {
 			assert.Equal(conv, T.Float64s(), "test %d: []float64 from %v", i, taat.dt)
 		default:
 			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+		for i, invalid := range T.Mask() {
+			assert.Equal(taat.valid[i], !invalid)
 		}
 		assert.True(T.Shape().Eq(taat.shape))
 	}
