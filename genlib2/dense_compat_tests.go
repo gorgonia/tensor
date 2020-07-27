@@ -118,6 +118,36 @@ func TestFromArrowArray(t *testing.T){
 		var m arrowArray.Interface
 
 		switch taat.dt {
+		{{range .BinaryTypes -}}
+		case arrow.BinaryTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				{{if eq . "String" -}}
+				[]string{"0", "1", "2", "3", "4", "5"},
+				{{else -}}
+				Range({{ . }}, 0, 6).([]{{lower . }}),
+				{{end -}}
+				taat.valid,
+			)
+			m = b.NewArray()
+			defer m.Release()
+		{{end -}}
+		{{range .FixedWidthTypes -}}
+		case arrow.FixedWidthTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				{{if eq . "Boolean" -}}
+				[]bool{true, false, true, false, true, false},
+				{{else -}}
+				Range({{ . }}, 0, 6).([]{{lower . }}),
+				{{end -}}
+				taat.valid,
+			)
+			m = b.NewArray()
+			defer m.Release()
+		{{end -}}
 		{{range .PrimitiveTypes -}}
 		case arrow.PrimitiveTypes.{{ . }}:
 			b := arrowArray.New{{ . }}Builder(pool)
