@@ -3,6 +3,7 @@ module gorgonia.org/tensor
 go 1.13
 
 require (
+	github.com/apache/arrow/go/arrow v0.0.0-20200720215425-c09a82a388e7
 	github.com/chewxy/hm v1.0.0
 	github.com/chewxy/math32 v1.0.4
 	github.com/gogo/protobuf v1.3.0

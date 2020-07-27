@@ -5,6 +5,12 @@ import (
 	"text/template"
 )
 
+const importsArrowRaw = `import (
+	arrowArray "github.com/apache/arrow/go/arrow/array"
+	arrow "github.com/apache/arrow/go/arrow"
+)
+`
+
 const conversionsRaw = `func convFromFloat64s(to Dtype, data []float64) interface{} {
 	switch to {
 	{{range .Kinds -}}
@@ -237,17 +243,91 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 
 `
 
+type ArrowData struct {
+	BinaryTypes     []string
+	FixedWidthTypes []string
+	PrimitiveTypes  []string
+}
+
+const compatArrowRaw = `// FromArrowArray converts an "arrow/array".Interface into a Tensor of matching DataType.
+func FromArrowArray(a arrowArray.Interface) *Dense {
+	a.Retain()
+	defer a.Release()
+
+	r := a.Len()
+
+	// TODO(poopoothegorilla): instead of creating bool ValidMask maybe
+	// bitmapBytes can be used from arrow API
+	mask := make([]bool, r)
+	for i := 0; i < r; i++ {
+		mask[i] = a.IsNull(i)
+	}
+
+	switch a.DataType() {
+	{{range .BinaryTypes -}}
+	case arrow.BinaryTypes.{{.}}:
+		{{if eq . "String" -}}
+			backing := make([]string, r)
+			for i := 0; i < r; i++ {
+				backing[i] = a.(*arrowArray.{{.}}).Value(i)
+			}
+		{{else -}}
+			backing := a.(*arrowArray.{{.}}).{{.}}Values()
+		{{end -}}
+		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
+		return retVal
+	{{end -}}
+	{{range .FixedWidthTypes -}}
+	case arrow.FixedWidthTypes.{{.}}:
+		{{if eq . "Boolean" -}}
+			backing := make([]bool, r)
+			for i := 0; i < r; i++ {
+				backing[i] = a.(*arrowArray.{{.}}).Value(i)
+			}
+		{{else -}}
+			backing := a.(*arrowArray.{{.}}).{{.}}Values()
+		{{end -}}
+		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
+		return retVal
+	{{end -}}
+	{{range .PrimitiveTypes -}}
+	case arrow.PrimitiveTypes.{{.}}:
+		backing := a.(*arrowArray.{{.}}).{{.}}Values()
+		retVal := New(WithBacking(backing, mask), WithShape(r, 1))
+		return retVal
+	{{end -}}
+	default:
+		panic(fmt.Sprintf("Unsupported Arrow DataType - %v", a.DataType()))
+	}
+
+	panic("Unreachable")
+}
+`
+
 var (
-	conversions *template.Template
-	compats     *template.Template
+	importsArrow *template.Template
+	conversions  *template.Template
+	compats      *template.Template
+	compatsArrow *template.Template
 )
 
 func init() {
+	importsArrow = template.Must(template.New("imports_arrow").Funcs(funcs).Parse(importsArrowRaw))
 	conversions = template.Must(template.New("conversions").Funcs(funcs).Parse(conversionsRaw))
 	compats = template.Must(template.New("compat").Funcs(funcs).Parse(compatRaw))
+	compatsArrow = template.Must(template.New("compat_arrow").Funcs(funcs).Parse(compatArrowRaw))
 }
 
 func generateDenseCompat(f io.Writer, generic Kinds) {
+	// NOTE(poopoothegorilla): an alias is needed for the Arrow Array pkg to prevent naming
+	// collisions
+	importsArrow.Execute(f, generic)
 	conversions.Execute(f, generic)
 	compats.Execute(f, generic)
+	arrowData := ArrowData{
+		BinaryTypes:     arrowBinaryTypes,
+		FixedWidthTypes: arrowFixedWidthTypes,
+		PrimitiveTypes:  arrowPrimitiveTypes,
+	}
+	compatsArrow.Execute(f, arrowData)
 }
