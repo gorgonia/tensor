@@ -342,70 +342,92 @@ func TestFromArrowArray(t *testing.T) {
 }
 
 var toArrowTensorTests = []struct {
-	rowMajorData interface{}
-	colMajorData interface{}
-	dt           arrow.DataType
-	shape        Shape
+	rowMajorData  interface{}
+	colMajorData  interface{}
+	rowMajorValid []bool
+	colMajorValid []bool
+	dt            arrow.DataType
+	shape         Shape
 }{
 	{
-		rowMajorData: []int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []int8{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Int8,
-		shape:        Shape{2, 5},
+		rowMajorData:  []int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int8{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int8,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []int16{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Int16,
-		shape:        Shape{2, 5},
+		rowMajorData:  []int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int16{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int16,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []int32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Int32,
-		shape:        Shape{2, 5},
+		rowMajorData:  []int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int32,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []int64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Int64,
-		shape:        Shape{2, 5},
+		rowMajorData:  []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int64,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []uint8{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Uint8,
-		shape:        Shape{2, 5},
+		rowMajorData:  []uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint8{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint8,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []uint16{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Uint16,
-		shape:        Shape{2, 5},
+		rowMajorData:  []uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint16{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint16,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []uint32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Uint32,
-		shape:        Shape{2, 5},
+		rowMajorData:  []uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint32,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []uint64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Uint64,
-		shape:        Shape{2, 5},
+		rowMajorData:  []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint64,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []float32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Float32,
-		shape:        Shape{2, 5},
+		rowMajorData:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []float32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Float32,
+		shape:         Shape{2, 5},
 	},
 	{
-		rowMajorData: []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-		colMajorData: []float64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
-		dt:           arrow.PrimitiveTypes.Float64,
-		shape:        Shape{2, 5},
+		rowMajorData:  []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []float64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Float64,
+		shape:         Shape{2, 5},
 	},
 }
 
@@ -427,14 +449,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -448,14 +470,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -469,14 +491,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -490,14 +512,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -511,14 +533,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -532,14 +554,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -553,14 +575,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -574,14 +596,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -595,14 +617,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -616,14 +638,14 @@ func TestFromArrowTensor(t *testing.T) {
 			defer b.Release()
 			b.AppendValues(
 				[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			rowMajorArr = b.NewArray()
 			defer rowMajorArr.Release()
 
 			b.AppendValues(
 				[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
-				nil,
+				taat.rowMajorValid,
 			)
 			colMajorArr = b.NewArray()
 			defer colMajorArr.Release()
@@ -640,9 +662,17 @@ func TestFromArrowTensor(t *testing.T) {
 		colMajorT = FromArrowTensor(colMajor)
 
 		assert.Equal(taat.rowMajorData, rowMajorT.Data(), "test %d: row major %v", i, taat.dt)
+		assert.Equal(len(taat.rowMajorValid), len(rowMajorT.Mask()), "test %d: column major %v", i, taat.dt)
+		for i, invalid := range rowMajorT.Mask() {
+			assert.Equal(taat.rowMajorValid[i], !invalid, "test %d: column major %v", i, taat.dt)
+		}
 		assert.True(colMajorT.Shape().Eq(taat.shape))
 
 		assert.Equal(taat.colMajorData, colMajorT.Data(), "test %d: column major %v", i, taat.dt)
+		assert.Equal(len(taat.colMajorValid), len(colMajorT.Mask()), "test %d: column major %v", i, taat.dt)
+		for i, invalid := range colMajorT.Mask() {
+			assert.Equal(taat.colMajorValid[i], !invalid, "test %d: column major %v", i, taat.dt)
+		}
 		assert.True(rowMajorT.Shape().Eq(taat.shape))
 	}
 }

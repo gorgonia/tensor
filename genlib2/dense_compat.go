@@ -7,6 +7,7 @@ import (
 
 const importsArrowRaw = `import (
 	arrowArray "github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/bitutil"
 	arrowTensor "github.com/apache/arrow/go/arrow/tensor"
 	arrow "github.com/apache/arrow/go/arrow"
 )
@@ -310,13 +311,21 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 	a.Retain()
 	defer a.Release()
 
+	if !a.IsContiguous() {
+		panic("Non-contiguous data is Unsupported")
+	}
+
 	var shape []int
 	for _, val := range a.Shape() {
 		shape = append(shape, int(val))
 	}
 
-	if !a.IsContiguous() {
-		panic("Non-contiguous data is Unsupported")
+	l := a.Len()
+	validMask := a.Data().Buffers()[0].Bytes()
+	dataOffset := a.Data().Offset()
+	mask := make([]bool, l)
+	for i := 0; i < l; i++ {
+		mask[i] = len(validMask) != 0 && bitutil.BitIsNotSet(validMask, dataOffset+i)
 	}
 
 	switch a.DataType() {
@@ -324,10 +333,10 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 	case arrow.PrimitiveTypes.{{.}}:
 		backing := a.(*arrowTensor.{{.}}).{{.}}Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	{{end -}}
 	default:
 		panic(fmt.Sprintf("Unsupported Arrow DataType - %v", a.DataType()))
