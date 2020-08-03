@@ -10,6 +10,7 @@ import (
 
 	arrow "github.com/apache/arrow/go/arrow"
 	arrowArray "github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/bitutil"
 	arrowTensor "github.com/apache/arrow/go/arrow/tensor"
 	"github.com/chewxy/math32"
 	"github.com/pkg/errors"
@@ -518,86 +519,94 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 	a.Retain()
 	defer a.Release()
 
+	if !a.IsContiguous() {
+		panic("Non-contiguous data is Unsupported")
+	}
+
 	var shape []int
 	for _, val := range a.Shape() {
 		shape = append(shape, int(val))
 	}
 
-	if !a.IsContiguous() {
-		panic("Non-contiguous data is Unsupported")
+	l := a.Len()
+	validMask := a.Data().Buffers()[0].Bytes()
+	dataOffset := a.Data().Offset()
+	mask := make([]bool, l)
+	for i := 0; i < l; i++ {
+		mask[i] = len(validMask) != 0 && bitutil.BitIsNotSet(validMask, dataOffset+i)
 	}
 
 	switch a.DataType() {
 	case arrow.PrimitiveTypes.Int8:
 		backing := a.(*arrowTensor.Int8).Int8Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Int16:
 		backing := a.(*arrowTensor.Int16).Int16Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Int32:
 		backing := a.(*arrowTensor.Int32).Int32Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Int64:
 		backing := a.(*arrowTensor.Int64).Int64Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint8:
 		backing := a.(*arrowTensor.Uint8).Uint8Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint16:
 		backing := a.(*arrowTensor.Uint16).Uint16Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint32:
 		backing := a.(*arrowTensor.Uint32).Uint32Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint64:
 		backing := a.(*arrowTensor.Uint64).Uint64Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Float32:
 		backing := a.(*arrowTensor.Float32).Float32Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Float64:
 		backing := a.(*arrowTensor.Float64).Float64Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), AsFortran(backing))
+			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
 		}
 
-		return New(WithShape(shape...), WithBacking(backing))
+		return New(WithShape(shape...), WithBacking(backing, mask))
 	default:
 		panic(fmt.Sprintf("Unsupported Arrow DataType - %v", a.DataType()))
 	}
