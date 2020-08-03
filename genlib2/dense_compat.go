@@ -315,12 +315,13 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 		shape = append(shape, int(val))
 	}
 
+	if !a.IsContiguous() {
+		panic("Non-contiguous data is Unsupported")
+	}
+
 	switch a.DataType() {
 	{{range .PrimitiveTypes -}}
 	case arrow.PrimitiveTypes.{{.}}:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.{{.}}).{{.}}Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))

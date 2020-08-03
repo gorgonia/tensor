@@ -523,11 +523,12 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 		shape = append(shape, int(val))
 	}
 
+	if !a.IsContiguous() {
+		panic("Non-contiguous data is Unsupported")
+	}
+
 	switch a.DataType() {
 	case arrow.PrimitiveTypes.Int8:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Int8).Int8Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -535,9 +536,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Int16:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Int16).Int16Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -545,9 +543,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Int32:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Int32).Int32Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -555,9 +550,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Int64:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Int64).Int64Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -565,9 +557,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Uint8:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Uint8).Uint8Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -575,9 +564,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Uint16:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Uint16).Uint16Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -585,9 +571,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Uint32:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Uint32).Uint32Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -595,9 +578,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Uint64:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Uint64).Uint64Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -605,9 +585,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Float32:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Float32).Float32Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
@@ -615,9 +592,6 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 
 		return New(WithShape(shape...), WithBacking(backing))
 	case arrow.PrimitiveTypes.Float64:
-		if !a.IsContiguous() {
-			panic("Non-contiguous data is Unsupported")
-		}
 		backing := a.(*arrowTensor.Float64).Float64Values()
 		if a.IsColMajor() {
 			return New(WithShape(shape...), AsFortran(backing))
