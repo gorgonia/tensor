@@ -662,16 +662,16 @@ func TestFromArrowTensor(t *testing.T) {
 		colMajorT = FromArrowTensor(colMajor)
 
 		assert.Equal(taat.rowMajorData, rowMajorT.Data(), "test %d: row major %v", i, taat.dt)
-		assert.Equal(len(taat.rowMajorValid), len(rowMajorT.Mask()), "test %d: column major %v", i, taat.dt)
+		assert.Equal(len(taat.rowMajorValid), len(rowMajorT.Mask()), "test %d: row major %v mask length incorrect", i, taat.dt)
 		for i, invalid := range rowMajorT.Mask() {
-			assert.Equal(taat.rowMajorValid[i], !invalid, "test %d: column major %v", i, taat.dt)
+			assert.Equal(taat.rowMajorValid[i], !invalid, "test %d: row major %v mask value incorrect", i, taat.dt)
 		}
 		assert.True(colMajorT.Shape().Eq(taat.shape))
 
 		assert.Equal(taat.colMajorData, colMajorT.Data(), "test %d: column major %v", i, taat.dt)
-		assert.Equal(len(taat.colMajorValid), len(colMajorT.Mask()), "test %d: column major %v", i, taat.dt)
+		assert.Equal(len(taat.colMajorValid), len(colMajorT.Mask()), "test %d: column major %v mask length incorrect", i, taat.dt)
 		for i, invalid := range colMajorT.Mask() {
-			assert.Equal(taat.colMajorValid[i], !invalid, "test %d: column major %v", i, taat.dt)
+			assert.Equal(taat.colMajorValid[i], !invalid, "test %d: column major %v mask value incorrect", i, taat.dt)
 		}
 		assert.True(rowMajorT.Shape().Eq(taat.shape))
 	}
