@@ -540,70 +540,70 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 	case arrow.PrimitiveTypes.Int8:
 		backing := a.(*arrowTensor.Int8).Int8Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Int16:
 		backing := a.(*arrowTensor.Int16).Int16Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Int32:
 		backing := a.(*arrowTensor.Int32).Int32Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Int64:
 		backing := a.(*arrowTensor.Int64).Int64Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint8:
 		backing := a.(*arrowTensor.Uint8).Uint8Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint16:
 		backing := a.(*arrowTensor.Uint16).Uint16Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint32:
 		backing := a.(*arrowTensor.Uint32).Uint32Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Uint64:
 		backing := a.(*arrowTensor.Uint64).Uint64Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Float32:
 		backing := a.(*arrowTensor.Float32).Float32Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
 	case arrow.PrimitiveTypes.Float64:
 		backing := a.(*arrowTensor.Float64).Float64Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))

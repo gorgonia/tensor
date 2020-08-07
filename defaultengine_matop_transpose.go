@@ -24,6 +24,8 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 		return
 	}
 
+	e.transposeMask(a)
+
 	switch a.rtype().Size() {
 	case 1:
 		e.denseTranspose1(a, expStrides)
@@ -36,6 +38,23 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 	default:
 		e.denseTransposeArbitrary(a, expStrides)
 	}
+}
+
+func (e StdEng) transposeMask(a DenseTensor) {
+	if !a.(*Dense).IsMasked() {
+		return
+	}
+
+	orig := a.(*Dense).Mask()
+	tmp := make([]bool, len(orig))
+
+	it := newFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		tmp[j] = orig[i]
+		j++
+	}
+	copy(orig, tmp)
 }
 
 func (e StdEng) denseTranspose1(a DenseTensor, expStrides []int) {

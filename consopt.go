@@ -54,7 +54,7 @@ func WithBacking(x interface{}, argMask ...[]bool) ConsOpt {
 // WithMask is a construction option for a Tensor
 // Use it as such:
 //		mask := []bool{true,true,false,false}
-// 		t := New(WithBacking(backing))
+// 		t := New(WithBacking(backing), WithMask(mask))
 // It can be used with other construction options like WithShape
 // The supplied mask can be any type. If non-boolean, then tensor mask is set to true
 // wherever non-zero value is obtained
@@ -191,7 +191,11 @@ func WithEngine(e Engine) ConsOpt {
 // AsFortran creates a *Dense with a col-major layout.
 // If the optional backing argument is passed, the backing is assumed to be C-order (row major), and
 // it will be transposed before being used.
-func AsFortran(backing interface{}) ConsOpt {
+func AsFortran(backing interface{}, argMask ...[]bool) ConsOpt {
+	var mask []bool
+	if len(argMask) > 0 {
+		mask = argMask[0]
+	}
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
@@ -201,10 +205,12 @@ func AsFortran(backing interface{}) ConsOpt {
 				// create a temporary tensor, to which the transpose will be done
 				tmp := NewDense(tt.Dtype(), tt.shape.Clone())
 				copyArray(tmp.arrPtr(), tt.arrPtr())
+				tmp.SetMask(mask)
 				tmp.T()
 				tmp.Transpose()
 				// copy the data back to the current tensor
 				copyArray(tt.arrPtr(), tmp.arrPtr())
+				tt.SetMask(tmp.Mask())
 				// cleanup: return the temporary tensor back to the pool
 				ReturnTensor(tmp)
 			}

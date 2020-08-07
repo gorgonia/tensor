@@ -333,7 +333,7 @@ func FromArrowTensor(a arrowTensor.Interface) *Dense {
 	case arrow.PrimitiveTypes.{{.}}:
 		backing := a.(*arrowTensor.{{.}}).{{.}}Values()
 		if a.IsColMajor() {
-			return New(WithShape(shape...), WithMask(mask), AsFortran(backing))
+			return New(WithShape(shape...), AsFortran(backing, mask))
 		}
 
 		return New(WithShape(shape...), WithBacking(backing, mask))
