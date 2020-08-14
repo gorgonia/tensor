@@ -24,6 +24,8 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 		return
 	}
 
+	e.transposeMask(a)
+
 	switch a.rtype().Size() {
 	case 1:
 		e.denseTranspose1(a, expStrides)
@@ -35,6 +37,47 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 		e.denseTranspose8(a, expStrides)
 	default:
 		e.denseTransposeArbitrary(a, expStrides)
+	}
+}
+
+func (e StdEng) transposeMask(a DenseTensor) {
+	if !a.(*Dense).IsMasked() {
+		return
+	}
+
+	shape := a.Shape()
+	if len(shape) != 2 {
+		// TODO(poopoothegorilla): currently only two dimensions are implemented
+		return
+	}
+	n, m := shape[0], shape[1]
+	mask := a.(*Dense).Mask()
+	size := len(mask)
+
+	track := NewBitMap(size)
+	track.Set(0)
+	track.Set(size - 1)
+
+	for i := 0; i < size; i++ {
+		srci := i
+		if track.IsSet(srci) {
+			continue
+		}
+		srcv := mask[srci]
+		for {
+			oc := srci % n
+			or := (srci - oc) / n
+			desti := oc*m + or
+
+			if track.IsSet(desti) {
+				break
+			}
+			track.Set(desti)
+			destv := mask[desti]
+			mask[desti] = srcv
+			srci = desti
+			srcv = destv
+		}
 	}
 }
 

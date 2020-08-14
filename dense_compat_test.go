@@ -8,6 +8,7 @@ import (
 	arrow "github.com/apache/arrow/go/arrow"
 	arrowArray "github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
+	arrowTensor "github.com/apache/arrow/go/arrow/tensor"
 	"github.com/stretchr/testify/assert"
 	"gonum.org/v1/gonum/mat"
 )
@@ -337,5 +338,341 @@ func TestFromArrowArray(t *testing.T) {
 			assert.Equal(taat.valid[i], !invalid)
 		}
 		assert.True(T.Shape().Eq(taat.shape))
+	}
+}
+
+var toArrowTensorTests = []struct {
+	rowMajorData  interface{}
+	colMajorData  interface{}
+	rowMajorValid []bool
+	colMajorValid []bool
+	dt            arrow.DataType
+	shape         Shape
+}{
+	{
+		rowMajorData:  []int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int8{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int8,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int16{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int16,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int32,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []int64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Int64,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint8{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint8,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint16{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint16,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint32,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []uint64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Uint64,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []float32{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Float32,
+		shape:         Shape{2, 5},
+	},
+	{
+		rowMajorData:  []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData:  []float64{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt:            arrow.PrimitiveTypes.Float64,
+		shape:         Shape{2, 5},
+	},
+}
+
+func TestFromArrowTensor(t *testing.T) {
+	assert := assert.New(t)
+	var rowMajorT *Dense
+	var colMajorT *Dense
+	pool := memory.NewGoAllocator()
+
+	for i, taat := range toArrowTensorTests {
+		var rowMajorArr arrowArray.Interface
+		var colMajorArr arrowArray.Interface
+		var rowMajor arrowTensor.Interface
+		var colMajor arrowTensor.Interface
+
+		switch taat.dt {
+		case arrow.PrimitiveTypes.Int8:
+			b := arrowArray.NewInt8Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]int8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewInt8(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewInt8(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Int8SizeBytes), int64(arrow.Int8SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Int16:
+			b := arrowArray.NewInt16Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]int16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewInt16(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewInt16(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Int16SizeBytes), int64(arrow.Int16SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Int32:
+			b := arrowArray.NewInt32Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewInt32(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewInt32(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Int32SizeBytes), int64(arrow.Int32SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Int64:
+			b := arrowArray.NewInt64Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewInt64(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewInt64(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Int64SizeBytes), int64(arrow.Int64SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Uint8:
+			b := arrowArray.NewUint8Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]uint8{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewUint8(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewUint8(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Uint8SizeBytes), int64(arrow.Uint8SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Uint16:
+			b := arrowArray.NewUint16Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]uint16{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewUint16(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewUint16(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Uint16SizeBytes), int64(arrow.Uint16SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Uint32:
+			b := arrowArray.NewUint32Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]uint32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewUint32(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewUint32(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Uint32SizeBytes), int64(arrow.Uint32SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Uint64:
+			b := arrowArray.NewUint64Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]uint64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewUint64(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewUint64(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Uint64SizeBytes), int64(arrow.Uint64SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Float32:
+			b := arrowArray.NewFloat32Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewFloat32(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewFloat32(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Float32SizeBytes), int64(arrow.Float32SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		case arrow.PrimitiveTypes.Float64:
+			b := arrowArray.NewFloat64Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.NewFloat64(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.NewFloat64(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.Float64SizeBytes), int64(arrow.Float64SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+
+		rowMajorT = FromArrowTensor(rowMajor)
+		colMajorT = FromArrowTensor(colMajor)
+
+		assert.Equal(taat.rowMajorData, rowMajorT.Data(), "test %d: row major %v", i, taat.dt)
+		assert.Equal(len(taat.rowMajorValid), len(rowMajorT.Mask()), "test %d: row major %v mask length incorrect", i, taat.dt)
+		for i, invalid := range rowMajorT.Mask() {
+			assert.Equal(taat.rowMajorValid[i], !invalid, "test %d: row major %v mask value incorrect", i, taat.dt)
+		}
+		assert.True(colMajorT.Shape().Eq(taat.shape))
+
+		assert.Equal(taat.colMajorData, colMajorT.Data(), "test %d: column major %v", i, taat.dt)
+		assert.Equal(len(taat.colMajorValid), len(colMajorT.Mask()), "test %d: column major %v mask length incorrect", i, taat.dt)
+		for i, invalid := range colMajorT.Mask() {
+			assert.Equal(taat.colMajorValid[i], !invalid, "test %d: column major %v mask value incorrect", i, taat.dt)
+		}
+		assert.True(rowMajorT.Shape().Eq(taat.shape))
 	}
 }
