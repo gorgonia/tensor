@@ -7,6 +7,8 @@ import (
 
 const importsArrowRaw = `import (
 	arrowArray "github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/bitutil"
+	arrowTensor "github.com/apache/arrow/go/arrow/tensor"
 	arrow "github.com/apache/arrow/go/arrow"
 )
 `
@@ -249,7 +251,7 @@ type ArrowData struct {
 	PrimitiveTypes  []string
 }
 
-const compatArrowRaw = `// FromArrowArray converts an "arrow/array".Interface into a Tensor of matching DataType.
+const compatArrowArrayRaw = `// FromArrowArray converts an "arrow/array".Interface into a Tensor of matching DataType.
 func FromArrowArray(a arrowArray.Interface) *Dense {
 	a.Retain()
 	defer a.Release()
@@ -304,18 +306,60 @@ func FromArrowArray(a arrowArray.Interface) *Dense {
 }
 `
 
+const compatArrowTensorRaw = `// FromArrowTensor converts an "arrow/tensor".Interface into a Tensor of matching DataType.
+func FromArrowTensor(a arrowTensor.Interface) *Dense {
+	a.Retain()
+	defer a.Release()
+
+	if !a.IsContiguous() {
+		panic("Non-contiguous data is Unsupported")
+	}
+
+	var shape []int
+	for _, val := range a.Shape() {
+		shape = append(shape, int(val))
+	}
+
+	l := a.Len()
+	validMask := a.Data().Buffers()[0].Bytes()
+	dataOffset := a.Data().Offset()
+	mask := make([]bool, l)
+	for i := 0; i < l; i++ {
+		mask[i] = len(validMask) != 0 && bitutil.BitIsNotSet(validMask, dataOffset+i)
+	}
+
+	switch a.DataType() {
+	{{range .PrimitiveTypes -}}
+	case arrow.PrimitiveTypes.{{.}}:
+		backing := a.(*arrowTensor.{{.}}).{{.}}Values()
+		if a.IsColMajor() {
+			return New(WithShape(shape...), AsFortran(backing, mask))
+		}
+
+		return New(WithShape(shape...), WithBacking(backing, mask))
+	{{end -}}
+	default:
+		panic(fmt.Sprintf("Unsupported Arrow DataType - %v", a.DataType()))
+	}
+
+	panic("Unreachable")
+}
+`
+
 var (
-	importsArrow *template.Template
-	conversions  *template.Template
-	compats      *template.Template
-	compatsArrow *template.Template
+	importsArrow       *template.Template
+	conversions        *template.Template
+	compats            *template.Template
+	compatsArrowArray  *template.Template
+	compatsArrowTensor *template.Template
 )
 
 func init() {
 	importsArrow = template.Must(template.New("imports_arrow").Funcs(funcs).Parse(importsArrowRaw))
 	conversions = template.Must(template.New("conversions").Funcs(funcs).Parse(conversionsRaw))
 	compats = template.Must(template.New("compat").Funcs(funcs).Parse(compatRaw))
-	compatsArrow = template.Must(template.New("compat_arrow").Funcs(funcs).Parse(compatArrowRaw))
+	compatsArrowArray = template.Must(template.New("compat_arrow_array").Funcs(funcs).Parse(compatArrowArrayRaw))
+	compatsArrowTensor = template.Must(template.New("compat_arrow_tensor").Funcs(funcs).Parse(compatArrowTensorRaw))
 }
 
 func generateDenseCompat(f io.Writer, generic Kinds) {
@@ -329,5 +373,6 @@ func generateDenseCompat(f io.Writer, generic Kinds) {
 		FixedWidthTypes: arrowFixedWidthTypes,
 		PrimitiveTypes:  arrowPrimitiveTypes,
 	}
-	compatsArrow.Execute(f, arrowData)
+	compatsArrowArray.Execute(f, arrowData)
+	compatsArrowTensor.Execute(f, arrowData)
 }
