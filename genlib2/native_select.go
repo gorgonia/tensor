@@ -47,8 +47,8 @@ func Select{{short .}}(t *Dense, axis int) (retVal [][]{{asType .}}, err error) 
 			s := make([]{{asType .}}, 0)
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
 			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-			hdr.Cap = stride
 			hdr.Len = stride
+			hdr.Cap = stride
 			retVal = append(retVal, s)
 			r++
 		}
