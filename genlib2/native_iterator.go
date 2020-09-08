@@ -29,7 +29,8 @@ const checkNativeiterable = `func checkNativeIterable(t *Dense, dims int, dt Dty
 `
 
 const nativeIterRaw = `// Vector{{short .}} converts a *Dense into a []{{asType .}}
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func Vector{{short .}}(t *Dense) (retVal []{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 1, {{reflectKind .}}); err != nil {
 		return nil, err
@@ -38,7 +39,8 @@ func Vector{{short .}}(t *Dense) (retVal []{{asType .}}, err error) {
 }
 
 // Matrix{{short .}} converts a  *Dense into a [][]{{asType .}}
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func Matrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 2, {{reflectKind .}}); err != nil {
 		return nil, err
@@ -56,15 +58,14 @@ func Matrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 		start := i * rowStride
 		retVal[i] = make([]{{asType .}}, 0)
 		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-        hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-        hdr.Cap = cols
-        hdr.Len = cols
-
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3{{short .}} converts a *Dense into  a [][][]{{asType .}}.
+// Tensor3{{short .}} converts a *Dense into a  [][][]{{asType .}}.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 3, {{reflectKind .}}); err != nil {
@@ -85,11 +86,11 @@ func Tensor3{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 		retVal[i] = make([][]{{asType .}}, rows)
 		for j := range retVal[i] {
 			retVal[i][j] = make([]{{asType .}}, 0)
- 			start := i*layerStride + j*rowStride
+			start := i*layerStride + j*rowStride
 			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-            hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-            hdr.Cap = cols
-            hdr.Len = cols
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
