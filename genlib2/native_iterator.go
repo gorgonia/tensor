@@ -54,17 +54,17 @@ func Matrix{{short .}}(t *Dense) (retVal [][]{{asType .}}, err error) {
 	retVal = make([][]{{asType .}}, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]{{asType .}})(unsafe.Pointer(hdr))
+		retVal[i] = make([]{{asType .}}, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+        hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+        hdr.Cap = cols
+        hdr.Len = cols
+
 	}
 	return
 }
 
-// Tensor3{{short .}} converts a *Dense into  a [][][]{{asType .}}. 
+// Tensor3{{short .}} converts a *Dense into  a [][][]{{asType .}}.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 	if err = checkNativeIterable(t, 3, {{reflectKind .}}); err != nil {
@@ -84,13 +84,12 @@ func Tensor3{{short .}}(t *Dense) (retVal [][][]{{asType .}}, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]{{asType .}}, rows)
 		for j := range retVal[i] {
-			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]{{asType .}})(unsafe.Pointer(hdr))
+			retVal[i][j] = make([]{{asType .}}, 0)
+ 			start := i*layerStride + j*rowStride
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+            hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+            hdr.Cap = cols
+            hdr.Len = cols
 		}
 	}
 	return

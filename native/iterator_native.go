@@ -59,11 +59,12 @@ func MatrixB(t *Dense) (retVal [][]bool, err error) {
 	retVal = make([][]bool, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]bool, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]bool)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -89,11 +90,12 @@ func Tensor3B(t *Dense) (retVal [][][]bool, err error) {
 		retVal[i] = make([][]bool, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]bool, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]bool)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -127,11 +129,12 @@ func MatrixI(t *Dense) (retVal [][]int, err error) {
 	retVal = make([][]int, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]int, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]int)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -157,11 +160,12 @@ func Tensor3I(t *Dense) (retVal [][][]int, err error) {
 		retVal[i] = make([][]int, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]int, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]int)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -195,11 +199,12 @@ func MatrixI8(t *Dense) (retVal [][]int8, err error) {
 	retVal = make([][]int8, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]int8, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]int8)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -225,11 +230,12 @@ func Tensor3I8(t *Dense) (retVal [][][]int8, err error) {
 		retVal[i] = make([][]int8, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]int8, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]int8)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -263,11 +269,12 @@ func MatrixI16(t *Dense) (retVal [][]int16, err error) {
 	retVal = make([][]int16, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]int16, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]int16)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -293,11 +300,12 @@ func Tensor3I16(t *Dense) (retVal [][][]int16, err error) {
 		retVal[i] = make([][]int16, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]int16, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]int16)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -331,11 +339,12 @@ func MatrixI32(t *Dense) (retVal [][]int32, err error) {
 	retVal = make([][]int32, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]int32, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]int32)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -361,11 +370,12 @@ func Tensor3I32(t *Dense) (retVal [][][]int32, err error) {
 		retVal[i] = make([][]int32, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]int32, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]int32)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -399,11 +409,12 @@ func MatrixI64(t *Dense) (retVal [][]int64, err error) {
 	retVal = make([][]int64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]int64, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]int64)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -429,11 +440,12 @@ func Tensor3I64(t *Dense) (retVal [][][]int64, err error) {
 		retVal[i] = make([][]int64, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]int64, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]int64)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -467,11 +479,12 @@ func MatrixU(t *Dense) (retVal [][]uint, err error) {
 	retVal = make([][]uint, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]uint, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]uint)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -497,11 +510,12 @@ func Tensor3U(t *Dense) (retVal [][][]uint, err error) {
 		retVal[i] = make([][]uint, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]uint, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]uint)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -535,11 +549,12 @@ func MatrixU8(t *Dense) (retVal [][]uint8, err error) {
 	retVal = make([][]uint8, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]uint8, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]uint8)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -565,11 +580,12 @@ func Tensor3U8(t *Dense) (retVal [][][]uint8, err error) {
 		retVal[i] = make([][]uint8, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]uint8, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]uint8)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -603,11 +619,12 @@ func MatrixU16(t *Dense) (retVal [][]uint16, err error) {
 	retVal = make([][]uint16, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]uint16, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]uint16)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -633,11 +650,12 @@ func Tensor3U16(t *Dense) (retVal [][][]uint16, err error) {
 		retVal[i] = make([][]uint16, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]uint16, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]uint16)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -671,11 +689,12 @@ func MatrixU32(t *Dense) (retVal [][]uint32, err error) {
 	retVal = make([][]uint32, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]uint32, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]uint32)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -701,11 +720,12 @@ func Tensor3U32(t *Dense) (retVal [][][]uint32, err error) {
 		retVal[i] = make([][]uint32, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]uint32, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]uint32)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -739,11 +759,12 @@ func MatrixU64(t *Dense) (retVal [][]uint64, err error) {
 	retVal = make([][]uint64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]uint64, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]uint64)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -769,11 +790,12 @@ func Tensor3U64(t *Dense) (retVal [][][]uint64, err error) {
 		retVal[i] = make([][]uint64, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]uint64, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]uint64)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -807,11 +829,12 @@ func MatrixF32(t *Dense) (retVal [][]float32, err error) {
 	retVal = make([][]float32, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]float32, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]float32)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -837,11 +860,12 @@ func Tensor3F32(t *Dense) (retVal [][][]float32, err error) {
 		retVal[i] = make([][]float32, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]float32, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]float32)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -875,11 +899,12 @@ func MatrixF64(t *Dense) (retVal [][]float64, err error) {
 	retVal = make([][]float64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]float64, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]float64)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -905,11 +930,12 @@ func Tensor3F64(t *Dense) (retVal [][][]float64, err error) {
 		retVal[i] = make([][]float64, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]float64, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]float64)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -943,11 +969,12 @@ func MatrixC64(t *Dense) (retVal [][]complex64, err error) {
 	retVal = make([][]complex64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]complex64, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]complex64)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -973,11 +1000,12 @@ func Tensor3C64(t *Dense) (retVal [][][]complex64, err error) {
 		retVal[i] = make([][]complex64, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]complex64, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]complex64)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -1011,11 +1039,12 @@ func MatrixC128(t *Dense) (retVal [][]complex128, err error) {
 	retVal = make([][]complex128, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]complex128, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]complex128)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -1041,11 +1070,12 @@ func Tensor3C128(t *Dense) (retVal [][][]complex128, err error) {
 		retVal[i] = make([][]complex128, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]complex128, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]complex128)(unsafe.Pointer(hdr))
 		}
 	}
 	return
@@ -1079,11 +1109,12 @@ func MatrixStr(t *Dense) (retVal [][]string, err error) {
 	retVal = make([][]string, rows)
 	for i := range retVal {
 		start := i * rowStride
-		retVal[i] = make([]string, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
-		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-		hdr.Cap = cols
-		hdr.Len = cols
+		hdr := &reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(&data[start])),
+			Len:  cols,
+			Cap:  cols,
+		}
+		retVal[i] = *(*[]string)(unsafe.Pointer(hdr))
 	}
 	return
 }
@@ -1109,11 +1140,12 @@ func Tensor3Str(t *Dense) (retVal [][][]string, err error) {
 		retVal[i] = make([][]string, rows)
 		for j := range retVal[i] {
 			start := i*layerStride + j*rowStride
-			retVal[i][j] = make([]string, 0)
-			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
-			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
-			hdr.Cap = cols
-			hdr.Len = cols
+			hdr := &reflect.SliceHeader{
+				Data: uintptr(unsafe.Pointer(&data[start])),
+				Len:  cols,
+				Cap:  cols,
+			}
+			retVal[i][j] = *(*[]string)(unsafe.Pointer(hdr))
 		}
 	}
 	return
