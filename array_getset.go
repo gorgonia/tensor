@@ -507,10 +507,11 @@ func (a array) Eq(other interface{}) bool {
 		if oa.L != a.L {
 			return false
 		}
-
-		if oa.C != a.C {
-			return false
-		}
+		/*
+			if oa.C != a.C {
+				return false
+			}
+		*/
 
 		// same exact thing
 		if uintptr(oa.Ptr) == uintptr(a.Ptr) {

@@ -50,12 +50,12 @@ func SelectB(t *Dense, axis int) (retVal [][]bool, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]bool, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]bool)(unsafe.Pointer(hdr)))
+			s := make([]bool, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -88,12 +88,12 @@ func SelectI(t *Dense, axis int) (retVal [][]int, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]int, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]int)(unsafe.Pointer(hdr)))
+			s := make([]int, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -126,12 +126,12 @@ func SelectI8(t *Dense, axis int) (retVal [][]int8, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]int8, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]int8)(unsafe.Pointer(hdr)))
+			s := make([]int8, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -164,12 +164,12 @@ func SelectI16(t *Dense, axis int) (retVal [][]int16, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]int16, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]int16)(unsafe.Pointer(hdr)))
+			s := make([]int16, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -202,12 +202,12 @@ func SelectI32(t *Dense, axis int) (retVal [][]int32, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]int32, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]int32)(unsafe.Pointer(hdr)))
+			s := make([]int32, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -240,12 +240,12 @@ func SelectI64(t *Dense, axis int) (retVal [][]int64, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]int64, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]int64)(unsafe.Pointer(hdr)))
+			s := make([]int64, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -278,12 +278,12 @@ func SelectU(t *Dense, axis int) (retVal [][]uint, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]uint, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]uint)(unsafe.Pointer(hdr)))
+			s := make([]uint, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -316,12 +316,12 @@ func SelectU8(t *Dense, axis int) (retVal [][]uint8, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]uint8, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]uint8)(unsafe.Pointer(hdr)))
+			s := make([]uint8, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -354,12 +354,12 @@ func SelectU16(t *Dense, axis int) (retVal [][]uint16, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]uint16, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]uint16)(unsafe.Pointer(hdr)))
+			s := make([]uint16, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -392,12 +392,12 @@ func SelectU32(t *Dense, axis int) (retVal [][]uint32, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]uint32, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]uint32)(unsafe.Pointer(hdr)))
+			s := make([]uint32, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -430,12 +430,12 @@ func SelectU64(t *Dense, axis int) (retVal [][]uint64, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]uint64, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]uint64)(unsafe.Pointer(hdr)))
+			s := make([]uint64, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -468,12 +468,12 @@ func SelectF32(t *Dense, axis int) (retVal [][]float32, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]float32, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]float32)(unsafe.Pointer(hdr)))
+			s := make([]float32, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -506,12 +506,12 @@ func SelectF64(t *Dense, axis int) (retVal [][]float64, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]float64, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]float64)(unsafe.Pointer(hdr)))
+			s := make([]float64, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -544,12 +544,12 @@ func SelectC64(t *Dense, axis int) (retVal [][]complex64, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]complex64, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]complex64)(unsafe.Pointer(hdr)))
+			s := make([]complex64, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -582,12 +582,12 @@ func SelectC128(t *Dense, axis int) (retVal [][]complex128, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]complex128, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]complex128)(unsafe.Pointer(hdr)))
+			s := make([]complex128, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil
@@ -620,12 +620,12 @@ func SelectStr(t *Dense, axis int) (retVal [][]string, err error) {
 		upper := ProdInts(t.Shape()[:axis+1])
 		retVal = make([][]string, 0, upper)
 		for i, r := 0, 0; r < upper; i += stride {
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[i])),
-				Len:  stride,
-				Cap:  stride,
-			}
-			retVal = append(retVal, *(*[]string)(unsafe.Pointer(hdr)))
+			s := make([]string, 0)
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+			hdr.Data = uintptr(unsafe.Pointer(&data[i]))
+			hdr.Len = stride
+			hdr.Cap = stride
+			retVal = append(retVal, s)
 			r++
 		}
 		return retVal, nil

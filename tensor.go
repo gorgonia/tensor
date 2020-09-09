@@ -143,6 +143,27 @@ func getFloatDenseTensor(t Tensor) (retVal DenseTensor, err error) {
 	return
 }
 
+// getFloatDense extracts a *Dense from a Tensor and ensures that the .data is a Array that implements Float
+func getFloatComplexDenseTensor(t Tensor) (retVal DenseTensor, err error) {
+	if t == nil {
+		return
+	}
+	if err = typeclassCheck(t.Dtype(), floatcmplxTypes); err != nil {
+		err = errors.Wrapf(err, "getFloatDense only handles floats and complex. Got %v instead", t.Dtype())
+		return
+	}
+
+	if retVal, err = getDenseTensor(t); err != nil {
+		err = errors.Wrapf(err, opFail, "getFloatDense")
+		return
+	}
+	if retVal == nil {
+		return
+	}
+
+	return
+}
+
 func sliceDense(t *Dense, slices ...Slice) (retVal *Dense, err error) {
 	var sliced Tensor
 	if sliced, err = t.Slice(slices...); err != nil {

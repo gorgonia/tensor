@@ -94,14 +94,194 @@ func TestFromMat64(t *testing.T){
 }
 `
 
+const compatArrowArrayTestsRaw = `var toArrowArrayTests = []struct{
+	data interface{}
+	valid []bool
+	dt arrow.DataType
+	shape Shape
+}{
+	{{range .PrimitiveTypes -}}
+	{
+		data: Range({{.}}, 0, 6),
+		valid: []bool{true, true, true, false, true, true},
+		dt: arrow.PrimitiveTypes.{{ . }},
+		shape: Shape{6,1},
+	},
+	{{end -}}
+}
+func TestFromArrowArray(t *testing.T){
+	assert := assert.New(t)
+	var T *Dense
+	pool := memory.NewGoAllocator()
+
+	for i, taat := range toArrowArrayTests {
+		var m arrowArray.Interface
+
+		switch taat.dt {
+		{{range .BinaryTypes -}}
+		case arrow.BinaryTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				{{if eq . "String" -}}
+				[]string{"0", "1", "2", "3", "4", "5"},
+				{{else -}}
+				Range({{ . }}, 0, 6).([]{{lower . }}),
+				{{end -}}
+				taat.valid,
+			)
+			m = b.NewArray()
+			defer m.Release()
+		{{end -}}
+		{{range .FixedWidthTypes -}}
+		case arrow.FixedWidthTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				{{if eq . "Boolean" -}}
+				[]bool{true, false, true, false, true, false},
+				{{else -}}
+				Range({{ . }}, 0, 6).([]{{lower . }}),
+				{{end -}}
+				taat.valid,
+			)
+			m = b.NewArray()
+			defer m.Release()
+		{{end -}}
+		{{range .PrimitiveTypes -}}
+		case arrow.PrimitiveTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				Range({{ . }}, 0, 6).([]{{lower . }}),
+				taat.valid,
+			)
+			m = b.NewArray()
+			defer m.Release()
+		{{end -}}
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+
+		T = FromArrowArray(m)
+		switch taat.dt {
+		{{range .PrimitiveTypes -}}
+		case arrow.PrimitiveTypes.{{ . }}:
+			conv := taat.data.([]{{lower . }})
+			assert.Equal(conv, T.{{ . }}s(), "test %d: []{{lower . }} from %v", i, taat.dt)
+		{{end -}}
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+		for i, invalid := range T.Mask() {
+			assert.Equal(taat.valid[i], !invalid)
+		}
+		assert.True(T.Shape().Eq(taat.shape))
+	}
+}
+`
+
+const compatArrowTensorTestsRaw = `var toArrowTensorTests = []struct{
+	rowMajorData interface{}
+	colMajorData interface{}
+	rowMajorValid []bool
+	colMajorValid []bool
+	dt arrow.DataType
+	shape Shape
+}{
+	{{range .PrimitiveTypes -}}
+	{
+		rowMajorData: []{{lower .}}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		colMajorData: []{{lower .}}{1, 6, 2, 7, 3, 8, 4, 9, 5, 10},
+		rowMajorValid: []bool{true, false, true, false, true, false, true, false, true, false},
+		colMajorValid: []bool{true, false, false, true, true, false, false, true, true, false},
+		dt: arrow.PrimitiveTypes.{{ . }},
+		shape: Shape{2,5},
+	},
+	{{end -}}
+}
+func TestFromArrowTensor(t *testing.T){
+	assert := assert.New(t)
+	var rowMajorT *Dense
+	var colMajorT *Dense
+	pool := memory.NewGoAllocator()
+
+	for i, taat := range toArrowTensorTests {
+		var rowMajorArr arrowArray.Interface
+		var colMajorArr arrowArray.Interface
+		var rowMajor arrowTensor.Interface
+		var colMajor arrowTensor.Interface
+
+		switch taat.dt {
+		{{range .PrimitiveTypes -}}
+		case arrow.PrimitiveTypes.{{ . }}:
+			b := arrowArray.New{{ . }}Builder(pool)
+			defer b.Release()
+			b.AppendValues(
+				[]{{lower . }}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			rowMajorArr = b.NewArray()
+			defer rowMajorArr.Release()
+
+			b.AppendValues(
+				[]{{lower .}}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				taat.rowMajorValid,
+			)
+			colMajorArr = b.NewArray()
+			defer colMajorArr.Release()
+
+			rowMajor = arrowTensor.New{{.}}(rowMajorArr.Data(), []int64{2, 5}, nil, []string{"x", "y"})
+			defer rowMajor.Release()
+			colMajor = arrowTensor.New{{.}}(colMajorArr.Data(), []int64{2, 5}, []int64{int64(arrow.{{ . }}SizeBytes), int64(arrow.{{ . }}SizeBytes * 2)}, []string{"x", "y"})
+			defer colMajor.Release()
+		{{end -}}
+		default:
+			t.Errorf("DataType not supported in tests: %v", taat.dt)
+		}
+
+		rowMajorT = FromArrowTensor(rowMajor)
+		colMajorT = FromArrowTensor(colMajor)
+
+		assert.Equal(taat.rowMajorData, rowMajorT.Data(), "test %d: row major %v", i, taat.dt)
+		assert.Equal(len(taat.rowMajorValid), len(rowMajorT.Mask()), "test %d: row major %v mask length incorrect", i, taat.dt)
+		for i, invalid := range rowMajorT.Mask() {
+			assert.Equal(taat.rowMajorValid[i], !invalid, "test %d: row major %v mask value incorrect", i, taat.dt)
+		}
+		assert.True(colMajorT.Shape().Eq(taat.shape))
+
+		assert.Equal(taat.colMajorData, colMajorT.Data(), "test %d: column major %v", i, taat.dt)
+		assert.Equal(len(taat.colMajorValid), len(colMajorT.Mask()), "test %d: column major %v mask length incorrect", i, taat.dt)
+		for i, invalid := range colMajorT.Mask() {
+			assert.Equal(taat.colMajorValid[i], !invalid, "test %d: column major %v mask value incorrect", i, taat.dt)
+		}
+		assert.True(rowMajorT.Shape().Eq(taat.shape))
+	}
+}
+`
+
 var (
-	compatTests *template.Template
+	compatTests            *template.Template
+	compatArrowArrayTests  *template.Template
+	compatArrowTensorTests *template.Template
 )
 
 func init() {
 	compatTests = template.Must(template.New("testCompat").Funcs(funcs).Parse(compatTestsRaw))
+	compatArrowArrayTests = template.Must(template.New("testArrowArrayCompat").Funcs(funcs).Parse(compatArrowArrayTestsRaw))
+	compatArrowTensorTests = template.Must(template.New("testArrowTensorCompat").Funcs(funcs).Parse(compatArrowTensorTestsRaw))
 }
 
 func generateDenseCompatTests(f io.Writer, generic Kinds) {
+	// NOTE(poopoothegorilla): an alias is needed for the Arrow Array pkg to prevent naming
+	// collisions
+	importsArrow.Execute(f, generic)
 	compatTests.Execute(f, generic)
+	arrowData := ArrowData{
+		BinaryTypes:     arrowBinaryTypes,
+		FixedWidthTypes: arrowFixedWidthTypes,
+		PrimitiveTypes:  arrowPrimitiveTypes,
+	}
+	compatArrowArrayTests.Execute(f, arrowData)
+	compatArrowTensorTests.Execute(f, arrowData)
 }

@@ -317,7 +317,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 	if t, ok = a.(*Dense); !ok {
 		return nil, nil, nil, errors.Errorf("StdEng only performs SVDs for DenseTensors. Got %T instead", a)
 	}
-	if !isFloat(t.Dtype()) {
+	if err = typeclassCheck(a.Dtype(), floatTypes); err != nil {
 		return nil, nil, nil, errors.Errorf("StdEng can only perform SVDs for float64 and float32 type. Got tensor of %v instead", t.Dtype())
 	}
 
@@ -373,7 +373,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 // It returns a scalar value, wrapped in an interface{}, which is not quite nice.
 func (e StdEng) Inner(a, b Tensor) (retVal interface{}, err error) {
 	var ad, bd DenseTensor
-	if ad, bd, err = e.checkTwoFloatTensors(a, b); err != nil {
+	if ad, bd, err = e.checkTwoFloatComplexTensors(a, b); err != nil {
 		return nil, errors.Wrapf(err, opFail, "StdEng.Inner")
 	}
 
@@ -384,6 +384,12 @@ func (e StdEng) Inner(a, b Tensor) (retVal interface{}, err error) {
 	case []float64:
 		B := bd.Float64s()
 		retVal = whichblas.Ddot(len(A), A, 1, B, 1)
+	case []complex64:
+		B := bd.Complex64s()
+		retVal = whichblas.Cdotu(len(A), A, 1, B, 1)
+	case []complex128:
+		B := bd.Complex128s()
+		retVal = whichblas.Zdotu(len(A), A, 1, B, 1)
 	}
 	return
 }
@@ -395,7 +401,7 @@ func (e StdEng) Inner(a, b Tensor) (retVal interface{}, err error) {
 func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 	// check all are DenseTensors
 	var ad, bd, pd DenseTensor
-	if ad, bd, pd, err = e.checkThreeFloatTensors(a, b, prealloc); err != nil {
+	if ad, bd, pd, err = e.checkThreeFloatComplexTensors(a, b, prealloc); err != nil {
 		return errors.Wrapf(err, opFail, "StdEng.MatVecMul")
 	}
 
@@ -443,6 +449,16 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 		y := pd.Float32s()
 		alpha, beta := float32(1), float32(0)
 		whichblas.Sgemv(tA, m, n, alpha, A, lda, x, incX, beta, y, incY)
+	case []complex64:
+		x := bd.Complex64s()
+		y := pd.Complex64s()
+		var alpha, beta complex64 = complex(1, 0), complex(0, 0)
+		whichblas.Cgemv(tA, m, n, alpha, A, lda, x, incX, beta, y, incY)
+	case []complex128:
+		x := bd.Complex128s()
+		y := pd.Complex128s()
+		var alpha, beta complex128 = complex(1, 0), complex(0, 0)
+		whichblas.Zgemv(tA, m, n, alpha, A, lda, x, incX, beta, y, incY)
 	default:
 		return errors.Errorf(typeNYI, "matVecMul", bd.Data())
 	}
@@ -457,7 +473,7 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 	// check all are DenseTensors
 	var ad, bd, pd DenseTensor
-	if ad, bd, pd, err = e.checkThreeFloatTensors(a, b, prealloc); err != nil {
+	if ad, bd, pd, err = e.checkThreeFloatComplexTensors(a, b, prealloc); err != nil {
 		return errors.Wrapf(err, opFail, "StdEng.MatMul")
 	}
 
@@ -537,6 +553,24 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 		} else {
 			whichblas.Sgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
 		}
+	case []complex64:
+		B := bd.Complex64s()
+		C := pd.Complex64s()
+		var alpha, beta complex64 = complex(1, 0), complex(0, 0)
+		if ado.IsColMajor() && bdo.IsColMajor() {
+			whichblas.Cgemm(tA, tB, n, m, k, alpha, B, ldb, A, lda, beta, C, ldc)
+		} else {
+			whichblas.Cgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+		}
+	case []complex128:
+		B := bd.Complex128s()
+		C := pd.Complex128s()
+		var alpha, beta complex128 = complex(1, 0), complex(0, 0)
+		if ado.IsColMajor() && bdo.IsColMajor() {
+			whichblas.Zgemm(tA, tB, n, m, k, alpha, B, ldb, A, lda, beta, C, ldc)
+		} else {
+			whichblas.Zgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+		}
 	default:
 		return errors.Errorf(typeNYI, "matMul", ad.Data())
 	}
@@ -547,7 +581,7 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
 	// check all are DenseTensors
 	var ad, bd, pd DenseTensor
-	if ad, bd, pd, err = e.checkThreeFloatTensors(a, b, prealloc); err != nil {
+	if ad, bd, pd, err = e.checkThreeFloatComplexTensors(a, b, prealloc); err != nil {
 		return errors.Wrapf(err, opFail, "StdEng.Outer")
 	}
 
@@ -599,6 +633,16 @@ func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
 		A := pd.Float32s()
 		alpha := float32(1)
 		whichblas.Sger(m, n, alpha, x, incX, y, incY, A, lda)
+	case []complex64:
+		y := bd.Complex64s()
+		A := pd.Complex64s()
+		var alpha complex64 = complex(1, 0)
+		whichblas.Cgeru(m, n, alpha, x, incX, y, incY, A, lda)
+	case []complex128:
+		y := bd.Complex128s()
+		A := pd.Complex128s()
+		var alpha complex128 = complex(1, 0)
+		whichblas.Zgeru(m, n, alpha, x, incX, y, incY, A, lda)
 	default:
 		return errors.Errorf(typeNYI, "outer", b.Data())
 	}
@@ -650,6 +694,54 @@ func (e StdEng) checkThreeFloatTensors(a, b, ret Tensor) (ad, bd, retVal DenseTe
 		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors expects b to be be a DenseTensor")
 	}
 	if retVal, err = getFloatDenseTensor(ret); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors expects retVal to be be a DenseTensor")
+	}
+	return
+}
+
+func (e StdEng) checkTwoFloatComplexTensors(a, b Tensor) (ad, bd DenseTensor, err error) {
+	if err = e.checkAccessible(a); err != nil {
+		return nil, nil, errors.Wrap(err, "checkTwoTensors: a is not accessible")
+	}
+	if err = e.checkAccessible(b); err != nil {
+		return nil, nil, errors.Wrap(err, "checkTwoTensors: a is not accessible")
+	}
+
+	if a.Dtype() != b.Dtype() {
+		return nil, nil, errors.New("Expected a and b to have the same Dtype")
+	}
+
+	if ad, err = getFloatComplexDenseTensor(a); err != nil {
+		return nil, nil, errors.Wrap(err, "checkTwoTensors expects a to be be a DenseTensor")
+	}
+	if bd, err = getFloatComplexDenseTensor(b); err != nil {
+		return nil, nil, errors.Wrap(err, "checkTwoTensors expects b to be be a DenseTensor")
+	}
+	return
+}
+
+func (e StdEng) checkThreeFloatComplexTensors(a, b, ret Tensor) (ad, bd, retVal DenseTensor, err error) {
+	if err = e.checkAccessible(a); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "checkThreeTensors: a is not accessible")
+	}
+	if err = e.checkAccessible(b); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "checkThreeTensors: a is not accessible")
+	}
+	if err = e.checkAccessible(ret); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "checkThreeTensors: ret is not accessible")
+	}
+
+	if a.Dtype() != b.Dtype() || b.Dtype() != ret.Dtype() {
+		return nil, nil, nil, errors.New("Expected a and b and retVal all to have the same Dtype")
+	}
+
+	if ad, err = getFloatComplexDenseTensor(a); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors expects a to be be a DenseTensor")
+	}
+	if bd, err = getFloatComplexDenseTensor(b); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors expects b to be be a DenseTensor")
+	}
+	if retVal, err = getFloatComplexDenseTensor(ret); err != nil {
 		return nil, nil, nil, errors.Wrap(err, "checkTwoTensors expects retVal to be be a DenseTensor")
 	}
 	return
