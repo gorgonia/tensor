@@ -1,4 +1,3 @@
-// paclage paginated provides paginated tensors
 package paginated
 
 import (
@@ -7,7 +6,14 @@ import (
 	"strconv"
 	"time"
 
+	lru "github.com/hashicorp/golang-lru/simplelru"
 	"gorgonia.org/tensor"
+)
+
+const (
+	stdTimeFmt = "02-Jan-2006 15-04"
+	// https://stackoverflow.com/a/60319709
+	is64Bit = uint64(^uintptr(0)) == ^uint64(0)
 )
 
 // Tensor specifies a paginated Gorgonia dense tensor
@@ -39,9 +45,9 @@ type Tensor struct {
 	pageSize     int
 }
 
-// New will create a new paginated tensor.
+// NewTensor will created a new paginated Gorgonia `*Dense` tensor.
 // It will use a `DefaultSmallTensor()` if no options are specified.
-func New(dtype tensor.Dtype, opts ...tensor.ConsOpt) (*Tensor, error) {
+func NewTensor(dtype tensor.Dtype, opts ...tensor.ConsOpt) (*Tensor, error) {
 	/* tensor */
 	p, err := DefaultSmallTensor(dtype)
 	if err != nil {
