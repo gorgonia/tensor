@@ -324,7 +324,7 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 		if axes[0] == 0 {
 			return
 		}
-		copy(strides, currentStride)
+		strides[0], strides[1] = currentStride[1], currentStride[0]
 		shape[0], shape[1] = currentShape[1], currentShape[0]
 	default:
 		copy(shape, currentShape)
