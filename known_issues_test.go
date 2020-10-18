@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 	"testing/quick"
 
@@ -70,5 +72,18 @@ func TestIssue72(t *testing.T) {
 	}
 	if err := quick.Check(invReuseScalar, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Inv test for Sub (scalar as left, tensor as right) failed: %v", err)
+	}
+}
+
+func TestIssue83(t *testing.T) {
+	var TT Tensor
+	TT = New(
+		WithShape(1, 3),
+		WithBacking([]float64{-1, 0, 1}))
+	TT, _ = T(TT)
+	a := fmt.Sprintf("%v", TT)
+
+	if strings.Contains(a, "panic") {
+		t.Errorf("Should not panic")
 	}
 }
