@@ -110,6 +110,11 @@ func (ap *AP) Format(state fmt.State, c rune) {
 //		row vector
 func (ap *AP) IsVector() bool { return ap.shape.IsVector() }
 
+// IsVectorLike returns true if the shape is vector-like (i.e. the shape only has one dim that is a non-1).
+func (ap *AP) IsVectorLike() bool {
+	return ap.shape.IsVectorLike() && allones(ap.strides)
+}
+
 // IsColVec returns true when the access pattern has the shape (x, 1)
 func (ap *AP) IsColVec() bool { return ap.shape.IsColVec() }
 
@@ -324,7 +329,7 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 		if axes[0] == 0 {
 			return
 		}
-		strides[0], strides[1] = currentStride[1], currentStride[0]
+		strides[0], strides[1] = 1, 1
 		shape[0], shape[1] = currentShape[1], currentShape[0]
 	default:
 		copy(shape, currentShape)

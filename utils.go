@@ -307,6 +307,15 @@ func memsetBools(a []bool, v bool) {
 	}
 }
 
+func allones(a []int) bool {
+	for i := range a {
+		if a[i] != 1 {
+			return false
+		}
+	}
+	return true
+}
+
 /* FOR ILLUSTRATIVE PURPOSES */
 
 // Permute permutates a pattern according to xs. This function exists for illustrative purposes (i.e. the dumb, unoptimized version)

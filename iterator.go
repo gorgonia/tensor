@@ -121,13 +121,13 @@ type FlatIterator struct {
 	*AP
 
 	//state
-	track     []int
-	nextIndex int
-	lastIndex int
-	strides0  int
-	size      int
-	done      bool
-	reverse   bool // if true, iterator starts at end of array and runs backwards
+	track      []int
+	nextIndex  int
+	lastIndex  int
+	size       int
+	done       bool
+	veclikeDim int  // the dimension of a  vectorlike shape that is not a 1.
+	reverse    bool // if true, iterator starts at end of array and runs backwards
 
 	isScalar bool
 	isVector bool
@@ -137,23 +137,24 @@ type FlatIterator struct {
 
 // newFlatIterator creates a new FlatIterator.
 func newFlatIterator(ap *AP) *FlatIterator {
-	var strides0 int
-
-	if len(ap.strides) == 1 {
-		strides0 = ap.strides[0]
+	var dim int
+	if ap.IsVectorLike() {
+		for d, i := range ap.shape {
+			if i != 1 {
+				dim = d
+				break
+			}
+		}
 	}
-	// else if ap.o.isColMajor() {
-	// 	strides0 = ap.strides[len(ap.strides)-1]
-	// }
 
 	return &FlatIterator{
-		AP:       ap,
-		track:    make([]int, len(ap.shape)),
-		size:     ap.shape.TotalSize(),
-		strides0: strides0,
+		AP:         ap,
+		track:      make([]int, len(ap.shape)),
+		size:       ap.shape.TotalSize(),
+		veclikeDim: dim,
 
 		isScalar: ap.IsScalar(),
-		isVector: len(ap.strides) == 1,
+		isVector: ap.IsVectorLike(),
 	}
 }
 
@@ -265,17 +266,21 @@ func (it *FlatIterator) NextInvalid() (int, int, error) {
 
 func (it *FlatIterator) singleNext() (int, error) {
 	it.lastIndex = it.nextIndex
-	// it.lastIndex += it.strides[0]
-	it.nextIndex += it.strides0
+	it.nextIndex++
 
 	var tracked int
 	switch {
-	case it.IsRowVec():
-		it.track[1]++
-		tracked = it.track[1]
-	case it.IsColVec(), it.IsVector():
-		it.track[0]++
-		tracked = it.track[0]
+	case it.IsVectorLike():
+		it.track[it.veclikeDim]++
+		tracked = it.track[it.veclikeDim]
+		/*
+			case it.IsRowVec():
+				it.track[1]++
+				tracked = it.track[1]
+			case it.IsColVec(), it.IsVector():
+				it.track[0]++
+				tracked = it.track[0]
+		*/
 	default:
 		panic("This ain't supposed to happen")
 	}
@@ -289,17 +294,21 @@ func (it *FlatIterator) singleNext() (int, error) {
 
 func (it *FlatIterator) singlePrevious() (int, error) {
 	it.lastIndex = it.nextIndex
-	// it.lastIndex += it.strides[0]
-	it.nextIndex -= it.strides0
+	it.nextIndex--
 
 	var tracked int
 	switch {
-	case it.IsRowVec():
-		it.track[1]--
-		tracked = it.track[1]
-	case it.IsColVec(), it.IsVector():
-		it.track[0]--
-		tracked = it.track[0]
+	case it.IsVectorLike():
+		it.track[it.veclikeDim]--
+		tracked = it.track[it.veclikeDim]
+		/*
+			case it.IsRowVec():
+				it.track[1]--
+				tracked = it.track[1]
+			case it.IsColVec(), it.IsVector():
+				it.track[0]--
+				tracked = it.track[0]
+		*/
 	default:
 		panic("This ain't supposed to happen")
 	}

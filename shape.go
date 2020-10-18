@@ -184,6 +184,19 @@ func (s Shape) IsColVec() bool { return len(s) == 2 && (s[1] == 1 && s[0] > 1) }
 // IsRowVec returns true when the access pattern has the shape (1, x)
 func (s Shape) IsRowVec() bool { return len(s) == 2 && (s[0] == 1 && s[1] > 1) }
 
+// IsVectorLike returns true when the shape looks like a vector
+// e.g. a number that is surrounded by 1s:
+// 	(1, 1, ... 1, 10, 1, 1... 1)
+func (s Shape) IsVectorLike() bool {
+	var nonOnes int
+	for _, i := range s {
+		if i != 1 {
+			nonOnes++
+		}
+	}
+	return nonOnes == 1 || nonOnes == 0 // if there is only one non-one then it's a vector or a scalarlike.
+}
+
 // IsMatrix returns true if it's a matrix. This is mostly a convenience method. RowVec and ColVecs are also considered matrices
 func (s Shape) IsMatrix() bool { return len(s) == 2 }
 
