@@ -138,7 +138,7 @@ var transposeTests = []struct {
 		Shape{1, 4}, []int{1, 1}, []int{4, 1}, []float64{0, 1, 2, 3}},
 
 	{"r.T()", Shape{1, 4}, nil, []float32{0, 1, 2, 3},
-		Shape{4, 1}, []int{4, 1}, []int{1, 1}, []float32{0, 1, 2, 3}},
+		Shape{4, 1}, []int{1, 1}, []int{1, 1}, []float32{0, 1, 2, 3}},
 
 	{"v.T()", Shape{4}, nil, []int{0, 1, 2, 3},
 		Shape{4}, []int{1}, []int{1}, []int{0, 1, 2, 3}},
