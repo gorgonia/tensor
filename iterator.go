@@ -269,21 +269,8 @@ func (it *FlatIterator) singleNext() (int, error) {
 	it.nextIndex++
 
 	var tracked int
-	switch {
-	case it.IsVectorLike():
-		it.track[it.veclikeDim]++
-		tracked = it.track[it.veclikeDim]
-		/*
-			case it.IsRowVec():
-				it.track[1]++
-				tracked = it.track[1]
-			case it.IsColVec(), it.IsVector():
-				it.track[0]++
-				tracked = it.track[0]
-		*/
-	default:
-		panic("This ain't supposed to happen")
-	}
+	it.track[it.veclikeDim]++
+	tracked = it.track[it.veclikeDim]
 
 	if tracked >= it.size {
 		it.done = true
@@ -297,21 +284,8 @@ func (it *FlatIterator) singlePrevious() (int, error) {
 	it.nextIndex--
 
 	var tracked int
-	switch {
-	case it.IsVectorLike():
-		it.track[it.veclikeDim]--
-		tracked = it.track[it.veclikeDim]
-		/*
-			case it.IsRowVec():
-				it.track[1]--
-				tracked = it.track[1]
-			case it.IsColVec(), it.IsVector():
-				it.track[0]--
-				tracked = it.track[0]
-		*/
-	default:
-		panic("This ain't supposed to happen")
-	}
+	it.track[it.veclikeDim]--
+	tracked = it.track[it.veclikeDim]
 
 	if tracked < 0 {
 		it.done = true
