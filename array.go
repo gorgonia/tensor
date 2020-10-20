@@ -9,26 +9,6 @@ import (
 	"gorgonia.org/tensor/internal/storage"
 )
 
-//go:notinheap
-type rawdata []byte
-
-// array2 is a type that will not be allocated on the heap. This is useful for operational stuff - no unnecessary allocations required.
-
-//go:notinheap
-type array2 struct {
-	storage.Header
-	t Dtype
-	v interface{}
-}
-
-func (a array2) toarray() array {
-	return array{
-		Header: a.Header,
-		t:      a.t,
-		v:      a.v,
-	}
-}
-
 // array is the underlying generic array.
 type array struct {
 	storage.Header             // the header - the Go representation (a slice)
@@ -165,7 +145,7 @@ func (a *array) sliceInto(i, j int, res *array) {
 }
 
 // slice slices an array
-func (a array) slice(start, end int) array2 {
+func (a array) slice(start, end int) array {
 	if end > a.L {
 		panic("Index out of range")
 	}
@@ -189,7 +169,7 @@ func (a array) slice(start, end int) array2 {
 		C:   C,
 	}
 
-	return array2{
+	return array{
 		Header: hdr,
 		t:      a.t,
 		v:      nil,
@@ -295,7 +275,7 @@ func (a *array) rtype() reflect.Type  { return a.t.Type }
 // malloc is standard Go allocation of a block of memory - the plus side is that Go manages the memory
 func malloc(t Dtype, length int) unsafe.Pointer {
 	size := int(calcMemSize(t, length))
-	s := make(rawdata, size)
+	s := make([]byte, size)
 	return unsafe.Pointer(&s[0])
 }
 
@@ -368,13 +348,11 @@ func copyDenseSliced(dst DenseTensor, dstart, dend int, src DenseTensor, sstart,
 	if e := src.Engine(); e != nil {
 		darr := dst.arr()
 		sarr := src.arr()
-		d := darr.slice(dstart, dend)
-		s := sarr.slice(sstart, send)
+		da := darr.slice(dstart, dend)
+		sa := sarr.slice(sstart, send)
 
 		switch e.(type) {
 		case NonStdEngine:
-			da := d.toarray()
-			sa := s.toarray()
 			if err := e.Memcpy(&da, &sa); err != nil {
 				panic(err)
 			}
@@ -400,10 +378,10 @@ func copyDenseSliced(dst DenseTensor, dstart, dend int, src DenseTensor, sstart,
 			// Typically this means `StdEng`.
 			//
 			// If so, we directly use storage.Copy instead of using the engine
-			storage.Copy(d.t.Type, &d.Header, &s.Header)
+			storage.Copy(da.t.Type, &da.Header, &sa.Header)
 		}
 
-		return d.Len()
+		return da.Len()
 	}
 	return copyArraySliced(dst.arr(), dstart, dend, src.arr(), sstart, send)
 }
