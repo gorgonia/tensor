@@ -72,7 +72,7 @@ const denseIdentityArithTestBodyRaw = `iden := func(a *Dense) bool {
 		}
 		return true
 	}
-	
+
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
@@ -167,7 +167,7 @@ const denseInvArithTestBodyRaw = `inv := func(a *Dense) bool {
 		return true
 	}
 	{{template "callInv" .}}
-	
+
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
@@ -246,12 +246,42 @@ if err := quick.Check(inv2, &quick.Config{Rand: newRand(), MaxCount: quickchecks
 {{end -}}
 `
 
+const denseArithScalarWrongTypeTestRaw = `type Foo int
+wt1 := func(a *Dense) bool{
+	b := Foo(0)
+	{{template "call0" .}}
+	if err == nil {
+		return false
+	}
+	_ = ret
+	return true
+}
+if err := quick.Check(wt1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+	t.Errorf("WrongType test for {{.Name}} (tensor as left, scalar as right) failed: %v", err)
+}
+
+wt2 := func(a *Dense) bool{
+	b := Foo(0)
+	{{template "call1" .}}
+	if err == nil {
+		return false
+	}
+	_ = ret
+	return true
+}
+if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+	t.Errorf("WrongTYpe test for {{.Name}} (tensor as right, scalar as left) failed: %v", err)
+}
+`
+
 var (
 	denseArithBody       *template.Template
 	denseArithScalarBody *template.Template
 
 	denseIdentityArithTest       *template.Template
 	denseIdentityArithScalarTest *template.Template
+
+	denseArithScalarWrongTypeTest *template.Template
 )
 
 func init() {
@@ -260,4 +290,6 @@ func init() {
 
 	denseIdentityArithTest = template.Must(template.New("dense identity test").Funcs(funcs).Parse(denseIdentityArithTestBodyRaw))
 	denseIdentityArithScalarTest = template.Must(template.New("dense scalar identity test").Funcs(funcs).Parse(denseIdentityArithScalarTestRaw))
+
+	denseArithScalarWrongTypeTest = template.Must(template.New("dense scalar wrongtype test").Funcs(funcs).Parse(denseArithScalarWrongTypeTestRaw))
 }
