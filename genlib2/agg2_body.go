@@ -40,6 +40,10 @@ const prepMixedRaw = `if err = unaryCheck(t, {{.TypeClassCheck | lower}}Types); 
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "{{.Name}} failed")
+	}
+
 	var reuse DenseTensor
 	{{template "prep" . -}}
 

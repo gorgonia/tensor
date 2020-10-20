@@ -496,6 +496,10 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 		return nil, errors.Wrapf(err, "Gt failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Gt failed")
+	}
+
 	var reuse DenseTensor
 	var safe, same bool
 	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
@@ -606,6 +610,10 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = unaryCheck(t, ordTypes); err != nil {
 		return nil, errors.Wrapf(err, "Gte failed")
+	}
+
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Gte failed")
 	}
 
 	var reuse DenseTensor
@@ -720,6 +728,10 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 		return nil, errors.Wrapf(err, "Lt failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Lt failed")
+	}
+
 	var reuse DenseTensor
 	var safe, same bool
 	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
@@ -832,6 +844,10 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Lte failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Lte failed")
+	}
+
 	var reuse DenseTensor
 	var safe, same bool
 	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
@@ -940,6 +956,10 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 		return nil, errors.Wrapf(err, "Eq failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Eq failed")
+	}
+
 	var reuse DenseTensor
 	var safe, same bool
 	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
@@ -1046,6 +1066,10 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = unaryCheck(t, eqTypes); err != nil {
 		return nil, errors.Wrapf(err, "Ne failed")
+	}
+
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Ne failed")
 	}
 
 	var reuse DenseTensor

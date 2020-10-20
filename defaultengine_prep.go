@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"reflect"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
 	// "log"
@@ -98,6 +100,23 @@ func unaryCheck(a Tensor, tc *typeclass) error {
 		if err := typeclassCheck(at, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "a")
 		}
+	}
+	return nil
+}
+
+// scalarDtypeCheck checks that a scalar value has the same dtype as the dtype of a given tensor.
+func scalarDtypeCheck(a Tensor, b interface{}) error {
+	var dt Dtype
+	switch bt := b.(type) {
+	case Dtyper:
+		dt = bt.Dtype()
+	default:
+		t := reflect.TypeOf(b)
+		dt = Dtype{t}
+	}
+
+	if a.Dtype() != dt {
+		return errors.Errorf("Expected scalar to have the same Dtype as the tensor (%v). Got %T instead ", a.Dtype(), b)
 	}
 	return nil
 }
