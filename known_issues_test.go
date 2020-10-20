@@ -109,3 +109,14 @@ func TestIssue83(t *testing.T) {
 	t.Logf("%v", vals)
 
 }
+
+func TestIssue88(t *testing.T) {
+	a := New(WithShape(4, 2), WithBacking([]float64{1, 1, 1, 1, 1, 1, 1, 1}))
+	b := New(WithShape(2, 4), WithBacking([]float64{0, 1, 0, 1, 0, 1, 0, 1}))
+	c, _ := a.MatMul(b)
+	_, err := Div(c, 2)
+	if err == nil {
+		t.Fatal("Expected an error")
+	}
+
+}
