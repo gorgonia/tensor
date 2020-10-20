@@ -416,6 +416,10 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Add failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Add failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -507,6 +511,10 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = unaryCheck(t, numberTypes); err != nil {
 		return nil, errors.Wrapf(err, "Sub failed")
+	}
+
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Sub failed")
 	}
 
 	var reuse DenseTensor
@@ -602,6 +610,10 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Mul failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Mul failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -693,6 +705,10 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = unaryCheck(t, numberTypes); err != nil {
 		return nil, errors.Wrapf(err, "Div failed")
+	}
+
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Div failed")
 	}
 
 	var reuse DenseTensor
@@ -788,6 +804,10 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Pow failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Pow failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -879,6 +899,10 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = unaryCheck(t, numberTypes); err != nil {
 		return nil, errors.Wrapf(err, "Mod failed")
+	}
+
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Mod failed")
 	}
 
 	var reuse DenseTensor
