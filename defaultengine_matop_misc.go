@@ -208,7 +208,7 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 		for j := 0; j < size; j++ {
 			var tmp int
 			tmp = repeats[j]
-			var tSlice array2
+			var tSlice array
 
 			tSlice = sarr.slice(srcStart, src.len())
 
