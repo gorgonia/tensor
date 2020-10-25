@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 const AllAxes int = -1
 
@@ -93,6 +95,14 @@ func IsMonotonicInts(a []int) (monotonic bool, incr1 bool) {
 
 // Ltoi is Location to Index. Provide a shape, a strides, and a list of integers as coordinates, and returns the index at which the element is.
 func Ltoi(shape Shape, strides []int, coords ...int) (at int, err error) {
+	if shape.IsScalarEquiv() {
+		for _, v := range coords {
+			if v != 0 {
+				return -1, errors.Errorf("Scalar shape only allows 0 as an index")
+			}
+		}
+		return 0, nil
+	}
 	for i, coord := range coords {
 		if i >= len(shape) {
 			err = errors.Errorf(dimMismatch, len(shape), i)
@@ -107,23 +117,16 @@ func Ltoi(shape Shape, strides []int, coords ...int) (at int, err error) {
 		}
 
 		var stride int
-		if shape.IsRowVec() {
-			if i == 0 && len(coords) == 2 {
-				continue
-			}
+		switch {
+		case shape.IsVector() && len(strides) == 1:
 			stride = strides[0]
-		} else if shape.IsColVec() {
-			if i == 1 && len(coords) == 2 {
-				continue
-			}
-			stride = strides[0]
-		} else {
-			if i >= len(strides) {
-				err = errors.Errorf(dimMismatch, len(strides), i)
-				return
-			}
+		case i >= len(strides):
+			err = errors.Errorf(dimMismatch, len(strides), i)
+			return
+		default:
 			stride = strides[i]
 		}
+
 		at += stride * coord
 	}
 	return at, nil
