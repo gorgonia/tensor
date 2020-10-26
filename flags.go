@@ -98,6 +98,8 @@ const (
 	// ManuallyManaged indicates that the memory is managed by something else. Any Tensor with
 	// manually managed memory will not be returned to the pool.
 	ManuallyManaged
+	// IsOverallocated indicates that the memory for a given tensor is overallocated (i.e. the size-in-use is smaller than the size allocated)
+	IsOverallocated
 )
 
 func MakeMemoryFlag(fs ...MemoryFlag) (retVal MemoryFlag) {
@@ -113,6 +115,7 @@ func MakeMemoryFlag(fs ...MemoryFlag) (retVal MemoryFlag) {
 
 func (f MemoryFlag) nativelyAccessible() bool { return !((f & NativelyInaccessible) != 0) }
 func (f MemoryFlag) manuallyManaged() bool    { return (f & ManuallyManaged) != 0 }
+func (f MemoryFlag) isOverallocated() bool    { return (f & IsOverallocated) != 0 }
 
 // OpOpt are the options used to call ops
 type OpOpt struct {

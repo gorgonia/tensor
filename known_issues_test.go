@@ -118,5 +118,35 @@ func TestIssue88(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected an error")
 	}
+}
 
+var ltoiTestCases = []struct {
+	name        string
+	shape       Shape
+	strides     []int
+	coordinates []int
+	correct     int
+	willErr     bool
+}{
+	{"\"scalar\" - scalarshape", Shape{}, nil, []int{0}, 0, false},
+	{"\"scalar\" - scalarshape, non empty strides", Shape{}, []int{1}, []int{0}, 0, false},
+	{"\"scalar\" - scalarlike", Shape{1, 1, 1}, []int{1, 1, 1}, []int{0, 0, 0}, 0, false},
+	{"vector", Shape{10}, []int{1}, []int{1}, 1, false},
+	{"rowvec", Shape{1, 10}, []int{10, 1}, []int{0, 1}, 1, false},
+	{"colvec", Shape{10, 1}, []int{1, 1}, []int{1, 0}, 1, false},
+	{"rowvec- funny strides", Shape{1, 10}, []int{1}, []int{0, 1}, 1, false},
+	{"colvec - funny strides", Shape{10, 1}, []int{1}, []int{1, 0}, 1, false},
+}
+
+func TestIssue90(t *testing.T) {
+
+	for i, c := range ltoiTestCases {
+		at, err := Ltoi(c.shape, c.strides, c.coordinates...)
+		if !checkErr(t, c.willErr, err, c.name, i) {
+			continue
+		}
+		if at != c.correct {
+			t.Errorf("Expected Ltoi(%v, %v, %v) to be %v. Got %v instead", c.shape, c.strides, c.coordinates, c.correct, at)
+		}
+	}
 }
