@@ -139,7 +139,6 @@ var ltoiTestCases = []struct {
 }
 
 func TestIssue90(t *testing.T) {
-
 	for i, c := range ltoiTestCases {
 		at, err := Ltoi(c.shape, c.strides, c.coordinates...)
 		if !checkErr(t, c.willErr, err, c.name, i) {
