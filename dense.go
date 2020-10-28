@@ -79,7 +79,6 @@ func (t *Dense) addMask(mask []bool) {
 }
 
 func (t *Dense) makeArray(size int) {
-
 	switch te := t.e.(type) {
 	case NonStdEngine:
 		t.flag = MakeMemoryFlag(t.flag, ManuallyManaged)
@@ -99,7 +98,6 @@ func (t *Dense) makeArray(size int) {
 	t.array.C = size
 	t.array.fix()
 	return
-
 }
 
 // Info returns the access pattern which explains how the data in the underlying array is accessed. This is mostly used for debugging.
@@ -156,6 +154,20 @@ func (t *Dense) Reshape(dims ...int) error {
 func (t *Dense) reshape(dims ...int) error {
 	t.setShape(dims...)
 	return t.sanity()
+}
+
+func (t *Dense) unsqueeze(axis int) error {
+	if axis > t.shape.Dims()+1 {
+		return errors.Errorf("Cannot unsqueeze on axis %d when the tensor has shape %v", axis, t.shape)
+	}
+	t.shape = append(t.shape, 1)
+	copy(t.shape[axis+1:], t.shape[axis:])
+	t.shape[axis] = 1
+
+	t.strides = append(t.strides, 1)
+	copy(t.strides[axis+1:], t.strides[axis:])
+
+	return nil
 }
 
 // ScalarValue returns the scalar value of a *Tensor,

@@ -95,3 +95,46 @@ func Test_recycledDense(t *testing.T) {
 	assert.Equal(t, StdEng{}, T.e)
 	assert.Equal(t, StdEng{}, T.oe)
 }
+
+func TestDense_unsqueeze(t *testing.T) {
+	assert := assert.New(t)
+	T := New(WithShape(3, 3, 2), WithBacking([]float64{
+		1, 2, 3, 4, 5, 6,
+		60, 50, 40, 30, 20, 10,
+		100, 200, 300, 400, 500, 600,
+	}))
+
+	if err := T.unsqueeze(0); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.True(T.Shape().Eq(Shape{1, 3, 3, 2}))
+	assert.Equal([]int{6, 6, 2, 1}, T.Strides()) // if you do shapes.CalcStrides() it'd be {18,6,2,1}
+
+	// reset
+	T.Reshape(3, 3, 2)
+
+	if err := T.unsqueeze(1); err != nil {
+		t.Fatal(err)
+	}
+	assert.True(T.Shape().Eq(Shape{3, 1, 3, 2}))
+	assert.Equal([]int{6, 2, 2, 1}, T.Strides())
+
+	// reset
+	T.Reshape(3, 3, 2)
+	if err := T.unsqueeze(2); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%v", T)
+	assert.True(T.Shape().Eq(Shape{3, 3, 1, 2}))
+	assert.Equal([]int{6, 2, 1, 1}, T.Strides())
+
+	// reset
+	T.Reshape(3, 3, 2)
+	if err := T.unsqueeze(3); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("%v", T)
+	assert.True(T.Shape().Eq(Shape{3, 3, 2, 1}))
+	assert.Equal([]int{6, 2, 1, 1}, T.Strides())
+}
