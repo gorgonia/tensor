@@ -741,7 +741,7 @@ var concatTests = []struct {
 
 	{"3tensor; axis 0", Float64, nil, nil, Shape{2, 3, 2}, Shape{1, 3, 2}, 0, Shape{3, 3, 2}, []float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5}},
 	{"3tensor; axis 2", Float64, nil, nil, Shape{2, 3, 2}, Shape{2, 3, 1}, 2, Shape{2, 3, 3}, []float64{0, 1, 0, 2, 3, 1, 4, 5, 2, 6, 7, 3, 8, 9, 4, 10, 11, 5}},
-	// {"3tensor; axis 1", Float64, nil, nil, Shape{2, 3, 2}, Shape{2, 1, 2}, 1, Shape{2, 4, 2}, []float64{222}},
+	{"3tensor; axis 1", Float64, nil, nil, Shape{2, 3, 2}, Shape{2, 1, 2}, 1, Shape{2, 4, 2}, []float64{0, 1, 2, 3, 4, 5, 0, 1, 6, 7, 8, 9, 10, 11, 2, 3}},
 }
 
 func TestDense_Concat(t *testing.T) {
@@ -772,6 +772,7 @@ func TestDense_Concat(t *testing.T) {
 			t.Errorf("Test %v failed: %v", cts.name, err)
 			continue
 		}
+
 		assert.True(cts.correctShape.Eq(T2.Shape()))
 		assert.Equal(cts.correctData, T2.Data())
 	}
