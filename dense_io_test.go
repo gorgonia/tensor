@@ -18,12 +18,19 @@ func TestSaveLoadNumpy(t *testing.T) {
 
 	assert := assert.New(t)
 	T := New(WithShape(2, 2), WithBacking([]float64{1, 5, 10, -1}))
+	// also checks the 1D Vector.
+	T1D := New(WithShape(4), WithBacking([]float64{1, 5, 10, -1}))
+
 	f, _ := os.OpenFile("test.npy", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	f1D, _ := os.OpenFile("test1D.npy", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+
 	T.WriteNpy(f)
 	f.Close()
 
-	script := "import numpy as np\nx = np.load('test.npy')\nprint(x)"
+	T1D.WriteNpy(f1D)
+	f1D.Close()
 
+	script := "import numpy as np\nx = np.load('test.npy')\nprint(x)\nx = np.load('test1D.npy')\nprint(x)"
 	// Configurable python command, in order to be able to use python or python3
 	pythonCommand := os.Getenv("PYTHON_COMMAND")
 	if pythonCommand == "" {
@@ -67,6 +74,11 @@ func TestSaveLoadNumpy(t *testing.T) {
 		t.Error(err)
 	}
 
+	err = os.Remove("test1D.npy")
+	if err != nil {
+		t.Error(err)
+	}
+
 	// ok now to test if it can read
 	T2 := new(Dense)
 	buf = new(bytes.Buffer)
@@ -77,6 +89,17 @@ func TestSaveLoadNumpy(t *testing.T) {
 	assert.Equal(T.Shape(), T2.Shape())
 	assert.Equal(T.Strides(), T2.Strides())
 	assert.Equal(T.Data(), T2.Data())
+
+	// ok now to test if it can read 1D
+	T1D2 := new(Dense)
+	buf = new(bytes.Buffer)
+	T1D.WriteNpy(buf)
+	if err = T1D2.ReadNpy(buf); err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(T1D.Shape(), T1D2.Shape())
+	assert.Equal(T1D.Strides(), T1D2.Strides())
+	assert.Equal(T1D.Data(), T1D2.Data())
 
 	// try with masked array. masked elements should be filled with default value
 	T.ResetMask(false)
@@ -92,6 +115,21 @@ func TestSaveLoadNumpy(t *testing.T) {
 	data := T.Float64s()
 	data[0] = T.FillValue().(float64)
 	assert.Equal(data, T3.Data())
+
+	// try with 1D masked array. masked elements should be filled with default value
+	T1D.ResetMask(false)
+	T1D.mask[0] = true
+	T1D3 := new(Dense)
+	buf = new(bytes.Buffer)
+	T1D.WriteNpy(buf)
+	if err = T1D3.ReadNpy(buf); err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(T1D.Shape(), T1D3.Shape())
+	assert.Equal(T1D.Strides(), T1D3.Strides())
+	data = T1D.Float64s()
+	data[0] = T1D.FillValue().(float64)
+	assert.Equal(data, T1D3.Data())
 }
 
 func TestSaveLoadCSV(t *testing.T) {

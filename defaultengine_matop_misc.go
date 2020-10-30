@@ -291,6 +291,7 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 			return nil, errors.Wrap(err, "Unable to slice DenseTensor while performing denseConcat")
 		}
 
+		// keep dims after slicing
 		switch {
 		case v.IsVector() && T.IsMatrix() && axis == 0:
 			v.reshape(v.shape[0], 1)
@@ -320,6 +321,10 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 				}
 				v.shape = newShape
 				v.strides = newStrides
+			} else if T.Shape()[axis] == 1 {
+				if err := v.unsqueeze(axis); err != nil {
+					return nil, errors.Wrapf(err, "Unable to keep dims after slicing a shape %v on axis %d where the size is 1", T.Shape(), axis)
+				}
 			}
 		}
 

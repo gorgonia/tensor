@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 func overlaps(a, b DenseTensor) bool {
 	if a.cap() == 0 || b.cap() == 0 {
