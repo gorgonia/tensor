@@ -132,3 +132,10 @@ func ByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err
 	}
 	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
 }
+
+func ByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sbi, ok := a.Engine().(ByIndiceser); ok {
+		return sbi.SelectByIndicesB(a, b, indices, axis, opts...)
+	}
+	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
+}
