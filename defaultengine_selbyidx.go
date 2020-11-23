@@ -7,7 +7,7 @@ import (
 	"reflect"
 )
 
-func (e StdEng) SelectByIdx(a, b Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+func (e StdEng) SelectByIndices(a, b Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !b.Shape().IsVectorLike() {
 		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", b.Shape())
 	}

@@ -14,21 +14,21 @@ func TestDense_SelectByIndices(t *testing.T) {
 
 	e := StdEng{}
 
-	a1, err := e.SelectByIdx(a, indices, 1)
+	a1, err := e.SelectByIndices(a, indices, 1)
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 	correct1 := []float64{4, 5, 6, 7, 4, 5, 6, 7, 12, 13, 14, 15, 12, 13, 14, 15, 20, 21, 22, 23, 20, 21, 22, 23}
 	assert.Equal(correct1, a1.Data())
 
-	a0, err := e.SelectByIdx(a, indices, 0)
+	a0, err := e.SelectByIndices(a, indices, 0)
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 	correct0 := []float64{8, 9, 10, 11, 12, 13, 14, 15, 8, 9, 10, 11, 12, 13, 14, 15}
 	assert.Equal(correct0, a0.Data())
 
-	a2, err := e.SelectByIdx(a, indices, 2)
+	a2, err := e.SelectByIndices(a, indices, 2)
 	if err != nil {
 		t.Errorf("%v", err)
 	}
@@ -38,7 +38,7 @@ func TestDense_SelectByIndices(t *testing.T) {
 	// !safe
 	aUnsafe := a.Clone().(*Dense)
 	indices = New(WithBacking([]int{1, 1, 1}))
-	aUnsafeSelect, err := e.SelectByIdx(aUnsafe, indices, 0, UseUnsafe())
+	aUnsafeSelect, err := e.SelectByIndices(aUnsafe, indices, 0, UseUnsafe())
 	if err != nil {
 		t.Errorf("%v", err)
 	}
@@ -47,7 +47,7 @@ func TestDense_SelectByIndices(t *testing.T) {
 
 	// 3 indices, just to make sure the sanity of the algorithm
 	indices = New(WithBacking([]int{1, 1, 1}))
-	a1, err = e.SelectByIdx(a, indices, 1)
+	a1, err = e.SelectByIndices(a, indices, 1)
 	if err != nil {
 		t.Errorf("%v", err)
 	}
@@ -66,14 +66,14 @@ func TestDense_SelectByIndices(t *testing.T) {
 	}
 	assert.Equal(correct1, a1.Data())
 
-	a0, err = e.SelectByIdx(a, indices, 0)
+	a0, err = e.SelectByIndices(a, indices, 0)
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 	correct0 = []float64{8, 9, 10, 11, 12, 13, 14, 15, 8, 9, 10, 11, 12, 13, 14, 15, 8, 9, 10, 11, 12, 13, 14, 15}
 	assert.Equal(correct0, a0.Data())
 
-	a2, err = e.SelectByIdx(a, indices, 2)
+	a2, err = e.SelectByIndices(a, indices, 2)
 	if err != nil {
 		t.Errorf("%v", err)
 	}
