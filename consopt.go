@@ -112,10 +112,17 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 			xvi.Set(reflect.ValueOf(x))
 			uptr := unsafe.Pointer(xv.Pointer())
 
+			var v interface{}
+			if !tt.Shape().IsScalar() {
+				sl := reflect.MakeSlice(reflect.SliceOf(xt), 1, 1)
+				zeroth := sl.Index(0)
+				zeroth.Set(reflect.ValueOf(x))
+				v = sl.Interface()
+			}
 			tt.array.Ptr = uptr
 			tt.array.L = 1
 			tt.array.C = 1
-			tt.v = x
+			tt.v = v
 			tt.t = Dtype{xt}
 			tt.mask = mask
 
@@ -146,7 +153,6 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 		switch tt := t.(type) {
 		case *Dense:
 			tt.v = nil // if there were any underlying slices it should be GC'd
-
 			tt.array.Ptr = unsafe.Pointer(ptr)
 			tt.array.L = int(memsize / tt.t.Size())
 			tt.array.C = int(memsize / tt.t.Size())
