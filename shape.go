@@ -155,7 +155,7 @@ func (s Shape) Clone() Shape {
 
 // IsScalar returns true if the access pattern indicates it's a scalar value
 func (s Shape) IsScalar() bool {
-	return len(s) == 0 || (len(s) == 1 && s[0] == 1)
+	return len(s) == 0
 }
 
 // IsScalarEquiv returns true if the access pattern indicates it's a scalar-like value
