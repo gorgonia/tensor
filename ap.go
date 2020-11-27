@@ -121,8 +121,11 @@ func (ap *AP) IsColVec() bool { return ap.shape.IsColVec() }
 // IsRowVec returns true when the access pattern has the shape (1, x)
 func (ap *AP) IsRowVec() bool { return ap.shape.IsRowVec() }
 
-// IsScalar returns true if the access pattern indicates it's a scalar value
+// IsScalar returns true if the access pattern indicates it's a scalar value.
 func (ap *AP) IsScalar() bool { return ap.shape.IsScalar() }
+
+// IsScalarEquiv returns true if the access pattern is equivalent to a scalar shape.
+func (ap *AP) IsScalarEquiv() bool { return ap.shape.IsScalarEquiv() }
 
 // IsMatrix returns true if it's a matrix. This is mostly a convenience method. RowVec and ColVecs are also considered matrices
 func (ap *AP) IsMatrix() bool { return len(ap.shape) == 2 }
