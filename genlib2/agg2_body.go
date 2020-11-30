@@ -133,7 +133,10 @@ const agg2BodyRaw = `if useIter {
 			}
 		{{end -}}
 		}
-		{{if not .VV -}}returnHeader(scalarHeader){{end}}
+		{{if not .VV -}}
+		unrefcountScalar(scalarHeader.Ptr)
+		returnHeader(scalarHeader)
+		{{end-}}
 		return
 	}
 	switch {
@@ -184,7 +187,10 @@ const agg2BodyRaw = `if useIter {
 			err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
 		{{end -}}
 	}
-	{{if not .VV -}}returnHeader(scalarHeader){{end}}
+	{{if not .VV -}}
+	unrefcountScalar(scalarHeader.Ptr)
+	returnHeader(scalarHeader)
+	{{end-}}
 	return
 `
 

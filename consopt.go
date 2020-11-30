@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"reflect"
-	"unsafe"
 )
 
 // ConsOpt is a tensor construction option.
@@ -110,9 +109,8 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 			xv := reflect.New(xt)
 			xvi := reflect.Indirect(xv)
 			xvi.Set(reflect.ValueOf(x))
-			uptr := unsafe.Pointer(xv.Pointer())
 
-			tt.array.Ptr = uptr
+			tt.array.Ptr = xv.Pointer()
 			tt.array.L = 1
 			tt.array.C = 1
 			tt.v = x
@@ -147,7 +145,7 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 		case *Dense:
 			tt.v = nil // if there were any underlying slices it should be GC'd
 
-			tt.array.Ptr = unsafe.Pointer(ptr)
+			tt.array.Ptr = ptr
 			tt.array.L = int(memsize / tt.t.Size())
 			tt.array.C = int(memsize / tt.t.Size())
 

@@ -9,13 +9,12 @@ import (
 // With this, we wouldn't need to keep the uintptr.
 // This usually means additional pressure for the GC though, especially when passing around Headers
 type Header struct {
-	Ptr unsafe.Pointer
+	Ptr uintptr
 	L   int
 	C   int
 }
 
-func (h *Header) Pointer() unsafe.Pointer { return h.Ptr }
-func (h *Header) Len() int                { return h.L }
+func (h *Header) Len() int { return h.L }
 
 func Copy(t reflect.Type, dst, src *Header) int {
 	if dst.L == 0 || src.L == 0 {
@@ -113,6 +112,6 @@ func AsByteSlice(a *Header, t reflect.Type) []byte {
 }
 
 // Element gets the pointer of ith element
-func ElementAt(i int, base unsafe.Pointer, typeSize uintptr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(base) + uintptr(i)*typeSize)
+func ElementAt(i int, base uintptr, typeSize uintptr) uintptr {
+	return uintptr(base) + uintptr(i)*typeSize
 }

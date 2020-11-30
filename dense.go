@@ -65,7 +65,7 @@ func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) 
 }
 
 func (t *Dense) fromSlice(x interface{}) {
-	t.array.Ptr = nil
+	t.array.Ptr = 0
 	t.array.v = nil
 	t.array.fromSlice(x)
 }
@@ -93,7 +93,7 @@ func (t *Dense) makeArray(size int) {
 		panic(err)
 	}
 
-	t.array.Ptr = mem.Pointer()
+	t.array.Ptr = mem.Uintptr()
 	t.array.L = size
 	t.array.C = size
 	t.array.fix()
@@ -294,16 +294,16 @@ func (t *Dense) fix() {
 	}
 
 	switch {
-	case t.IsScalar() && t.array.Ptr == nil:
+	case t.IsScalar() && t.array.Ptr == 0:
 		t.makeArray(1)
-	case t.Shape() == nil && t.array.Ptr != nil:
+	case t.Shape() == nil && t.array.Ptr != 0:
 		size := t.L
 		if size == 1 {
 			t.SetShape() // scalar
 		} else {
 			t.SetShape(size) // vector
 		}
-	case t.array.Ptr == nil && t.t != Dtype{}:
+	case t.array.Ptr == 0 && t.t != Dtype{}:
 		size := t.Shape().TotalSize()
 		t.makeArray(size)
 
@@ -330,7 +330,7 @@ func (t *Dense) makeMask() {
 
 // sanity is a function that sanity checks that a tensor is correct.
 func (t *Dense) sanity() error {
-	if !t.AP.IsZero() && t.Shape() == nil && t.array.Ptr == nil {
+	if !t.AP.IsZero() && t.Shape() == nil && t.array.Ptr == 0 {
 		return errors.New(emptyTensor)
 	}
 

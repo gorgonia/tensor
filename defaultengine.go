@@ -19,7 +19,7 @@ func (e StdEng) makeArray(arr *array, t Dtype, size int) {
 	arr.t = t
 	arr.L = size
 	arr.C = size
-	arr.Ptr = unsafe.Pointer(&s[0])
+	arr.Ptr = uintptr(unsafe.Pointer(&s[0]))
 	arr.fix()
 }
 

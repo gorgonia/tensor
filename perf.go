@@ -56,7 +56,7 @@ func returnHeader(hdr *storage.Header) {
 }
 
 func destroyHeader(hdr *storage.Header) {
-	hdr.Ptr = nil
+	hdr.Ptr = 0
 	hdr.L = 0
 	hdr.C = 0
 }
@@ -92,7 +92,7 @@ func ReturnTensor(t Tensor) {
 
 		// array reset
 		tt.t = Dtype{}
-		tt.array.Ptr = nil
+		tt.array.Ptr = 0
 		tt.array.L = 0
 		tt.array.C = 0
 		tt.array.v = nil

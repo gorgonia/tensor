@@ -3,6 +3,7 @@ package tensor
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"unsafe"
 
 	"github.com/pkg/errors"
@@ -11,33 +12,26 @@ import (
 
 // array is the underlying generic array.
 type array struct {
-	storage.Header             // the header - the Go representation (a slice)
-	t              Dtype       // the element type
-	v              interface{} // an additional reference to the underlying slice. This is not strictly necessary, but does improve upon anything that calls .Data()
-}
-
-// makeHeader makes a array Header
-func makeHeader(t Dtype, length int) storage.Header {
-	return storage.Header{
-		Ptr: malloc(t, length),
-		L:   length,
-		C:   length,
-	}
+	storage.Header        // the header - the Go representation (a slice)
+	t              Dtype  // the element type
+	raw            []byte // an additional reference to the underlying slice. This is not strictly necessary, but does improve upon anything that calls .Data()
+	v              interface{}
 }
 
 // makeArray makes an array. The memory allocation is handled by Go
 func makeArray(t Dtype, length int) array {
-	hdr := makeHeader(t, length)
-	return makeArrayFromHeader(hdr, t)
-}
-
-// makeArrayFromHeader makes an array given a header
-func makeArrayFromHeader(hdr storage.Header, t Dtype) array {
+	ptr, v := malloc(t, length)
+	hdr := storage.Header{
+		Ptr: ptr,
+		L:   length,
+		C:   length,
+	}
 	return array{
 		Header: hdr,
 		t:      t,
-		v:      nil,
+		raw:    v,
 	}
+
 }
 
 // arrayFromSlice creates an array from a slice. If x is not a slice, it will panic.
@@ -49,11 +43,10 @@ func arrayFromSlice(x interface{}) array {
 	elT := xT.Elem()
 
 	xV := reflect.ValueOf(x)
-	uptr := unsafe.Pointer(xV.Pointer())
 
 	return array{
 		Header: storage.Header{
-			Ptr: uptr,
+			Ptr: xV.Pointer(),
 			L:   xV.Len(),
 			C:   xV.Cap(),
 		},
@@ -70,9 +63,8 @@ func (a *array) fromSlice(x interface{}) {
 	}
 	elT := xT.Elem()
 	xV := reflect.ValueOf(x)
-	uptr := unsafe.Pointer(xV.Pointer())
 
-	a.Ptr = uptr
+	a.Ptr = xV.Pointer()
 	a.L = xV.Len()
 	a.C = xV.Cap()
 	a.t = Dtype{elT}
@@ -85,19 +77,19 @@ func (a *array) fromSliceOrArrayer(x interface{}) {
 		xp := T.arrPtr()
 
 		// if the underlying array hasn't been allocated, or not enough has been allocated
-		if a.Ptr == nil || a.L < xp.L || a.C < xp.C {
+		if a.Ptr == 0 || a.L < xp.L || a.C < xp.C {
 			a.t = xp.t
 			a.L = xp.L
 			a.C = xp.C
-			a.Ptr = malloc(a.t, a.L)
+			a.Ptr, a.raw = malloc(a.t, a.L)
 		}
 
 		a.t = xp.t
 		a.L = xp.L
 		a.C = xp.C
 		copyArray(a, T.arrPtr())
-		a.v = nil    // tell the GC to release whatever a.v may hold
-		a.forcefix() // fix it such that a.v has a value and is not nil
+		a.v = nil  // tell the GC to release whatever a.v may hold
+		a.fixVal() // fix it such that a.v has a value and is not nil
 		return
 	}
 	a.fromSlice(x)
@@ -106,16 +98,24 @@ func (a *array) fromSliceOrArrayer(x interface{}) {
 // fix fills the a.v empty interface{}  if it's not nil
 func (a *array) fix() {
 	if a.v == nil {
-		a.forcefix()
+		a.fixVal()
+	}
+	if a.raw == nil {
+		a.fixRaw()
 	}
 }
 
-// forcefix fills the a.v empty interface{}. No checks are made if the thing is empty
-func (a *array) forcefix() {
+// fixVal fills the a.v empty interface{}. No checks are made if the thing is empty
+func (a *array) fixVal() {
 	sliceT := reflect.SliceOf(a.t.Type)
 	ptr := unsafe.Pointer(&a.Header)
 	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
 	a.v = val.Interface()
+}
+
+// fixRaw fills the a.raw byte slice. No checks are made if the thing si empty
+func (a *array) fixRaw() {
+	a.raw = storage.AsByteSlice(&a.Header, a.t)
 }
 
 // byteSlice casts the underlying slice into a byte slice. Useful for copying and zeroing, but not much else
@@ -156,7 +156,7 @@ func (a array) slice(start, end int) array {
 	L := end - start
 	C := a.C - start
 
-	var startptr unsafe.Pointer
+	var startptr uintptr
 	if a.C-start > 0 {
 		startptr = storage.ElementAt(start, a.Ptr, a.t.Size())
 	} else {
@@ -216,13 +216,10 @@ func (a *array) swap(i, j int) {
 /* *Array is a Memory */
 
 // Uintptr returns the pointer of the first value of the slab
-func (a *array) Uintptr() uintptr { return uintptr(a.Ptr) }
+func (a *array) Uintptr() uintptr { return a.Ptr }
 
 // MemSize returns how big the slice is in bytes
 func (a *array) MemSize() uintptr { return uintptr(a.L) * a.t.Size() }
-
-// Pointer returns the pointer of the first value of the slab, as an unsafe.Pointer
-func (a *array) Pointer() unsafe.Pointer { return a.Ptr }
 
 // Data returns the representation of a slice.
 func (a array) Data() interface{} {
@@ -273,10 +270,10 @@ func (a *array) rtype() reflect.Type  { return a.t.Type }
 /* MEMORY MOVEMENT STUFF */
 
 // malloc is standard Go allocation of a block of memory - the plus side is that Go manages the memory
-func malloc(t Dtype, length int) unsafe.Pointer {
+func malloc(t Dtype, length int) (uintptr, []byte) {
 	size := int(calcMemSize(t, length))
 	s := make([]byte, size)
-	return unsafe.Pointer(&s[0])
+	return uintptr(unsafe.Pointer(&s[0])), s
 }
 
 // calcMemSize calulates the memory size of an array (given its size)
@@ -427,10 +424,48 @@ func copyDenseIter(dst, src DenseTensor, diter, siter Iterator) (int, error) {
 	return storage.CopyIter(dst.rtype(), dst.hdr(), src.hdr(), diter, siter), nil
 }
 
-func getPointer(a interface{}) unsafe.Pointer {
+type scalarPtrCount struct {
+	Ptr   unsafe.Pointer
+	Count int
+}
+
+// scalarRCLock is a lock for the reference counting list.
+var scalarRCLock sync.Mutex
+
+// scalarRC is a bunch of reference counted pointers to scalar values
+var scalarRC = make(map[uintptr]*scalarPtrCount)
+
+func refcountScalar(a unsafe.Pointer) (handle uintptr) {
+	scalarRCLock.Lock()
+	handle = uintptr(a)
+	s, ok := scalarRC[handle]
+	if !ok {
+		s = new(scalarPtrCount)
+		s.Ptr = a
+		scalarRC[handle] = s
+
+	}
+	s.Count++
+	scalarRCLock.Unlock()
+	return handle
+}
+
+func unrefcountScalar(handle uintptr) {
+	scalarRCLock.Lock()
+	s, ok := scalarRC[handle]
+	if !ok {
+		scalarRCLock.Unlock()
+		return
+	}
+	s.Count--
+	if s.Count <= 0 {
+		delete(scalarRC, handle)
+	}
+	scalarRCLock.Unlock()
+}
+
+func allocScalar(a interface{}) unsafe.Pointer {
 	switch at := a.(type) {
-	case Memory:
-		return at.Pointer()
 	case bool:
 		return unsafe.Pointer(&at)
 	case int:
@@ -469,7 +504,6 @@ func getPointer(a interface{}) unsafe.Pointer {
 		return at
 
 		// POINTERS
-
 	case *bool:
 		return unsafe.Pointer(at)
 	case *int:
@@ -512,9 +546,17 @@ func getPointer(a interface{}) unsafe.Pointer {
 }
 
 // scalarToHeader creates a Header from a scalar value
-func scalarToHeader(a interface{}) *storage.Header {
-	hdr := borrowHeader()
-	hdr.Ptr = getPointer(a)
+func scalarToHeader(a interface{}) (hdr *storage.Header) {
+	var ptr uintptr
+	switch at := a.(type) {
+	case Memory:
+		ptr = at.Uintptr()
+	default:
+		uptr := allocScalar(a)
+		ptr = refcountScalar(uptr)
+	}
+	hdr = borrowHeader()
+	hdr.Ptr = ptr
 	hdr.L = 1
 	hdr.C = 1
 	return hdr

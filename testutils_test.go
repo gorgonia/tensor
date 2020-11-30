@@ -477,11 +477,11 @@ func (e dummyEngine) Memclr(mem Memory)                        {}
 func (e dummyEngine) Memcpy(dst, src Memory) error {
 	if e {
 		var a, b storage.Header
-		a.Ptr = src.Pointer()
+		a.Ptr = src.Uintptr()
 		a.L = int(src.MemSize())
 		a.C = int(src.MemSize())
 
-		b.Ptr = dst.Pointer()
+		b.Ptr = dst.Uintptr()
 		b.L = int(dst.MemSize())
 		b.C = int(dst.MemSize())
 

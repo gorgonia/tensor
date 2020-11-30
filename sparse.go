@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"reflect"
-	"unsafe"
 
 	"sort"
 
@@ -298,9 +297,8 @@ func (t *CS) Clone() interface{} {
 func (t *CS) IsScalar() bool           { return false }
 func (t *CS) ScalarValue() interface{} { panic("Sparse Matrices cannot represent Scalar Values") }
 
-func (t *CS) MemSize() uintptr        { return uintptr(calcMemSize(t.t, t.array.L)) }
-func (t *CS) Uintptr() uintptr        { return uintptr(t.array.Ptr) }
-func (t *CS) Pointer() unsafe.Pointer { return t.array.Ptr }
+func (t *CS) MemSize() uintptr { return uintptr(calcMemSize(t.t, t.array.L)) }
+func (t *CS) Uintptr() uintptr { return t.array.Ptr }
 
 // NonZeroes returns the nonzeroes. In academic literature this is often written as NNZ.
 func (t *CS) NonZeroes() int         { return t.L }
