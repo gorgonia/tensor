@@ -48,7 +48,6 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.AddIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -70,7 +69,6 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Add(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -115,7 +113,6 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.SubIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -137,7 +134,6 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Sub(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -182,7 +178,6 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.MulIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -204,7 +199,6 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Mul(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -249,7 +243,6 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.DivIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -271,7 +264,6 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Div(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -316,7 +308,6 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.PowIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -338,7 +329,6 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Pow(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -383,7 +373,6 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.ModIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -405,7 +394,6 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Mod(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -471,6 +459,7 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.AddIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
 		return
 	}
@@ -502,6 +491,7 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		}
 		err = e.E.Add(typ, retVal.hdr(), dataB)
 	}
+	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
 	return
 }
@@ -568,6 +558,7 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.SubIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
 		return
 	}
@@ -599,6 +590,7 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		}
 		err = e.E.Sub(typ, retVal.hdr(), dataB)
 	}
+	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
 	return
 }
@@ -665,6 +657,7 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.MulIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
 		return
 	}
@@ -696,6 +689,7 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		}
 		err = e.E.Mul(typ, retVal.hdr(), dataB)
 	}
+	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
 	return
 }
@@ -762,6 +756,7 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.DivIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
 		return
 	}
@@ -793,6 +788,7 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		}
 		err = e.E.Div(typ, retVal.hdr(), dataB)
 	}
+	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
 	return
 }
@@ -859,6 +855,7 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.PowIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
 		return
 	}
@@ -890,6 +887,7 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		}
 		err = e.E.Pow(typ, retVal.hdr(), dataB)
 	}
+	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
 	return
 }
@@ -956,6 +954,7 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.ModIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
 		return
 	}
@@ -987,6 +986,7 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		}
 		err = e.E.Mod(typ, retVal.hdr(), dataB)
 	}
+	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
 	return
 }

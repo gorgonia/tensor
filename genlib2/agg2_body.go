@@ -136,7 +136,7 @@ const agg2BodyRaw = `if useIter {
 		{{if not .VV -}}
 		unrefcountScalar(scalarHeader.Ptr)
 		returnHeader(scalarHeader)
-		{{end-}}
+		{{end -}}
 		return
 	}
 	switch {
@@ -190,7 +190,7 @@ const agg2BodyRaw = `if useIter {
 	{{if not .VV -}}
 	unrefcountScalar(scalarHeader.Ptr)
 	returnHeader(scalarHeader)
-	{{end-}}
+	{{end -}}
 	return
 `
 
