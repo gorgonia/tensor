@@ -42,10 +42,11 @@ func SumInts(a []int) (retVal int) {
 
 // ProdInts returns the internal product of an int slice
 func ProdInts(a []int) (retVal int) {
+	retVal = 1
 	if len(a) == 0 {
 		return
 	}
-	retVal = 1
+
 	for _, v := range a {
 		retVal *= v
 	}
