@@ -118,6 +118,9 @@ func (e Float32Engine) makeArray(arr *array, t Dtype, size int) {
 	if t != Float32 {
 		panic("Float32Engine only creates float32s")
 	}
+	if size < 0 {
+		panic("Cannot have negative sizes when making array")
+	}
 	s := make([]float32, size)
 	arr.t = t
 	arr.L = size
