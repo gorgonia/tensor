@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/tensor/internal/storage"
 )
 
 // Set sets the value of the underlying array at the index i.
@@ -67,8 +68,9 @@ func (a *array) Set(i int, x interface{}) {
 		xv := x.(unsafe.Pointer)
 		a.SetUnsafePointer(i, xv)
 	default:
+		base := unsafe.Pointer(&a.Header.Raw[0])
 		xv := reflect.ValueOf(x)
-		want := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
+		want := storage.ElementAt(i, base, a.t.Size())
 		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(xv)
@@ -80,43 +82,62 @@ func (a *array) Get(i int) interface{} {
 	switch a.t.Kind() {
 	case reflect.Bool:
 		return a.GetB(i)
+
 	case reflect.Int:
 		return a.GetI(i)
+
 	case reflect.Int8:
 		return a.GetI8(i)
+
 	case reflect.Int16:
 		return a.GetI16(i)
+
 	case reflect.Int32:
 		return a.GetI32(i)
+
 	case reflect.Int64:
 		return a.GetI64(i)
+
 	case reflect.Uint:
 		return a.GetU(i)
+
 	case reflect.Uint8:
 		return a.GetU8(i)
+
 	case reflect.Uint16:
 		return a.GetU16(i)
+
 	case reflect.Uint32:
 		return a.GetU32(i)
+
 	case reflect.Uint64:
 		return a.GetU64(i)
+
 	case reflect.Uintptr:
 		return a.GetUintptr(i)
+
 	case reflect.Float32:
 		return a.GetF32(i)
+
 	case reflect.Float64:
 		return a.GetF64(i)
+
 	case reflect.Complex64:
 		return a.GetC64(i)
+
 	case reflect.Complex128:
 		return a.GetC128(i)
+
 	case reflect.String:
 		return a.GetStr(i)
+
 	case reflect.UnsafePointer:
 		return a.GetUnsafePointer(i)
+
 	default:
-		at := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
-		val := reflect.NewAt(a.t.Type, at)
+		base := uintptr(unsafe.Pointer(&a.Header.Raw[0]))
+		at := storage.ElementAt(i, base, a.t.Size())
+		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}

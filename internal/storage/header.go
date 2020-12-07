@@ -2,6 +2,7 @@ package storage // import "gorgonia.org/tensor/internal/storage"
 
 import (
 	"reflect"
+	"unsafe"
 )
 
 // Header is runtime representation of a slice. It's a cleaner version of reflect.SliceHeader.
@@ -36,15 +37,15 @@ func Copy(t reflect.Type, dst, src *Header) int {
 
 	// otherwise, just copy bytes.
 	// FUTURE: implement memmove
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	copied := copy(dstBA, srcBA)
 	return copied / int(t.Size())
 }
 
 func CopySliced(t reflect.Type, dst *Header, dstart, dend int, src *Header, sstart, send int) int {
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	size := int(t.Size())
 
 	ds := dstart * size
@@ -56,8 +57,8 @@ func CopySliced(t reflect.Type, dst *Header, dstart, dend int, src *Header, ssta
 }
 
 func Fill(t reflect.Type, dst, src *Header) int {
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	size := int(t.Size())
 	lenSrc := len(srcBA)
 
@@ -73,8 +74,8 @@ func Fill(t reflect.Type, dst, src *Header) int {
 }
 
 func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	size := int(t.Size())
 
 	var idx, jdx, i, j, count int
@@ -101,11 +102,20 @@ func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
 	return count
 }
 
-func AsByteSlice(a *Header, t reflect.Type) []byte {
-	return a.Raw
+// Element gets the pointer of ith element
+func ElementAt(i int, base unsafe.Pointer, typeSize uintptr) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(base) + uintptr(i)*typeSize)
 }
 
-// Element gets the pointer of ith element
-func ElementAt(i int, base uintptr, typeSize uintptr) uintptr {
-	return uintptr(base) + uintptr(i)*typeSize
+// AsByteSlice takes a slice of anything and returns a casted-as-byte-slice view of it.
+// This function panics if input is not a slice.
+func AsByteSlice(x interface{}) []byte {
+	xV := reflect.ValueOf(x)
+
+	hdr := reflect.SliceHeader{
+		Data: xV.Pointer(),
+		Len:  xV.Len(),
+		Cap:  xV.Cap(),
+	}
+	return *(*[]byte)(unsafe.Pointer(&hdr))
 }

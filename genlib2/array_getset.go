@@ -6,10 +6,7 @@ import (
 	"text/template"
 )
 
-const asSliceRaw = `func (h *Header) {{asType . | strip | title}}s() []{{asType .}} {
-l2 :=  len(h.Raw) / int({{short . | unexport}}Type.Size())
-return (*(*[]{{asType .}})(unsafe.Pointer(&h.Raw)))[:l2:l2]
-}
+const asSliceRaw = `func (h *Header) {{asType . | strip | title}}s() []{{asType .}} {return (*(*[]{{asType .}})(unsafe.Pointer(&h.Raw)))[:h.TypedLen({{short . | unexport}}Type):h.TypedLen({{short . | unexport}}Type)]}
 `
 
 const setBasicRaw = `func (h *Header) Set{{short . }}(i int, x {{asType . }}) { h.{{sliceOf .}}[i] = x }
@@ -26,11 +23,12 @@ func (a *array) Get(i int) interface{} {
 		{{else -}}
 	case reflect.{{reflectKind .}}:
 		return a.{{getOne .}}(i)
-		{{end -}}
+		{{end -}};
 	{{end -}}
 	default:
-		at := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i) * a.t.Size())
-		val := reflect.NewAt(a.t.Type, at)
+		base := uintptr(unsafe.Pointer(&a.Header.Raw[0]))
+		at := storage.ElementAt(i, base, a.t.Size())
+		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}
@@ -49,8 +47,9 @@ func (a *array) Set(i int, x interface{}) {
 		{{end -}}
 	{{end -}}
 	default:
+		base := unsafe.Pointer(&a.Header.Raw[0])
 		xv := reflect.ValueOf(x)
-		want := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
+		want := storage.ElementAt(i, base, a.t.Size())
 		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
 		val = reflect.Indirect(val)
 		val.Set(xv)

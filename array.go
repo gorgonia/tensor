@@ -19,7 +19,7 @@ type array struct {
 
 // makeArray makes an array. The memory allocation is handled by Go
 func makeArray(t Dtype, length int) array {
-	ptr, v := malloc(t, length)
+	v := malloc(t, length)
 	hdr := storage.Header{
 		Raw: v,
 	}
@@ -38,18 +38,18 @@ func arrayFromSlice(x interface{}) array {
 	}
 	elT := xT.Elem()
 
-	xV := reflect.ValueOf(x)
-
 	return array{
 		Header: storage.Header{
-			Ptr: xV.Pointer(),
-			L:   xV.Len(),
-			C:   xV.Cap(),
+			Raw: storage.AsByteSlice(x),
 		},
 		t: Dtype{elT},
 		v: x,
 	}
 }
+
+func (a *array) Len() int { return a.Header.TypedLen(a.t.Type) }
+
+func (a *array) Cap() int { return a.Header.TypedLen(a.t.Type) }
 
 // fromSlice populates the value from a slice
 func (a *array) fromSlice(x interface{}) {
@@ -58,11 +58,7 @@ func (a *array) fromSlice(x interface{}) {
 		panic("Expected a slice")
 	}
 	elT := xT.Elem()
-	xV := reflect.ValueOf(x)
-
-	a.Ptr = xV.Pointer()
-	a.L = xV.Len()
-	a.C = xV.Cap()
+	a.Raw = storage.AsByteSlice(x)
 	a.t = Dtype{elT}
 	a.v = x
 }
@@ -73,16 +69,11 @@ func (a *array) fromSliceOrArrayer(x interface{}) {
 		xp := T.arrPtr()
 
 		// if the underlying array hasn't been allocated, or not enough has been allocated
-		if a.Ptr == 0 || a.L < xp.L || a.C < xp.C {
-			a.t = xp.t
-			a.L = xp.L
-			a.C = xp.C
-			a.Ptr, a.raw = malloc(a.t, a.L)
+		if a.Header.Raw == nil {
+			a.Header.Raw = malloc(a.t, a.L)
 		}
 
 		a.t = xp.t
-		a.L = xp.L
-		a.C = xp.C
 		copyArray(a, T.arrPtr())
 		a.v = nil  // tell the GC to release whatever a.v may hold
 		a.fixVal() // fix it such that a.v has a value and is not nil
@@ -96,9 +87,6 @@ func (a *array) fix() {
 	if a.v == nil {
 		a.fixVal()
 	}
-	if a.raw == nil {
-		a.fixRaw()
-	}
 }
 
 // fixVal fills the a.v empty interface{}. No checks are made if the thing is empty
@@ -109,64 +97,45 @@ func (a *array) fixVal() {
 	a.v = val.Interface()
 }
 
-// fixRaw fills the a.raw byte slice. No checks are made if the thing si empty
-func (a *array) fixRaw() {
-	a.raw = storage.AsByteSlice(&a.Header, a.t)
-}
-
 // byteSlice casts the underlying slice into a byte slice. Useful for copying and zeroing, but not much else
-func (a array) byteSlice() []byte {
-	return storage.AsByteSlice(&a.Header, a.t.Type)
-}
+func (a array) byteSlice() []byte { return a.Header.Raw }
 
 // sliceInto creates a slice. Instead of returning an array, which would cause a lot of reallocations, sliceInto expects a array to
 // already have been created. This allows repetitive actions to be done without having to have many pointless allocation
 func (a *array) sliceInto(i, j int, res *array) {
-	c := a.C
+	c := a.Cap()
 
 	if i < 0 || j < i || j > c {
 		panic(fmt.Sprintf("Cannot slice %v - index %d:%d is out of bounds", a, i, j))
 	}
 
-	res.L = j - i
-	res.C = c - i
+	s := i * int(a.t.Size())
+	e := j * int(a.t.Size())
+	c = c - i
 
 	if c-1 > 0 {
-		res.Ptr = storage.ElementAt(i, a.Ptr, a.t.Size())
+		res.Raw = a.Raw[s:e:c]
 	} else {
 		// don't advance pointer
-		res.Ptr = a.Ptr
+		res.Raw = a.Raw
 	}
 	res.fix()
 }
 
 // slice slices an array
 func (a array) slice(start, end int) array {
-	if end > a.L {
+	if end > a.Len() {
 		panic("Index out of range")
 	}
 	if end < start {
 		panic("Index out of range")
 	}
 
-	L := end - start
-	C := a.C - start
-
-	var startptr uintptr
-	if a.C-start > 0 {
-		startptr = storage.ElementAt(start, a.Ptr, a.t.Size())
-	} else {
-		startptr = a.Ptr
-	}
-
-	hdr := storage.Header{
-		Ptr: startptr,
-		L:   L,
-		C:   C,
-	}
+	s := start * int(a.t.Size())
+	e := end * int(a.t.Size())
 
 	return array{
-		Header: hdr,
+		Header: storage.Header{Raw: a.Raw[s:e]},
 		t:      a.t,
 		v:      nil,
 	}
@@ -212,27 +181,24 @@ func (a *array) swap(i, j int) {
 /* *Array is a Memory */
 
 // Uintptr returns the pointer of the first value of the slab
-func (a *array) Uintptr() uintptr { return a.Ptr }
+func (a *array) Uintptr() uintptr { return uintptr(unsafe.Pointer(&a.Header.Raw[0])) }
 
 // MemSize returns how big the slice is in bytes
-func (a *array) MemSize() uintptr { return uintptr(a.L) * a.t.Size() }
+func (a *array) MemSize() uintptr { return uintptr(len(a.Header.Raw)) }
 
 // Data returns the representation of a slice.
 func (a array) Data() interface{} {
-	if a.v == nil {
-		// build a type of []T
-		shdr := reflect.SliceHeader{
-			Data: uintptr(a.Header.Ptr),
-			Len:  a.Header.L,
-			Cap:  a.Header.C,
-		}
-		sliceT := reflect.SliceOf(a.t.Type)
-		ptr := unsafe.Pointer(&shdr)
-		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-		a.v = val.Interface()
-
+	// build a type of []T
+	shdr := reflect.SliceHeader{
+		Data: a.Uintptr(),
+		Len:  a.Len(),
+		Cap:  a.Cap(),
 	}
-	return a.v
+	sliceT := reflect.SliceOf(a.t.Type)
+	ptr := unsafe.Pointer(&shdr)
+	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+	return val.Interface()
+
 }
 
 // Zero zeroes out the underlying array of the *Dense tensor.
@@ -251,10 +217,10 @@ func (a array) Zero() {
 		}
 		return
 	}
-	ptr := uintptr(a.Ptr)
-	for i := 0; i < a.L; i++ {
-		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+
+	l := a.Len()
+	for i := 0; i < l; i++ {
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(reflect.Zero(a.t))
 	}
@@ -266,10 +232,9 @@ func (a *array) rtype() reflect.Type  { return a.t.Type }
 /* MEMORY MOVEMENT STUFF */
 
 // malloc is standard Go allocation of a block of memory - the plus side is that Go manages the memory
-func malloc(t Dtype, length int) (uintptr, []byte) {
+func malloc(t Dtype, length int) []byte {
 	size := int(calcMemSize(t, length))
-	s := make([]byte, size)
-	return uintptr(unsafe.Pointer(&s[0])), s
+	return make([]byte, size)
 }
 
 // calcMemSize calulates the memory size of an array (given its size)
