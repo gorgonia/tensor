@@ -254,7 +254,7 @@ const agg2CmpBodyRaw = `// check to see if anything needs to be created
 
 	{{if not .VV -}}
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ,dataReuse,dataA)

@@ -119,3 +119,12 @@ func AsByteSlice(x interface{}) []byte {
 	}
 	return *(*[]byte)(unsafe.Pointer(&hdr))
 }
+
+func FromMemory(ptr uintptr, memsize uintptr, t reflect.Type) []byte {
+	hdr := reflect.SliceHeader{
+		Data: ptr,
+		Len:  int(memsize * t.Size()),
+		Cap:  int(memsize * t.Size()),
+	}
+	return *(*[]byte)(unsafe.Pointer(&hdr))
+}

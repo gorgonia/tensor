@@ -568,7 +568,7 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -684,7 +684,7 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	}
 
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -800,7 +800,7 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -916,7 +916,7 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	}
 
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -1028,7 +1028,7 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
@@ -1140,7 +1140,7 @@ func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	}
 
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)

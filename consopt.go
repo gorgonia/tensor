@@ -2,6 +2,8 @@ package tensor
 
 import (
 	"reflect"
+
+	"gorgonia.org/tensor/internal/storage"
 )
 
 // ConsOpt is a tensor construction option.
@@ -106,14 +108,12 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 		switch tt := t.(type) {
 		case *Dense:
 			xt := reflect.TypeOf(x)
-			xv := reflect.New(xt)
-			xvi := reflect.Indirect(xv)
-			xvi.Set(reflect.ValueOf(x))
+			sxt := reflect.SliceOf(xt)
 
-			tt.array.Ptr = xv.Pointer()
-			tt.array.L = 1
-			tt.array.C = 1
-			tt.v = x
+			xv := reflect.New(sxt) // []T
+			xv0 := xv.Index(0)     // xv[0]
+			xv0.Set(reflect.ValueOf(x))
+			tt.array.Header.Raw = storage.AsByteSlice(xv.Interface())
 			tt.t = Dtype{xt}
 			tt.mask = mask
 
@@ -144,11 +144,7 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 		switch tt := t.(type) {
 		case *Dense:
 			tt.v = nil // if there were any underlying slices it should be GC'd
-
-			tt.array.Ptr = ptr
-			tt.array.L = int(memsize / tt.t.Size())
-			tt.array.C = int(memsize / tt.t.Size())
-
+			tt.Header.Raw = storage.FromMemory(ptr, memsize, tt.t.Type)
 			tt.flag = MakeMemoryFlag(tt.flag, ManuallyManaged)
 
 			if tt.IsNativelyAccessible() {

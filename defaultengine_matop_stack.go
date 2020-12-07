@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/storage"
 )
 
 // This file contains code for the execution engine to stack tensors
@@ -366,7 +365,7 @@ func (e StdEng) doViewStack8(t, retVal DenseTensor, axisStride, batches int, it 
 
 func (e StdEng) doViewStackArbitrary(t, retVal DenseTensor, axisStride, batches int, it Iterator, others []DenseTensor, its []Iterator) (err error) {
 	dt := t.Dtype()
-	data := storage.AsByteSlice(retVal.hdr(), dt.Type)[:0]
+	data := retVal.hdr().Raw[:0] // truncate to 0
 	size := int(dt.Size())
 	var mask []bool
 	var retIsMasked bool
@@ -386,7 +385,7 @@ func (e StdEng) doViewStackArbitrary(t, retVal DenseTensor, axisStride, batches 
 			isMasked = mt.IsMasked()
 		}
 		dt := t.Dtype()
-		bs := storage.AsByteSlice(t.hdr(), dt.Type)
+		bs := t.hdr().Raw
 
 		for last = 0; last < axisStride; last++ {
 			id, err := it.Next()

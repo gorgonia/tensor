@@ -56,9 +56,7 @@ func returnHeader(hdr *storage.Header) {
 }
 
 func destroyHeader(hdr *storage.Header) {
-	hdr.Ptr = 0
-	hdr.L = 0
-	hdr.C = 0
+	hdr.Raw = nil
 }
 
 var densePool = make(chan *Dense, PoolSize)
@@ -92,9 +90,7 @@ func ReturnTensor(t Tensor) {
 
 		// array reset
 		tt.t = Dtype{}
-		tt.array.Ptr = 0
-		tt.array.L = 0
-		tt.array.C = 0
+		tt.array.Header.Raw = nil
 		tt.array.v = nil
 
 		// engine and flag reset

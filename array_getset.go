@@ -68,10 +68,8 @@ func (a *array) Set(i int, x interface{}) {
 		xv := x.(unsafe.Pointer)
 		a.SetUnsafePointer(i, xv)
 	default:
-		base := unsafe.Pointer(&a.Header.Raw[0])
 		xv := reflect.ValueOf(x)
-		want := storage.ElementAt(i, base, a.t.Size())
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -135,9 +133,7 @@ func (a *array) Get(i int) interface{} {
 		return a.GetUnsafePointer(i)
 
 	default:
-		base := uintptr(unsafe.Pointer(&a.Header.Raw[0]))
-		at := storage.ElementAt(i, base, a.t.Size())
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}
@@ -311,25 +307,24 @@ func (a *array) Memset(x interface{}) error {
 	}
 
 	xv := reflect.ValueOf(x)
-	ptr := uintptr(a.Ptr)
-	for i := 0; i < a.L; i++ {
-		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+	l := a.Len()
+	for i := 0; i < l; i++ {
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
 	return nil
 }
 
-func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
+func (a *array) memsetIter(x interface{}, it Iterator) (err error) {
 	var i int
-	switch t.t {
+	switch a.t {
 	case Bool:
 		xv, ok := x.(bool)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Bools()
+		data := a.Bools()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -337,9 +332,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Int:
 		xv, ok := x.(int)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Ints()
+		data := a.Ints()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -347,9 +342,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Int8:
 		xv, ok := x.(int8)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Int8s()
+		data := a.Int8s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -357,9 +352,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Int16:
 		xv, ok := x.(int16)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Int16s()
+		data := a.Int16s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -367,9 +362,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Int32:
 		xv, ok := x.(int32)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Int32s()
+		data := a.Int32s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -377,9 +372,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Int64:
 		xv, ok := x.(int64)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Int64s()
+		data := a.Int64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -387,9 +382,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Uint:
 		xv, ok := x.(uint)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Uints()
+		data := a.Uints()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -397,9 +392,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Uint8:
 		xv, ok := x.(uint8)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Uint8s()
+		data := a.Uint8s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -407,9 +402,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Uint16:
 		xv, ok := x.(uint16)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Uint16s()
+		data := a.Uint16s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -417,9 +412,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Uint32:
 		xv, ok := x.(uint32)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Uint32s()
+		data := a.Uint32s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -427,9 +422,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Uint64:
 		xv, ok := x.(uint64)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Uint64s()
+		data := a.Uint64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -437,9 +432,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Uintptr:
 		xv, ok := x.(uintptr)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Uintptrs()
+		data := a.Uintptrs()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -447,9 +442,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Float32:
 		xv, ok := x.(float32)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Float32s()
+		data := a.Float32s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -457,9 +452,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Float64:
 		xv, ok := x.(float64)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Float64s()
+		data := a.Float64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -467,9 +462,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Complex64:
 		xv, ok := x.(complex64)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Complex64s()
+		data := a.Complex64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -477,9 +472,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case Complex128:
 		xv, ok := x.(complex128)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Complex128s()
+		data := a.Complex128s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -487,9 +482,9 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case String:
 		xv, ok := x.(string)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.Strings()
+		data := a.Strings()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
@@ -497,19 +492,17 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	case UnsafePointer:
 		xv, ok := x.(unsafe.Pointer)
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.UnsafePointers()
+		data := a.UnsafePointers()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = xv
 		}
 		err = handleNoOp(err)
 	default:
 		xv := reflect.ValueOf(x)
-		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
-			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
+			val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 			val = reflect.Indirect(val)
 			val.Set(xv)
 		}
@@ -525,7 +518,7 @@ func (a array) Eq(other interface{}) bool {
 			return false
 		}
 
-		if oa.L != a.L {
+		if oa.Len() != a.Len() {
 			return false
 		}
 		/*
@@ -535,7 +528,7 @@ func (a array) Eq(other interface{}) bool {
 		*/
 
 		// same exact thing
-		if uintptr(oa.Ptr) == uintptr(a.Ptr) {
+		if uintptr(unsafe.Pointer(&oa.Header.Raw[0])) == uintptr(unsafe.Pointer(&a.Header.Raw[0])) {
 			return true
 		}
 
@@ -649,7 +642,7 @@ func (a array) Eq(other interface{}) bool {
 				}
 			}
 		default:
-			for i := 0; i < a.L; i++ {
+			for i := 0; i < a.Len(); i++ {
 				if !reflect.DeepEqual(a.Get(i), oa.Get(i)) {
 					return false
 				}
@@ -660,124 +653,122 @@ func (a array) Eq(other interface{}) bool {
 	return false
 }
 
-func (t *array) zeroIter(it Iterator) (err error) {
+func (a *array) zeroIter(it Iterator) (err error) {
 	var i int
-	switch t.t {
+	switch a.t {
 	case Bool:
-		data := t.Bools()
+		data := a.Bools()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = false
 		}
 		err = handleNoOp(err)
 	case Int:
-		data := t.Ints()
+		data := a.Ints()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Int8:
-		data := t.Int8s()
+		data := a.Int8s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Int16:
-		data := t.Int16s()
+		data := a.Int16s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Int32:
-		data := t.Int32s()
+		data := a.Int32s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Int64:
-		data := t.Int64s()
+		data := a.Int64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Uint:
-		data := t.Uints()
+		data := a.Uints()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Uint8:
-		data := t.Uint8s()
+		data := a.Uint8s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Uint16:
-		data := t.Uint16s()
+		data := a.Uint16s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Uint32:
-		data := t.Uint32s()
+		data := a.Uint32s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Uint64:
-		data := t.Uint64s()
+		data := a.Uint64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Uintptr:
-		data := t.Uintptrs()
+		data := a.Uintptrs()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Float32:
-		data := t.Float32s()
+		data := a.Float32s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Float64:
-		data := t.Float64s()
+		data := a.Float64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Complex64:
-		data := t.Complex64s()
+		data := a.Complex64s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case Complex128:
-		data := t.Complex128s()
+		data := a.Complex128s()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = 0
 		}
 		err = handleNoOp(err)
 	case String:
-		data := t.Strings()
+		data := a.Strings()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = ""
 		}
 		err = handleNoOp(err)
 	case UnsafePointer:
-		data := t.UnsafePointers()
+		data := a.UnsafePointers()
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
 			data[i] = nil
 		}
 		err = handleNoOp(err)
 	default:
-		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next() {
-			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
+			val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 			val = reflect.Indirect(val)
-			val.Set(reflect.Zero(t.t))
+			val.Set(reflect.Zero(a.t))
 		}
 		err = handleNoOp(err)
 	}

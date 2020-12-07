@@ -26,9 +26,7 @@ func (a *array) Get(i int) interface{} {
 		{{end -}};
 	{{end -}}
 	default:
-		base := uintptr(unsafe.Pointer(&a.Header.Raw[0]))
-		at := storage.ElementAt(i, base, a.t.Size())
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(at))
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}
@@ -47,10 +45,8 @@ func (a *array) Set(i int, x interface{}) {
 		{{end -}}
 	{{end -}}
 	default:
-		base := unsafe.Pointer(&a.Header.Raw[0])
 		xv := reflect.ValueOf(x)
-		want := storage.ElementAt(i, base, a.t.Size())
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -78,10 +74,9 @@ func (a *array) Memset(x interface{}) error {
 	}
 
 	xv := reflect.ValueOf(x)
-	ptr := uintptr(a.Ptr)
-	for i := 0; i < a.L; i++ {
-		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+	l := a.Len()
+	for i := 0; i < l; i++ {
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -96,7 +91,7 @@ func (a array) Eq(other interface{}) bool {
 			return false
 		}
 
-		if oa.L != a.L {
+		if oa.Len() != a.Len() {
 			return false
 		}
 		/*
@@ -106,7 +101,7 @@ func (a array) Eq(other interface{}) bool {
 		*/
 
 		// same exact thing
-		if uintptr(oa.Ptr) == uintptr(a.Ptr){
+		if uintptr(unsafe.Pointer(&oa.Header.Raw[0])) == uintptr(unsafe.Pointer(&a.Header.Raw[0])){
 			return true
 		}
 
@@ -123,7 +118,7 @@ func (a array) Eq(other interface{}) bool {
 			{{end -}}
 		{{end -}}
 		default:
-			for i := 0; i < a.L; i++{
+			for i := 0; i < a.Len(); i++{
 				if !reflect.DeepEqual(a.Get(i), oa.Get(i)){
 					return false
 				}
@@ -181,18 +176,18 @@ const copyArrayIterRaw = `func copyArrayIter(dst, src array, diter, siter Iterat
 `
 
 const memsetIterRaw = `
-func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
+func (a *array) memsetIter(x interface{}, it Iterator) (err error) {
 	var i int
-	switch t.t{
+	switch a.t{
 	{{range .Kinds -}}
 		{{if isParameterized . -}}
 		{{else -}}
 	case {{reflectKind .}}:
 		xv, ok := x.({{asType .}})
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.{{sliceOf .}}
+		data := a.{{sliceOf .}}
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
 			data[i] = xv
 		}
@@ -201,10 +196,8 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	{{end -}}
 	default:
 		xv := reflect.ValueOf(x)
-		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
-			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
+			val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 			val = reflect.Indirect(val)
 			val.Set(xv)
 		}
@@ -215,14 +208,14 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 
 `
 
-const zeroIterRaw = `func (t *array) zeroIter(it Iterator) (err error){
+const zeroIterRaw = `func (a *array) zeroIter(it Iterator) (err error){
 	var i int
-	switch t.t {
+	switch a.t {
 	{{range .Kinds -}}
 		{{if isParameterized . -}}
 		{{else -}}
 	case {{reflectKind .}}:
-		data := t.{{sliceOf .}}
+		data := a.{{sliceOf .}}
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
 			data[i] = {{if eq .String "bool" -}}
 				false
@@ -234,12 +227,10 @@ const zeroIterRaw = `func (t *array) zeroIter(it Iterator) (err error){
 		{{end -}}
 	{{end -}}
 	default:
-		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
-			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
+			val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 			val = reflect.Indirect(val)
-			val.Set(reflect.Zero(t.t))
+			val.Set(reflect.Zero(a.t))
 		}
 		err = handleNoOp(err)
 	}

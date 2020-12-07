@@ -1,8 +1,6 @@
 package tensor
 
 import (
-	"unsafe"
-
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/execution"
 	"gorgonia.org/tensor/internal/storage"
@@ -121,13 +119,8 @@ func (e Float32Engine) makeArray(arr *array, t Dtype, size int) {
 	if size < 0 {
 		panic("Cannot have negative sizes when making array")
 	}
-	s := make([]float32, size)
+	arr.Header.Raw = make([]byte, size*4)
 	arr.t = t
-	arr.L = size
-	arr.C = size
-	arr.Ptr = uintptr(unsafe.Pointer(&s[0]))
-	arr.raw = storage.AsByteSlice(&arr.Header, t)
-	arr.v = s
 
 	arr.fix()
 }
