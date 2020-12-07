@@ -2,28 +2,28 @@ package storage // import "gorgonia.org/tensor/internal/storage"
 
 import (
 	"reflect"
-	"unsafe"
 )
 
 // Header is runtime representation of a slice. It's a cleaner version of reflect.SliceHeader.
 // With this, we wouldn't need to keep the uintptr.
 // This usually means additional pressure for the GC though, especially when passing around Headers
 type Header struct {
-	Ptr uintptr
-	L   int
-	C   int
+	Raw []byte
 }
 
-func (h *Header) Len() int { return h.L }
+func (h *Header) TypedLen(t reflect.Type) int {
+	sz := int(t.Size())
+	return len(h.Raw) / sz
+}
 
 func Copy(t reflect.Type, dst, src *Header) int {
-	if dst.L == 0 || src.L == 0 {
+	if len(dst.Raw) == 0 || len(src.Raw) == 0 {
 		return 0
 	}
 
-	n := src.L
-	if dst.L < n {
-		n = dst.L
+	n := src.TypedLen(t)
+	if len(dst.Raw) < n {
+		n = dst.TypedLen(t)
 	}
 
 	// handle struct{} type
@@ -102,13 +102,7 @@ func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
 }
 
 func AsByteSlice(a *Header, t reflect.Type) []byte {
-	size := a.L * int(t.Size())
-	b := make([]byte, 0)
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	hdr.Data = uintptr(a.Ptr)
-	hdr.Cap = size
-	hdr.Len = size
-	return b
+	return a.Raw
 }
 
 // Element gets the pointer of ith element

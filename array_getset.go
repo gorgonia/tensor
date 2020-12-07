@@ -76,7 +76,6 @@ func (a *array) Set(i int, x interface{}) {
 }
 
 // Get returns the ith element of the underlying array of the *Dense tensor.
-//go:nocheckptr
 func (a *array) Get(i int) interface{} {
 	switch a.t.Kind() {
 	case reflect.Bool:
@@ -116,8 +115,6 @@ func (a *array) Get(i int) interface{} {
 	case reflect.UnsafePointer:
 		return a.GetUnsafePointer(i)
 	default:
-		// nocheckptr is used here.
-		// There are no other ways to get an interface from an allocated slice.
 		at := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
 		val := reflect.NewAt(a.t.Type, at)
 		val = reflect.Indirect(val)

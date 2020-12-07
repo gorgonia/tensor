@@ -12,9 +12,8 @@ import (
 
 // array is the underlying generic array.
 type array struct {
-	storage.Header        // the header - the Go representation (a slice)
-	t              Dtype  // the element type
-	raw            []byte // an additional reference to the underlying slice. This is not strictly necessary, but does improve upon anything that calls .Data()
+	storage.Header       // the header - the Go representation (a slice)
+	t              Dtype // the element type
 	v              interface{}
 }
 
@@ -22,14 +21,11 @@ type array struct {
 func makeArray(t Dtype, length int) array {
 	ptr, v := malloc(t, length)
 	hdr := storage.Header{
-		Ptr: ptr,
-		L:   length,
-		C:   length,
+		Raw: v,
 	}
 	return array{
 		Header: hdr,
 		t:      t,
-		raw:    v,
 	}
 
 }

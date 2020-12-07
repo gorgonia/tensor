@@ -6,7 +6,10 @@ import (
 	"text/template"
 )
 
-const asSliceRaw = `func (h *Header) {{asType . | strip | title}}s() []{{asType .}} { return *(*[]{{asType .}})(unsafe.Pointer(h)) }
+const asSliceRaw = `func (h *Header) {{asType . | strip | title}}s() []{{asType .}} {
+l2 :=  len(h.Raw) / int({{short . | unexport}}Type.Size())
+return (*(*[]{{asType .}})(unsafe.Pointer(&h.Raw)))[:l2:l2]
+}
 `
 
 const setBasicRaw = `func (h *Header) Set{{short . }}(i int, x {{asType . }}) { h.{{sliceOf .}}[i] = x }
@@ -245,16 +248,26 @@ const zeroIterRaw = `func (t *array) zeroIter(it Iterator) (err error){
 }
 `
 
+const reflectConstTemplateRaw = `var (
+	{{range .Kinds -}}
+		{{if isParameterized . -}}
+		{{else -}}
+			{{short . | unexport}}Type = reflect.TypeOf({{asType .}}({{if eq .String "bool" -}} false {{else if eq .String "string" -}}"" {{else if eq .String "unsafe.Pointer" -}}nil {{else -}}0{{end -}}))
+		{{end -}}
+	{{end -}}
+)`
+
 var (
-	AsSlice    *template.Template
-	SimpleSet  *template.Template
-	SimpleGet  *template.Template
-	Get        *template.Template
-	Set        *template.Template
-	Memset     *template.Template
-	MemsetIter *template.Template
-	Eq         *template.Template
-	ZeroIter   *template.Template
+	AsSlice     *template.Template
+	SimpleSet   *template.Template
+	SimpleGet   *template.Template
+	Get         *template.Template
+	Set         *template.Template
+	Memset      *template.Template
+	MemsetIter  *template.Template
+	Eq          *template.Template
+	ZeroIter    *template.Template
+	ReflectType *template.Template
 )
 
 func init() {
@@ -267,6 +280,7 @@ func init() {
 	MemsetIter = template.Must(template.New("MemsetIter").Funcs(funcs).Parse(memsetIterRaw))
 	Eq = template.Must(template.New("ArrayEq").Funcs(funcs).Parse(arrayEqRaw))
 	ZeroIter = template.Must(template.New("Zero").Funcs(funcs).Parse(zeroIterRaw))
+	ReflectType = template.Must(template.New("ReflectType").Funcs(funcs).Parse(reflectConstTemplateRaw))
 }
 
 func generateArrayMethods(f io.Writer, ak Kinds) {
@@ -294,4 +308,9 @@ func generateHeaderGetSet(f io.Writer, ak Kinds) {
 			fmt.Fprint(f, "\n")
 		}
 	}
+}
+
+func generateReflectTypes(f io.Writer, ak Kinds) {
+	ReflectType.Execute(f, ak)
+	fmt.Fprintf(f, "\n\n\n")
 }
