@@ -477,17 +477,10 @@ func (e dummyEngine) Memclr(mem Memory)                        {}
 func (e dummyEngine) Memcpy(dst, src Memory) error {
 	if e {
 		var a, b storage.Header
-		a.Ptr = src.Uintptr()
-		a.L = int(src.MemSize())
-		a.C = int(src.MemSize())
+		a.Raw = storage.FromMemory(src.Uintptr(), src.MemSize(), reflect.TypeOf(byte(0)))
+		b.Raw = storage.FromMemory(dst.Uintptr(), dst.MemSize(), reflect.TypeOf(byte(0)))
 
-		b.Ptr = dst.Uintptr()
-		b.L = int(dst.MemSize())
-		b.C = int(dst.MemSize())
-
-		abs := *(*[]byte)(unsafe.Pointer(&a))
-		bbs := *(*[]byte)(unsafe.Pointer(&b))
-		copy(bbs, abs)
+		copy(b.Raw, a.Raw)
 		return nil
 	}
 	return errors.New("Unable to copy ")

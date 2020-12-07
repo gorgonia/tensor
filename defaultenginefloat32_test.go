@@ -19,8 +19,8 @@ func TestFloat32Engine_makeArray(t *testing.T) {
 
 		e.makeArray(&arr, dt, size)
 
-		if len(arr.raw) != size*4 {
-			t.Errorf("Expected raw to be size*4. Got %v instead", len(arr.raw))
+		if len(arr.Raw) != size*4 {
+			t.Errorf("Expected raw to be size*4. Got %v instead", len(arr.Raw))
 			return false
 		}
 		v, ok := arr.v.([]float32)
