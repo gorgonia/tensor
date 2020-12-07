@@ -384,7 +384,6 @@ func (e StdEng) doViewStackArbitrary(t, retVal DenseTensor, axisStride, batches 
 			tmask = mt.Mask()
 			isMasked = mt.IsMasked()
 		}
-		dt := t.Dtype()
 		bs := t.hdr().Raw
 
 		for last = 0; last < axisStride; last++ {

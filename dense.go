@@ -48,14 +48,12 @@ func recycledDense(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 }
 
 func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
-	size := shape.TotalSize()
-	if shape.IsScalar() {
-		size = 1
-	}
+	//	size := shape.TotalSize()
+	//if shape.IsScalar() {
+	//	size = 1
+	//}
 	retVal = borrowDense()
 	retVal.array.t = dt
-	retVal.array.L = size
-	retVal.array.C = size
 	retVal.AP.zeroWithDims(shape.Dims())
 
 	for _, opt := range opts {
@@ -89,12 +87,13 @@ func (t *Dense) makeArray(size int) {
 	default:
 	}
 
-	mem, err := t.e.Alloc(calcMemSize(t.t, size))
+	memsize := calcMemSize(t.t, size)
+	mem, err := t.e.Alloc(memsize)
 	if err != nil {
 		panic(err)
 	}
 
-	t.array.Raw = storage.FromMemory(mem.Uintptr(), uintptr(size), t.t.Type)
+	t.array.Raw = storage.FromMemory(mem.Uintptr(), uintptr(memsize))
 	t.array.fix()
 	return
 }

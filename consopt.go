@@ -144,7 +144,7 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 		switch tt := t.(type) {
 		case *Dense:
 			tt.v = nil // if there were any underlying slices it should be GC'd
-			tt.Header.Raw = storage.FromMemory(ptr, memsize, tt.t.Type)
+			tt.Header.Raw = storage.FromMemory(ptr, memsize)
 			tt.flag = MakeMemoryFlag(tt.flag, ManuallyManaged)
 
 			if tt.IsNativelyAccessible() {

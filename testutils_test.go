@@ -477,8 +477,8 @@ func (e dummyEngine) Memclr(mem Memory)                        {}
 func (e dummyEngine) Memcpy(dst, src Memory) error {
 	if e {
 		var a, b storage.Header
-		a.Raw = storage.FromMemory(src.Uintptr(), src.MemSize(), reflect.TypeOf(byte(0)))
-		b.Raw = storage.FromMemory(dst.Uintptr(), dst.MemSize(), reflect.TypeOf(byte(0)))
+		a.Raw = storage.FromMemory(src.Uintptr(), src.MemSize())
+		b.Raw = storage.FromMemory(dst.Uintptr(), dst.MemSize())
 
 		copy(b.Raw, a.Raw)
 		return nil

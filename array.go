@@ -70,7 +70,7 @@ func (a *array) fromSliceOrArrayer(x interface{}) {
 
 		// if the underlying array hasn't been allocated, or not enough has been allocated
 		if a.Header.Raw == nil {
-			a.Header.Raw = malloc(a.t, a.L)
+			a.Header.Raw = malloc(xp.t, xp.Len())
 		}
 
 		a.t = xp.t
@@ -394,131 +394,53 @@ type scalarPtrCount struct {
 var scalarRCLock sync.Mutex
 
 // scalarRC is a bunch of reference counted pointers to scalar values
-var scalarRC = make(map[uintptr]*scalarPtrCount)
+var scalarRC = make(map[uintptr]*sync.Pool) // uintptr is the size, the pool stores []byte
 
-func refcountScalar(a unsafe.Pointer) (handle uintptr) {
+func allocScalar(a interface{}) []byte {
+	atype := reflect.TypeOf(a)
+	size := atype.Size()
+
 	scalarRCLock.Lock()
-	handle = uintptr(a)
-	s, ok := scalarRC[handle]
+	pool, ok := scalarRC[size]
 	if !ok {
-		s = new(scalarPtrCount)
-		s.Ptr = a
-		scalarRC[handle] = s
-
-	}
-	s.Count++
-	scalarRCLock.Unlock()
-	return handle
-}
-
-func unrefcountScalar(handle uintptr) {
-	scalarRCLock.Lock()
-	s, ok := scalarRC[handle]
-	if !ok {
-		scalarRCLock.Unlock()
-		return
-	}
-	s.Count--
-	if s.Count <= 0 {
-		delete(scalarRC, handle)
+		pool = new(sync.Pool)
+		scalarRC[size] = pool
 	}
 	scalarRCLock.Unlock()
+
+	return pool.Get().([]byte)
 }
 
-func allocScalar(a interface{}) unsafe.Pointer {
-	switch at := a.(type) {
-	case bool:
-		return unsafe.Pointer(&at)
-	case int:
-		return unsafe.Pointer(&at)
-	case int8:
-		return unsafe.Pointer(&at)
-	case int16:
-		return unsafe.Pointer(&at)
-	case int32:
-		return unsafe.Pointer(&at)
-	case int64:
-		return unsafe.Pointer(&at)
-	case uint:
-		return unsafe.Pointer(&at)
-	case uint8:
-		return unsafe.Pointer(&at)
-	case uint16:
-		return unsafe.Pointer(&at)
-	case uint32:
-		return unsafe.Pointer(&at)
-	case uint64:
-		return unsafe.Pointer(&at)
-	case float32:
-		return unsafe.Pointer(&at)
-	case float64:
-		return unsafe.Pointer(&at)
-	case complex64:
-		return unsafe.Pointer(&at)
-	case complex128:
-		return unsafe.Pointer(&at)
-	case string:
-		return unsafe.Pointer(&at)
-	case uintptr:
-		return unsafe.Pointer(at)
-	case unsafe.Pointer:
-		return at
-
-		// POINTERS
-	case *bool:
-		return unsafe.Pointer(at)
-	case *int:
-		return unsafe.Pointer(at)
-	case *int8:
-		return unsafe.Pointer(at)
-	case *int16:
-		return unsafe.Pointer(at)
-	case *int32:
-		return unsafe.Pointer(at)
-	case *int64:
-		return unsafe.Pointer(at)
-	case *uint:
-		return unsafe.Pointer(at)
-	case *uint8:
-		return unsafe.Pointer(at)
-	case *uint16:
-		return unsafe.Pointer(at)
-	case *uint32:
-		return unsafe.Pointer(at)
-	case *uint64:
-		return unsafe.Pointer(at)
-	case *float32:
-		return unsafe.Pointer(at)
-	case *float64:
-		return unsafe.Pointer(at)
-	case *complex64:
-		return unsafe.Pointer(at)
-	case *complex128:
-		return unsafe.Pointer(at)
-	case *string:
-		return unsafe.Pointer(at)
-	case *uintptr:
-		return unsafe.Pointer(*at)
-	case *unsafe.Pointer:
-		return *at
+func freeScalar(bs []byte) {
+	size := uintptr(len(bs))
+	// zero out
+	for i := range bs {
+		bs[i] = 0
 	}
 
-	panic("Cannot get pointer")
+	// put it back into pool
+	scalarRCLock.Lock()
+	pool, ok := scalarRC[size]
+	if !ok {
+		pool = new(sync.Pool)
+		scalarRC[size] = pool
+	}
+	scalarRCLock.Unlock()
+
+	pool.Put(bs)
 }
 
 // scalarToHeader creates a Header from a scalar value
 func scalarToHeader(a interface{}) (hdr *storage.Header) {
-	var ptr uintptr
+	var raw []byte
 	switch at := a.(type) {
 	case Memory:
-		ptr = at.Uintptr()
+		raw = storage.FromMemory(at.Uintptr(), at.MemSize())
 	default:
-		uptr := allocScalar(a)
-		ptr = refcountScalar(uptr)
+		raw = allocScalar(a)
 	}
 	hdr = borrowHeader()
-	hdr.Ptr = ptr
-	hdr.L = 1
-	hdr.C = 1
+	hdr.Raw = raw
+
 	return hdr
 }
