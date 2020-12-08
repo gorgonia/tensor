@@ -93,12 +93,8 @@ func (a *array) sliceInto(i, j int, res *array) {
 	e := j * int(a.t.Size())
 	c = c - i
 
-	if c-1 > 0 {
-		res.Raw = a.Raw[s:e]
-	} else {
-		// don't advance pointer
-		res.Raw = a.Raw
-	}
+	res.Raw = a.Raw[s:e]
+
 }
 
 // slice slices an array
