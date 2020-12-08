@@ -64,8 +64,7 @@ func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) 
 }
 
 func (t *Dense) fromSlice(x interface{}) {
-	t.array.Header.Raw = nil
-	t.array.v = nil
+	t.array.Header.Raw = nil // GC anything else
 	t.array.fromSlice(x)
 }
 
@@ -94,7 +93,6 @@ func (t *Dense) makeArray(size int) {
 	}
 
 	t.array.Raw = storage.FromMemory(mem.Uintptr(), uintptr(memsize))
-	t.array.fix()
 	return
 }
 
@@ -109,20 +107,17 @@ func (t *Dense) Data() interface{} {
 	if t.IsScalar() {
 		return t.Get(0)
 	}
-	if t.v == nil {
-		// build a type of []T
-		shdr := reflect.SliceHeader{
-			Data: t.array.Uintptr(),
-			Len:  t.array.Len(),
-			Cap:  t.array.Cap(),
-		}
-		sliceT := reflect.SliceOf(t.t.Type)
-		ptr := unsafe.Pointer(&shdr)
-		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-		t.v = val.Interface()
 
+	// build a type of []T
+	shdr := reflect.SliceHeader{
+		Data: t.array.Uintptr(),
+		Len:  t.array.Len(),
+		Cap:  t.array.Cap(),
 	}
-	return t.v
+	sliceT := reflect.SliceOf(t.t.Type)
+	ptr := unsafe.Pointer(&shdr)
+	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+	return val.Interface()
 }
 
 // DataSize returns the size of the underlying array. Typically t.DataSize() == t.Shape().TotalSize()

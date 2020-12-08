@@ -14,7 +14,6 @@ import (
 type array struct {
 	storage.Header       // the header - the Go representation (a slice)
 	t              Dtype // the element type
-	v              interface{}
 }
 
 // makeArray makes an array. The memory allocation is handled by Go
@@ -43,7 +42,6 @@ func arrayFromSlice(x interface{}) array {
 			Raw: storage.AsByteSlice(x),
 		},
 		t: Dtype{elT},
-		v: x,
 	}
 }
 
@@ -60,7 +58,6 @@ func (a *array) fromSlice(x interface{}) {
 	elT := xT.Elem()
 	a.Raw = storage.AsByteSlice(x)
 	a.t = Dtype{elT}
-	a.v = x
 }
 
 // fromSliceOrTensor populates the value from a slice or anything that can form an array
@@ -75,26 +72,9 @@ func (a *array) fromSliceOrArrayer(x interface{}) {
 
 		a.t = xp.t
 		copyArray(a, T.arrPtr())
-		a.v = nil  // tell the GC to release whatever a.v may hold
-		a.fixVal() // fix it such that a.v has a value and is not nil
 		return
 	}
 	a.fromSlice(x)
-}
-
-// fix fills the a.v empty interface{}  if it's not nil
-func (a *array) fix() {
-	if a.v == nil {
-		a.fixVal()
-	}
-}
-
-// fixVal fills the a.v empty interface{}. No checks are made if the thing is empty
-func (a *array) fixVal() {
-	sliceT := reflect.SliceOf(a.t.Type)
-	ptr := unsafe.Pointer(&a.Header)
-	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-	a.v = val.Interface()
 }
 
 // byteSlice casts the underlying slice into a byte slice. Useful for copying and zeroing, but not much else
@@ -114,12 +94,11 @@ func (a *array) sliceInto(i, j int, res *array) {
 	c = c - i
 
 	if c-1 > 0 {
-		res.Raw = a.Raw[s:e:c]
+		res.Raw = a.Raw[s:e]
 	} else {
 		// don't advance pointer
 		res.Raw = a.Raw
 	}
-	res.fix()
 }
 
 // slice slices an array
@@ -137,7 +116,6 @@ func (a array) slice(start, end int) array {
 	return array{
 		Header: storage.Header{Raw: a.Raw[s:e]},
 		t:      a.t,
-		v:      nil,
 	}
 }
 
@@ -396,37 +374,40 @@ var scalarRCLock sync.Mutex
 // scalarRC is a bunch of reference counted pointers to scalar values
 var scalarRC = make(map[uintptr]*sync.Pool) // uintptr is the size, the pool stores []byte
 
-func allocScalar(a interface{}) []byte {
-	atype := reflect.TypeOf(a)
-	size := atype.Size()
-
+func scalarPool(size uintptr) *sync.Pool {
 	scalarRCLock.Lock()
 	pool, ok := scalarRC[size]
 	if !ok {
-		pool = new(sync.Pool)
+		pool = &sync.Pool{
+			New: func() interface{} { return make([]byte, size) },
+		}
 		scalarRC[size] = pool
 	}
 	scalarRCLock.Unlock()
+	return pool
+}
 
+func allocScalar(a interface{}) []byte {
+	atype := reflect.TypeOf(a)
+	size := atype.Size()
+	pool := scalarPool(size)
 	return pool.Get().([]byte)
 }
 
 func freeScalar(bs []byte) {
-	size := uintptr(len(bs))
+	if bs == nil {
+		return
+	}
+
 	// zero out
 	for i := range bs {
 		bs[i] = 0
 	}
 
-	// put it back into pool
-	scalarRCLock.Lock()
-	pool, ok := scalarRC[size]
-	if !ok {
-		pool = new(sync.Pool)
-		scalarRC[size] = pool
-	}
-	scalarRCLock.Unlock()
+	size := uintptr(len(bs))
 
+	// put it back into pool
+	pool := scalarPool(size)
 	pool.Put(bs)
 }
 

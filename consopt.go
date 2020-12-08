@@ -107,14 +107,13 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			xt := reflect.TypeOf(x)
-			sxt := reflect.SliceOf(xt)
-
-			xv := reflect.New(sxt) // []T
-			xv0 := xv.Index(0)     // xv[0]
+			xT := reflect.TypeOf(x)
+			sxT := reflect.SliceOf(xT)
+			xv := reflect.MakeSlice(sxT, 1, 1) // []T
+			xv0 := xv.Index(0)                 // xv[0]
 			xv0.Set(reflect.ValueOf(x))
 			tt.array.Header.Raw = storage.AsByteSlice(xv.Interface())
-			tt.t = Dtype{xt}
+			tt.t = Dtype{xT}
 			tt.mask = mask
 
 		default:
@@ -143,14 +142,9 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			tt.v = nil // if there were any underlying slices it should be GC'd
+			tt.Header.Raw = nil // GC anything if needed
 			tt.Header.Raw = storage.FromMemory(ptr, memsize)
 			tt.flag = MakeMemoryFlag(tt.flag, ManuallyManaged)
-
-			if tt.IsNativelyAccessible() {
-				tt.array.fix()
-			}
-
 		default:
 			panic("Unsupported Tensor type")
 		}

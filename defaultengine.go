@@ -14,7 +14,6 @@ type StdEng struct {
 func (e StdEng) makeArray(arr *array, t Dtype, size int) {
 	arr.Raw = malloc(t, size)
 	arr.t = t
-	arr.fix()
 }
 
 func (e StdEng) AllocAccessible() bool             { return true }

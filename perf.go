@@ -91,7 +91,6 @@ func ReturnTensor(t Tensor) {
 		// array reset
 		tt.t = Dtype{}
 		tt.array.Header.Raw = nil
-		tt.array.v = nil
 
 		// engine and flag reset
 		tt.e = StdEng{}

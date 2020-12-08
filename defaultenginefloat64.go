@@ -118,7 +118,6 @@ func (e Float64Engine) makeArray(arr *array, t Dtype, size int) {
 	}
 	arr.Header.Raw = make([]byte, size*8)
 	arr.t = t
-	arr.fix()
 }
 
 func (e Float64Engine) FMA(a, x, y Tensor) (retVal Tensor, err error) {

@@ -23,9 +23,9 @@ func TestFloat64Engine_makeArray(t *testing.T) {
 			t.Errorf("Expected raw to be size*8. Got %v instead", len(arr.Raw))
 			return false
 		}
-		v, ok := arr.v.([]float64)
+		v, ok := arr.Data().([]float64)
 		if !ok {
-			t.Errorf("Expected v to be []float32. Got %T instead", arr.v)
+			t.Errorf("Expected v to be []float32. Got %T instead", arr.Data())
 			return false
 		}
 

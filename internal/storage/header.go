@@ -111,11 +111,12 @@ func ElementAt(i int, base unsafe.Pointer, typeSize uintptr) unsafe.Pointer {
 // This function panics if input is not a slice.
 func AsByteSlice(x interface{}) []byte {
 	xV := reflect.ValueOf(x)
+	xT := reflect.TypeOf(x).Elem() // expects a []T
 
 	hdr := reflect.SliceHeader{
 		Data: xV.Pointer(),
-		Len:  xV.Len(),
-		Cap:  xV.Cap(),
+		Len:  xV.Len() * int(xT.Size()),
+		Cap:  xV.Cap() * int(xT.Size()),
 	}
 	return *(*[]byte)(unsafe.Pointer(&hdr))
 }
