@@ -153,6 +153,10 @@ func (f *fmtState) populate(t *Dense) {
 }
 
 func (f *fmtState) acceptableRune(d *Dense) {
+	if f.c == 'H' {
+		f.meta = true
+		return // accept H as header only
+	}
 	switch d.t.Kind() {
 	case reflect.Float64:
 		switch f.c {
@@ -276,6 +280,9 @@ func (t *Dense) Format(s fmt.State, c rune) {
 			fmt.Fprintf(f, "%d", t.Dims())
 		}
 		fmt.Fprintf(f, " %v %v\n", t.Shape(), t.Strides())
+	}
+	if f.c == 'H' {
+		return
 	}
 
 	if !t.IsNativelyAccessible() {
