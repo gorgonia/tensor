@@ -6,6 +6,7 @@ import (
 	"testing"
 	"testing/quick"
 	"time"
+	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -305,6 +306,7 @@ func TestAddScalarScalar(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
+	log.Printf("%v", *(*float64)(unsafe.Pointer(&(res.(*Dense).array.Raw[0]))))
 	assert.Equal(t, correct, res.Data())
 
 	// Test commutativity

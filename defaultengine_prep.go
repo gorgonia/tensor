@@ -159,10 +159,10 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 	return
 }
 
-func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, ait, iit Iterator, useIter bool, err error) {
+func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, ait, iit Iterator, useIter bool, newAlloc bool, err error) {
 	// get data
 	dataA = a.hdr()
-	dataB = scalarToHeader(b)
+	dataB, newAlloc = scalarToHeader(b)
 	if reuse != nil {
 		dataReuse = reuse.hdr()
 	}
@@ -182,9 +182,9 @@ func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse 
 	return
 }
 
-func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, bit, iit Iterator, useIter bool, err error) {
+func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, bit, iit Iterator, useIter bool, newAlloc bool, err error) {
 	// get data
-	dataA = scalarToHeader(a)
+	dataA, newAlloc = scalarToHeader(a)
 	dataB = b.hdr()
 	if reuse != nil {
 		dataReuse = reuse.hdr()

@@ -66,7 +66,6 @@ func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 			err = e.E.GtIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-
 		return
 	}
 
@@ -83,7 +82,6 @@ func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 		err = e.E.Gt(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
-
 	return
 }
 
@@ -146,7 +144,6 @@ func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			err = e.E.GteIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-
 		return
 	}
 
@@ -163,7 +160,6 @@ func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.Gte(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
-
 	return
 }
 
@@ -226,7 +222,6 @@ func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 			err = e.E.LtIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-
 		return
 	}
 
@@ -243,7 +238,6 @@ func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 		err = e.E.Lt(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
-
 	return
 }
 
@@ -306,7 +300,6 @@ func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			err = e.E.LteIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-
 		return
 	}
 
@@ -323,7 +316,6 @@ func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.Lte(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
-
 	return
 }
 
@@ -386,7 +378,6 @@ func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 			err = e.E.EqIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-
 		return
 	}
 
@@ -403,7 +394,6 @@ func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 		err = e.E.Eq(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
-
 	return
 }
 
@@ -466,7 +456,6 @@ func (e StdEng) ElNe(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 			err = e.E.NeIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-
 		return
 	}
 
@@ -483,7 +472,6 @@ func (e StdEng) ElNe(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 		err = e.E.Ne(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
-
 	return
 }
 
@@ -512,15 +500,15 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Gt")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Gt")
 		}
 		scalarHeader = dataA
@@ -563,6 +551,9 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 			err = e.E.GtIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -599,6 +590,9 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 		err = e.E.Gt(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
+	}
 	returnHeader(scalarHeader)
 	return
 }
@@ -628,15 +622,15 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Gte")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Gte")
 		}
 		scalarHeader = dataA
@@ -679,6 +673,9 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 			err = e.E.GteIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -715,6 +712,9 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		err = e.E.Gte(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
+	}
 	returnHeader(scalarHeader)
 	return
 }
@@ -744,15 +744,15 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Lt")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Lt")
 		}
 		scalarHeader = dataA
@@ -795,6 +795,9 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 			err = e.E.LtIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -831,6 +834,9 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 		err = e.E.Lt(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
+	}
 	returnHeader(scalarHeader)
 	return
 }
@@ -860,15 +866,15 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Lte")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Lte")
 		}
 		scalarHeader = dataA
@@ -911,6 +917,9 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 			err = e.E.LteIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -947,6 +956,9 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		err = e.E.Lte(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
+	}
 	returnHeader(scalarHeader)
 	return
 }
@@ -972,15 +984,15 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Eq")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Eq")
 		}
 		scalarHeader = dataA
@@ -1023,6 +1035,9 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 			err = e.E.EqIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -1059,6 +1074,9 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 		err = e.E.Eq(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
+	}
 	returnHeader(scalarHeader)
 	return
 }
@@ -1084,15 +1102,15 @@ func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Ne")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Ne")
 		}
 		scalarHeader = dataA
@@ -1135,6 +1153,9 @@ func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 			err = e.E.NeIter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -1170,6 +1191,9 @@ func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 	default:
 		err = e.E.Ne(typ, dataA, dataB, dataReuse)
 		retVal = reuse
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return

@@ -412,16 +412,30 @@ func freeScalar(bs []byte) {
 }
 
 // scalarToHeader creates a Header from a scalar value
-func scalarToHeader(a interface{}) (hdr *storage.Header) {
+func scalarToHeader(a interface{}) (hdr *storage.Header, newAlloc bool) {
 	var raw []byte
 	switch at := a.(type) {
 	case Memory:
 		raw = storage.FromMemory(at.Uintptr(), at.MemSize())
 	default:
 		raw = allocScalar(a)
+		newAlloc = true
 	}
 	hdr = borrowHeader()
 	hdr.Raw = raw
+	if newAlloc {
+		copyScalarToPrealloc(a, hdr.Raw)
+	}
 
-	return hdr
+	return hdr, newAlloc
+}
+
+func copyScalarToPrealloc(a interface{}, bs []byte) {
+	xV := reflect.ValueOf(a)
+	xT := reflect.TypeOf(a)
+
+	p := unsafe.Pointer(&bs[0])
+	v := reflect.NewAt(xT, p)
+	reflect.Indirect(v).Set(xV)
+	return
 }
