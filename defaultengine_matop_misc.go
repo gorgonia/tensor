@@ -72,9 +72,6 @@ func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, 
 		outers = 1
 	} else {
 		outers = ProdInts(t.Shape()[0:axis])
-		if outers == 0 {
-			outers = 1
-		}
 	}
 
 	var stride, newStride int

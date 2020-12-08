@@ -8,9 +8,12 @@ import (
 
 // An AP is an access pattern. It tells the various ndarrays how to access their data through the use of strides
 // Through the AP, there are several definitions of things, most notably there are two very specific "special cases":
-//		Scalar has Dims() of 0. However, its shape can take several forms:
-//			- (1, 1)
+//		Scalar has Dims() of 0.
 //			- (1)
+//		Scalarlikes are higher order tensors, but each with a size of 1. The Dims() are not 0.
+//			- (1, 1)
+//			- (1, 1, 1)
+//			- (1, 1, 1, 1), etc
 //		Vector has Dims() of 1, but its shape can take several forms:
 //			- (x, 1)
 //			- (1, x)
@@ -121,8 +124,11 @@ func (ap *AP) IsColVec() bool { return ap.shape.IsColVec() }
 // IsRowVec returns true when the access pattern has the shape (1, x)
 func (ap *AP) IsRowVec() bool { return ap.shape.IsRowVec() }
 
-// IsScalar returns true if the access pattern indicates it's a scalar value
+// IsScalar returns true if the access pattern indicates it's a scalar value.
 func (ap *AP) IsScalar() bool { return ap.shape.IsScalar() }
+
+// IsScalarEquiv returns true if the access pattern is equivalent to a scalar shape.
+func (ap *AP) IsScalarEquiv() bool { return ap.shape.IsScalarEquiv() }
 
 // IsMatrix returns true if it's a matrix. This is mostly a convenience method. RowVec and ColVecs are also considered matrices
 func (ap *AP) IsMatrix() bool { return len(ap.shape) == 2 }
@@ -297,6 +303,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 
 // T returns the transposed metadata based on the given input
 func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
+
 	// prep axes
 	if len(axes) > 0 && len(axes) != ap.Dims() {
 		err = errors.Errorf(dimMismatch, ap.Dims(), len(axes))
@@ -311,6 +318,10 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 		}
 	}
 	a = axes
+
+	if ap.shape.IsScalarEquiv() {
+		return ap.Clone(), a, noopError{}
+	}
 
 	// if axes is 0, 1, 2, 3... then no op
 	if monotonic, incr1 := IsMonotonicInts(axes); monotonic && incr1 && axes[0] == 0 {
