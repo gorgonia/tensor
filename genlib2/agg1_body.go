@@ -261,7 +261,7 @@ const (
 
 	eCmpBoolRaw = `as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -321,7 +321,7 @@ const (
 
 	eCmpBoolIterRaw = `as :=isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {

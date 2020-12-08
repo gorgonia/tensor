@@ -12,7 +12,7 @@ import (
 func (e E) Gt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -223,7 +223,7 @@ func (e E) Gt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 func (e E) Gte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -434,7 +434,7 @@ func (e E) Gte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *sto
 func (e E) Lt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -645,7 +645,7 @@ func (e E) Lt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 func (e E) Lte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -856,7 +856,7 @@ func (e E) Lte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *sto
 func (e E) Eq(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -1142,7 +1142,7 @@ func (e E) Eq(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 func (e E) Ne(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -2692,7 +2692,7 @@ func (e E) NeSame(t reflect.Type, a *storage.Header, b *storage.Header) (err err
 func (e E) GtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -2890,7 +2890,7 @@ func (e E) GtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 func (e E) GteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -3088,7 +3088,7 @@ func (e E) GteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal 
 func (e E) LtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -3286,7 +3286,7 @@ func (e E) LtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 func (e E) LteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -3484,7 +3484,7 @@ func (e E) LteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal 
 func (e E) EqIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
@@ -3752,7 +3752,7 @@ func (e E) EqIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 func (e E) NeIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
-	rs := isScalar(retVal, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
