@@ -10,14 +10,14 @@ func overlaps(a, b DenseTensor) bool {
 	}
 	aarr := a.arr()
 	barr := b.arr()
-	if aarr.Ptr == barr.Ptr {
+	if aarr.Uintptr() == barr.Uintptr() {
 		return true
 	}
-	aptr := uintptr(aarr.Ptr)
-	bptr := uintptr(barr.Ptr)
+	aptr := aarr.Uintptr()
+	bptr := barr.Uintptr()
 
-	capA := aptr + uintptr(aarr.C)*a.Dtype().Size()
-	capB := bptr + uintptr(barr.C)*b.Dtype().Size()
+	capA := aptr + uintptr(cap(aarr.Header.Raw))
+	capB := bptr + uintptr(cap(barr.Header.Raw))
 
 	switch {
 	case aptr < bptr:

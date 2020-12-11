@@ -180,8 +180,8 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 				bDestEnd := (destStart + tmp) * int(darr.t.Size())
 
 				// then we get the data as a slice of raw bytes
-				sBS := storage.AsByteSlice(&sarr.Header, sarr.t.Type)
-				dBS := storage.AsByteSlice(&darr.Header, darr.t.Type)
+				sBS := sarr.Header.Raw
+				dBS := darr.Header.Raw
 
 				// recall that len(src) < len(dest)
 				// it's easier to understand if we define the ranges.

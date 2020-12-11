@@ -4,7 +4,6 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/storage"
 )
 
 func (e StdEng) Transpose(a Tensor, expStrides []int) error {
@@ -140,7 +139,7 @@ func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
 	// arbs := storage.AsByteSlice(tmpArr.hdr(), rtype)
 	arbs := tmpArr.byteSlice()
 
-	orig := storage.AsByteSlice(a.hdr(), rtype)
+	orig := a.hdr().Raw
 	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {

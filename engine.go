@@ -1,9 +1,5 @@
 package tensor
 
-import (
-	"unsafe"
-)
-
 // Memory is a representation of memory of the value.
 //
 // The main reason for requiring both Uintptr() and Pointer() methods is because while Go currently does not have a compacting
@@ -13,7 +9,6 @@ import (
 type Memory interface {
 	Uintptr() uintptr
 	MemSize() uintptr
-	Pointer() unsafe.Pointer
 }
 
 // Engine is a representation of an execution engine.
