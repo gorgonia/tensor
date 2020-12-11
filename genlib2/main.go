@@ -52,6 +52,7 @@ func main() {
 	pregenerate()
 
 	// storage
+	pipeline(storageLoc, "consts.go", Kinds{allKinds}, generateReflectTypes)
 	pipeline(storageLoc, "getset.go", Kinds{allKinds}, generateHeaderGetSet)
 	pipeline(tensorPkgLoc, "array_getset.go", Kinds{allKinds}, generateArrayMethods)
 

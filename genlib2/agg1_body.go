@@ -5,8 +5,8 @@ import "text/template"
 // level 1 aggregation (internal.E) templates
 
 const (
-	eArithRaw = `as := isScalar(a)
-	bs := isScalar(b)
+	eArithRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
 	{{$name := .Name}}
 	switch t {
 		{{range .Kinds -}}
@@ -25,18 +25,18 @@ const (
 			default:
 				{{if and $isDiv $p}} err = {{end}} Vec{{$name}}{{short .}}(at, bt)
 			}
-			return 
+			return
 		{{end -}}
 		default:
 		return errors.Errorf("Unsupported type %v for {{$name}}", t)
 	}
 	`
 
-	eArithIncrRaw = `as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	eArithIncrRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 	{{$name := .Name}}
 	switch t {
@@ -60,14 +60,14 @@ const (
 			default:
 				{{$name}}Incr{{short .}}(at, bt,it)
 			}
-			return 
+			return
 		{{end -}}
 	default:
 		return errors.Errorf("Unsupported type %v for {{$name}}", t)
 	}
 	`
-	eArithIterRaw = `as := isScalar(a)
-	bs := isScalar(b)
+	eArithIterRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
 	{{$name := .Name}}
 	switch t {
 		{{range .Kinds -}}
@@ -91,12 +91,12 @@ const (
 	}
 	`
 
-	eArithIterIncrRaw = `as :=isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	eArithIterIncrRaw = `as :=isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 	{{$name := .Name}}
 	switch t {
@@ -126,7 +126,7 @@ const (
 	}
 	`
 
-	eMapRaw = `as := isScalar(a)
+	eMapRaw = `as := isScalar(a, t)
 	switch t {
 		{{range .Kinds -}}
 	case {{reflectKind .}}:
@@ -181,11 +181,11 @@ const (
 			Map{{short .}}(f0, at)
 		}
 		{{end -}}
-		
+
 		{{end -}}
 	default:
 		return errors.Errorf("Cannot map t of %v", t)
-	
+
 	}
 	`
 
@@ -233,8 +233,8 @@ const (
 	}
 	`
 
-	eCmpSameRaw = `as := isScalar(a)
-	bs := isScalar(b)
+	eCmpSameRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
 	{{$name := .Name}}
 	switch t {
 		{{range .Kinds -}}
@@ -252,20 +252,20 @@ const (
 			default:
 				{{$name}}Same{{short .}}(at, bt)
 			}
-			return 
+			return
 		{{end -}}
 		{{end -}}
 		default:
 		return errors.Errorf("Unsupported type %v for {{$name}}", t)
 	}`
 
-	eCmpBoolRaw = `as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	eCmpBoolRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	{{$name := .Name}}
@@ -285,15 +285,15 @@ const (
 			default:
 				{{$name}}{{short .}}(at, bt, rt)
 			}
-			return 
+			return
 		{{end -}}
 	default:
 		return errors.Errorf("Unsupported type %v for {{$name}}", t)
 	}
 	`
 
-	eCmpSameIterRaw = `as := isScalar(a)
-	bs := isScalar(b)
+	eCmpSameIterRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
 	{{$name := .Name}}
 	switch t {
 		{{range .Kinds -}}
@@ -319,13 +319,13 @@ const (
 	}
 	`
 
-	eCmpBoolIterRaw = `as :=isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	eCmpBoolIterRaw = `as :=isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	{{$name := .Name}}
@@ -478,7 +478,7 @@ const (
 			return errors.Wrap(errors.Errorf(typeMismatch, max, maxVal), "Clamp() max")
 		}
 		Clamp{{short .}}(a.{{sliceOf .}}, min, max)
-		return nil 
+		return nil
 		{{end -}}
 	default:
 		return errors.Errorf("Unsupported type %v for Clamp", t)
@@ -553,7 +553,7 @@ const (
 		if _, ok := err.(NoOpError); ok {
 			err = nil
 		}
-		return 
+		return
 		{{end -}}
 	default:
 		return nil, errors.Errorf("Unsupported type %v for Arg{{.Name}}", t)

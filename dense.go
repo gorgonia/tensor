@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/tensor/internal/storage"
 )
 
 const (
@@ -47,14 +48,12 @@ func recycledDense(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 }
 
 func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
-	size := shape.TotalSize()
-	if shape.IsScalar() {
-		size = 1
-	}
+	//	size := shape.TotalSize()
+	//if shape.IsScalar() {
+	//	size = 1
+	//}
 	retVal = borrowDense()
 	retVal.array.t = dt
-	retVal.array.L = size
-	retVal.array.C = size
 	retVal.AP.zeroWithDims(shape.Dims())
 
 	for _, opt := range opts {
@@ -65,8 +64,7 @@ func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) 
 }
 
 func (t *Dense) fromSlice(x interface{}) {
-	t.array.Ptr = nil
-	t.array.v = nil
+	t.array.Header.Raw = nil // GC anything else
 	t.array.fromSlice(x)
 }
 
@@ -88,15 +86,13 @@ func (t *Dense) makeArray(size int) {
 	default:
 	}
 
-	mem, err := t.e.Alloc(calcMemSize(t.t, size))
+	memsize := calcMemSize(t.t, size)
+	mem, err := t.e.Alloc(memsize)
 	if err != nil {
 		panic(err)
 	}
 
-	t.array.Ptr = mem.Pointer()
-	t.array.L = size
-	t.array.C = size
-	t.array.fix()
+	t.array.Raw = storage.FromMemory(mem.Uintptr(), uintptr(memsize))
 	return
 }
 
@@ -111,28 +107,25 @@ func (t *Dense) Data() interface{} {
 	if t.IsScalar() {
 		return t.Get(0)
 	}
-	if t.v == nil {
-		// build a type of []T
-		shdr := reflect.SliceHeader{
-			Data: uintptr(t.Header.Ptr),
-			Len:  t.Header.L,
-			Cap:  t.Header.C,
-		}
-		sliceT := reflect.SliceOf(t.t.Type)
-		ptr := unsafe.Pointer(&shdr)
-		val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
-		t.v = val.Interface()
 
+	// build a type of []T
+	shdr := reflect.SliceHeader{
+		Data: t.array.Uintptr(),
+		Len:  t.array.Len(),
+		Cap:  t.array.Cap(),
 	}
-	return t.v
+	sliceT := reflect.SliceOf(t.t.Type)
+	ptr := unsafe.Pointer(&shdr)
+	val := reflect.Indirect(reflect.NewAt(sliceT, ptr))
+	return val.Interface()
 }
 
 // DataSize returns the size of the underlying array. Typically t.DataSize() == t.Shape().TotalSize()
 func (t *Dense) DataSize() int {
 	if t.IsScalar() {
-		return 0
+		return 0 // DOUBLE CHECK
 	}
-	return t.L
+	return t.array.Len()
 }
 
 // Engine returns the execution engine associated with this Tensor
@@ -212,7 +205,7 @@ func (t *Dense) Clone() interface{} {
 		retVal.e = t.e
 		retVal.oe = t.oe
 		retVal.flag = t.flag
-		retVal.makeArray(t.L)
+		retVal.makeArray(t.Len())
 
 		if !t.old.IsZero() {
 			retVal.old = t.old.Clone()
@@ -270,8 +263,8 @@ func (t *Dense) MaskFromDense(tts ...*Dense) {
 
 // Private methods
 
-func (t *Dense) cap() int       { return t.array.C }
-func (t *Dense) len() int       { return t.array.L } // exactly the same as DataSize
+func (t *Dense) cap() int       { return t.array.Cap() }
+func (t *Dense) len() int       { return t.array.Len() } // exactly the same as DataSize
 func (t *Dense) arr() array     { return t.array }
 func (t *Dense) arrPtr() *array { return &t.array }
 
@@ -294,16 +287,16 @@ func (t *Dense) fix() {
 	}
 
 	switch {
-	case t.IsScalar() && t.array.Ptr == nil:
+	case t.IsScalar() && t.array.Header.Raw == nil:
 		t.makeArray(1)
-	case t.Shape() == nil && t.array.Ptr != nil:
-		size := t.L
+	case t.Shape() == nil && t.array.Header.Raw != nil:
+		size := t.Len()
 		if size == 1 {
 			t.SetShape() // scalar
 		} else {
 			t.SetShape(size) // vector
 		}
-	case t.array.Ptr == nil && t.t != Dtype{}:
+	case t.array.Header.Raw == nil && t.t != Dtype{}:
 		size := t.Shape().TotalSize()
 		t.makeArray(size)
 
@@ -330,11 +323,11 @@ func (t *Dense) makeMask() {
 
 // sanity is a function that sanity checks that a tensor is correct.
 func (t *Dense) sanity() error {
-	if !t.AP.IsZero() && t.Shape() == nil && t.array.Ptr == nil {
+	if !t.AP.IsZero() && t.Shape() == nil && t.array.Header.Raw == nil {
 		return errors.New(emptyTensor)
 	}
 
-	size := t.L
+	size := t.Len()
 	expected := t.Size()
 	if t.viewOf == 0 && size != expected && !t.IsScalar() {
 		return errors.Wrap(errors.Errorf(shapeMismatch, t.Shape(), size), "sanity check failed")

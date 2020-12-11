@@ -6,7 +6,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
-	"unsafe"
 
 	"github.com/pkg/errors"
 )
@@ -62,10 +61,8 @@ type Tensor interface {
 	// engine/memory related stuff
 	// all Tensors should be able to be expressed of as a slab of memory
 	// Note: the size of each element can be acquired by T.Dtype().Size()
+	Memory                      // Tensors all implement Memory
 	Engine() Engine             // Engine can be nil
-	MemSize() uintptr           // the size in memory
-	Uintptr() uintptr           // the pointer to the first element, as a uintptr
-	Pointer() unsafe.Pointer    // the pointer to the first elemment as a unsafe.Ponter
 	IsNativelyAccessible() bool // Can Go access the memory
 	IsManuallyManaged() bool    // Must Go manage the memory
 

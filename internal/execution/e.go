@@ -38,7 +38,7 @@ var (
 	UnsafePointer = reflect.TypeOf(unsafe.Pointer(&Uintptr))
 )
 
-func isScalar(a *storage.Header) bool { return a.L == 1 }
+func isScalar(a *storage.Header, t reflect.Type) bool { return a.TypedLen(t) == 1 }
 
 type errorIndices []int
 
