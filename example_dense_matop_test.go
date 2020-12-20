@@ -289,3 +289,80 @@ func ExampleRepeat_uncommonUses() {
 	// Once again, observe that the 1st element ([2 5]) has been repeated 3 times, while the rest have been repeated twice
 
 }
+
+func ExampleT() {
+	// Usual example of 2D matrix being transposed:
+	M := New(WithBacking([]int{1, 2, 3, 4, 5, 6}), WithShape(2, 3))
+	M2, err := T(M)
+	if err != nil {
+		fmt.Printf("Err: %v\n", err)
+	}
+	fmt.Printf("M:\n%v\nM2:\n%v\n", M, M2)
+
+	// T accepts optional parameters describing the permutation of axes.
+	// In a 2D case, there are only two options: (0, 1) or (1, 0).
+	// The latter is default if no parameters are passed in.
+	// The former is a no-op as rearranging a matrix so that the 0th axis becomes the 0th axis
+	// and the first axis becomes the first axis is not going to do anything.
+	//
+	// However, note that M3 is a different result.
+	M3, err := T(M, 0, 1)
+	if err != nil {
+		fmt.Printf("Err: %v\n", err)
+	}
+	fmt.Printf("M3:\n%v\nM == M3: %t", M3, M == M3)
+
+	// Output:
+	// M:
+	// ⎡1  2  3⎤
+	// ⎣4  5  6⎦
+	//
+	// M2:
+	// ⎡1  4⎤
+	// ⎢2  5⎥
+	// ⎣3  6⎦
+	//
+	// M3:
+	// ⎡1  2  3⎤
+	// ⎣4  5  6⎦
+	//
+	// M == M3: false
+
+}
+
+func ExampleT_scalarlike() {
+	// Be aware when dealing with scalarlike tensors
+	// scalar/scalarlikes have no effect when calling T()
+	// but the result is put into a new tensor
+	S := New(WithBacking([]float32{3.14}), WithShape())
+	S2, err := T(S)
+	if err != nil {
+		fmt.Printf("Err %v", err)
+	}
+	fmt.Printf("S: %v S2 %v S == S2: %t\n", S, S2, S == S2)
+
+	// however do note that scalars and scalarlikes are not the same thing.
+	// for example, consider this:
+	_, err = T(S, 1, 0)
+	fmt.Printf("error when the axes are more than the shape's dims: %v\n", err)
+
+	// but if you have a tensor that is a scalar-like:
+	S.Reshape(1, 1)
+	S2, err = T(S, 1, 0)
+	if err != nil {
+		fmt.Printf("Err: %v\n", err)
+	}
+	fmt.Printf("S:\n%v\nS2:\n%v\nS == S2: %t\n", S, S2, S == S2)
+
+	// Output:
+	// S: 3.14 S2 3.14 S == S2: false
+	// error when the axes are more than the shape's dims: Dimension mismatch. Expected 0, got 2
+	// S:
+	// ⎡3.14⎤
+	//
+	// S2:
+	// ⎡3.14⎤
+	//
+	// S == S2: false
+
+}

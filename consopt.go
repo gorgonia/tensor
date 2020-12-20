@@ -2,7 +2,8 @@ package tensor
 
 import (
 	"reflect"
-	"unsafe"
+
+	"gorgonia.org/tensor/internal/storage"
 )
 
 // ConsOpt is a tensor construction option.
@@ -54,7 +55,7 @@ func WithBacking(x interface{}, argMask ...[]bool) ConsOpt {
 // WithMask is a construction option for a Tensor
 // Use it as such:
 //		mask := []bool{true,true,false,false}
-// 		t := New(WithBacking(backing))
+// 		t := New(WithBacking(backing), WithMask(mask))
 // It can be used with other construction options like WithShape
 // The supplied mask can be any type. If non-boolean, then tensor mask is set to true
 // wherever non-zero value is obtained
@@ -106,17 +107,15 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			xt := reflect.TypeOf(x)
-			xv := reflect.New(xt)
-			xvi := reflect.Indirect(xv)
-			xvi.Set(reflect.ValueOf(x))
-			uptr := unsafe.Pointer(xv.Pointer())
 
-			tt.array.Ptr = uptr
-			tt.array.L = 1
-			tt.array.C = 1
-			tt.v = x
-			tt.t = Dtype{xt}
+			xT := reflect.TypeOf(x)
+			sxT := reflect.SliceOf(xT)
+			xv := reflect.MakeSlice(sxT, 1, 1) // []T
+			xv0 := xv.Index(0)                 // xv[0]
+			xv0.Set(reflect.ValueOf(x))
+			tt.array.Header.Raw = storage.AsByteSlice(xv.Interface())
+			tt.t = Dtype{xT}
+
 			tt.mask = mask
 
 		default:
@@ -145,18 +144,11 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			tt.v = nil // if there were any underlying slices it should be GC'd
 
-			tt.array.Ptr = unsafe.Pointer(ptr)
-			tt.array.L = int(memsize / tt.t.Size())
-			tt.array.C = int(memsize / tt.t.Size())
+			tt.Header.Raw = nil // GC anything if needed
+			tt.Header.Raw = storage.FromMemory(ptr, memsize)
 
 			tt.flag = MakeMemoryFlag(tt.flag, ManuallyManaged)
-
-			if tt.IsNativelyAccessible() {
-				tt.array.fix()
-			}
-
 		default:
 			panic("Unsupported Tensor type")
 		}
@@ -191,7 +183,11 @@ func WithEngine(e Engine) ConsOpt {
 // AsFortran creates a *Dense with a col-major layout.
 // If the optional backing argument is passed, the backing is assumed to be C-order (row major), and
 // it will be transposed before being used.
-func AsFortran(backing interface{}) ConsOpt {
+func AsFortran(backing interface{}, argMask ...[]bool) ConsOpt {
+	var mask []bool
+	if len(argMask) > 0 {
+		mask = argMask[0]
+	}
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
@@ -201,10 +197,12 @@ func AsFortran(backing interface{}) ConsOpt {
 				// create a temporary tensor, to which the transpose will be done
 				tmp := NewDense(tt.Dtype(), tt.shape.Clone())
 				copyArray(tmp.arrPtr(), tt.arrPtr())
+				tmp.SetMask(mask)
 				tmp.T()
 				tmp.Transpose()
 				// copy the data back to the current tensor
 				copyArray(tt.arrPtr(), tmp.arrPtr())
+				tt.SetMask(tmp.Mask())
 				// cleanup: return the temporary tensor back to the pool
 				ReturnTensor(tmp)
 			}

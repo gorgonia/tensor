@@ -10,8 +10,8 @@ import (
 )
 
 func (e E) Add(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -230,8 +230,8 @@ func (e E) Add(t reflect.Type, a *storage.Header, b *storage.Header) (err error)
 }
 
 func (e E) Sub(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -436,8 +436,8 @@ func (e E) Sub(t reflect.Type, a *storage.Header, b *storage.Header) (err error)
 }
 
 func (e E) Mul(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -642,8 +642,8 @@ func (e E) Mul(t reflect.Type, a *storage.Header, b *storage.Header) (err error)
 }
 
 func (e E) Div(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -848,8 +848,8 @@ func (e E) Div(t reflect.Type, a *storage.Header, b *storage.Header) (err error)
 }
 
 func (e E) Pow(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Float32:
@@ -914,8 +914,8 @@ func (e E) Pow(t reflect.Type, a *storage.Header, b *storage.Header) (err error)
 }
 
 func (e E) Mod(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -1092,11 +1092,11 @@ func (e E) Mod(t reflect.Type, a *storage.Header, b *storage.Header) (err error)
 }
 
 func (e E) AddIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -1406,11 +1406,11 @@ func (e E) AddIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *s
 }
 
 func (e E) SubIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -1700,11 +1700,11 @@ func (e E) SubIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *s
 }
 
 func (e E) MulIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -1994,11 +1994,11 @@ func (e E) MulIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *s
 }
 
 func (e E) DivIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -2288,11 +2288,11 @@ func (e E) DivIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *s
 }
 
 func (e E) PowIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -2382,11 +2382,11 @@ func (e E) PowIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *s
 }
 
 func (e E) ModIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on scalar increment. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -2636,8 +2636,8 @@ func (e E) ModIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *s
 }
 
 func (e E) AddIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -2856,8 +2856,8 @@ func (e E) AddIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 }
 
 func (e E) SubIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -3062,8 +3062,8 @@ func (e E) SubIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 }
 
 func (e E) MulIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -3268,8 +3268,8 @@ func (e E) MulIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 }
 
 func (e E) DivIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -3474,8 +3474,8 @@ func (e E) DivIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 }
 
 func (e E) PowIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Float32:
@@ -3540,8 +3540,8 @@ func (e E) PowIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 }
 
 func (e E) ModIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -3718,12 +3718,12 @@ func (e E) ModIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 }
 
 func (e E) AddIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header, ait Iterator, bit Iterator, iit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -4018,12 +4018,12 @@ func (e E) AddIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 }
 
 func (e E) SubIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header, ait Iterator, bit Iterator, iit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -4299,12 +4299,12 @@ func (e E) SubIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 }
 
 func (e E) MulIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header, ait Iterator, bit Iterator, iit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -4580,12 +4580,12 @@ func (e E) MulIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 }
 
 func (e E) DivIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header, ait Iterator, bit Iterator, iit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -4861,12 +4861,12 @@ func (e E) DivIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 }
 
 func (e E) PowIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header, ait Iterator, bit Iterator, iit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -4952,12 +4952,12 @@ func (e E) PowIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 }
 
 func (e E) ModIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, incr *storage.Header, ait Iterator, bit Iterator, iit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	is := isScalar(incr)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	is := isScalar(incr, t)
 
 	if ((as && !bs) || (bs && !as)) && is {
-		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {

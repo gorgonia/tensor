@@ -11,7 +11,7 @@ func (t *Dense) Apply(fn interface{}, opts ...FuncOpt) (retVal Tensor, err error
 	if m, ok := e.(Mapper); ok {
 		return m.Map(fn, t, opts...)
 	}
-	return nil, errors.Errorf("Execution engine for %v not a mapper", t)
+	return nil, errors.Errorf("Execution engine %T for %v not a mapper", e, t)
 }
 
 // Reduce applies a reduction function and reduces the values along the given axis.

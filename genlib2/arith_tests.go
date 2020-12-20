@@ -64,6 +64,7 @@ func (fn *ArithTest) WriteBody(w io.Writer) {
 	if fn.IsInv {
 		fn.writeInv(w)
 	}
+	fn.WriteScalarWrongType(w)
 }
 
 func (fn *ArithTest) canWrite() bool {
@@ -135,6 +136,23 @@ func (fn *ArithTest) writeInv(w io.Writer) {
 		}
 	}
 
+	template.Must(t.New("funcoptdecl").Parse(funcOptDecl[fn.FuncOpt]))
+	template.Must(t.New("funcoptcorrect").Parse(funcOptCorrect[fn.FuncOpt]))
+	template.Must(t.New("funcoptuse").Parse(funcOptUse[fn.FuncOpt]))
+	template.Must(t.New("funcoptcheck").Parse(funcOptCheck[fn.FuncOpt]))
+
+	t.Execute(w, fn)
+}
+func (fn *ArithTest) WriteScalarWrongType(w io.Writer) {
+	if !fn.scalars {
+		return
+	}
+	if fn.FuncOpt != "" {
+		return
+	}
+	t := template.Must(template.New("dense scalar wrongtype test").Funcs(funcs).Parse(denseArithScalarWrongTypeTestRaw))
+	template.Must(t.New("call0").Parse(APICallVSRaw))
+	template.Must(t.New("call1").Parse(APICallSVRaw))
 	template.Must(t.New("funcoptdecl").Parse(funcOptDecl[fn.FuncOpt]))
 	template.Must(t.New("funcoptcorrect").Parse(funcOptCorrect[fn.FuncOpt]))
 	template.Must(t.New("funcoptuse").Parse(funcOptUse[fn.FuncOpt]))

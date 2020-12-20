@@ -207,6 +207,24 @@ func TestMulScalarScalar(t *testing.T) {
 		t.Fatalf("Error: %v", err)
 	}
 	assert.Equal(t, correct, res.Data())
+
+	// Interface - tensor
+	ai := 2.0
+	b = NewDense(Float64, Shape{1, 1}, WithBacking([]float64{3}))
+	correct = []float64{6.0}
+
+	res, err = Mul(ai, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Commutativity
+	res, err = Mul(b, ai)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
 }
 
 func TestDivScalarScalar(t *testing.T) {
@@ -249,6 +267,28 @@ func TestDivScalarScalar(t *testing.T) {
 	correct = []float64{3, 5}
 
 	res, err = Div(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// interface-scalar
+	ai := 6.0
+	b = New(WithBacking([]float64{2}))
+	correct = 3.0
+
+	res, err = Div(ai, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-interface
+	a = New(WithBacking([]float64{6}))
+	bi := 2.0
+	correct = 3.0
+
+	res, err = Div(a, bi)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
@@ -309,6 +349,24 @@ func TestAddScalarScalar(t *testing.T) {
 		t.Fatalf("Error: %v", err)
 	}
 	assert.Equal(t, correct, res.Data())
+
+	// interface-scalar
+	ai := 2.0
+	b = New(WithBacking([]float64{3}))
+	correct = 5.0
+
+	res, err = Add(ai, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// Test commutativity
+	res, err = Add(b, ai)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
 }
 
 func TestSubScalarScalar(t *testing.T) {
@@ -351,6 +409,28 @@ func TestSubScalarScalar(t *testing.T) {
 	correct = []float64{14, 8}
 
 	res, err = Sub(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// interface-scalar
+	ai := 6.0
+	b = New(WithBacking([]float64{2}))
+	correct = 4.0
+
+	res, err = Sub(ai, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-interface
+	a = New(WithBacking([]float64{6}))
+	bi := 2.0
+	correct = 4.0
+
+	res, err = Sub(a, bi)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
@@ -401,6 +481,28 @@ func TestModScalarScalar(t *testing.T) {
 		t.Fatalf("Error: %v", err)
 	}
 	assert.Equal(t, correct, res.Data())
+
+	// interface-scalar
+	ai := 5.0
+	b = New(WithBacking([]float64{2}))
+	correct = 1.0
+
+	res, err = Mod(ai, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-interface
+	a = New(WithBacking([]float64{5}))
+	bi := 2.0
+	correct = 1.0
+
+	res, err = Mod(a, bi)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
 }
 
 func TestPowScalarScalar(t *testing.T) {
@@ -443,6 +545,28 @@ func TestPowScalarScalar(t *testing.T) {
 	correct = []float64{2187, 100}
 
 	res, err = Pow(a, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// interface-scalar
+	ai := 6.0
+	b = New(WithBacking([]float64{2}))
+	correct = 36.0
+
+	res, err = Pow(ai, b)
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+	assert.Equal(t, correct, res.Data())
+
+	// scalar-interface
+	a = New(WithBacking([]float64{6}))
+	bi := 2.0
+	correct = 36.0
+
+	res, err = Pow(a, bi)
 	if err != nil {
 		t.Fatalf("Error: %v", err)
 	}
