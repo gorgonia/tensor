@@ -6,7 +6,7 @@ import (
 	"text/template"
 )
 
-const asSliceRaw = `func (h *Header) {{asType . | strip | title}}s() []{{asType .}} { return *(*[]{{asType .}})(unsafe.Pointer(h)) }
+const asSliceRaw = `func (h *Header) {{asType . | strip | title}}s() []{{asType .}} {return (*(*[]{{asType .}})(unsafe.Pointer(&h.Raw)))[:h.TypedLen({{short . | unexport}}Type):h.TypedLen({{short . | unexport}}Type)]}
 `
 
 const setBasicRaw = `func (h *Header) Set{{short . }}(i int, x {{asType . }}) { h.{{sliceOf .}}[i] = x }
@@ -23,11 +23,10 @@ func (a *array) Get(i int) interface{} {
 		{{else -}}
 	case reflect.{{reflectKind .}}:
 		return a.{{getOne .}}(i)
-		{{end -}}
+		{{end -}};
 	{{end -}}
 	default:
-		at := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i) * a.t.Size())
-		val := reflect.NewAt(a.t.Type, at)
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		return val.Interface()
 	}
@@ -47,8 +46,7 @@ func (a *array) Set(i int, x interface{}) {
 	{{end -}}
 	default:
 		xv := reflect.ValueOf(x)
-		want := unsafe.Pointer(uintptr(a.Ptr) + uintptr(i)*a.t.Size())
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -76,10 +74,9 @@ func (a *array) Memset(x interface{}) error {
 	}
 
 	xv := reflect.ValueOf(x)
-	ptr := uintptr(a.Ptr)
-	for i := 0; i < a.L; i++ {
-		want := ptr + uintptr(i)*a.t.Size()
-		val := reflect.NewAt(a.t.Type, unsafe.Pointer(want))
+	l := a.Len()
+	for i := 0; i < l; i++ {
+		val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 		val = reflect.Indirect(val)
 		val.Set(xv)
 	}
@@ -94,7 +91,7 @@ func (a array) Eq(other interface{}) bool {
 			return false
 		}
 
-		if oa.L != a.L {
+		if oa.Len() != a.Len() {
 			return false
 		}
 		/*
@@ -104,7 +101,7 @@ func (a array) Eq(other interface{}) bool {
 		*/
 
 		// same exact thing
-		if uintptr(oa.Ptr) == uintptr(a.Ptr){
+		if uintptr(unsafe.Pointer(&oa.Header.Raw[0])) == uintptr(unsafe.Pointer(&a.Header.Raw[0])){
 			return true
 		}
 
@@ -121,7 +118,7 @@ func (a array) Eq(other interface{}) bool {
 			{{end -}}
 		{{end -}}
 		default:
-			for i := 0; i < a.L; i++{
+			for i := 0; i < a.Len(); i++{
 				if !reflect.DeepEqual(a.Get(i), oa.Get(i)){
 					return false
 				}
@@ -179,18 +176,18 @@ const copyArrayIterRaw = `func copyArrayIter(dst, src array, diter, siter Iterat
 `
 
 const memsetIterRaw = `
-func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
+func (a *array) memsetIter(x interface{}, it Iterator) (err error) {
 	var i int
-	switch t.t{
+	switch a.t{
 	{{range .Kinds -}}
 		{{if isParameterized . -}}
 		{{else -}}
 	case {{reflectKind .}}:
 		xv, ok := x.({{asType .}})
 		if !ok {
-			return errors.Errorf(dtypeMismatch, t.t, x)
+			return errors.Errorf(dtypeMismatch, a.t, x)
 		}
-		data := t.{{sliceOf .}}
+		data := a.{{sliceOf .}}
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
 			data[i] = xv
 		}
@@ -199,10 +196,8 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 	{{end -}}
 	default:
 		xv := reflect.ValueOf(x)
-		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
-			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
+			val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 			val = reflect.Indirect(val)
 			val.Set(xv)
 		}
@@ -213,14 +208,14 @@ func (t *array) memsetIter(x interface{}, it Iterator) (err error) {
 
 `
 
-const zeroIterRaw = `func (t *array) zeroIter(it Iterator) (err error){
+const zeroIterRaw = `func (a *array) zeroIter(it Iterator) (err error){
 	var i int
-	switch t.t {
+	switch a.t {
 	{{range .Kinds -}}
 		{{if isParameterized . -}}
 		{{else -}}
 	case {{reflectKind .}}:
-		data := t.{{sliceOf .}}
+		data := a.{{sliceOf .}}
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
 			data[i] = {{if eq .String "bool" -}}
 				false
@@ -232,12 +227,10 @@ const zeroIterRaw = `func (t *array) zeroIter(it Iterator) (err error){
 		{{end -}}
 	{{end -}}
 	default:
-		ptr := uintptr(t.Ptr)
 		for i, err = it.Next(); err == nil; i, err = it.Next(){
-			want := ptr + uintptr(i)*t.t.Size()
-			val := reflect.NewAt(t.t.Type, unsafe.Pointer(want))
+			val := reflect.NewAt(a.t.Type, storage.ElementAt(i, unsafe.Pointer(&a.Header.Raw[0]), a.t.Size()))
 			val = reflect.Indirect(val)
-			val.Set(reflect.Zero(t.t))
+			val.Set(reflect.Zero(a.t))
 		}
 		err = handleNoOp(err)
 	}
@@ -245,16 +238,26 @@ const zeroIterRaw = `func (t *array) zeroIter(it Iterator) (err error){
 }
 `
 
+const reflectConstTemplateRaw = `var (
+	{{range .Kinds -}}
+		{{if isParameterized . -}}
+		{{else -}}
+			{{short . | unexport}}Type = reflect.TypeOf({{asType .}}({{if eq .String "bool" -}} false {{else if eq .String "string" -}}"" {{else if eq .String "unsafe.Pointer" -}}nil {{else -}}0{{end -}}))
+		{{end -}}
+	{{end -}}
+)`
+
 var (
-	AsSlice    *template.Template
-	SimpleSet  *template.Template
-	SimpleGet  *template.Template
-	Get        *template.Template
-	Set        *template.Template
-	Memset     *template.Template
-	MemsetIter *template.Template
-	Eq         *template.Template
-	ZeroIter   *template.Template
+	AsSlice     *template.Template
+	SimpleSet   *template.Template
+	SimpleGet   *template.Template
+	Get         *template.Template
+	Set         *template.Template
+	Memset      *template.Template
+	MemsetIter  *template.Template
+	Eq          *template.Template
+	ZeroIter    *template.Template
+	ReflectType *template.Template
 )
 
 func init() {
@@ -267,6 +270,7 @@ func init() {
 	MemsetIter = template.Must(template.New("MemsetIter").Funcs(funcs).Parse(memsetIterRaw))
 	Eq = template.Must(template.New("ArrayEq").Funcs(funcs).Parse(arrayEqRaw))
 	ZeroIter = template.Must(template.New("Zero").Funcs(funcs).Parse(zeroIterRaw))
+	ReflectType = template.Must(template.New("ReflectType").Funcs(funcs).Parse(reflectConstTemplateRaw))
 }
 
 func generateArrayMethods(f io.Writer, ak Kinds) {
@@ -294,4 +298,9 @@ func generateHeaderGetSet(f io.Writer, ak Kinds) {
 			fmt.Fprint(f, "\n")
 		}
 	}
+}
+
+func generateReflectTypes(f io.Writer, ak Kinds) {
+	ReflectType.Execute(f, ak)
+	fmt.Fprintf(f, "\n\n\n")
 }

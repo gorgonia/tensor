@@ -607,7 +607,9 @@ func TestDense_Slice(t *testing.T) {
 	assert.True(V.(*Dense).old.IsZero())
 
 	// slice a sliced
+	t.Logf("%v", V)
 	V, err = V.Slice(makeRS(1, 2))
+	t.Logf("%v", V)
 	assert.True(ScalarShape().Eq(V.Shape()))
 	assert.Equal(float32(3), V.Data())
 

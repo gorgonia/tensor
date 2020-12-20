@@ -11,7 +11,7 @@ import (
 )
 
 func (e E) Map(t reflect.Type, fn interface{}, a *storage.Header, incr bool) (err error) {
-	as := isScalar(a)
+	as := isScalar(a, t)
 	switch t {
 	case Bool:
 		var f0 func(bool) bool

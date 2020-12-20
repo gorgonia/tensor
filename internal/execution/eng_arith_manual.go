@@ -8,26 +8,20 @@ import (
 )
 
 func (e E) AddSliced(t reflect.Type, dataA *storage.Header, dstStart, dstEnd int, dataB *storage.Header, srcStart, srcEnd int) (err error) {
+	ds := dstStart * int(t.Size())
+	de := dstEnd * int(t.Size())
 	a := &storage.Header{
-		Ptr: storage.ElementAt(dstStart, dataA.Ptr, t.Size()),
-		L:   dstEnd - dstStart,
-		C:   dataA.C - dstStart,
-	}
-	if a.C == 0 {
-		a.C = 1
+		Raw: dataA.Raw[ds:de],
 	}
 
+	ss := srcStart * int(t.Size())
+	se := srcEnd * int(t.Size())
 	b := &storage.Header{
-		Ptr: storage.ElementAt(srcStart, dataB.Ptr, t.Size()),
-		L:   srcEnd - srcStart,
-		C:   dataB.C - srcStart,
-	}
-	if b.C == 0 {
-		b.C = 1
+		Raw: dataB.Raw[ss:se],
 	}
 
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:

@@ -26,7 +26,7 @@ func (s Shape) TotalSize() int {
 
 // CalcStrides calculates the default strides for a shape
 func (s Shape) CalcStrides() []int {
-	if s.IsScalar() {
+	if s.IsScalarEquiv() {
 		return nil
 	}
 
@@ -52,7 +52,7 @@ func (s Shape) CalcStrides() []int {
 // CalcStridesWithMask is similar to CalcStrides, except that it has an argument, masks. It is used to mask out given dimensions
 // during calculation of stride
 func (s Shape) CalcStridesWithMask(mask []bool) []int {
-	if s.IsScalar() {
+	if s.IsScalarEquiv() {
 		return nil
 	}
 
@@ -87,7 +87,7 @@ func (s Shape) CalcStridesWithMask(mask []bool) []int {
 
 // CalcStridesColMajor is like CalcStrides, but assumes a col major layout
 func (s Shape) CalcStridesColMajor() []int {
-	if s.IsScalar() {
+	if s.IsScalarEquiv() {
 		return nil
 	}
 
@@ -155,7 +155,7 @@ func (s Shape) Clone() Shape {
 
 // IsScalar returns true if the access pattern indicates it's a scalar value
 func (s Shape) IsScalar() bool {
-	return len(s) == 0 || (len(s) == 1 && s[0] == 1)
+	return len(s) == 0
 }
 
 // IsScalarEquiv returns true if the access pattern indicates it's a scalar-like value

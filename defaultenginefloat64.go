@@ -1,8 +1,6 @@
 package tensor
 
 import (
-	"unsafe"
-
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/execution"
 	"gorgonia.org/tensor/internal/storage"
@@ -118,12 +116,8 @@ func (e Float64Engine) makeArray(arr *array, t Dtype, size int) {
 	if t != Float64 {
 		panic("Float64Engine only creates float64s")
 	}
-	s := make([]float64, size)
+	arr.Header.Raw = make([]byte, size*8)
 	arr.t = t
-	arr.L = size
-	arr.C = size
-	arr.Ptr = unsafe.Pointer(&s[0])
-	arr.fix()
 }
 
 func (e Float64Engine) FMA(a, x, y Tensor) (retVal Tensor, err error) {
