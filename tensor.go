@@ -61,10 +61,8 @@ type Tensor interface {
 	// engine/memory related stuff
 	// all Tensors should be able to be expressed of as a slab of memory
 	// Note: the size of each element can be acquired by T.Dtype().Size()
+	Memory                      // Tensors all implement Memory
 	Engine() Engine             // Engine can be nil
-	MemSize() uintptr           // the size in memory
-	Uintptr() uintptr           // the pointer to the first element, as a uintptr
-	Pointer() unsafe.Pointer    // the pointer to the first elemment as a unsafe.Ponter
 	IsNativelyAccessible() bool // Can Go access the memory
 	IsManuallyManaged() bool    // Must Go manage the memory
 
@@ -128,6 +126,27 @@ func getFloatDenseTensor(t Tensor) (retVal DenseTensor, err error) {
 	}
 	if err = typeclassCheck(t.Dtype(), floatTypes); err != nil {
 		err = errors.Wrapf(err, "getFloatDense only handles floats. Got %v instead", t.Dtype())
+		return
+	}
+
+	if retVal, err = getDenseTensor(t); err != nil {
+		err = errors.Wrapf(err, opFail, "getFloatDense")
+		return
+	}
+	if retVal == nil {
+		return
+	}
+
+	return
+}
+
+// getFloatDense extracts a *Dense from a Tensor and ensures that the .data is a Array that implements Float
+func getFloatComplexDenseTensor(t Tensor) (retVal DenseTensor, err error) {
+	if t == nil {
+		return
+	}
+	if err = typeclassCheck(t.Dtype(), floatcmplxTypes); err != nil {
+		err = errors.Wrapf(err, "getFloatDense only handles floats and complex. Got %v instead", t.Dtype())
 		return
 	}
 

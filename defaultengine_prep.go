@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"reflect"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
 	// "log"
@@ -102,6 +104,23 @@ func unaryCheck(a Tensor, tc *typeclass) error {
 	return nil
 }
 
+// scalarDtypeCheck checks that a scalar value has the same dtype as the dtype of a given tensor.
+func scalarDtypeCheck(a Tensor, b interface{}) error {
+	var dt Dtype
+	switch bt := b.(type) {
+	case Dtyper:
+		dt = bt.Dtype()
+	default:
+		t := reflect.TypeOf(b)
+		dt = Dtype{t}
+	}
+
+	if a.Dtype() != dt {
+		return errors.Errorf("Expected scalar to have the same Dtype as the tensor (%v). Got %T instead ", a.Dtype(), b)
+	}
+	return nil
+}
+
 // prepDataVV prepares the data given the input and reuse tensors. It also retruns several indicators
 //
 // useIter indicates that the iterator methods should be used.
@@ -140,10 +159,10 @@ func prepDataVV(a, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Hea
 	return
 }
 
-func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, ait, iit Iterator, useIter bool, err error) {
+func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, ait, iit Iterator, useIter bool, newAlloc bool, err error) {
 	// get data
 	dataA = a.hdr()
-	dataB = scalarToHeader(b)
+	dataB, newAlloc = scalarToHeader(b)
 	if reuse != nil {
 		dataReuse = reuse.hdr()
 	}
@@ -163,9 +182,9 @@ func prepDataVS(a Tensor, b interface{}, reuse Tensor) (dataA, dataB, dataReuse 
 	return
 }
 
-func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, bit, iit Iterator, useIter bool, err error) {
+func prepDataSV(a interface{}, b Tensor, reuse Tensor) (dataA, dataB, dataReuse *storage.Header, bit, iit Iterator, useIter bool, newAlloc bool, err error) {
 	// get data
-	dataA = scalarToHeader(a)
+	dataA, newAlloc = scalarToHeader(a)
 	dataB = b.hdr()
 	if reuse != nil {
 		dataReuse = reuse.hdr()

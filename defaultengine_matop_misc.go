@@ -72,9 +72,6 @@ func (StdEng) denseRepeat(t, reuse DenseTensor, newShape Shape, axis, size int, 
 		outers = 1
 	} else {
 		outers = ProdInts(t.Shape()[0:axis])
-		if outers == 0 {
-			outers = 1
-		}
 	}
 
 	var stride, newStride int
@@ -183,8 +180,8 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 				bDestEnd := (destStart + tmp) * int(darr.t.Size())
 
 				// then we get the data as a slice of raw bytes
-				sBS := storage.AsByteSlice(&sarr.Header, sarr.t.Type)
-				dBS := storage.AsByteSlice(&darr.Header, darr.t.Type)
+				sBS := sarr.Header.Raw
+				dBS := darr.Header.Raw
 
 				// recall that len(src) < len(dest)
 				// it's easier to understand if we define the ranges.
@@ -208,7 +205,7 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 		for j := 0; j < size; j++ {
 			var tmp int
 			tmp = repeats[j]
-			var tSlice array2
+			var tSlice array
 
 			tSlice = sarr.slice(srcStart, src.len())
 
@@ -291,6 +288,7 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 			return nil, errors.Wrap(err, "Unable to slice DenseTensor while performing denseConcat")
 		}
 
+		// keep dims after slicing
 		switch {
 		case v.IsVector() && T.IsMatrix() && axis == 0:
 			v.reshape(v.shape[0], 1)
@@ -320,6 +318,10 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 				}
 				v.shape = newShape
 				v.strides = newStrides
+			} else if T.Shape()[axis] == 1 {
+				if err := v.unsqueeze(axis); err != nil {
+					return nil, errors.Wrapf(err, "Unable to keep dims after slicing a shape %v on axis %d where the size is 1", T.Shape(), axis)
+				}
 			}
 		}
 

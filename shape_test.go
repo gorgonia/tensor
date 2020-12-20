@@ -47,12 +47,14 @@ func TestShapeIsX(t *testing.T) {
 	// scalar shape
 	s = Shape{}
 	assert.True(s.IsScalar())
+	assert.True(s.IsScalarEquiv())
 	assert.False(s.IsVector())
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
 
 	s = Shape{1}
-	assert.True(s.IsScalar())
+	assert.False(s.IsScalar())
+	assert.True(s.IsScalarEquiv())
 	assert.False(s.IsVector())
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
@@ -129,10 +131,16 @@ func TestShapeEquality(t *testing.T) {
 	var s1, s2 Shape
 
 	// scalar
-	s1 = Shape{1}
+	s1 = Shape{}
 	s2 = Shape{}
 	assert.True(s1.Eq(s2))
 	assert.True(s2.Eq(s1))
+
+	// scalars and scalar equiv are not the same!
+	s1 = Shape{1}
+	s2 = Shape{}
+	assert.False(s1.Eq(s2))
+	assert.False(s2.Eq(s1))
 
 	// vector
 	s1 = Shape{3}

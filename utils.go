@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 const AllAxes int = -1
 
@@ -40,34 +42,15 @@ func SumInts(a []int) (retVal int) {
 
 // ProdInts returns the internal product of an int slice
 func ProdInts(a []int) (retVal int) {
+	retVal = 1
 	if len(a) == 0 {
 		return
 	}
-	retVal = 1
 	for _, v := range a {
 		retVal *= v
 	}
 	return
 }
-
-// EqInts returns true if slices have same value
-// func EqInts(a, b []int) bool {
-// 	if len(a) != len(b) {
-// 		return false
-// 	}
-//
-// 	if (a == nil) != (b == nil) {
-// 		return false
-// 	}
-//
-// 	b = b[:len(a)]
-// 	for i, v := range a {
-// 		if v != b[i] {
-// 			return false
-// 		}
-// 	}
-// 	return true
-// }
 
 // IsMonotonicInts returns true if the slice of ints is monotonically increasing. It also returns true for incr1 if every succession is a succession of 1
 func IsMonotonicInts(a []int) (monotonic bool, incr1 bool) {
@@ -93,6 +76,14 @@ func IsMonotonicInts(a []int) (monotonic bool, incr1 bool) {
 
 // Ltoi is Location to Index. Provide a shape, a strides, and a list of integers as coordinates, and returns the index at which the element is.
 func Ltoi(shape Shape, strides []int, coords ...int) (at int, err error) {
+	if shape.IsScalarEquiv() {
+		for _, v := range coords {
+			if v != 0 {
+				return -1, errors.Errorf("Scalar shape only allows 0 as an index")
+			}
+		}
+		return 0, nil
+	}
 	for i, coord := range coords {
 		if i >= len(shape) {
 			err = errors.Errorf(dimMismatch, len(shape), i)
@@ -107,23 +98,16 @@ func Ltoi(shape Shape, strides []int, coords ...int) (at int, err error) {
 		}
 
 		var stride int
-		if shape.IsRowVec() {
-			if i == 0 && len(coords) == 2 {
-				continue
-			}
+		switch {
+		case shape.IsVector() && len(strides) == 1:
 			stride = strides[0]
-		} else if shape.IsColVec() {
-			if i == 1 && len(coords) == 2 {
-				continue
-			}
-			stride = strides[0]
-		} else {
-			if i >= len(strides) {
-				err = errors.Errorf(dimMismatch, len(strides), i)
-				return
-			}
+		case i >= len(strides):
+			err = errors.Errorf(dimMismatch, len(strides), i)
+			return
+		default:
 			stride = strides[i]
 		}
+
 		at += stride * coord
 	}
 	return at, nil
@@ -305,6 +289,15 @@ func memsetBools(a []bool, v bool) {
 	for bp := 1; bp < len(a); bp *= 2 {
 		copy(a[bp:], a[:bp])
 	}
+}
+
+func allones(a []int) bool {
+	for i := range a {
+		if a[i] != 1 {
+			return false
+		}
+	}
+	return true
 }
 
 /* FOR ILLUSTRATIVE PURPOSES */
