@@ -75,9 +75,8 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 	axStride := apA.strides[axis]
 	retStride := apRet.strides[axis]
 	var outerRetStride int
-	if outer == 0 {
+	if axis == 0 {
 		// then it's the outermost
-		outer = 1
 		outerRetStride = apRet.strides[axis] * 2
 	} else {
 		outerRetStride = apRet.strides[axis-1]
@@ -185,9 +184,7 @@ func (e StdEng) selectByIndicesB(axis int, indices []int, typ reflect.Type, data
 	axStride := apB.strides[axis]
 	retStride := apRet.strides[axis]
 	var outerRetStride int
-	if outer == 0 {
-		// then it's the outermost
-		outer = 1
+	if axis == 0 {
 		outerRetStride = apRet.strides[axis] * 2
 	} else {
 		outerRetStride = apRet.strides[axis-1]

@@ -10,13 +10,13 @@ import (
 )
 
 func (e E) Gt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -221,13 +221,13 @@ func (e E) Gt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 }
 
 func (e E) Gte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -432,13 +432,13 @@ func (e E) Gte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *sto
 }
 
 func (e E) Lt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -643,13 +643,13 @@ func (e E) Lt(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 }
 
 func (e E) Lte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -854,13 +854,13 @@ func (e E) Lte(t reflect.Type, a *storage.Header, b *storage.Header, retVal *sto
 }
 
 func (e E) Eq(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -1140,13 +1140,13 @@ func (e E) Eq(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 }
 
 func (e E) Ne(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is a scalar. a: %d, b %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -1426,8 +1426,8 @@ func (e E) Ne(t reflect.Type, a *storage.Header, b *storage.Header, retVal *stor
 }
 
 func (e E) GtSame(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -1618,8 +1618,8 @@ func (e E) GtSame(t reflect.Type, a *storage.Header, b *storage.Header) (err err
 }
 
 func (e E) GteSame(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -1810,8 +1810,8 @@ func (e E) GteSame(t reflect.Type, a *storage.Header, b *storage.Header) (err er
 }
 
 func (e E) LtSame(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -2002,8 +2002,8 @@ func (e E) LtSame(t reflect.Type, a *storage.Header, b *storage.Header) (err err
 }
 
 func (e E) LteSame(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -2194,8 +2194,8 @@ func (e E) LteSame(t reflect.Type, a *storage.Header, b *storage.Header) (err er
 }
 
 func (e E) EqSame(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Bool:
@@ -2442,8 +2442,8 @@ func (e E) EqSame(t reflect.Type, a *storage.Header, b *storage.Header) (err err
 }
 
 func (e E) NeSame(t reflect.Type, a *storage.Header, b *storage.Header) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Bool:
@@ -2690,13 +2690,13 @@ func (e E) NeSame(t reflect.Type, a *storage.Header, b *storage.Header) (err err
 }
 
 func (e E) GtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -2888,13 +2888,13 @@ func (e E) GtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 }
 
 func (e E) GteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -3086,13 +3086,13 @@ func (e E) GteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal 
 }
 
 func (e E) LtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -3284,13 +3284,13 @@ func (e E) LtIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 }
 
 func (e E) LteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -3482,13 +3482,13 @@ func (e E) LteIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal 
 }
 
 func (e E) EqIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -3750,13 +3750,13 @@ func (e E) EqIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 }
 
 func (e E) NeIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *storage.Header, ait Iterator, bit Iterator, rit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
-	rs := isScalar(retVal)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(retVal, Bool)
 	rt := retVal.Bools()
 
 	if ((as && !bs) || (bs && !as)) && rs {
-		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.Len(), b.Len())
+		return errors.Errorf("retVal is scalar while len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
 	}
 
 	switch t {
@@ -4018,8 +4018,8 @@ func (e E) NeIter(t reflect.Type, a *storage.Header, b *storage.Header, retVal *
 }
 
 func (e E) GtSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -4210,8 +4210,8 @@ func (e E) GtSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait 
 }
 
 func (e E) GteSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -4402,8 +4402,8 @@ func (e E) GteSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait
 }
 
 func (e E) LtSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -4594,8 +4594,8 @@ func (e E) LtSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait 
 }
 
 func (e E) LteSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Int:
@@ -4786,8 +4786,8 @@ func (e E) LteSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait
 }
 
 func (e E) EqSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Bool:
@@ -5034,8 +5034,8 @@ func (e E) EqSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait 
 }
 
 func (e E) NeSameIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Iterator, bit Iterator) (err error) {
-	as := isScalar(a)
-	bs := isScalar(b)
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
 
 	switch t {
 	case Bool:

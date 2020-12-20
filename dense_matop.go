@@ -243,7 +243,6 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 	}
 
 	view.AP.zero()
-	view.array.v = nil // reset
 
 	view.t = t.t
 	view.e = t.e

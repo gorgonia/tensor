@@ -560,7 +560,7 @@ func (t *Dense) FBDecode(buf []byte) error {
 	// allocated data. Now time to actually copy over the data
 	db := t.byteSlice()
 	copy(db, serialized.DataBytes())
-	t.forcefix()
+	t.fix()
 	return t.sanity()
 }
 `
