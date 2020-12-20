@@ -281,6 +281,7 @@ func (t *Dense) Format(s fmt.State, c rune) {
 		}
 		fmt.Fprintf(f, " %v %v\n", t.Shape(), t.Strides())
 	}
+
 	if f.c == 'H' {
 		return
 	}
