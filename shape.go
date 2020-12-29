@@ -176,7 +176,7 @@ func (s Shape) IsScalarEquiv() bool {
 //		vanilla vector (not a row or a col)
 //		column vector
 //		row vector
-func (s Shape) IsVector() bool { return s.IsColVec() || s.IsRowVec() || (len(s) == 1) }
+func (s Shape) IsVector() bool { return s.IsColVec() || s.IsRowVec() || (len(s) == 1 && s[0] > 1) }
 
 // IsColVec returns true when the access pattern has the shape (x, 1)
 func (s Shape) IsColVec() bool { return len(s) == 2 && (s[1] == 1 && s[0] > 1) }
