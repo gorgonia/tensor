@@ -48,7 +48,6 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.AddIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -70,7 +69,6 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Add(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -115,7 +113,6 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.SubIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -137,7 +134,6 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Sub(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -182,7 +178,6 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.MulIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -204,7 +199,6 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Mul(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -249,7 +243,6 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.DivIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -271,7 +264,6 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Div(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -316,7 +308,6 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.PowIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -338,7 +329,6 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Pow(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -383,7 +373,6 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 			}
 			err = e.E.ModIter(typ, retVal.hdr(), dataB, ait, bit)
 		}
-
 		return
 	}
 	switch {
@@ -405,7 +394,6 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		}
 		err = e.E.Mod(typ, retVal.hdr(), dataB)
 	}
-
 	return
 }
 
@@ -414,6 +402,10 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = unaryCheck(t, numberTypes); err != nil {
 		return nil, errors.Wrapf(err, "Add failed")
+	}
+
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Add failed")
 	}
 
 	var reuse DenseTensor
@@ -425,15 +417,15 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Add")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Add")
 		}
 		scalarHeader = dataA
@@ -467,6 +459,9 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.AddIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -481,17 +476,25 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Add(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Add(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
-		if leftTensor {
-			err = e.E.Add(typ, retVal.hdr(), dataB)
-		} else {
-			err = e.E.Add(typ, dataA, retVal.hdr())
+		if !leftTensor {
+			storage.Fill(typ, retVal.hdr(), dataA)
 		}
+		err = e.E.Add(typ, retVal.hdr(), dataB)
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return
@@ -504,6 +507,10 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Sub failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Sub failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -513,15 +520,15 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Sub")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Sub")
 		}
 		scalarHeader = dataA
@@ -555,6 +562,9 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.SubIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -569,17 +579,25 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Sub(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Sub(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
-		if leftTensor {
-			err = e.E.Sub(typ, retVal.hdr(), dataB)
-		} else {
-			err = e.E.Sub(typ, dataA, retVal.hdr())
+		if !leftTensor {
+			storage.Fill(typ, retVal.hdr(), dataA)
 		}
+		err = e.E.Sub(typ, retVal.hdr(), dataB)
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return
@@ -592,6 +610,10 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Mul failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Mul failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -601,15 +623,15 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Mul")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Mul")
 		}
 		scalarHeader = dataA
@@ -643,6 +665,9 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.MulIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -657,17 +682,25 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Mul(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Mul(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
-		if leftTensor {
-			err = e.E.Mul(typ, retVal.hdr(), dataB)
-		} else {
-			err = e.E.Mul(typ, dataA, retVal.hdr())
+		if !leftTensor {
+			storage.Fill(typ, retVal.hdr(), dataA)
 		}
+		err = e.E.Mul(typ, retVal.hdr(), dataB)
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return
@@ -680,6 +713,10 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Div failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Div failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -689,15 +726,15 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Div")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Div")
 		}
 		scalarHeader = dataA
@@ -731,6 +768,9 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.DivIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -745,17 +785,25 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Div(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Div(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
-		if leftTensor {
-			err = e.E.Div(typ, retVal.hdr(), dataB)
-		} else {
-			err = e.E.Div(typ, dataA, retVal.hdr())
+		if !leftTensor {
+			storage.Fill(typ, retVal.hdr(), dataA)
 		}
+		err = e.E.Div(typ, retVal.hdr(), dataB)
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return
@@ -768,6 +816,10 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Pow failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Pow failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -777,15 +829,15 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Pow")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Pow")
 		}
 		scalarHeader = dataA
@@ -819,6 +871,9 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.PowIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -833,17 +888,25 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Pow(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Pow(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
-		if leftTensor {
-			err = e.E.Pow(typ, retVal.hdr(), dataB)
-		} else {
-			err = e.E.Pow(typ, dataA, retVal.hdr())
+		if !leftTensor {
+			storage.Fill(typ, retVal.hdr(), dataA)
 		}
+		err = e.E.Pow(typ, retVal.hdr(), dataB)
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return
@@ -856,6 +919,10 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 		return nil, errors.Wrapf(err, "Mod failed")
 	}
 
+	if err = scalarDtypeCheck(t, s); err != nil {
+		return nil, errors.Wrap(err, "Mod failed")
+	}
+
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
 	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
@@ -865,15 +932,15 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	typ := t.Dtype().Type
 	var ait, bit, iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Mod")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.Mod")
 		}
 		scalarHeader = dataA
@@ -907,6 +974,9 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 				err = e.E.ModIter(typ, dataA, retVal.hdr(), ait, bit)
 			}
 		}
+		if newAlloc {
+			freeScalar(scalarHeader.Raw)
+		}
 		returnHeader(scalarHeader)
 		return
 	}
@@ -921,17 +991,25 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 	case toReuse && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.Mod(typ, dataA, dataReuse)
+		if t.Shape().IsScalarEquiv() {
+			storage.Copy(typ, dataReuse, dataA)
+		}
 		retVal = reuse
 	case !safe:
 		err = e.E.Mod(typ, dataA, dataB)
+		if t.Shape().IsScalarEquiv() && !leftTensor {
+			storage.Copy(typ, dataB, dataA)
+		}
 		retVal = a
 	default:
 		retVal = a.Clone().(Tensor)
-		if leftTensor {
-			err = e.E.Mod(typ, retVal.hdr(), dataB)
-		} else {
-			err = e.E.Mod(typ, dataA, retVal.hdr())
+		if !leftTensor {
+			storage.Fill(typ, retVal.hdr(), dataA)
 		}
+		err = e.E.Mod(typ, retVal.hdr(), dataB)
+	}
+	if newAlloc {
+		freeScalar(scalarHeader.Raw)
 	}
 	returnHeader(scalarHeader)
 	return

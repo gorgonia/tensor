@@ -146,4 +146,6 @@ type unsafeMem interface {
 	GetF32(i int) float32
 	Float64s() []float64
 	Float32s() []float32
+	Complex64s() []complex64
+	Complex128s() []complex128
 }

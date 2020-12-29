@@ -3,6 +3,7 @@
 package tensor
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -604,26 +605,26 @@ func TestDense_MaskedEqual_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -1244,26 +1245,26 @@ func TestDense_MaskedNotEqual_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -1985,26 +1986,26 @@ func TestDense_MaskedGreater_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -2625,26 +2626,26 @@ func TestDense_MaskedGreaterEqual_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -3265,26 +3266,26 @@ func TestDense_MaskedLess_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -3905,26 +3906,26 @@ func TestDense_MaskedLessEqual_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -4545,26 +4546,26 @@ func TestDense_MaskedInside_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 
@@ -5185,26 +5186,26 @@ func TestDense_MaskedOutside_Str(t *testing.T) {
 	assert.False(T.IsMasked())
 	data := T.Strings()
 	for i := range data {
-		data[i] = string(i)
+		data[i] = fmt.Sprint(i)
 	}
-	T.MaskedEqual(string(0))
+	T.MaskedEqual(fmt.Sprint(0))
 	assert.True(T.IsMasked())
-	T.MaskedEqual(string(1))
+	T.MaskedEqual(fmt.Sprint(1))
 	assert.True(T.mask[0] && T.mask[1])
-	T.MaskedNotEqual(string(2))
+	T.MaskedNotEqual(fmt.Sprint(2))
 	assert.False(T.mask[2] && !(T.mask[0]))
 
 	T.ResetMask()
-	T.MaskedInside(string(1), string(22))
+	T.MaskedInside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(!T.mask[0] && !T.mask[23] && T.mask[1] && T.mask[22])
 
 	T.ResetMask()
-	T.MaskedOutside(string(1), string(22))
+	T.MaskedOutside(fmt.Sprint(1), fmt.Sprint(22))
 	assert.True(T.mask[0] && T.mask[23] && !T.mask[1] && !T.mask[22])
 
 	T.ResetMask()
 	for i := 0; i < 5; i++ {
-		T.MaskedEqual(string(i * 10))
+		T.MaskedEqual(fmt.Sprint(i * 10))
 	}
 	it := IteratorFromDense(T)
 

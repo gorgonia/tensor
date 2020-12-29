@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 // T performs a thunked transpose. It doesn't actually do anything, except store extra information about the post-transposed shapes and strides
 // Usually this is more than enough, as BLAS will handle the rest of the transpose
@@ -241,7 +243,6 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 	}
 
 	view.AP.zero()
-	view.array.v = nil // reset
 
 	view.t = t.t
 	view.e = t.e

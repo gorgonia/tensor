@@ -26,7 +26,7 @@ func (s Shape) TotalSize() int {
 
 // CalcStrides calculates the default strides for a shape
 func (s Shape) CalcStrides() []int {
-	if s.IsScalar() {
+	if s.IsScalarEquiv() {
 		return nil
 	}
 
@@ -52,7 +52,7 @@ func (s Shape) CalcStrides() []int {
 // CalcStridesWithMask is similar to CalcStrides, except that it has an argument, masks. It is used to mask out given dimensions
 // during calculation of stride
 func (s Shape) CalcStridesWithMask(mask []bool) []int {
-	if s.IsScalar() {
+	if s.IsScalarEquiv() {
 		return nil
 	}
 
@@ -87,7 +87,7 @@ func (s Shape) CalcStridesWithMask(mask []bool) []int {
 
 // CalcStridesColMajor is like CalcStrides, but assumes a col major layout
 func (s Shape) CalcStridesColMajor() []int {
-	if s.IsScalar() {
+	if s.IsScalarEquiv() {
 		return nil
 	}
 
@@ -155,7 +155,7 @@ func (s Shape) Clone() Shape {
 
 // IsScalar returns true if the access pattern indicates it's a scalar value
 func (s Shape) IsScalar() bool {
-	return len(s) == 0 || (len(s) == 1 && s[0] == 1)
+	return len(s) == 0
 }
 
 // IsScalarEquiv returns true if the access pattern indicates it's a scalar-like value
@@ -183,6 +183,19 @@ func (s Shape) IsColVec() bool { return len(s) == 2 && (s[1] == 1 && s[0] > 1) }
 
 // IsRowVec returns true when the access pattern has the shape (1, x)
 func (s Shape) IsRowVec() bool { return len(s) == 2 && (s[0] == 1 && s[1] > 1) }
+
+// IsVectorLike returns true when the shape looks like a vector
+// e.g. a number that is surrounded by 1s:
+// 	(1, 1, ... 1, 10, 1, 1... 1)
+func (s Shape) IsVectorLike() bool {
+	var nonOnes int
+	for _, i := range s {
+		if i != 1 {
+			nonOnes++
+		}
+	}
+	return nonOnes == 1 || nonOnes == 0 // if there is only one non-one then it's a vector or a scalarlike.
+}
 
 // IsMatrix returns true if it's a matrix. This is mostly a convenience method. RowVec and ColVecs are also considered matrices
 func (s Shape) IsMatrix() bool { return len(s) == 2 }
