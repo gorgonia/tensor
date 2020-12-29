@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"syscall"
 	"testing"
 	"testing/quick"
@@ -23,6 +24,10 @@ func (f *F64) MemSize() uintptr { return 8 }
 func (f *F64) Pointer() unsafe.Pointer { return unsafe.Pointer(f) }
 
 func Test_FromMemory(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Skipping test; Test_FromMemory requires syscall.Mmap, which is a linux only feature")
+	}
+
 	fn := func(F float64) bool {
 		f := newF64(F)
 		T := New(WithShape(), Of(Float64), FromMemory(f.Uintptr(), f.MemSize()))
