@@ -383,12 +383,15 @@ func (t *Dense) ShallowClone() *Dense {
 func (t *Dense) oldAP() *AP           { return &t.old }
 func (t *Dense) setOldAP(ap *AP)      { t.old = *ap }
 func (t *Dense) transposeAxes() []int { return t.transposeWith }
+
+//go:nocheckptr
 func (t *Dense) parentTensor() *Dense {
 	if t.viewOf != 0 {
 		return (*Dense)(unsafe.Pointer(t.viewOf))
 	}
 	return nil
 }
+
 func (t *Dense) setParentTensor(d *Dense) {
 	if d == nil {
 		t.viewOf = 0
