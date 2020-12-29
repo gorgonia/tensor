@@ -12,7 +12,7 @@ import (
 )
 
 func TestSaveLoadNumpy(t *testing.T) {
-	if os.Getenv("TRAVISTEST") == "true" {
+	if os.Getenv("CI_NO_PYTHON") == "true" {
 		t.Skip("skipping test; This is being run on TravisCI")
 	}
 

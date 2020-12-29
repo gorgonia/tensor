@@ -5,6 +5,7 @@ on:
 name: test and build
 env:
   GOPROXY: "https://proxy.golang.org"
+  CI_NO_PYTHON: "true"
 jobs:
   test:
     strategy:
