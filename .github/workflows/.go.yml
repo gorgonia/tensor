@@ -44,6 +44,9 @@ jobs:
         go test -race -tags=${{ matrix.tags }}
 
   coverage:
+    env:
+      CI_NO_PYTHON: "false"
+      PYTHON_COMMAND: python
     strategy:
       matrix:
         tags: [avx, sse]
@@ -53,6 +56,15 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: 1.14.x
+    - name: Install Python
+      uses: action/setup-python@v2
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+    - name: Install Pip
+      uses: BSFishy/pip-action@v1
+      with:
+        packages: numpy
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Calc coverage
