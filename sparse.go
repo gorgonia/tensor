@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"reflect"
-	"unsafe"
 
 	"sort"
 
@@ -29,7 +28,7 @@ type coo struct {
 	data   array
 }
 
-func (c *coo) Len() int { return c.data.L }
+func (c *coo) Len() int { return c.data.Len() }
 func (c *coo) Less(i, j int) bool {
 	if c.o.IsColMajor() {
 		return c.colMajorLess(i, j)
@@ -187,7 +186,7 @@ func (t *CS) Strides() []int       { return nil }
 func (t *CS) Dtype() Dtype         { return t.t }
 func (t *CS) Dims() int            { return 2 }
 func (t *CS) Size() int            { return t.s.TotalSize() }
-func (t *CS) DataSize() int        { return t.L }
+func (t *CS) DataSize() int        { return t.Len() }
 func (t *CS) Engine() Engine       { return t.e }
 func (t *CS) DataOrder() DataOrder { return t.o }
 
@@ -289,7 +288,7 @@ func (t *CS) Clone() interface{} {
 	retVal.indptr = make([]int, len(t.indptr))
 	copy(retVal.indices, t.indices)
 	copy(retVal.indptr, t.indptr)
-	retVal.array = makeArray(t.t, t.array.L)
+	retVal.array = makeArray(t.t, t.array.Len())
 	copyArray(&retVal.array, &t.array)
 	retVal.e = t.e
 	return retVal
@@ -298,12 +297,11 @@ func (t *CS) Clone() interface{} {
 func (t *CS) IsScalar() bool           { return false }
 func (t *CS) ScalarValue() interface{} { panic("Sparse Matrices cannot represent Scalar Values") }
 
-func (t *CS) MemSize() uintptr        { return uintptr(calcMemSize(t.t, t.array.L)) }
-func (t *CS) Uintptr() uintptr        { return uintptr(t.array.Ptr) }
-func (t *CS) Pointer() unsafe.Pointer { return t.array.Ptr }
+func (t *CS) MemSize() uintptr { return uintptr(calcMemSize(t.t, t.array.Len())) }
+func (t *CS) Uintptr() uintptr { return t.array.Uintptr() }
 
 // NonZeroes returns the nonzeroes. In academic literature this is often written as NNZ.
-func (t *CS) NonZeroes() int         { return t.L }
+func (t *CS) NonZeroes() int         { return t.Len() }
 func (t *CS) RequiresIterator() bool { return true }
 func (t *CS) Iterator() Iterator     { return NewFlatSparseIterator(t) }
 

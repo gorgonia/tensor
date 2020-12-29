@@ -120,6 +120,27 @@ var stdTypes = [...]string{
 	"UnsafePointer",
 }
 
+var arrowBinaryTypes = []string{
+	"String",
+}
+
+var arrowFixedWidthTypes = []string{
+	"Boolean",
+}
+
+var arrowPrimitiveTypes = []string{
+	"Int8",
+	"Int16",
+	"Int32",
+	"Int64",
+	"Uint8",
+	"Uint16",
+	"Uint32",
+	"Uint64",
+	"Float32",
+	"Float64",
+}
+
 var parameterizedKinds = [...]reflect.Kind{
 	reflect.Array,
 	reflect.Chan,
@@ -130,6 +151,7 @@ var parameterizedKinds = [...]reflect.Kind{
 	reflect.Slice,
 	reflect.Struct,
 }
+
 var number = [...]reflect.Kind{
 	reflect.Int,
 	reflect.Int8,

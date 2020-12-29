@@ -17,8 +17,8 @@ func (t *Dense) Trace() (retVal interface{}, err error) {
 // Inner performs a dot product on two vectors. If t or other are not vectors, it will return an error.
 func (t *Dense) Inner(other Tensor) (retVal interface{}, err error) {
 	// check that the data is a float
-	if !isFloat(t.t) {
-		return nil, errors.Errorf(unsupportedDtype, t.t, "Inner")
+	if err = typeclassCheck(t.t, floatcmplxTypes); err != nil {
+		return nil, errors.Wrapf(err, unsupportedDtype, t.t, "Inner")
 	}
 
 	// check both are vectors

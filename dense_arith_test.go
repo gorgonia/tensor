@@ -662,6 +662,32 @@ func TestDense_AddScalar(t *testing.T) {
 		t.Errorf("Identity test for Add (scalar as left, tensor as right) failed: %v", err)
 	}
 
+	type Foo int
+	wt1 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Add(a, b)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongType test for Add (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	wt2 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Add(b, a)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongTYpe test for Add (tensor as right, scalar as left) failed: %v", err)
+	}
 }
 func TestDense_SubScalar(t *testing.T) {
 	inv1 := func(q *Dense) bool {
@@ -715,6 +741,32 @@ func TestDense_SubScalar(t *testing.T) {
 	}
 	if err := quick.Check(inv2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Inv test for Sub (scalar as left, tensor as right) failed: %v", err)
+	}
+	type Foo int
+	wt1 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Sub(a, b)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongType test for Sub (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	wt2 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Sub(b, a)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongTYpe test for Sub (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDense_MulScalar(t *testing.T) {
@@ -770,6 +822,32 @@ func TestDense_MulScalar(t *testing.T) {
 		t.Errorf("Identity test for Mul (scalar as left, tensor as right) failed: %v", err)
 	}
 
+	type Foo int
+	wt1 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Mul(a, b)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongType test for Mul (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	wt2 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Mul(b, a)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongTYpe test for Mul (tensor as right, scalar as left) failed: %v", err)
+	}
 }
 func TestDense_DivScalar(t *testing.T) {
 	inv1 := func(q *Dense) bool {
@@ -799,6 +877,32 @@ func TestDense_DivScalar(t *testing.T) {
 		t.Errorf("Inv test for Div (tensor as left, scalar as right) failed: %v", err)
 	}
 
+	type Foo int
+	wt1 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Div(a, b)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongType test for Div (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	wt2 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Div(b, a)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongTYpe test for Div (tensor as right, scalar as left) failed: %v", err)
+	}
 }
 func TestDense_PowScalar(t *testing.T) {
 	iden1 := func(q *Dense) bool {
@@ -828,6 +932,32 @@ func TestDense_PowScalar(t *testing.T) {
 		t.Errorf("Identity test for Pow (tensor as left, scalar as right) failed: %v", err)
 	}
 
+	type Foo int
+	wt1 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Pow(a, b)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongType test for Pow (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	wt2 := func(a *Dense) bool {
+		b := Foo(0)
+		ret, err := Pow(b, a)
+		if err == nil {
+			return false
+		}
+		_ = ret
+		return true
+	}
+	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("WrongTYpe test for Pow (tensor as right, scalar as left) failed: %v", err)
+	}
 }
 func TestDense_AddScalar_unsafe(t *testing.T) {
 	iden1 := func(q *Dense) bool {

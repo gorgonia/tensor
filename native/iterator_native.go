@@ -34,7 +34,8 @@ func checkNativeIterable(t *Dense, dims int, dt Dtype) error {
 /* Native Iterables for bool */
 
 // VectorB converts a *Dense into a []bool
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorB(t *Dense) (retVal []bool, err error) {
 	if err = checkNativeIterable(t, 1, Bool); err != nil {
 		return nil, err
@@ -43,7 +44,8 @@ func VectorB(t *Dense) (retVal []bool, err error) {
 }
 
 // MatrixB converts a  *Dense into a [][]bool
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixB(t *Dense) (retVal [][]bool, err error) {
 	if err = checkNativeIterable(t, 2, Bool); err != nil {
 		return nil, err
@@ -59,17 +61,16 @@ func MatrixB(t *Dense) (retVal [][]bool, err error) {
 	retVal = make([][]bool, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]bool)(unsafe.Pointer(hdr))
+		retVal[i] = make([]bool, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3B converts a *Dense into  a [][][]bool.
+// Tensor3B converts a *Dense into a  [][][]bool.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3B(t *Dense) (retVal [][][]bool, err error) {
 	if err = checkNativeIterable(t, 3, Bool); err != nil {
@@ -89,13 +90,12 @@ func Tensor3B(t *Dense) (retVal [][][]bool, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]bool, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]bool, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]bool)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -104,7 +104,8 @@ func Tensor3B(t *Dense) (retVal [][][]bool, err error) {
 /* Native Iterables for int */
 
 // VectorI converts a *Dense into a []int
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorI(t *Dense) (retVal []int, err error) {
 	if err = checkNativeIterable(t, 1, Int); err != nil {
 		return nil, err
@@ -113,7 +114,8 @@ func VectorI(t *Dense) (retVal []int, err error) {
 }
 
 // MatrixI converts a  *Dense into a [][]int
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixI(t *Dense) (retVal [][]int, err error) {
 	if err = checkNativeIterable(t, 2, Int); err != nil {
 		return nil, err
@@ -129,17 +131,16 @@ func MatrixI(t *Dense) (retVal [][]int, err error) {
 	retVal = make([][]int, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]int)(unsafe.Pointer(hdr))
+		retVal[i] = make([]int, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3I converts a *Dense into  a [][][]int.
+// Tensor3I converts a *Dense into a  [][][]int.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I(t *Dense) (retVal [][][]int, err error) {
 	if err = checkNativeIterable(t, 3, Int); err != nil {
@@ -159,13 +160,12 @@ func Tensor3I(t *Dense) (retVal [][][]int, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]int, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]int, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]int)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -174,7 +174,8 @@ func Tensor3I(t *Dense) (retVal [][][]int, err error) {
 /* Native Iterables for int8 */
 
 // VectorI8 converts a *Dense into a []int8
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorI8(t *Dense) (retVal []int8, err error) {
 	if err = checkNativeIterable(t, 1, Int8); err != nil {
 		return nil, err
@@ -183,7 +184,8 @@ func VectorI8(t *Dense) (retVal []int8, err error) {
 }
 
 // MatrixI8 converts a  *Dense into a [][]int8
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixI8(t *Dense) (retVal [][]int8, err error) {
 	if err = checkNativeIterable(t, 2, Int8); err != nil {
 		return nil, err
@@ -199,17 +201,16 @@ func MatrixI8(t *Dense) (retVal [][]int8, err error) {
 	retVal = make([][]int8, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]int8)(unsafe.Pointer(hdr))
+		retVal[i] = make([]int8, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3I8 converts a *Dense into  a [][][]int8.
+// Tensor3I8 converts a *Dense into a  [][][]int8.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I8(t *Dense) (retVal [][][]int8, err error) {
 	if err = checkNativeIterable(t, 3, Int8); err != nil {
@@ -229,13 +230,12 @@ func Tensor3I8(t *Dense) (retVal [][][]int8, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]int8, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]int8, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]int8)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -244,7 +244,8 @@ func Tensor3I8(t *Dense) (retVal [][][]int8, err error) {
 /* Native Iterables for int16 */
 
 // VectorI16 converts a *Dense into a []int16
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorI16(t *Dense) (retVal []int16, err error) {
 	if err = checkNativeIterable(t, 1, Int16); err != nil {
 		return nil, err
@@ -253,7 +254,8 @@ func VectorI16(t *Dense) (retVal []int16, err error) {
 }
 
 // MatrixI16 converts a  *Dense into a [][]int16
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixI16(t *Dense) (retVal [][]int16, err error) {
 	if err = checkNativeIterable(t, 2, Int16); err != nil {
 		return nil, err
@@ -269,17 +271,16 @@ func MatrixI16(t *Dense) (retVal [][]int16, err error) {
 	retVal = make([][]int16, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]int16)(unsafe.Pointer(hdr))
+		retVal[i] = make([]int16, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3I16 converts a *Dense into  a [][][]int16.
+// Tensor3I16 converts a *Dense into a  [][][]int16.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I16(t *Dense) (retVal [][][]int16, err error) {
 	if err = checkNativeIterable(t, 3, Int16); err != nil {
@@ -299,13 +300,12 @@ func Tensor3I16(t *Dense) (retVal [][][]int16, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]int16, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]int16, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]int16)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -314,7 +314,8 @@ func Tensor3I16(t *Dense) (retVal [][][]int16, err error) {
 /* Native Iterables for int32 */
 
 // VectorI32 converts a *Dense into a []int32
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorI32(t *Dense) (retVal []int32, err error) {
 	if err = checkNativeIterable(t, 1, Int32); err != nil {
 		return nil, err
@@ -323,7 +324,8 @@ func VectorI32(t *Dense) (retVal []int32, err error) {
 }
 
 // MatrixI32 converts a  *Dense into a [][]int32
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixI32(t *Dense) (retVal [][]int32, err error) {
 	if err = checkNativeIterable(t, 2, Int32); err != nil {
 		return nil, err
@@ -339,17 +341,16 @@ func MatrixI32(t *Dense) (retVal [][]int32, err error) {
 	retVal = make([][]int32, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]int32)(unsafe.Pointer(hdr))
+		retVal[i] = make([]int32, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3I32 converts a *Dense into  a [][][]int32.
+// Tensor3I32 converts a *Dense into a  [][][]int32.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I32(t *Dense) (retVal [][][]int32, err error) {
 	if err = checkNativeIterable(t, 3, Int32); err != nil {
@@ -369,13 +370,12 @@ func Tensor3I32(t *Dense) (retVal [][][]int32, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]int32, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]int32, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]int32)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -384,7 +384,8 @@ func Tensor3I32(t *Dense) (retVal [][][]int32, err error) {
 /* Native Iterables for int64 */
 
 // VectorI64 converts a *Dense into a []int64
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorI64(t *Dense) (retVal []int64, err error) {
 	if err = checkNativeIterable(t, 1, Int64); err != nil {
 		return nil, err
@@ -393,7 +394,8 @@ func VectorI64(t *Dense) (retVal []int64, err error) {
 }
 
 // MatrixI64 converts a  *Dense into a [][]int64
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixI64(t *Dense) (retVal [][]int64, err error) {
 	if err = checkNativeIterable(t, 2, Int64); err != nil {
 		return nil, err
@@ -409,17 +411,16 @@ func MatrixI64(t *Dense) (retVal [][]int64, err error) {
 	retVal = make([][]int64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]int64)(unsafe.Pointer(hdr))
+		retVal[i] = make([]int64, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3I64 converts a *Dense into  a [][][]int64.
+// Tensor3I64 converts a *Dense into a  [][][]int64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3I64(t *Dense) (retVal [][][]int64, err error) {
 	if err = checkNativeIterable(t, 3, Int64); err != nil {
@@ -439,13 +440,12 @@ func Tensor3I64(t *Dense) (retVal [][][]int64, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]int64, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]int64, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]int64)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -454,7 +454,8 @@ func Tensor3I64(t *Dense) (retVal [][][]int64, err error) {
 /* Native Iterables for uint */
 
 // VectorU converts a *Dense into a []uint
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorU(t *Dense) (retVal []uint, err error) {
 	if err = checkNativeIterable(t, 1, Uint); err != nil {
 		return nil, err
@@ -463,7 +464,8 @@ func VectorU(t *Dense) (retVal []uint, err error) {
 }
 
 // MatrixU converts a  *Dense into a [][]uint
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixU(t *Dense) (retVal [][]uint, err error) {
 	if err = checkNativeIterable(t, 2, Uint); err != nil {
 		return nil, err
@@ -479,17 +481,16 @@ func MatrixU(t *Dense) (retVal [][]uint, err error) {
 	retVal = make([][]uint, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]uint)(unsafe.Pointer(hdr))
+		retVal[i] = make([]uint, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3U converts a *Dense into  a [][][]uint.
+// Tensor3U converts a *Dense into a  [][][]uint.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U(t *Dense) (retVal [][][]uint, err error) {
 	if err = checkNativeIterable(t, 3, Uint); err != nil {
@@ -509,13 +510,12 @@ func Tensor3U(t *Dense) (retVal [][][]uint, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]uint, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]uint, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]uint)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -524,7 +524,8 @@ func Tensor3U(t *Dense) (retVal [][][]uint, err error) {
 /* Native Iterables for uint8 */
 
 // VectorU8 converts a *Dense into a []uint8
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorU8(t *Dense) (retVal []uint8, err error) {
 	if err = checkNativeIterable(t, 1, Uint8); err != nil {
 		return nil, err
@@ -533,7 +534,8 @@ func VectorU8(t *Dense) (retVal []uint8, err error) {
 }
 
 // MatrixU8 converts a  *Dense into a [][]uint8
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixU8(t *Dense) (retVal [][]uint8, err error) {
 	if err = checkNativeIterable(t, 2, Uint8); err != nil {
 		return nil, err
@@ -549,17 +551,16 @@ func MatrixU8(t *Dense) (retVal [][]uint8, err error) {
 	retVal = make([][]uint8, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]uint8)(unsafe.Pointer(hdr))
+		retVal[i] = make([]uint8, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3U8 converts a *Dense into  a [][][]uint8.
+// Tensor3U8 converts a *Dense into a  [][][]uint8.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U8(t *Dense) (retVal [][][]uint8, err error) {
 	if err = checkNativeIterable(t, 3, Uint8); err != nil {
@@ -579,13 +580,12 @@ func Tensor3U8(t *Dense) (retVal [][][]uint8, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]uint8, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]uint8, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]uint8)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -594,7 +594,8 @@ func Tensor3U8(t *Dense) (retVal [][][]uint8, err error) {
 /* Native Iterables for uint16 */
 
 // VectorU16 converts a *Dense into a []uint16
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorU16(t *Dense) (retVal []uint16, err error) {
 	if err = checkNativeIterable(t, 1, Uint16); err != nil {
 		return nil, err
@@ -603,7 +604,8 @@ func VectorU16(t *Dense) (retVal []uint16, err error) {
 }
 
 // MatrixU16 converts a  *Dense into a [][]uint16
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixU16(t *Dense) (retVal [][]uint16, err error) {
 	if err = checkNativeIterable(t, 2, Uint16); err != nil {
 		return nil, err
@@ -619,17 +621,16 @@ func MatrixU16(t *Dense) (retVal [][]uint16, err error) {
 	retVal = make([][]uint16, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]uint16)(unsafe.Pointer(hdr))
+		retVal[i] = make([]uint16, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3U16 converts a *Dense into  a [][][]uint16.
+// Tensor3U16 converts a *Dense into a  [][][]uint16.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U16(t *Dense) (retVal [][][]uint16, err error) {
 	if err = checkNativeIterable(t, 3, Uint16); err != nil {
@@ -649,13 +650,12 @@ func Tensor3U16(t *Dense) (retVal [][][]uint16, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]uint16, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]uint16, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]uint16)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -664,7 +664,8 @@ func Tensor3U16(t *Dense) (retVal [][][]uint16, err error) {
 /* Native Iterables for uint32 */
 
 // VectorU32 converts a *Dense into a []uint32
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorU32(t *Dense) (retVal []uint32, err error) {
 	if err = checkNativeIterable(t, 1, Uint32); err != nil {
 		return nil, err
@@ -673,7 +674,8 @@ func VectorU32(t *Dense) (retVal []uint32, err error) {
 }
 
 // MatrixU32 converts a  *Dense into a [][]uint32
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixU32(t *Dense) (retVal [][]uint32, err error) {
 	if err = checkNativeIterable(t, 2, Uint32); err != nil {
 		return nil, err
@@ -689,17 +691,16 @@ func MatrixU32(t *Dense) (retVal [][]uint32, err error) {
 	retVal = make([][]uint32, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]uint32)(unsafe.Pointer(hdr))
+		retVal[i] = make([]uint32, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3U32 converts a *Dense into  a [][][]uint32.
+// Tensor3U32 converts a *Dense into a  [][][]uint32.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U32(t *Dense) (retVal [][][]uint32, err error) {
 	if err = checkNativeIterable(t, 3, Uint32); err != nil {
@@ -719,13 +720,12 @@ func Tensor3U32(t *Dense) (retVal [][][]uint32, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]uint32, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]uint32, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]uint32)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -734,7 +734,8 @@ func Tensor3U32(t *Dense) (retVal [][][]uint32, err error) {
 /* Native Iterables for uint64 */
 
 // VectorU64 converts a *Dense into a []uint64
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorU64(t *Dense) (retVal []uint64, err error) {
 	if err = checkNativeIterable(t, 1, Uint64); err != nil {
 		return nil, err
@@ -743,7 +744,8 @@ func VectorU64(t *Dense) (retVal []uint64, err error) {
 }
 
 // MatrixU64 converts a  *Dense into a [][]uint64
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixU64(t *Dense) (retVal [][]uint64, err error) {
 	if err = checkNativeIterable(t, 2, Uint64); err != nil {
 		return nil, err
@@ -759,17 +761,16 @@ func MatrixU64(t *Dense) (retVal [][]uint64, err error) {
 	retVal = make([][]uint64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]uint64)(unsafe.Pointer(hdr))
+		retVal[i] = make([]uint64, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3U64 converts a *Dense into  a [][][]uint64.
+// Tensor3U64 converts a *Dense into a  [][][]uint64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3U64(t *Dense) (retVal [][][]uint64, err error) {
 	if err = checkNativeIterable(t, 3, Uint64); err != nil {
@@ -789,13 +790,12 @@ func Tensor3U64(t *Dense) (retVal [][][]uint64, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]uint64, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]uint64, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]uint64)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -804,7 +804,8 @@ func Tensor3U64(t *Dense) (retVal [][][]uint64, err error) {
 /* Native Iterables for float32 */
 
 // VectorF32 converts a *Dense into a []float32
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorF32(t *Dense) (retVal []float32, err error) {
 	if err = checkNativeIterable(t, 1, Float32); err != nil {
 		return nil, err
@@ -813,7 +814,8 @@ func VectorF32(t *Dense) (retVal []float32, err error) {
 }
 
 // MatrixF32 converts a  *Dense into a [][]float32
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixF32(t *Dense) (retVal [][]float32, err error) {
 	if err = checkNativeIterable(t, 2, Float32); err != nil {
 		return nil, err
@@ -829,17 +831,16 @@ func MatrixF32(t *Dense) (retVal [][]float32, err error) {
 	retVal = make([][]float32, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]float32)(unsafe.Pointer(hdr))
+		retVal[i] = make([]float32, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3F32 converts a *Dense into  a [][][]float32.
+// Tensor3F32 converts a *Dense into a  [][][]float32.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3F32(t *Dense) (retVal [][][]float32, err error) {
 	if err = checkNativeIterable(t, 3, Float32); err != nil {
@@ -859,13 +860,12 @@ func Tensor3F32(t *Dense) (retVal [][][]float32, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]float32, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]float32, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]float32)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -874,7 +874,8 @@ func Tensor3F32(t *Dense) (retVal [][][]float32, err error) {
 /* Native Iterables for float64 */
 
 // VectorF64 converts a *Dense into a []float64
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorF64(t *Dense) (retVal []float64, err error) {
 	if err = checkNativeIterable(t, 1, Float64); err != nil {
 		return nil, err
@@ -883,7 +884,8 @@ func VectorF64(t *Dense) (retVal []float64, err error) {
 }
 
 // MatrixF64 converts a  *Dense into a [][]float64
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixF64(t *Dense) (retVal [][]float64, err error) {
 	if err = checkNativeIterable(t, 2, Float64); err != nil {
 		return nil, err
@@ -899,17 +901,16 @@ func MatrixF64(t *Dense) (retVal [][]float64, err error) {
 	retVal = make([][]float64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]float64)(unsafe.Pointer(hdr))
+		retVal[i] = make([]float64, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3F64 converts a *Dense into  a [][][]float64.
+// Tensor3F64 converts a *Dense into a  [][][]float64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3F64(t *Dense) (retVal [][][]float64, err error) {
 	if err = checkNativeIterable(t, 3, Float64); err != nil {
@@ -929,13 +930,12 @@ func Tensor3F64(t *Dense) (retVal [][][]float64, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]float64, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]float64, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]float64)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -944,7 +944,8 @@ func Tensor3F64(t *Dense) (retVal [][][]float64, err error) {
 /* Native Iterables for complex64 */
 
 // VectorC64 converts a *Dense into a []complex64
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorC64(t *Dense) (retVal []complex64, err error) {
 	if err = checkNativeIterable(t, 1, Complex64); err != nil {
 		return nil, err
@@ -953,7 +954,8 @@ func VectorC64(t *Dense) (retVal []complex64, err error) {
 }
 
 // MatrixC64 converts a  *Dense into a [][]complex64
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixC64(t *Dense) (retVal [][]complex64, err error) {
 	if err = checkNativeIterable(t, 2, Complex64); err != nil {
 		return nil, err
@@ -969,17 +971,16 @@ func MatrixC64(t *Dense) (retVal [][]complex64, err error) {
 	retVal = make([][]complex64, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]complex64)(unsafe.Pointer(hdr))
+		retVal[i] = make([]complex64, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3C64 converts a *Dense into  a [][][]complex64.
+// Tensor3C64 converts a *Dense into a  [][][]complex64.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3C64(t *Dense) (retVal [][][]complex64, err error) {
 	if err = checkNativeIterable(t, 3, Complex64); err != nil {
@@ -999,13 +1000,12 @@ func Tensor3C64(t *Dense) (retVal [][][]complex64, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]complex64, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]complex64, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]complex64)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -1014,7 +1014,8 @@ func Tensor3C64(t *Dense) (retVal [][][]complex64, err error) {
 /* Native Iterables for complex128 */
 
 // VectorC128 converts a *Dense into a []complex128
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorC128(t *Dense) (retVal []complex128, err error) {
 	if err = checkNativeIterable(t, 1, Complex128); err != nil {
 		return nil, err
@@ -1023,7 +1024,8 @@ func VectorC128(t *Dense) (retVal []complex128, err error) {
 }
 
 // MatrixC128 converts a  *Dense into a [][]complex128
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixC128(t *Dense) (retVal [][]complex128, err error) {
 	if err = checkNativeIterable(t, 2, Complex128); err != nil {
 		return nil, err
@@ -1039,17 +1041,16 @@ func MatrixC128(t *Dense) (retVal [][]complex128, err error) {
 	retVal = make([][]complex128, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]complex128)(unsafe.Pointer(hdr))
+		retVal[i] = make([]complex128, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3C128 converts a *Dense into  a [][][]complex128.
+// Tensor3C128 converts a *Dense into a  [][][]complex128.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3C128(t *Dense) (retVal [][][]complex128, err error) {
 	if err = checkNativeIterable(t, 3, Complex128); err != nil {
@@ -1069,13 +1070,12 @@ func Tensor3C128(t *Dense) (retVal [][][]complex128, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]complex128, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]complex128, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]complex128)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return
@@ -1084,7 +1084,8 @@ func Tensor3C128(t *Dense) (retVal [][][]complex128, err error) {
 /* Native Iterables for string */
 
 // VectorStr converts a *Dense into a []string
-// If the *Dense does not represent a vector of the wanted type, it will return an error.
+// If the *Dense does not represent a vector of the wanted type, it will return
+// an error.
 func VectorStr(t *Dense) (retVal []string, err error) {
 	if err = checkNativeIterable(t, 1, String); err != nil {
 		return nil, err
@@ -1093,7 +1094,8 @@ func VectorStr(t *Dense) (retVal []string, err error) {
 }
 
 // MatrixStr converts a  *Dense into a [][]string
-// If the *Dense does not represent a matrix of the wanted type, it will return an error.
+// If the *Dense does not represent a matrix of the wanted type, it
+// will return an error.
 func MatrixStr(t *Dense) (retVal [][]string, err error) {
 	if err = checkNativeIterable(t, 2, String); err != nil {
 		return nil, err
@@ -1109,17 +1111,16 @@ func MatrixStr(t *Dense) (retVal [][]string, err error) {
 	retVal = make([][]string, rows)
 	for i := range retVal {
 		start := i * rowStride
-		hdr := &reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(&data[start])),
-			Len:  cols,
-			Cap:  cols,
-		}
-		retVal[i] = *(*[]string)(unsafe.Pointer(hdr))
+		retVal[i] = make([]string, 0)
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i]))
+		hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+		hdr.Cap = cols
+		hdr.Len = cols
 	}
 	return
 }
 
-// Tensor3Str converts a *Dense into  a [][][]string.
+// Tensor3Str converts a *Dense into a  [][][]string.
 // If the *Dense does not represent a 3-tensor of the wanted type, it will return an error.
 func Tensor3Str(t *Dense) (retVal [][][]string, err error) {
 	if err = checkNativeIterable(t, 3, String); err != nil {
@@ -1139,13 +1140,12 @@ func Tensor3Str(t *Dense) (retVal [][][]string, err error) {
 	for i := range retVal {
 		retVal[i] = make([][]string, rows)
 		for j := range retVal[i] {
+			retVal[i][j] = make([]string, 0)
 			start := i*layerStride + j*rowStride
-			hdr := &reflect.SliceHeader{
-				Data: uintptr(unsafe.Pointer(&data[start])),
-				Len:  cols,
-				Cap:  cols,
-			}
-			retVal[i][j] = *(*[]string)(unsafe.Pointer(hdr))
+			hdr := (*reflect.SliceHeader)(unsafe.Pointer(&retVal[i][j]))
+			hdr.Data = uintptr(unsafe.Pointer(&data[start]))
+			hdr.Cap = cols
+			hdr.Len = cols
 		}
 	}
 	return

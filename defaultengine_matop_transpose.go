@@ -4,7 +4,6 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
-	"gorgonia.org/tensor/internal/storage"
 )
 
 func (e StdEng) Transpose(a Tensor, expStrides []int) error {
@@ -24,6 +23,8 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 		return
 	}
 
+	e.transposeMask(a)
+
 	switch a.rtype().Size() {
 	case 1:
 		e.denseTranspose1(a, expStrides)
@@ -36,6 +37,23 @@ func (e StdEng) denseTranspose(a DenseTensor, expStrides []int) {
 	default:
 		e.denseTransposeArbitrary(a, expStrides)
 	}
+}
+
+func (e StdEng) transposeMask(a DenseTensor) {
+	if !a.(*Dense).IsMasked() {
+		return
+	}
+
+	orig := a.(*Dense).Mask()
+	tmp := make([]bool, len(orig))
+
+	it := newFlatIterator(a.Info())
+	var j int
+	for i, err := it.Next(); err == nil; i, err = it.Next() {
+		tmp[j] = orig[i]
+		j++
+	}
+	copy(orig, tmp)
 }
 
 func (e StdEng) denseTranspose1(a DenseTensor, expStrides []int) {
@@ -121,7 +139,7 @@ func (e StdEng) denseTransposeArbitrary(a DenseTensor, expStrides []int) {
 	// arbs := storage.AsByteSlice(tmpArr.hdr(), rtype)
 	arbs := tmpArr.byteSlice()
 
-	orig := storage.AsByteSlice(a.hdr(), rtype)
+	orig := a.hdr().Raw
 	it := newFlatIterator(a.Info())
 	var j int
 	for i, err := it.Next(); err == nil; i, err = it.Next() {

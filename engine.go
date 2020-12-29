@@ -1,9 +1,5 @@
 package tensor
 
-import (
-	"unsafe"
-)
-
 // Memory is a representation of memory of the value.
 //
 // The main reason for requiring both Uintptr() and Pointer() methods is because while Go currently does not have a compacting
@@ -13,7 +9,6 @@ import (
 type Memory interface {
 	Uintptr() uintptr
 	MemSize() uintptr
-	Pointer() unsafe.Pointer
 }
 
 // Engine is a representation of an execution engine.
@@ -392,6 +387,14 @@ type NaNChecker interface {
 // Other errors may also occur. See specific implementations for details
 type InfChecker interface {
 	HasInf(t Tensor) (bool, error)
+}
+
+/* Advanced Indexing */
+
+// ByIndiceser allows for values in tensor `a` to be selected by the indices listed in the `indices` tensor.
+type ByIndiceser interface {
+	SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+	SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
 }
 
 /* Internal interfaces for faster shit */
