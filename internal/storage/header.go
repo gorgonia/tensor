@@ -9,22 +9,22 @@ import (
 // With this, we wouldn't need to keep the uintptr.
 // This usually means additional pressure for the GC though, especially when passing around Headers
 type Header struct {
-	Ptr unsafe.Pointer
-	L   int
-	C   int
+	Raw []byte
 }
 
-func (h *Header) Pointer() unsafe.Pointer { return h.Ptr }
-func (h *Header) Len() int                { return h.L }
+func (h *Header) TypedLen(t reflect.Type) int {
+	sz := int(t.Size())
+	return len(h.Raw) / sz
+}
 
 func Copy(t reflect.Type, dst, src *Header) int {
-	if dst.L == 0 || src.L == 0 {
+	if len(dst.Raw) == 0 || len(src.Raw) == 0 {
 		return 0
 	}
 
-	n := src.L
-	if dst.L < n {
-		n = dst.L
+	n := src.TypedLen(t)
+	if len(dst.Raw) < n {
+		n = dst.TypedLen(t)
 	}
 
 	// handle struct{} type
@@ -37,15 +37,15 @@ func Copy(t reflect.Type, dst, src *Header) int {
 
 	// otherwise, just copy bytes.
 	// FUTURE: implement memmove
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	copied := copy(dstBA, srcBA)
 	return copied / int(t.Size())
 }
 
 func CopySliced(t reflect.Type, dst *Header, dstart, dend int, src *Header, sstart, send int) int {
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	size := int(t.Size())
 
 	ds := dstart * size
@@ -57,8 +57,8 @@ func CopySliced(t reflect.Type, dst *Header, dstart, dend int, src *Header, ssta
 }
 
 func Fill(t reflect.Type, dst, src *Header) int {
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	size := int(t.Size())
 	lenSrc := len(srcBA)
 
@@ -74,8 +74,8 @@ func Fill(t reflect.Type, dst, src *Header) int {
 }
 
 func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
-	dstBA := AsByteSlice(dst, t)
-	srcBA := AsByteSlice(src, t)
+	dstBA := dst.Raw
+	srcBA := src.Raw
 	size := int(t.Size())
 
 	var idx, jdx, i, j, count int
@@ -102,17 +102,30 @@ func CopyIter(t reflect.Type, dst, src *Header, diter, siter Iterator) int {
 	return count
 }
 
-func AsByteSlice(a *Header, t reflect.Type) []byte {
-	size := a.L * int(t.Size())
-	b := make([]byte, 0)
-	hdr := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	hdr.Data = uintptr(a.Ptr)
-	hdr.Cap = size
-	hdr.Len = size
-	return b
-}
-
 // Element gets the pointer of ith element
 func ElementAt(i int, base unsafe.Pointer, typeSize uintptr) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(base) + uintptr(i)*typeSize)
+}
+
+// AsByteSlice takes a slice of anything and returns a casted-as-byte-slice view of it.
+// This function panics if input is not a slice.
+func AsByteSlice(x interface{}) []byte {
+	xV := reflect.ValueOf(x)
+	xT := reflect.TypeOf(x).Elem() // expects a []T
+
+	hdr := reflect.SliceHeader{
+		Data: xV.Pointer(),
+		Len:  xV.Len() * int(xT.Size()),
+		Cap:  xV.Cap() * int(xT.Size()),
+	}
+	return *(*[]byte)(unsafe.Pointer(&hdr))
+}
+
+func FromMemory(ptr uintptr, memsize uintptr) []byte {
+	hdr := reflect.SliceHeader{
+		Data: ptr,
+		Len:  int(memsize),
+		Cap:  int(memsize),
+	}
+	return *(*[]byte)(unsafe.Pointer(&hdr))
 }

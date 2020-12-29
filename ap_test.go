@@ -120,8 +120,8 @@ func TestAccessPatternIsX(t *testing.T) {
 	ap = dummyScalar2()
 	assert.False(ap.IsScalar())
 	assert.True(ap.IsScalarEquiv())
-	assert.True(ap.IsVector())
 	assert.True(ap.IsVectorLike())
+	assert.False(ap.IsVector())
 	assert.False(ap.IsColVec())
 	assert.False(ap.IsRowVec())
 

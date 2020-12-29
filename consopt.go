@@ -2,7 +2,8 @@ package tensor
 
 import (
 	"reflect"
-	"unsafe"
+
+	"gorgonia.org/tensor/internal/storage"
 )
 
 // ConsOpt is a tensor construction option.
@@ -106,24 +107,13 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			xt := reflect.TypeOf(x)
-			xv := reflect.New(xt)
-			xvi := reflect.Indirect(xv)
-			xvi.Set(reflect.ValueOf(x))
-			uptr := unsafe.Pointer(xv.Pointer())
-
-			var v interface{}
-			if !tt.Shape().IsScalar() {
-				sl := reflect.MakeSlice(reflect.SliceOf(xt), 1, 1)
-				zeroth := sl.Index(0)
-				zeroth.Set(reflect.ValueOf(x))
-				v = sl.Interface()
-			}
-			tt.array.Ptr = uptr
-			tt.array.L = 1
-			tt.array.C = 1
-			tt.v = v
-			tt.t = Dtype{xt}
+			xT := reflect.TypeOf(x)
+			sxT := reflect.SliceOf(xT)
+			xv := reflect.MakeSlice(sxT, 1, 1) // []T
+			xv0 := xv.Index(0)                 // xv[0]
+			xv0.Set(reflect.ValueOf(x))
+			tt.array.Header.Raw = storage.AsByteSlice(xv.Interface())
+			tt.t = Dtype{xT}
 			tt.mask = mask
 
 		default:
@@ -152,17 +142,9 @@ func FromMemory(ptr uintptr, memsize uintptr) ConsOpt {
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
-			tt.v = nil // if there were any underlying slices it should be GC'd
-			tt.array.Ptr = unsafe.Pointer(ptr)
-			tt.array.L = int(memsize / tt.t.Size())
-			tt.array.C = int(memsize / tt.t.Size())
-
+			tt.Header.Raw = nil // GC anything if needed
+			tt.Header.Raw = storage.FromMemory(ptr, memsize)
 			tt.flag = MakeMemoryFlag(tt.flag, ManuallyManaged)
-
-			if tt.IsNativelyAccessible() {
-				tt.array.fix()
-			}
-
 		default:
 			panic("Unsupported Tensor type")
 		}

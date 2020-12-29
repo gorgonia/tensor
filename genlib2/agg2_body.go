@@ -51,15 +51,15 @@ const prepMixedRaw = `if err = unaryCheck(t, {{.TypeClassCheck | lower}}Types); 
 	typ := t.Dtype().Type
 	var ait, bit,  iit Iterator
 	var dataA, dataB, dataReuse, scalarHeader *storage.Header
-	var useIter bool
+	var useIter, newAlloc bool
 
 	if leftTensor {
-		if dataA, dataB, dataReuse, ait, iit, useIter, err = prepDataVS(t, s, reuse); err != nil {
+		if dataA, dataB, dataReuse, ait, iit, useIter, newAlloc, err = prepDataVS(t, s, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.{{.Name}}")
 		}
 		scalarHeader = dataB
 	} else {
-		if dataA, dataB, dataReuse, bit, iit, useIter, err = prepDataSV(s, t, reuse); err != nil {
+		if dataA, dataB, dataReuse, bit, iit, useIter, newAlloc, err = prepDataSV(s, t, reuse); err != nil {
 			return nil, errors.Wrapf(err, opFail, "StdEng.{{.Name}}")
 		}
 		scalarHeader = dataA
@@ -133,7 +133,12 @@ const agg2BodyRaw = `if useIter {
 			}
 		{{end -}}
 		}
-		{{if not .VV -}}returnHeader(scalarHeader){{end}}
+		{{if not .VV -}}
+		if newAlloc{
+		freeScalar(scalarHeader.Raw)
+		}
+		returnHeader(scalarHeader)
+		{{end -}}
 		return
 	}
 	switch {
@@ -184,7 +189,12 @@ const agg2BodyRaw = `if useIter {
 			err = e.E.{{.Name}}(typ, retVal.hdr(), dataB)
 		{{end -}}
 	}
-	{{if not .VV -}}returnHeader(scalarHeader){{end}}
+	{{if not .VV -}}
+	if newAlloc{
+	freeScalar(scalarHeader.Raw)
+	}
+	returnHeader(scalarHeader)
+	{{end -}}
 	return
 `
 
@@ -242,13 +252,18 @@ const agg2CmpBodyRaw = `// check to see if anything needs to be created
 			err = e.E.{{.Name}}Iter(typ, dataA, dataB, dataReuse, ait, bit, iit)
 			retVal = reuse
 		}
-		{{if not .VV -}}returnHeader(scalarHeader){{end}}
+		{{if not .VV -}}
+		if newAlloc{
+		freeScalar(scalarHeader.Raw)
+		}
+		returnHeader(scalarHeader)
+		{{end -}}
 		return
 	}
 
 	{{if not .VV -}}
 	// handle special case where A and B have both len 1
-	if dataA.L == 1 && dataB.L == 1 {
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
 		case same && safe && reuse != nil && leftTensor:
 			storage.Copy(typ,dataReuse,dataA)
@@ -288,7 +303,12 @@ const agg2CmpBodyRaw = `// check to see if anything needs to be created
 			err = e.E.{{.Name}}(typ, dataA, dataB, dataReuse)
 			retVal = reuse
 	}
-	{{if not .VV -}}returnHeader(scalarHeader){{end}}
+	{{if not .VV -}}
+	if newAlloc{
+		freeScalar(scalarHeader.Raw)
+	}
+	returnHeader(scalarHeader)
+	{{end -}}
 	return
 `
 

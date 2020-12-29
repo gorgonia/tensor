@@ -57,6 +57,8 @@ func TestShapeIsX(t *testing.T) {
 	assert.True(s.IsScalarEquiv())
 	assert.True(s.IsVector())
 	assert.True(s.IsVectorLike())
+	assert.False(s.IsVector())
+
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
 
