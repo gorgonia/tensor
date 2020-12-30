@@ -21,6 +21,11 @@ func TestDense_Format(t *testing.T) {
 	res = fmt.Sprintf("%3.3f", T)
 	assert.Equal("3.140", res)
 
+	// Scalar-equiv (vector)
+	T = New(WithBacking([]float64{3.14}), WithShape(1))
+	res = fmt.Sprintf("%3.3f", T)
+	assert.Equal("[3.140]", res)
+
 	// short vector
 	T = New(Of(Float64), WithShape(4))
 	res = fmt.Sprintf("%v", T)
@@ -76,7 +81,7 @@ Matrix (2, 2) [2 1]
 	expected = `
 ⎡  0    1  ⋯  12   13⎤
 ⎢ 14   15  ⋯  26   27⎥
-  ⋮  
+  ⋮
 ⎢196  197  ⋯ 208  209⎥
 ⎣210  211  ⋯ 222  223⎦
 `
