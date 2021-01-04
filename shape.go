@@ -26,7 +26,7 @@ func (s Shape) TotalSize() int {
 
 // CalcStrides calculates the default strides for a shape
 func (s Shape) CalcStrides() []int {
-	if s.IsScalarEquiv() {
+	if s.IsScalar() {
 		return nil
 	}
 
