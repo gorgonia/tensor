@@ -531,6 +531,11 @@ var denseSliceTests = []struct {
 	correctStride []int
 	correctData   interface{}
 }{
+	// scalar-equiv vector (issue 102)
+	{"a[0], a is scalar-equiv", []float64{2},
+		Shape{1}, []Slice{ss(0)}, ScalarShape(), nil, 2.0},
+
+	// vector
 	{"a[0]", []bool{true, true, false, false, false},
 		Shape{5}, []Slice{ss(0)}, ScalarShape(), nil, true},
 	{"a[0:2]", Range(Byte, 0, 5), Shape{5}, []Slice{makeRS(0, 2)}, Shape{2}, []int{1}, []byte{0, 1}},
@@ -632,7 +637,6 @@ func TestDense_Slice(t *testing.T) {
 	if err == nil {
 		t.Error("Expected a IndexError")
 	}
-
 }
 
 func TestDense_SliceInto(t *testing.T) {
