@@ -299,6 +299,7 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 			if mt, ok := T.(MaskedTensor); ok {
 				copy(v.mask, mt.Mask())
 			}
+			start = end
 			continue
 		default:
 			diff := retVal.Shape().Dims() - v.Shape().Dims()
