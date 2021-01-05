@@ -823,6 +823,33 @@ func TestDense_Concat(t *testing.T) {
 	}
 }
 
+func TestDense_Concat_sliced(t *testing.T) {
+	v := New(
+		WithShape(1, 5),
+		WithBacking([]float64{0, 1, 2, 3, 4}),
+	)
+	cols := make([]Tensor, v.Shape().TotalSize())
+	for i := 0; i < v.Shape().TotalSize(); i++ {
+		sliced, err := v.Slice(nil, ss(i))
+		if err != nil {
+			t.Fatalf("Failed to slice %d. Error: %v", i, err)
+		}
+		if err = sliced.Reshape(sliced.Shape().TotalSize(), 1); err != nil {
+			t.Fatalf("Failed to reshape %d. Error %v", i, err)
+		}
+		cols[i] = sliced
+	}
+	result, err := Concat(1, cols[0], cols[1:]...)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, v.Data(), result.Data())
+	if v.Uintptr() == result.Uintptr() {
+		t.Error("They should not share the same backing data!")
+	}
+
+}
+
 var simpleStackTests = []struct {
 	name       string
 	dt         Dtype
