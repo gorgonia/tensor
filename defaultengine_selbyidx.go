@@ -86,8 +86,13 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 	dstCoord := make([]int, apRet.shape.Dims())
 
 	if isInnermost {
-		prevStride := apA.strides[axis-1]
-		retPrevStride := apRet.strides[axis-1]
+		prevAxis := axis - 1
+		if prevAxis < 0 {
+			// this may be the case if input is a vector
+			prevAxis = 0
+		}
+		prevStride := apA.strides[prevAxis]
+		retPrevStride := apRet.strides[prevAxis]
 		for i, idx := range indices {
 			srcCoord[axis] = idx
 			dstCoord[axis] = i
@@ -194,8 +199,13 @@ func (e StdEng) selectByIndicesB(axis int, indices []int, typ reflect.Type, data
 	srcCoord := make([]int, apRet.shape.Dims())
 
 	if isInnermost {
-		retPrevStride := apB.strides[axis-1]
-		prevStride := apRet.strides[axis-1]
+		prevAxis := axis - 1
+		if prevAxis < 0 {
+			// this may be the case if input is a vector
+			prevAxis = 0
+		}
+		retPrevStride := apB.strides[prevAxis]
+		prevStride := apRet.strides[prevAxis]
 		for i, idx := range indices {
 			dstCoord[axis] = idx
 			srcCoord[axis] = i
