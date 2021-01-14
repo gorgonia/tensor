@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var selByIndicesTests = []struct {
+type selByIndicesTest struct {
 	Name    string
 	Data    interface{}
 	Shape   Shape
@@ -16,7 +16,9 @@ var selByIndicesTests = []struct {
 
 	Correct      interface{}
 	CorrectShape Shape
-}{
+}
+
+var selByIndicesTests = []selByIndicesTest{
 	{Name: "3-tensor, axis 0", Data: Range(Float64, 0, 24), Shape: Shape{3, 2, 4}, Indices: []int{1, 1}, Axis: 0, WillErr: false,
 		Correct: []float64{8, 9, 10, 11, 12, 13, 14, 15, 8, 9, 10, 11, 12, 13, 14, 15}, CorrectShape: Shape{2, 2, 4}},
 
@@ -31,6 +33,11 @@ var selByIndicesTests = []struct {
 
 	{Name: "Vector, axis 1", Data: Range(Int, 0, 5), Shape: Shape{5}, Indices: []int{1, 1}, Axis: 1, WillErr: true,
 		Correct: []int{1, 1}, CorrectShape: Shape{2}},
+	{Name: "(4,2) Matrix, with (10) indices", Data: Range(Float32, 0, 8), Shape: Shape{4, 2}, Indices: []int{1, 1, 1, 1, 0, 2, 2, 2, 2, 0}, Axis: 0, WillErr: false,
+		Correct: []float32{2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 4, 5, 4, 5, 4, 5, 4, 5, 0, 1}, CorrectShape: Shape{10, 2}},
+	{Name: "(2,1) Matrx (colvec)m with (10) indies", Data: Range(Float64, 0, 2), Shape: Shape{2, 1}, Indices: []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, Axis: 0, WillErr: false,
+		Correct: []float64{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, CorrectShape: Shape{10},
+	},
 }
 
 func TestDense_SelectByIndices(t *testing.T) {
@@ -47,45 +54,60 @@ func TestDense_SelectByIndices(t *testing.T) {
 	}
 }
 
+var selByIndicesBTests = []struct {
+	selByIndicesTest
+
+	CorrectGrad      interface{}
+	CorrectGradShape Shape
+}{
+	{
+		selByIndicesTest: selByIndicesTests[0],
+		CorrectGrad:      []float64{0, 0, 0, 0, 0, 0, 0, 0, 16, 18, 20, 22, 24, 26, 28, 30, 0, 0, 0, 0, 0, 0, 0, 0},
+		CorrectGradShape: Shape{3, 2, 4},
+	},
+	{
+		selByIndicesTest: selByIndicesTests[1],
+		CorrectGrad:      []float64{0, 0, 0, 0, 8, 10, 12, 14, 0, 0, 0, 0, 24, 26, 28, 30, 0, 0, 0, 0, 40, 42, 44, 46},
+		CorrectGradShape: Shape{3, 2, 4},
+	},
+	{
+		selByIndicesTest: selByIndicesTests[2],
+		CorrectGrad:      []float64{0, 2, 0, 0, 0, 10, 0, 0, 0, 18, 0, 0, 0, 26, 0, 0, 0, 34, 0, 0, 0, 42, 0, 0},
+		CorrectGradShape: Shape{3, 2, 4},
+	},
+	{
+		selByIndicesTest: selByIndicesTests[3],
+		CorrectGrad:      []int{0, 2, 0, 0, 0},
+		CorrectGradShape: Shape{5},
+	},
+	{
+		selByIndicesTest: selByIndicesTests[5],
+		CorrectGrad:      []float32{4, 6, 8, 12, 8, 12, 0, 0},
+		CorrectGradShape: Shape{4, 2},
+	},
+	{
+		selByIndicesTest: selByIndicesTests[6],
+		CorrectGrad:      []float64{0, 10},
+		CorrectGradShape: Shape{2, 1},
+	},
+}
+
 func TestDense_SelectByIndicesB(t *testing.T) {
-	a := New(WithBacking([]float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}), WithShape(3, 2, 4))
-	indices := New(WithBacking([]int{1, 1}))
 
-	t.Logf("a\n%v", a)
+	assert := assert.New(t)
+	for i, tc := range selByIndicesBTests {
+		T := New(WithShape(tc.Shape...), WithBacking(tc.Data))
+		indices := New(WithBacking(tc.Indices))
+		ret, err := ByIndices(T, indices, tc.Axis)
+		if checkErr(t, tc.WillErr, err, tc.Name, i) {
+			continue
+		}
+		grad, err := ByIndicesB(T, ret, indices, tc.Axis)
+		if checkErr(t, tc.WillErr, err, tc.Name, i) {
+			continue
+		}
+		assert.Equal(tc.CorrectGrad, grad.Data(), "%v", tc.Name)
+		assert.True(tc.CorrectGradShape.Eq(grad.Shape()), "%v - Grad shape should be %v. Got %v instead", tc.Name, tc.CorrectGradShape, grad.Shape())
+	}
 
-	e := StdEng{}
-
-	a1, err := e.SelectByIndices(a, indices, 1)
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	t.Logf("a1\n%v", a1)
-
-	a1Grad, err := e.SelectByIndicesB(a, a1, indices, 1)
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	t.Logf("a1Grad \n%v", a1Grad)
-
-	a0, err := e.SelectByIndices(a, indices, 0)
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	t.Logf("a0\n%v", a0)
-	a0Grad, err := e.SelectByIndicesB(a, a0, indices, 0)
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	t.Logf("a0Grad\n%v", a0Grad)
-
-	a2, err := e.SelectByIndices(a, indices, 2)
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	t.Logf("\n%v", a2)
-	a2Grad, err := e.SelectByIndicesB(a, a2, indices, 2)
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	t.Logf("a2Grad\n%v", a2Grad)
 }
