@@ -52,29 +52,38 @@ func TestShapeIsX(t *testing.T) {
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
 
+	// vectors
+
+	// scalar-equiv vector
 	s = Shape{1}
 	assert.False(s.IsScalar())
 	assert.True(s.IsScalarEquiv())
-	assert.False(s.IsVector())
+	assert.True(s.IsVector())
+	assert.True(s.IsVectorLike())
+	assert.True(s.IsVector())
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
 
-	// vector
+	// vanila vector
 	s = Shape{2}
 	assert.False(s.IsScalar())
 	assert.True(s.IsVector())
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
 
+	// col vec
 	s = Shape{2, 1}
 	assert.False(s.IsScalar())
 	assert.True(s.IsVector())
+	assert.True(s.IsVectorLike())
 	assert.True(s.IsColVec())
 	assert.False(s.IsRowVec())
 
+	// row vec
 	s = Shape{1, 2}
 	assert.False(s.IsScalar())
 	assert.True(s.IsVector())
+	assert.True(s.IsVectorLike())
 	assert.False(s.IsColVec())
 	assert.True(s.IsRowVec())
 
@@ -84,6 +93,13 @@ func TestShapeIsX(t *testing.T) {
 	assert.False(s.IsVector())
 	assert.False(s.IsColVec())
 	assert.False(s.IsRowVec())
+
+	// scalar equiv matrix
+	s = Shape{1, 1}
+	assert.False(s.IsScalar())
+	assert.True(s.IsScalarEquiv())
+	assert.True(s.IsVectorLike())
+	assert.False(s.IsVector())
 }
 
 func TestShapeCalcStride(t *testing.T) {
@@ -94,10 +110,10 @@ func TestShapeCalcStride(t *testing.T) {
 	s = Shape{}
 	assert.Nil(s.CalcStrides())
 
-	s = Shape{1}
-	assert.Nil(s.CalcStrides())
-
 	// vector shape
+	s = Shape{1}
+	assert.Equal([]int{1}, s.CalcStrides())
+
 	s = Shape{2, 1}
 	assert.Equal([]int{1, 1}, s.CalcStrides())
 

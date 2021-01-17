@@ -531,6 +531,11 @@ var denseSliceTests = []struct {
 	correctStride []int
 	correctData   interface{}
 }{
+	// scalar-equiv vector (issue 102)
+	{"a[0], a is scalar-equiv", []float64{2},
+		Shape{1}, []Slice{ss(0)}, ScalarShape(), nil, 2.0},
+
+	// vector
 	{"a[0]", []bool{true, true, false, false, false},
 		Shape{5}, []Slice{ss(0)}, ScalarShape(), nil, true},
 	{"a[0:2]", Range(Byte, 0, 5), Shape{5}, []Slice{makeRS(0, 2)}, Shape{2}, []int{1}, []byte{0, 1}},
@@ -632,7 +637,6 @@ func TestDense_Slice(t *testing.T) {
 	if err == nil {
 		t.Error("Expected a IndexError")
 	}
-
 }
 
 func TestDense_SliceInto(t *testing.T) {
@@ -817,6 +821,33 @@ func TestDense_Concat(t *testing.T) {
 		assert.Equal(cts.correctData, T2.Data())
 		assert.Equal(T3.mask, T2.mask)
 	}
+}
+
+func TestDense_Concat_sliced(t *testing.T) {
+	v := New(
+		WithShape(1, 5),
+		WithBacking([]float64{0, 1, 2, 3, 4}),
+	)
+	cols := make([]Tensor, v.Shape().TotalSize())
+	for i := 0; i < v.Shape().TotalSize(); i++ {
+		sliced, err := v.Slice(nil, ss(i))
+		if err != nil {
+			t.Fatalf("Failed to slice %d. Error: %v", i, err)
+		}
+		if err = sliced.Reshape(sliced.Shape().TotalSize(), 1); err != nil {
+			t.Fatalf("Failed to reshape %d. Error %v", i, err)
+		}
+		cols[i] = sliced
+	}
+	result, err := Concat(1, cols[0], cols[1:]...)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, v.Data(), result.Data())
+	if v.Uintptr() == result.Uintptr() {
+		t.Error("They should not share the same backing data!")
+	}
+
 }
 
 var simpleStackTests = []struct {
