@@ -12,8 +12,8 @@ import (
 )
 
 func TestSaveLoadNumpy(t *testing.T) {
-	if os.Getenv("TRAVISTEST") == "true" {
-		t.Skip("skipping test; This is being run on TravisCI")
+	if os.Getenv("CI_NO_PYTHON") == "true" {
+		t.Skip("skipping test; This is being run on a CI tool that does not have Python")
 	}
 
 	assert := assert.New(t)
