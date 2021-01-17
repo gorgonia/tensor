@@ -121,10 +121,14 @@ func (f *fmtState) cleanFmt() string {
 
 // does the calculation for metadata
 func (f *fmtState) populate(t *Dense) {
-	if t.IsVector() {
+	switch {
+	case t.IsVector():
 		f.rows = 1
 		f.cols = t.Size()
-	} else {
+	case t.IsScalarEquiv():
+		f.rows = 1
+		f.cols = 1
+	default:
 		f.rows = t.Shape()[t.Dims()-2]
 		f.cols = t.Shape()[t.Dims()-1]
 	}
@@ -281,6 +285,7 @@ func (t *Dense) Format(s fmt.State, c rune) {
 		}
 		fmt.Fprintf(f, " %v %v\n", t.Shape(), t.Strides())
 	}
+
 	if f.c == 'H' {
 		return
 	}
@@ -367,7 +372,6 @@ func (t *Dense) Format(s fmt.State, c rune) {
 	firstVal := true
 	var lastRow, lastCol int
 	var expected int
-
 	for next, err := it.Next(); err == nil; next, err = it.Next() {
 		if next < expected {
 			continue
@@ -389,6 +393,10 @@ func (t *Dense) Format(s fmt.State, c rune) {
 					f.Write(rowVecStart)
 				case t.IsVector():
 					f.Write(vecStart)
+				case t.IsScalarEquiv():
+					for i := 0; i < t.Dims(); i++ {
+						f.Write(vecStart)
+					}
 				default:
 					f.Write(matFirstStart)
 				}
@@ -438,6 +446,11 @@ func (t *Dense) Format(s fmt.State, c rune) {
 			switch {
 			case t.IsVector():
 				f.Write(vecEnd)
+				return
+			case t.IsScalarEquiv():
+				for i := 0; i < t.Dims(); i++ {
+					f.Write(vecEnd)
+				}
 				return
 			case firstRow:
 				f.Write(matFirstEnd)

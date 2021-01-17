@@ -358,11 +358,9 @@ func ExampleT_scalarlike() {
 	// S: 3.14 S2 3.14 S == S2: false
 	// error when the axes are more than the shape's dims: Dimension mismatch. Expected 0, got 2
 	// S:
-	// ⎡3.14⎤
-	//
+	// [[3.14]]
 	// S2:
-	// ⎡3.14⎤
-	//
+	// [[3.14]]
 	// S == S2: false
 
 }
