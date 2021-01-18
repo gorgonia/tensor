@@ -5,7 +5,6 @@ package tensor // import "gorgonia.org/tensor"
 import (
 	"encoding/gob"
 	"fmt"
-	"unsafe"
 
 	"github.com/pkg/errors"
 )
@@ -21,9 +20,8 @@ func init() {
 	gob.Register(&CS{})
 }
 
-// Tensor represents a variety of n-dimensional arrays. The most commonly used tensor is the Dense tensor.
-// It can be used to represent a vector, matrix, 3D matrix and n-dimensional tensors.
-type Tensor interface {
+// Desc is a description of a tensor. It does not actually deal with data.
+type Desc interface {
 	// info about the ndarray
 	Shape() Shape
 	Strides() []int
@@ -31,6 +29,12 @@ type Tensor interface {
 	Dims() int
 	Size() int
 	DataSize() int
+}
+
+// Tensor represents a variety of n-dimensional arrays. The most commonly used tensor is the Dense tensor.
+// It can be used to represent a vector, matrix, 3D matrix and n-dimensional tensors.
+type Tensor interface {
+	Desc
 
 	// Data access related
 	RequiresIterator() bool
@@ -72,7 +76,6 @@ type Tensor interface {
 	//gob.GobEncoder
 	//gob.GobDecoder
 
-	standardEngine() StandardEngine
 	headerer
 	arrayer
 

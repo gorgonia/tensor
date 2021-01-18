@@ -23,14 +23,14 @@ func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor addition
 				if oe != nil {
 					return oe.Add(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.Add(at, bt, opts...)
 				}
 				if adder, ok = at.Engine().(Adder); ok {
@@ -55,7 +55,7 @@ func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.AddScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.AddScalar(at, bt, leftTensor, opts...)
 				}
 				if adder, ok = at.Engine().(Adder); ok {
@@ -79,7 +79,7 @@ func Add(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.AddScalar(bt, at, false, opts...)
 			}
 			if adder, ok = bt.Engine().(Adder); ok {
@@ -104,14 +104,14 @@ func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor substraction
 				if oe != nil {
 					return oe.Sub(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.Sub(at, bt, opts...)
 				}
 				if suber, ok = at.Engine().(Suber); ok {
@@ -136,7 +136,7 @@ func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.SubScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.SubScalar(at, bt, leftTensor, opts...)
 				}
 				if suber, ok = at.Engine().(Suber); ok {
@@ -160,7 +160,7 @@ func Sub(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.SubScalar(bt, at, false, opts...)
 			}
 			if suber, ok = bt.Engine().(Suber); ok {
@@ -185,14 +185,14 @@ func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor multiplication
 				if oe != nil {
 					return oe.Mul(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.Mul(at, bt, opts...)
 				}
 				if muler, ok = at.Engine().(Muler); ok {
@@ -217,7 +217,7 @@ func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.MulScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.MulScalar(at, bt, leftTensor, opts...)
 				}
 				if muler, ok = at.Engine().(Muler); ok {
@@ -242,7 +242,7 @@ func Mul(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor: // b Tensor * a interface
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.MulScalar(bt, at, false, opts...)
 			}
 			if muler, ok = bt.Engine().(Muler); ok {
@@ -268,14 +268,14 @@ func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor division
 				if oe != nil {
 					return oe.Div(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.Div(at, bt, opts...)
 				}
 				if diver, ok = at.Engine().(Diver); ok {
@@ -300,7 +300,7 @@ func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.DivScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.DivScalar(at, bt, leftTensor, opts...)
 				}
 				if diver, ok = at.Engine().(Diver); ok {
@@ -324,7 +324,7 @@ func Div(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.DivScalar(bt, at, false, opts...)
 			}
 			if diver, ok = bt.Engine().(Diver); ok {
@@ -349,14 +349,14 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor exponentiation
 				if oe != nil {
 					return oe.Pow(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.Pow(at, bt, opts...)
 				}
 				if power, ok = at.Engine().(Power); ok {
@@ -381,7 +381,7 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.PowScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.PowScalar(at, bt, leftTensor, opts...)
 				}
 				if power, ok = at.Engine().(Power); ok {
@@ -405,7 +405,7 @@ func Pow(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.PowScalar(bt, at, false, opts...)
 			}
 			if power, ok = bt.Engine().(Power); ok {
@@ -430,14 +430,14 @@ func Mod(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor modulo
 				if oe != nil {
 					return oe.Mod(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.Mod(at, bt, opts...)
 				}
 				if moder, ok = at.Engine().(Moder); ok {
@@ -462,7 +462,7 @@ func Mod(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.ModScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.ModScalar(at, bt, leftTensor, opts...)
 				}
 				if moder, ok = at.Engine().(Moder); ok {
@@ -486,7 +486,7 @@ func Mod(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.ModScalar(bt, at, false, opts...)
 			}
 			if moder, ok = bt.Engine().(Moder); ok {
@@ -526,41 +526,23 @@ func Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 // FMA performs Y = A * X + Y.
 func FMA(a Tensor, x interface{}, y Tensor) (retVal Tensor, err error) {
+	var e FMAer
 	if xTensor, ok := x.(Tensor); ok {
-		if oe := a.standardEngine(); oe != nil {
-			return oe.FMA(a, xTensor, y)
-		}
-		if oe := xTensor.standardEngine(); oe != nil {
-			return oe.FMA(a, xTensor, y)
-		}
-		if oe := y.standardEngine(); oe != nil {
-			return oe.FMA(a, xTensor, y)
-		}
-
-		if e, ok := a.Engine().(FMAer); ok {
-			return e.FMA(a, xTensor, y)
-		}
-		if e, ok := xTensor.Engine().(FMAer); ok {
-			return e.FMA(a, xTensor, y)
-		}
-		if e, ok := y.Engine().(FMAer); ok {
-			return e.FMA(a, xTensor, y)
+		for _, T := range [3]Tensor{a, xTensor, y} {
+			e, ok = T.Engine().(FMAer)
+			if ok {
+				return e.FMA(a, xTensor, y)
+			}
 		}
 	} else {
-		if oe := a.standardEngine(); oe != nil {
-			return oe.FMAScalar(a, x, y)
-		}
-		if oe := y.standardEngine(); oe != nil {
-			return oe.FMAScalar(a, x, y)
-		}
-
-		if e, ok := a.Engine().(FMAer); ok {
-			return e.FMAScalar(a, x, y)
-		}
-		if e, ok := y.Engine().(FMAer); ok {
-			return e.FMAScalar(a, x, y)
+		for _, T := range [2]Tensor{a, y} {
+			e, ok = T.Engine().(FMAer)
+			if ok {
+				return e.FMAScalar(a, x, y)
+			}
 		}
 	}
+
 	return Mul(a, x, WithIncr(y))
 }
 

@@ -209,8 +209,11 @@ func (e Float32Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 		vecf32.Add(dataA, dataB)
 		retVal = a
 	default:
-		ret := a.Clone().(headerer)
-		vecf32.Add(ret.hdr().Float32s(), dataB)
+		ret, ok := a.Clone().(float32ser)
+		if !ok {
+			return nil, errors.Errorf("Unable to get the Float32 data from `a`, of %T", a)
+		}
+		vecf32.Add(ret.Float32s(), dataB)
 		retVal = ret.(Tensor)
 	}
 	return

@@ -149,3 +149,11 @@ type unsafeMem interface {
 	Complex64s() []complex64
 	Complex128s() []complex128
 }
+
+type float64ser interface {
+	Float64s() []float64
+}
+
+type float32ser interface {
+	Float32s() []float32
+}
