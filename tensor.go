@@ -4,7 +4,6 @@ package tensor // import "gorgonia.org/tensor"
 
 import (
 	"encoding/gob"
-	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -67,8 +66,8 @@ type Tensor interface {
 	IsManuallyManaged() bool    // Must Go manage the memory
 
 	// formatters
-	fmt.Formatter
-	fmt.Stringer
+	// fmt.Formatter
+	// fmt.Stringer
 
 	// all Tensors are serializable to these formats
 	//WriteNpy(io.Writer) error
