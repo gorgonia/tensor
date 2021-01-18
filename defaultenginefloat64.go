@@ -206,8 +206,11 @@ func (e Float64Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 		vecf64.Add(dataA, dataB)
 		retVal = a
 	default:
-		ret := a.Clone().(headerer)
-		vecf64.Add(ret.hdr().Float64s(), dataB)
+		ret, ok := a.Clone().(float64ser)
+		if !ok {
+			return nil, errors.Errorf("Unable to get the Float64 data from `a`, of %T", a)
+		}
+		vecf64.Add(ret.Float64s(), dataB)
 		retVal = ret.(Tensor)
 	}
 	return
