@@ -82,7 +82,7 @@ func (t *Dense) MatVecMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err err
 	// check whether retVal has the same size as the resulting matrix would be: mx1
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
-	if retVal, err = handleReuse(fo.Reuse(), expectedShape); err != nil {
+	if retVal, err = handleReuse(fo.Reuse(), expectedShape, fo.unsafe); err != nil {
 		err = errors.Wrapf(err, opFail, "MatVecMul")
 		return
 	}
@@ -131,7 +131,7 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
-	if retVal, err = handleReuse(fo.Reuse(), expectedShape); err != nil {
+	if retVal, err = handleReuse(fo.Reuse(), expectedShape, fo.unsafe); err != nil {
 		err = errors.Wrapf(err, opFail, "MatMul")
 		return
 	}
@@ -170,7 +170,7 @@ func (t *Dense) Outer(other Tensor, opts ...FuncOpt) (retVal *Dense, err error) 
 
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
-	if retVal, err = handleReuse(fo.Reuse(), expectedShape); err != nil {
+	if retVal, err = handleReuse(fo.Reuse(), expectedShape, fo.unsafe); err != nil {
 		err = errors.Wrapf(err, opFail, "Outer")
 		return
 	}
@@ -380,13 +380,15 @@ func (t *Dense) SVD(uv, full bool) (s, u, v *Dense, err error) {
 /* UTILITY FUNCTIONS */
 
 // handleReuse extracts a *Dense from Tensor, and checks the shape of the reuse Tensor
-func handleReuse(reuse Tensor, expectedShape Shape) (retVal *Dense, err error) {
+func handleReuse(reuse Tensor, expectedShape Shape, unsafe bool) (retVal *Dense, err error) {
 	if reuse != nil {
 		if retVal, err = assertDense(reuse); err != nil {
 			err = errors.Wrapf(err, opFail, "handling reuse")
 			return
 		}
-
+		if unsafe {
+			return
+		}
 		if err = reuseCheckShape(retVal, expectedShape); err != nil {
 			err = errors.Wrapf(err, "Unable to process reuse *Dense Tensor. Shape error.")
 			return
