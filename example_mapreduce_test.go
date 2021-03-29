@@ -31,6 +31,27 @@ func ExampleSum() {
 	// Summed along (1, 0): 6
 }
 
+func ExampleSum_sliced() {
+	T := New(WithBacking([]float64{0, 1, 2, 3}), WithShape(2, 2))
+	fmt.Printf("T:\n%v\n", T)
+
+	V, _ := T.Slice(nil, sli(1))
+	fmt.Printf("V:\n%v\n", V)
+
+	Σ, _ := Sum(V)
+	fmt.Printf("Σ: %v", Σ)
+
+	// Output:
+	// T:
+	// ⎡0  1⎤
+	// ⎣2  3⎦
+	//
+	// V:
+	// [1  3]
+	// Σ: 4
+
+}
+
 func ExampleArgmax() {
 	T := New(WithBacking([]float64{0, 100, 200, 3}), WithShape(2, 2))
 	fmt.Printf("T:\n%v\n", T)
@@ -47,6 +68,28 @@ func ExampleArgmax() {
 	//
 	// Argmax: [1  0]
 	// Argmax is *tensor.Dense of int
+}
+
+func ExampleArgmax_sliced() {
+	T := New(WithBacking([]float64{0, 100, 200, 3}), WithShape(2, 2))
+	fmt.Printf("T:\n%v\n", T)
+
+	// slice  creates a view
+	V, _ := T.Slice(nil, sli(1))
+
+	// argmax along the x-axis
+	am, _ := Argmax(V, 0)
+	fmt.Printf("Argmax: %v\n", am)
+	fmt.Printf("Argmax is %T of %v", am, am.Dtype())
+
+	// Output:
+	// T:
+	// ⎡  0  100⎤
+	// ⎣200    3⎦
+	//
+	// Argmax: 0
+	// Argmax is *tensor.Dense of int
+
 }
 
 func ExampleArgmin() {
