@@ -20,6 +20,7 @@ jobs:
             allowfail: true
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.allowfail }}
+    timeout-minutes: 5
     steps:
     - name: Install Go ${{ matrix.go }} on ${{ matrix.os }}
       if: matrix.go != 'tip'
