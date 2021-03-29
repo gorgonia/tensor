@@ -20,9 +20,11 @@ type NoOpError interface {
 }
 
 func handleNoOp(err error) error {
+	if err == nil {
+		return nil
+	}
 	if _, ok := err.(NoOpError); ok {
 		return nil
 	}
-
 	return err
 }
