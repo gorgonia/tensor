@@ -547,3 +547,17 @@ func TestDense_Min(t *testing.T) {
 	_, err = T.Min(1000)
 	assert.NotNil(err)
 }
+
+func TestSlicedSum(t *testing.T) {
+	T := New(WithShape(4, 4), WithBacking([]int{
+		1, 2, 3, 4,
+		5, 6, 7, 8,
+		1, 2, 3, 4,
+		5, 6, 7, 8,
+	}))
+	s, _ := T.Slice(sli(1, 3), sli(1, 3))
+	sum, _ := Sum(s)
+	if sum.Data().(int) != 18 {
+		t.Errorf("Expected the sum of %v to be 18. Got %v instead", s, sum)
+	}
+}

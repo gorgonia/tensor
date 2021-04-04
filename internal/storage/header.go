@@ -12,34 +12,13 @@ type Header struct {
 	Raw []byte
 }
 
+// TypedLen returns the length of data as if it was a slice of type t
 func (h *Header) TypedLen(t reflect.Type) int {
-	sz := int(t.Size())
-	return len(h.Raw) / sz
+	return len(h.Raw) / int(t.Size())
 }
 
 func Copy(t reflect.Type, dst, src *Header) int {
-	if len(dst.Raw) == 0 || len(src.Raw) == 0 {
-		return 0
-	}
-
-	n := src.TypedLen(t)
-	if len(dst.Raw) < n {
-		n = dst.TypedLen(t)
-	}
-
-	// handle struct{} type
-	if t.Size() == 0 {
-		return n
-	}
-
-	// memmove(dst.Pointer(), src.Pointer(), t.Size())
-	// return n
-
-	// otherwise, just copy bytes.
-	// FUTURE: implement memmove
-	dstBA := dst.Raw
-	srcBA := src.Raw
-	copied := copy(dstBA, srcBA)
+	copied := copy(dst.Raw, src.Raw)
 	return copied / int(t.Size())
 }
 

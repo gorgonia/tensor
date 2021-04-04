@@ -3,6 +3,7 @@ package tensor
 import (
 	"bytes"
 	"encoding/gob"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -30,6 +31,19 @@ func TestSaveLoadNumpy(t *testing.T) {
 	T1D.WriteNpy(f1D)
 	f1D.Close()
 
+	defer func() {
+		// cleanup
+		err := os.Remove("test.npy")
+		if err != nil {
+			t.Error(err)
+		}
+
+		err = os.Remove("test1D.npy")
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+
 	script := "import numpy as np\nx = np.load('test.npy')\nprint(x)\nx = np.load('test1D.npy')\nprint(x)"
 	// Configurable python command, in order to be able to use python or python3
 	pythonCommand := os.Getenv("PYTHON_COMMAND")
@@ -39,6 +53,10 @@ func TestSaveLoadNumpy(t *testing.T) {
 
 	cmd := exec.Command(pythonCommand)
 	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Error(err)
+	}
+	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		t.Error(err)
 	}
@@ -56,27 +74,19 @@ func TestSaveLoadNumpy(t *testing.T) {
 		t.Logf("Do you have a python with numpy installed? You can change the python interpreter by setting the environment variable PYTHON_COMMAND. Current value: PYTHON_COMMAND=%s", pythonCommand)
 	}
 
+	importError := `ImportError: No module named numpy`
+	slurpErr, _ := ioutil.ReadAll(stderr)
+	if ok, _ := regexp.Match(importError, slurpErr); ok {
+		t.Skipf("Skipping numpy test. It would appear that you do not have Numpy installed.")
+	}
+
 	if err := cmd.Wait(); err != nil {
-		t.Error(err)
+		t.Errorf("%q", err.Error())
 	}
 
 	expected := `\[\[\s*1\.\s*5\.\]\n \[\s*10\.\s*-1\.\]\]\n`
 	if ok, _ := regexp.Match(expected, buf.Bytes()); !ok {
 		t.Errorf("Did not successfully read numpy file, \n%q\n%q", buf.String(), expected)
-	}
-
-	if buf.String() != expected {
-	}
-
-	// cleanup
-	err = os.Remove("test.npy")
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = os.Remove("test1D.npy")
-	if err != nil {
-		t.Error(err)
 	}
 
 	// ok now to test if it can read

@@ -85,6 +85,68 @@ func ExampleDense_Slice_viewMutation() {
 	//
 }
 
+func ExampleView() {
+	// Slicing creates a "view" on the original tensor
+	T := New(WithBacking(Range(Int, 0, 16)), WithShape(4, 4))
+	fmt.Printf("T:\n%v\n", T)
+	V, _ := T.Slice(makeRS(1, 3), makeRS(1, 3))
+	fmt.Printf("V:\n%v\n", V)
+
+	// Now we modify V's 0th value
+	V.(*Dense).Set(0, 1000)
+	fmt.Printf("V[0] = 1000:\n%v\n", V)
+	fmt.Printf("T is also mutated:\n%v\n", T)
+
+	// Now we materialize the views
+	fmt.Printf("V is Materializable: %v\n", V.IsMaterializable())
+	T2 := V.Materialize()
+	fmt.Printf("T2 == V:\n%v\n", T2)
+
+	// Once materialized, it is decoupled from the original tensor
+	T2.(*Dense).Set(0, 999)
+	fmt.Printf("T2 is mutated:\n%v\nBut T is not mutated:\n%v\nNeither is V:\n%v", T2, T, V)
+	// Output:
+	// T:
+	// ⎡ 0   1   2   3⎤
+	// ⎢ 4   5   6   7⎥
+	// ⎢ 8   9  10  11⎥
+	// ⎣12  13  14  15⎦
+	//
+	// V:
+	// ⎡ 5   6⎤
+	// ⎣ 9  10⎦
+	//
+	// V[0] = 1000:
+	// ⎡1000     6⎤
+	// ⎣   9    10⎦
+	//
+	// T is also mutated:
+	// ⎡   0     1     2     3⎤
+	// ⎢   4  1000     6     7⎥
+	// ⎢   8     9    10    11⎥
+	// ⎣  12    13    14    15⎦
+	//
+	// V is Materializable: true
+	// T2 == V:
+	// ⎡1000     6⎤
+	// ⎣   9    10⎦
+	//
+	// T2 is mutated:
+	// ⎡999    6⎤
+	// ⎣  9   10⎦
+	//
+	// But T is not mutated:
+	// ⎡   0     1     2     3⎤
+	// ⎢   4  1000     6     7⎥
+	// ⎢   8     9    10    11⎥
+	// ⎣  12    13    14    15⎦
+	//
+	// Neither is V:
+	// ⎡1000     6⎤
+	// ⎣   9    10⎦
+
+}
+
 func ExampleDense_Hstack() {
 	var T, T1, T2, T3 *Dense
 	var err error
