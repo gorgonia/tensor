@@ -597,7 +597,7 @@ func MatMul(a, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	var reuse *Dense
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
-	if reuse, err = handleReuse(fo.Reuse(), expectedShape); err != nil {
+	if reuse, err = handleReuse(fo.Reuse(), expectedShape, true); err != nil {
 		err = errors.Wrapf(err, opFail, "MatMul")
 		return
 	}

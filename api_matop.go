@@ -53,15 +53,29 @@ func Concat(axis int, t Tensor, others ...Tensor) (retVal Tensor, err error) {
 	}
 	switch T := t.(type) {
 	case *Dense:
+		// IF YOU UPDATE THIS, UPDATE THE DENSE VIEW CASE TOO.
 		ts := make([]*Dense, len(others))
 		for i, o := range others {
-			if ot, ok := o.(*Dense); ok {
+			ot, err := assertDense(o)
+			if err == nil {
 				ts[i] = ot
 				continue
 			}
-			return nil, errors.Errorf("Expected all Tensors to be *Dense")
+			return nil, errors.Wrapf(err, "Expected all Tensors to be *Dense. Got %T instead", o)
 		}
 		return T.Concat(axis, ts...)
+	case DenseView:
+		ts := make([]*Dense, len(others))
+		for i, o := range others {
+			ot, err := assertDense(o)
+			if err == nil {
+				ts[i] = ot
+				continue
+			}
+			return nil, errors.Wrapf(err, "Expected all Tensors to be *Dense. Got %T instead", o)
+		}
+		return T.Concat(axis, ts...)
+
 	}
 	panic("Unreachable")
 }

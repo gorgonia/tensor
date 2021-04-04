@@ -416,10 +416,10 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 
 	var data []float64
 	switch {
-	case t.t == Float64 && toCopy && !t.IsMaterializable():
+	case t.t == Float64 && toCopy && !t.RequiresIterator():
 		data = make([]float64, t.len())
 		copy(data, t.Float64s())
-	case !t.IsMaterializable():
+	case !t.RequiresIterator():
 		data = convToFloat64s(t)
 	default:
 		it := newFlatIterator(&t.AP)
@@ -431,7 +431,6 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 			data = append(data, convToFloat64(t.Get(next)))
 		}
 		err = nil
-
 	}
 
 	retVal = mat.NewDense(r, c, data)
