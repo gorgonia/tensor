@@ -657,12 +657,12 @@ func init() {
 func generateDenseIO(f io.Writer, generic Kinds) {
 	mk := Kinds{Kinds: filter(generic.Kinds, isNumber)}
 
-	fmt.Fprintln(f, "/* GOB SERIALIZATION */\n")
+	fmt.Fprint(f, "/* GOB SERIALIZATION */\n\n")
 	gobEncode.Execute(f, mk)
 	gobDecode.Execute(f, mk)
 	fmt.Fprint(f, "\n")
 
-	fmt.Fprintln(f, "/* NPY SERIALIZATION */\n")
+	fmt.Fprint(f, "/* NPY SERIALIZATION */\n\n")
 	fmt.Fprintln(f, npyDescRE)
 	fmt.Fprintln(f, rowOrderRE)
 	fmt.Fprintln(f, shapeRE)
@@ -670,16 +670,16 @@ func generateDenseIO(f io.Writer, generic Kinds) {
 	readNpy.Execute(f, mk)
 	fmt.Fprint(f, "\n")
 
-	fmt.Fprintln(f, "/* CSV SERIALIZATION */\n")
+	fmt.Fprint(f, "/* CSV SERIALIZATION */\n\n")
 	fmt.Fprintln(f, writeCSVRaw)
 	readCSV.Execute(f, mk)
 	fmt.Fprint(f, "\n")
 
-	fmt.Fprintln(f, "/* FB SERIALIZATION */\n")
+	fmt.Fprint(f, "/* FB SERIALIZATION */\n\n")
 	fmt.Fprintln(f, fbEncodeDecodeRaw)
 	fmt.Fprint(f, "\n")
 
-	fmt.Fprintln(f, "/* PB SERIALIZATION */\n")
+	fmt.Fprint(f, "/* PB SERIALIZATION */\n\n")
 	fmt.Fprintln(f, pbEncodeDecodeRaw)
 	fmt.Fprint(f, "\n")
 
