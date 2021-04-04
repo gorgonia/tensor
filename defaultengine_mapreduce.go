@@ -178,15 +178,27 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 }
 
 func (e StdEng) Sum(a Tensor, along ...int) (retVal Tensor, err error) {
-	return e.reduce("Sum", execution.MonotonicSum, execution.SumMethods, a, along...)
+	a2 := a
+	if v, ok := a.(View); ok && v.IsMaterializable() {
+		a2 = v.Materialize()
+	}
+	return e.reduce("Sum", execution.MonotonicSum, execution.SumMethods, a2, along...)
 }
 
 func (e StdEng) Min(a Tensor, along ...int) (retVal Tensor, err error) {
-	return e.reduce("Min", execution.MonotonicMin, execution.MinMethods, a, along...)
+	a2 := a
+	if v, ok := a.(View); ok && v.IsMaterializable() {
+		a2 = v.Materialize()
+	}
+	return e.reduce("Min", execution.MonotonicMin, execution.MinMethods, a2, along...)
 }
 
 func (e StdEng) Max(a Tensor, along ...int) (retVal Tensor, err error) {
-	return e.reduce("Max", execution.MonotonicMax, execution.MaxMethods, a, along...)
+	a2 := a
+	if v, ok := a.(View); ok && v.IsMaterializable() {
+		a2 = v.Materialize()
+	}
+	return e.reduce("Max", execution.MonotonicMax, execution.MaxMethods, a2, along...)
 }
 
 func (e StdEng) reduce(
