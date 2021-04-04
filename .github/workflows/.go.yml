@@ -20,6 +20,7 @@ jobs:
             allowfail: true
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.allowfail }}
+    timeout-minutes: 5
     steps:
     - name: Install Go ${{ matrix.go }} on ${{ matrix.os }}
       if: matrix.go != 'tip'
@@ -34,14 +35,14 @@ jobs:
         git clone --depth=1 https://go.googlesource.com/go $HOME/gotip
         cd $HOME/gotip/src
         ./make.bash
-        echo "::set-env name=GOROOT::$HOME/gotip"
-        echo "::add-path::$HOME/gotip/bin"
+        echo "GOROOT=$HOME/gotip" >> $GITHUB_ENV
+        echo "$HOME/gotip/bin" >> $GITHUB_PATH
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Run tests
       run: |
-        go test -v -race
-        go test -race -tags=${{ matrix.tags }}
+        go test ./... -v -race
+        go test ./... -race -tags=${{ matrix.tags }}
 
   coverage:
     env:
@@ -70,7 +71,7 @@ jobs:
     - name: Calc coverage
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
-        go test -v -covermode=atomic -coverprofile=coverage.out
+        go test ./... -v -covermode=atomic -coverprofile=coverage.out
     - name: Convert coverage to lcov
       uses: jandelgado/gcov2lcov-action@v1.0.0
       with:
