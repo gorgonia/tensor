@@ -11,7 +11,7 @@ import (
 var (
 	_ Tensor = &Dense{}
 	_ Tensor = &CS{}
-	_ View   = &Dense{}
+	_ View   = &DenseView{}
 )
 
 func init() {
@@ -96,15 +96,26 @@ func New(opts ...ConsOpt) *Dense {
 	return d
 }
 
+// MustGetDense gets a *Dense from a given Tensor. Panics otherwise.
+func MustGetDense(T Tensor) *Dense {
+	d, err := assertDense(T)
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
 func assertDense(t Tensor) (*Dense, error) {
 	if t == nil {
 		return nil, errors.New("nil is not a *Dense")
 	}
-	if retVal, ok := t.(*Dense); ok {
-		return retVal, nil
-	}
-	if retVal, ok := t.(Densor); ok {
-		return retVal.Dense(), nil
+	switch tt := t.(type) {
+	case *Dense:
+		return tt, nil
+	case DenseView:
+		return tt.Dense, nil
+	case Densor:
+		return tt.Dense(), nil
 	}
 	return nil, errors.Errorf("%T is not *Dense", t)
 }
@@ -162,10 +173,11 @@ func getFloatComplexDenseTensor(t Tensor) (retVal DenseTensor, err error) {
 	return
 }
 
+// sliceDense returns a *Dense.
 func sliceDense(t *Dense, slices ...Slice) (retVal *Dense, err error) {
 	var sliced Tensor
 	if sliced, err = t.Slice(slices...); err != nil {
 		return nil, err
 	}
-	return sliced.(*Dense), nil
+	return sliced.(DenseView).Dense, nil
 }

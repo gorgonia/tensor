@@ -71,6 +71,15 @@ type Slicer interface {
 	Slice(...Slice) (View, error)
 }
 
+// Reslicer is any tensor that can reslice.
+// To reslice is to reuse the container (*Dense, *CS) etc, but with new `Slice`s applied to it.
+//
+// e.g: A is a (3,3) matrix that has been sliced at [1:3, 1:3]. Call it B. So now B's shape is (2,2).
+// B.Reslice(S(0,2), S(0,2)) would reslice the original tensor (A) with the new slices.
+type Reslicer interface {
+	Reslice(...Slice) (View, error)
+}
+
 // DenseTensor is the interface for any Dense tensor.
 type DenseTensor interface {
 	Tensor

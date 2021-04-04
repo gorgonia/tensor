@@ -228,7 +228,7 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 		view.mask = t.mask[ndStart:ndEnd]
 	}
 
-	return view, err
+	return DenseView{view}, err
 }
 
 // SliceInto is a convenience method. It does NOT copy the values - it simply updates the AP of the view.
@@ -256,8 +256,7 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 		view.mask = t.mask[ndStart:ndEnd]
 	}
 
-	return view, err
-
+	return DenseView{view}, err
 }
 
 // RollAxis rolls the axis backwards until it lies in the given position.

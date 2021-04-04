@@ -72,7 +72,7 @@ func (t *Dense) Filled(val ...interface{}) (interface{}, error) {
 		for i := range sliceList {
 			tt, err := tc.Slice(nil, sliceList[i])
 			if err != nil {
-				ts := tt.(*Dense)
+				ts := tt.(DenseView)
 				ts.Memset(fillval)
 			}
 		}
@@ -107,7 +107,7 @@ func (t *Dense) FilledInplace(val ...interface{}) (interface{}, error) {
 		for i := range sliceList {
 			tt, err := t.Slice(nil, sliceList[i])
 			if err != nil {
-				ts := tt.(*Dense)
+				ts := tt.(DenseView)
 				ts.Memset(fillval)
 			}
 		}

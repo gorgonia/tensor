@@ -182,16 +182,6 @@ func (t *Dense) ScalarValue() interface{} {
 	return t.Get(0)
 }
 
-// IsView indicates if the Tensor is a view of another (typically from slicing)
-func (t *Dense) IsView() bool {
-	return t.viewOf != 0
-}
-
-// IsMaterializeable indicates if the Tensor is materializable - if it has either gone through some transforms or slicing
-func (t *Dense) IsMaterializable() bool {
-	return t.viewOf != 0 || !t.old.IsZero()
-}
-
 // IsManuallyManaged returns true if the memory associated with this *Dense is manually managed (by the user)
 func (t *Dense) IsManuallyManaged() bool { return t.flag.manuallyManaged() }
 
@@ -575,7 +565,7 @@ func (t *Dense) Memset(x interface{}) error {
 	if !t.IsNativelyAccessible() {
 		return errors.Errorf(inaccessibleData, t)
 	}
-	if t.IsMaterializable() {
+	if t.RequiresIterator() {
 		it := newFlatIterator(&t.AP)
 		return t.array.memsetIter(x, it)
 	}
@@ -598,7 +588,7 @@ func (t *Dense) Eq(other interface{}) bool {
 }
 
 func (t *Dense) Zero() {
-	if t.IsMaterializable() {
+	if t.RequiresIterator() {
 		it := newFlatIterator(&t.AP)
 		if err := t.zeroIter(it); err != nil {
 			panic(err)
