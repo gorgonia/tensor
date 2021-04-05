@@ -3,6 +3,9 @@ package tensor
 // a View is a *Tensor with customized strides. The reason for not splitting them up into different types is complicated
 // this file contains all the methods that deals with Views
 
+var _ View = DenseView{}
+
+// Dense
 type DenseView struct {
 	*Dense
 }
@@ -32,7 +35,7 @@ func (t DenseView) IsMaterializable() bool {
 // Materialize takes a view, copies its data and puts it in a new *Tensor.
 func (t DenseView) Materialize() Tensor {
 	if !t.IsMaterializable() {
-		return t
+		return t.Dense
 	}
 
 	retVal := recycledDense(t.t, t.shape.Clone(), WithEngine(t.e))

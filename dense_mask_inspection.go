@@ -18,7 +18,7 @@ func MaskedReduce(t *Dense, retType Dtype, fn maskedReduceFn, axis ...int) inter
 	// calculate shape of tensor to be returned
 	slices[ax] = makeRS(0, 0)
 	tt, _ := t.Slice(slices...)
-	ts := tt.(*Dense)
+	ts := MustGetDense(tt)
 	retVal := NewDense(retType, ts.shape) //retVal is array to be returned
 
 	it := NewIterator(retVal.Info())
@@ -37,7 +37,7 @@ func MaskedReduce(t *Dense, retType Dtype, fn maskedReduceFn, axis ...int) inter
 			}
 		}
 		tt, _ = t.Slice(slices...)
-		ts = tt.(*Dense)
+		ts = MustGetDense(tt)
 		retVal.SetAt(fn(ts), coord...)
 
 	}

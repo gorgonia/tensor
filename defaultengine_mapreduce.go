@@ -15,6 +15,9 @@ func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, e
 		err = errors.Wrap(err, "Failed Map()")
 		return
 	}
+	if _, ok := a.(DenseTensor); !ok {
+		return nil, errors.Errorf("StdEng's Map method only supports dense tensors for now. Please put in a Pull Request to support other forms of Tensors. The file is: defaultengine_mapreduce.go")
+	}
 
 	var reuse DenseTensor
 	var safe, _, incr bool
@@ -24,14 +27,10 @@ func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, e
 	switch {
 	case safe && reuse == nil:
 		// create reuse
-		if v, ok := a.(View); ok {
-			if v.IsMaterializable() {
-				reuse = v.Materialize().(DenseTensor)
-			} else {
-				reuse = v.Clone().(DenseTensor)
-			}
+		if v, ok := a.(View); ok && v.IsMaterializable() {
+			reuse = v.Materialize().(DenseTensor)
 		} else {
-			reuse = New(Of(a.Dtype()), WithShape(a.Shape().Clone()...))
+			reuse = a.Clone().(DenseTensor)
 		}
 	case reuse != nil:
 		if !reuse.IsNativelyAccessible() {

@@ -58,7 +58,7 @@ func ExampleDense_Slice_viewMutation() {
 	fmt.Printf("V:\n%v\n", V)
 
 	// Now we modify V's 0th value
-	V.(*Dense).Set(0, 1000)
+	MustGetDense(V).Set(0, 1000)
 	fmt.Printf("V[0] = 1000:\n%v\n", V)
 	fmt.Printf("T is also mutated:\n%v", T)
 
@@ -93,7 +93,7 @@ func ExampleView() {
 	fmt.Printf("V:\n%v\n", V)
 
 	// Now we modify V's 0th value
-	V.(*Dense).Set(0, 1000)
+	MustGetDense(V).Set(0, 1000)
 	fmt.Printf("V[0] = 1000:\n%v\n", V)
 	fmt.Printf("T is also mutated:\n%v\n", T)
 
