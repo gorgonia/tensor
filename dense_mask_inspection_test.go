@@ -124,7 +124,7 @@ func TestMaskedFindContiguous(t *testing.T) {
 	T.ResetMask(true)
 	for i := range sliceList {
 		tt, _ := T.Slice(nil, sliceList[i])
-		ts := tt.(*Dense)
+		ts := MustGetDense(tt)
 		ts.ResetMask(false)
 	}
 	retSL = T.FlatNotMaskedContiguous()
@@ -137,7 +137,7 @@ func TestMaskedFindContiguous(t *testing.T) {
 	T.ResetMask(false)
 	for i := range sliceList {
 		tt, _ := T.Slice(nil, sliceList[i])
-		ts := tt.(*Dense)
+		ts := MustGetDense(tt)
 		ts.ResetMask(true)
 	}
 	retSL = T.FlatMaskedContiguous()
@@ -158,7 +158,7 @@ func TestMaskedFindEdges(t *testing.T) {
 	T.ResetMask(false)
 	for i := range sliceList {
 		tt, _ := T.Slice(nil, sliceList[i])
-		ts := tt.(*Dense)
+		ts := MustGetDense(tt)
 		ts.ResetMask(true)
 	}
 	start, end := T.FlatNotMaskedEdges()
@@ -169,7 +169,7 @@ func TestMaskedFindEdges(t *testing.T) {
 	T.ResetMask(true)
 	for i := range sliceList {
 		tt, _ := T.Slice(nil, sliceList[i])
-		ts := tt.(*Dense)
+		ts := MustGetDense(tt)
 		ts.ResetMask(false)
 	}
 	start, end = T.FlatMaskedEdges()

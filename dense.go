@@ -205,7 +205,6 @@ func (t *Dense) Clone() interface{} {
 		}
 		copyDense(retVal, t)
 		retVal.lock()
-
 		return retVal
 	}
 	panic("Unreachable: No engine")
