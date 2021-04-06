@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 // this file handles matops. While by default most of these matops should already have been defined as part of the
 // Tensor interface, not all are possible(for example, concatenating a sparse tensor), hence the need for the following functions
