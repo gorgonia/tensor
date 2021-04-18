@@ -19,18 +19,12 @@ type NoOpError interface {
 	NoOp() bool
 }
 
-type noopError struct{}
-
-func (e noopError) NoOp() bool    { return true }
-func (e noopError) Error() string { return "NoOp" }
-
 func handleNoOp(err error) error {
 	if err == nil {
 		return nil
 	}
-
-	if _, ok := err.(NoOpError); !ok {
-		return err
+	if _, ok := err.(NoOpError); ok {
+		return nil
 	}
-	return nil
+	return err
 }

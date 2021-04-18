@@ -21,11 +21,10 @@ func handleNoOp(err error) error {
 	if err == nil {
 		return nil
 	}
-
-	if _, ok := err.(NoOpError); !ok {
-		return err
+	if _, ok := err.(NoOpError); ok {
+		return nil
 	}
-	return nil
+	return err
 }
 
 type errorIndices []int
