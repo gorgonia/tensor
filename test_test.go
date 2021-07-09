@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/chewxy/math32"
+	"gorgonia.org/dtype"
 )
 
 func anyToFloat64s(x interface{}) (retVal []float64) {
@@ -120,7 +121,7 @@ func anyToFloat64s(x interface{}) (retVal []float64) {
 	panic("Unreachable")
 }
 
-func identityVal(x int, dt Dtype) interface{} {
+func identityVal(x int, dt dtype.Dtype) interface{} {
 	switch dt {
 	case Int:
 		return int(x)

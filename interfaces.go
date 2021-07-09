@@ -3,12 +3,13 @@ package tensor
 import (
 	"reflect"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
 // Dtyper is any type that has a Dtype
 type Dtyper interface {
-	Dtype() Dtype
+	Dtype() dtype.Dtype
 }
 
 // Eq is any type where you can perform an equality test

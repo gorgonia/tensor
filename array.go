@@ -7,17 +7,18 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
 // array is the underlying generic array.
 type array struct {
-	storage.Header       // the header - the Go representation (a slice)
-	t              Dtype // the element type
+	storage.Header             // the header - the Go representation (a slice)
+	t              dtype.Dtype // the element type
 }
 
 // makeArray makes an array. The memory allocation is handled by Go
-func makeArray(t Dtype, length int) array {
+func makeArray(t dtype.Dtype, length int) array {
 	v := malloc(t, length)
 	hdr := storage.Header{
 		Raw: v,
@@ -41,7 +42,7 @@ func arrayFromSlice(x interface{}) array {
 		Header: storage.Header{
 			Raw: storage.AsByteSlice(x),
 		},
-		t: Dtype{elT},
+		t: dtype.Dtype{elT},
 	}
 }
 
@@ -57,7 +58,7 @@ func (a *array) fromSlice(x interface{}) {
 	}
 	elT := xT.Elem()
 	a.Raw = storage.AsByteSlice(x)
-	a.t = Dtype{elT}
+	a.t = dtype.Dtype{elT}
 }
 
 // fromSliceOrTensor populates the value from a slice or anything that can form an array
@@ -206,13 +207,13 @@ func (a *array) rtype() reflect.Type  { return a.t.Type }
 /* MEMORY MOVEMENT STUFF */
 
 // malloc is standard Go allocation of a block of memory - the plus side is that Go manages the memory
-func malloc(t Dtype, length int) []byte {
+func malloc(t dtype.Dtype, length int) []byte {
 	size := int(calcMemSize(t, length))
 	return make([]byte, size)
 }
 
 // calcMemSize calulates the memory size of an array (given its size)
-func calcMemSize(dt Dtype, size int) int64 {
+func calcMemSize(dt dtype.Dtype, size int) int64 {
 	return int64(dt.Size()) * int64(size)
 }
 

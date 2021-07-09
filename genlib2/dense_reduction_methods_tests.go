@@ -8,7 +8,7 @@ import (
 
 const testDenseSumRaw = `var sumTests = []struct {
 	name string
-	of Dtype
+	of dtype.Dtype
 	shape Shape
 	along []int
 
@@ -52,7 +52,7 @@ func TestDense_Sum(t *testing.T){
 
 const testDenseMaxRaw = `var maxTests = []struct {
 	name  string
-	of Dtype
+	of dtype.Dtype
 	shape Shape
 	along []int
 
@@ -98,7 +98,7 @@ func TestDense_Max(t *testing.T){
 
 const testDenseMinRaw = `var minTests = []struct {
 	name  string
-	of Dtype
+	of dtype.Dtype
 	shape Shape
 	along []int
 

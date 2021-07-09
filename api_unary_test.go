@@ -1,14 +1,14 @@
 package tensor
 
 import (
+	"math"
 	"math/rand"
 	"testing"
 	"testing/quick"
 	"time"
-	"math"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/chewxy/math32"
+	"github.com/stretchr/testify/assert"
 )
 
 /*
@@ -683,7 +683,6 @@ func TestLog10(t *testing.T) {
 		t.Errorf("Inv tests for Log10 failed: %v", err)
 	}
 
-
 	// unsafe
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
@@ -719,7 +718,6 @@ func TestLog10(t *testing.T) {
 	if err := quick.Check(invFn, &quick.Config{Rand: r}); err != nil {
 		t.Errorf("Inv tests using unsafe for Log10 failed: %v", err)
 	}
-
 
 	// reuse
 	invFn = func(q *Dense) bool {
@@ -836,7 +834,6 @@ func TestAbs(t *testing.T) {
 	}
 }
 
-
 func TestTanh(t *testing.T) {
 	var r *rand.Rand
 	// default
@@ -926,7 +923,6 @@ func TestTanh(t *testing.T) {
 		t.Errorf("Inv tests using unsafe for Tanh failed: %v", err)
 	}
 
-
 	// reuse
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
@@ -972,7 +968,6 @@ func TestTanh(t *testing.T) {
 	if err := quick.Check(invFn, &quick.Config{Rand: r}); err != nil {
 		t.Errorf("Inv tests using unsafe for Tanh failed: %v", err)
 	}
-
 
 	// incr
 	invFn = func(q *Dense) bool {
@@ -1062,7 +1057,6 @@ func TestLog2(t *testing.T) {
 		t.Errorf("Inv tests for Log2 failed: %v", err)
 	}
 
-
 	// unsafe
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
@@ -1098,7 +1092,6 @@ func TestLog2(t *testing.T) {
 	if err := quick.Check(invFn, &quick.Config{Rand: r}); err != nil {
 		t.Errorf("Inv tests using unsafe for Log2 failed: %v", err)
 	}
-
 
 	// reuse
 	invFn = func(q *Dense) bool {

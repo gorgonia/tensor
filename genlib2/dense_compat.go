@@ -13,7 +13,7 @@ const importsArrowRaw = `import (
 )
 `
 
-const conversionsRaw = `func convFromFloat64s(to Dtype, data []float64) interface{} {
+const conversionsRaw = `func convFromFloat64s(to dtype.Dtype, data []float64) interface{} {
 	switch to {
 	{{range .Kinds -}}
 	{{if isNumber . -}}

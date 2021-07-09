@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 )
 
 var (
@@ -183,7 +184,7 @@ func CSCFromCoord(shape Shape, xs, ys []int, data interface{}) *CS {
 
 func (t *CS) Shape() Shape         { return t.s }
 func (t *CS) Strides() []int       { return nil }
-func (t *CS) Dtype() Dtype         { return t.t }
+func (t *CS) Dtype() dtype.Dtype   { return t.t }
 func (t *CS) Dims() int            { return 2 }
 func (t *CS) Size() int            { return t.s.TotalSize() }
 func (t *CS) DataSize() int        { return t.Len() }

@@ -9,7 +9,7 @@ const compatTestsRaw = `var toMat64Tests = []struct{
 	data interface{}
 	sliced interface{}
 	shape Shape
-	dt Dtype
+	dt dtype.Dtype
 }{
 	{{range .Kinds -}}
 	{{if isNumber . -}}
@@ -87,7 +87,7 @@ func TestFromMat64(t *testing.T){
 			T = FromMat64(m, UseUnsafe())
 			assert.Equal(backing, T.Float64s())
 			assert.True(T.Shape().Eq(tmt.shape))
-			backing[0] = 1000 
+			backing[0] = 1000
 			assert.Equal(backing, T.Float64s(), "test %d - unsafe float64", i)
 		}
 	}

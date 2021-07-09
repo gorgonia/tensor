@@ -6,7 +6,7 @@ import (
 )
 
 const onesTestsRaw = `var onesTests = []struct {
-	of Dtype
+	of dtype.Dtype
 	shape Shape
 	correct interface{}
 }{
@@ -32,7 +32,7 @@ func TestOnes(t *testing.T){
 
 const eyeTestsRaw = `// yes, it's a pun on eye tests, stop asking and go see your optometrist
 var eyeTests = []struct{
-	E Dtype
+	E dtype.Dtype
 	R, C, K int
 
 

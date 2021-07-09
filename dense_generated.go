@@ -2,10 +2,14 @@
 
 package tensor
 
-import "reflect"
+import (
+	"reflect"
+
+	"gorgonia.org/dtype"
+)
 
 // Ones creates a *Dense with the provided shape and type
-func Ones(dt Dtype, shape ...int) *Dense {
+func Ones(dt dtype.Dtype, shape ...int) *Dense {
 	d := recycledDense(dt, shape)
 	switch d.t.Kind() {
 	case reflect.Int:
@@ -68,7 +72,7 @@ func Ones(dt Dtype, shape ...int) *Dense {
 // 		⎢1  0  0  0⎥
 // 		⎢0  1  0  0⎥
 // 		⎣0  0  1  0⎦
-func I(dt Dtype, r, c, k int) *Dense {
+func I(dt dtype.Dtype, r, c, k int) *Dense {
 	ret := New(Of(dt), WithShape(r, c))
 	i := k
 	if k < 0 {

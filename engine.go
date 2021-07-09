@@ -1,5 +1,7 @@
 package tensor
 
+import "gorgonia.org/dtype"
+
 // Memory is a representation of memory of the value.
 //
 // The main reason for requiring both Uintptr() and Pointer() methods is because while Go currently does not have a compacting
@@ -51,7 +53,7 @@ type StandardEngine interface {
 }
 
 type arrayMaker interface {
-	makeArray(arr *array, t Dtype, size int)
+	makeArray(arr *array, t dtype.Dtype, size int)
 }
 
 // NonStdEngine are any engines that do not allocate using the default built in allocator

@@ -6,7 +6,7 @@ import (
 	"text/template"
 )
 
-const checkNativeSelectable = `func checkNativeSelectable(t *Dense, axis int, dt Dtype) error {
+const checkNativeSelectable = `func checkNativeSelectable(t *Dense, axis int, dt dtype.Dtype) error {
 	if !t.IsNativelyAccessible() {
 		return errors.New("Cannot select on non-natively accessible data")
 	}

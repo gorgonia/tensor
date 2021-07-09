@@ -40,7 +40,7 @@ func MakeScalar(v interface{}) Scalar {
 
 func (s Scalar) Shape() Shape           { return ScalarShape() }
 func (s Scalar) Strides() []int         { return nil }
-func (s Scalar) Dtype() Dtype           { return Dtype{reflect.TypeOf(s.v)} }
+func (s Scalar) Dtype() dtype.Dtype     { return dtype.Dtype{reflect.TypeOf(s.v)} }
 func (s Scalar) Dims() int              { return 0 }
 func (s Scalar) Size() int              { return 0 } // TODO
 func (s Scalar) DataSize() int          { return 0 }

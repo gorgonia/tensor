@@ -3,12 +3,14 @@ package tensor
 import (
 	"reflect"
 	"testing"
+
+	"gorgonia.org/dtype"
 )
 
 type Float16 uint16
 
 func TestRegisterType(t *testing.T) {
-	dt := Dtype{reflect.TypeOf(Float16(0))}
+	dt := dtype.Dtype{reflect.TypeOf(Float16(0))}
 	RegisterFloat(dt)
 
 	if err := typeclassCheck(dt, floatTypes); err != nil {
@@ -34,7 +36,7 @@ func TestDtypeConversions(t *testing.T) {
 			t.Errorf("Error: %v", err)
 		}
 	}
-	dt := Dtype{reflect.TypeOf(Float16(0))}
+	dt := dtype.Dtype{reflect.TypeOf(Float16(0))}
 	if _, err := dt.numpyDtype(); err == nil {
 		t.Errorf("Expected an error when passing in type unknown to np")
 	}

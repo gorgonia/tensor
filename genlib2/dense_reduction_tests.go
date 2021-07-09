@@ -6,7 +6,7 @@ import (
 )
 
 const testDenseReduceRaw = `var denseReductionTests = []struct {
-	of Dtype
+	of dtype.Dtype
 	fn interface{}
 	def interface{}
 	axis int

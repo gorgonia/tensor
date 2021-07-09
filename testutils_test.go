@@ -14,6 +14,8 @@ import (
 
 	"github.com/chewxy/math32"
 	"gorgonia.org/tensor/internal/storage"
+
+	"gorgonia.org/dtype"
 )
 
 func randomBool() bool {
@@ -330,7 +332,7 @@ func shuffleInts(a []int, r *rand.Rand) {
 
 type TensorGenerator struct {
 	ShapeConstraint Shape
-	DtypeConstraint Dtype
+	DtypeConstraint dtype.Dtype
 }
 
 func (g TensorGenerator) Generate(r *rand.Rand, size int) reflect.Value {
@@ -539,14 +541,14 @@ func qcErrCheck(t *testing.T, name string, a Dtyper, b interface{}, we bool, err
 	return nil, false
 }
 
-func qcIsFloat(dt Dtype) bool {
+func qcIsFloat(dt dtype.Dtype) bool {
 	if err := typeclassCheck(dt, floatcmplxTypes); err == nil {
 		return true
 	}
 	return false
 }
 
-func qcEqCheck(t *testing.T, dt Dtype, willFailEq bool, correct, got interface{}) bool {
+func qcEqCheck(t *testing.T, dt dtype.Dtype, willFailEq bool, correct, got interface{}) bool {
 	isFloatTypes := qcIsFloat(dt)
 	if !willFailEq && (isFloatTypes && !allClose(correct, got) || (!isFloatTypes && !reflect.DeepEqual(correct, got))) {
 		t.Errorf("q.Dtype: %v", dt)

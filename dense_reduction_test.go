@@ -6,11 +6,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/execution"
 )
 
 var denseReductionTests = []struct {
-	of   Dtype
+	of   dtype.Dtype
 	fn   interface{}
 	def  interface{}
 	axis int
@@ -116,7 +117,7 @@ func TestDense_Reduce(t *testing.T) {
 
 var sumTests = []struct {
 	name  string
-	of    Dtype
+	of    dtype.Dtype
 	shape Shape
 	along []int
 
@@ -273,7 +274,7 @@ func TestDense_Sum(t *testing.T) {
 
 var maxTests = []struct {
 	name  string
-	of    Dtype
+	of    dtype.Dtype
 	shape Shape
 	along []int
 
@@ -411,7 +412,7 @@ func TestDense_Max(t *testing.T) {
 
 var minTests = []struct {
 	name  string
-	of    Dtype
+	of    dtype.Dtype
 	shape Shape
 	along []int
 
@@ -546,18 +547,4 @@ func TestDense_Min(t *testing.T) {
 	/* IDIOT TESTING TIME */
 	_, err = T.Min(1000)
 	assert.NotNil(err)
-}
-
-func TestSlicedSum(t *testing.T) {
-	T := New(WithShape(4, 4), WithBacking([]int{
-		1, 2, 3, 4,
-		5, 6, 7, 8,
-		1, 2, 3, 4,
-		5, 6, 7, 8,
-	}))
-	s, _ := T.Slice(sli(1, 3), sli(1, 3))
-	sum, _ := Sum(s)
-	if sum.Data().(int) != 18 {
-		t.Errorf("Expected the sum of %v to be 18. Got %v instead", s, sum)
-	}
 }

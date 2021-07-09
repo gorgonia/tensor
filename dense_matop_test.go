@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorgonia.org/dtype"
 	"gorgonia.org/vecf64"
 )
 
@@ -41,7 +42,7 @@ func cloneArray(a interface{}) interface{} {
 	return nil
 }
 
-func castToDt(val float64, dt Dtype) interface{} {
+func castToDt(val float64, dt dtype.Dtype) interface{} {
 	switch dt {
 	case Bool:
 		return false
@@ -694,7 +695,7 @@ func TestDense_RollAxis(t *testing.T) {
 
 var concatTests = []struct {
 	name   string
-	dt     Dtype
+	dt     dtype.Dtype
 	a      interface{}
 	b      interface{}
 	shape  Shape
@@ -852,7 +853,7 @@ func TestDense_Concat_sliced(t *testing.T) {
 
 var simpleStackTests = []struct {
 	name       string
-	dt         Dtype
+	dt         dtype.Dtype
 	shape      Shape
 	axis       int
 	stackCount int
@@ -903,7 +904,7 @@ var simpleStackTests = []struct {
 
 var viewStackTests = []struct {
 	name       string
-	dt         Dtype
+	dt         dtype.Dtype
 	shape      Shape
 	transform  []int
 	slices     []Slice

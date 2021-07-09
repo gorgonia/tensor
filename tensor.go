@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 )
 
 var (
@@ -24,7 +25,8 @@ type Desc interface {
 	// info about the ndarray
 	Shape() Shape
 	Strides() []int
-	Dtype() Dtype
+	Dtype() dtype.Dtype
+
 	Dims() int
 	Size() int
 	DataSize() int

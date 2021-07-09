@@ -15,9 +15,10 @@ import (
 	"github.com/chewxy/math32"
 	"github.com/pkg/errors"
 	"gonum.org/v1/gonum/mat"
+	"gorgonia.org/dtype"
 )
 
-func convFromFloat64s(to Dtype, data []float64) interface{} {
+func convFromFloat64s(to dtype.Dtype, data []float64) interface{} {
 	switch to {
 	case Int:
 		retVal := make([]int, len(data))
@@ -431,7 +432,9 @@ func ToMat64(t *Dense, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 			data = append(data, convToFloat64(t.Get(next)))
 		}
 		err = nil
+
 	}
+
 	retVal = mat.NewDense(r, c, data)
 	return
 }

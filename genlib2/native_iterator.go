@@ -6,7 +6,7 @@ import (
 	"text/template"
 )
 
-const checkNativeiterable = `func checkNativeIterable(t *Dense, dims int, dt Dtype) error {
+const checkNativeiterable = `func checkNativeIterable(t *Dense, dims int, dt dtype.Dtype) error {
 	// checks:
 	if !t.IsNativelyAccessible() {
 		return errors.Errorf("Cannot convert *Dense to *mat.Dense. Data is inaccessible")
