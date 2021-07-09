@@ -269,18 +269,18 @@ func (fn *EngineUnary) Write(w io.Writer) {
 
 func generateStdEngUncondUnary(f io.Writer, ak Kinds) {
 	tcc := []string{
-		"Number",     // Neg
-		"Number",     // Inv
-		"Number",     // Square
-		"Number",     // Cube
-		"FloatCmplx", // Exp
-		"FloatCmplx", // Tanhh
-		"FloatCmplx", // Log
-		"Float",      // Log2
-		"FloatCmplx", // Log10
-		"FloatCmplx", // Sqrt
-		"Float",      // Cbrt
-		"Float",      // InvSqrt
+		"Number",       // Neg
+		"Number",       // Inv
+		"Number",       // Square
+		"Number",       // Cube
+		"FloatComplex", // Exp
+		"FloatComplex", // Tanhh
+		"FloatComplex", // Log
+		"Float",        // Log2
+		"FloatComplex", // Log10
+		"FloatComplex", // Sqrt
+		"Float",        // Cbrt
+		"Float",        // InvSqrt
 	}
 	var gen []*EngineUnary
 	for i, u := range unconditionalUnaries {
