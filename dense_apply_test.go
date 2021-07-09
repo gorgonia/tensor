@@ -108,7 +108,7 @@ func TestDense_Apply(t *testing.T) {
 			return true // we'll skip those that we cannot mutate
 		}
 
-		we, eqFail := willerr(q, nil, nil)
+		we, eqFail := willerr(q, nilTC, nilTC)
 		_, ok := q.Engine().(Mapper)
 		we = we || !ok
 
@@ -151,7 +151,7 @@ func TestDense_Apply_unsafe(t *testing.T) {
 			return true // we'll skip those that we cannot mutate
 		}
 
-		we, eqFail := willerr(q, nil, nil)
+		we, eqFail := willerr(q, nilTC, nilTC)
 		_, ok := q.Engine().(Mapper)
 		we = we || !ok
 
@@ -192,7 +192,7 @@ func TestDense_Apply_reuse(t *testing.T) {
 			return true // we'll skip those that we cannot mutate
 		}
 
-		we, eqFail := willerr(q, nil, nil)
+		we, eqFail := willerr(q, nilTC, nilTC)
 		_, ok := q.Engine().(Mapper)
 		we = we || !ok
 

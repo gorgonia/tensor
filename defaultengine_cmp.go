@@ -4,6 +4,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
@@ -12,7 +13,7 @@ import (
 //UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = binaryCheck(a, b, ordTypes); err != nil {
+	if err = binaryCheck(a, b, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Gt failed")
 	}
 
@@ -90,7 +91,7 @@ func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 //UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = binaryCheck(a, b, ordTypes); err != nil {
+	if err = binaryCheck(a, b, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Gte failed")
 	}
 
@@ -168,7 +169,7 @@ func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 //UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = binaryCheck(a, b, ordTypes); err != nil {
+	if err = binaryCheck(a, b, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Lt failed")
 	}
 
@@ -246,7 +247,7 @@ func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 //UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = binaryCheck(a, b, ordTypes); err != nil {
+	if err = binaryCheck(a, b, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Lte failed")
 	}
 
@@ -324,7 +325,7 @@ func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 //UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = binaryCheck(a, b, eqTypes); err != nil {
+	if err = binaryCheck(a, b, dtype.Eq); err != nil {
 		return nil, errors.Wrapf(err, "Eq failed")
 	}
 
@@ -402,7 +403,7 @@ func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 //UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) ElNe(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = binaryCheck(a, b, eqTypes); err != nil {
+	if err = binaryCheck(a, b, dtype.Eq); err != nil {
 		return nil, errors.Wrapf(err, "Ne failed")
 	}
 
@@ -480,7 +481,7 @@ func (e StdEng) ElNe(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 // UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Gt failed")
 	}
 
@@ -602,7 +603,7 @@ func (e StdEng) GtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 // UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Gte failed")
 	}
 
@@ -724,7 +725,7 @@ func (e StdEng) GteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 // UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Lt failed")
 	}
 
@@ -846,7 +847,7 @@ func (e StdEng) LtScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 // UseUnsafe() will ensure that the same type is returned.
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, "Lte failed")
 	}
 
@@ -964,7 +965,7 @@ func (e StdEng) LteScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 }
 
 func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(t, eqTypes); err != nil {
+	if err = unaryCheck(t, dtype.Eq); err != nil {
 		return nil, errors.Wrapf(err, "Eq failed")
 	}
 
@@ -1082,7 +1083,7 @@ func (e StdEng) EqScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncO
 }
 
 func (e StdEng) NeScalar(t Tensor, s interface{}, leftTensor bool, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(t, eqTypes); err != nil {
+	if err = unaryCheck(t, dtype.Eq); err != nil {
 		return nil, errors.Wrapf(err, "Ne failed")
 	}
 

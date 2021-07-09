@@ -176,10 +176,10 @@ func generateAPIArithTests(f io.Writer, ak Kinds) {
 		t := &ArithTest{
 			arithOp:             op,
 			lvl:                 API,
-			EqFailTypeClassName: "",
+			EqFailTypeClassName: "nilTC",
 		}
 		if t.name == "Pow" {
-			t.EqFailTypeClassName = "dtype.Complex"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		}
 		tests = append(tests, t)
 	}
@@ -219,11 +219,11 @@ func generateAPIArithScalarTests(f io.Writer, ak Kinds) {
 			arithOp:             op,
 			scalars:             true,
 			lvl:                 API,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		switch t.name {
 		case "Pow":
-			t.EqFailTypeClassName = "dtype.Complex"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		case "Sub":
 			t.EqFailTypeClassName = "dtype.Unsigned"
 		}
@@ -264,10 +264,10 @@ func generateDenseMethodArithTests(f io.Writer, ak Kinds) {
 		t := &ArithTest{
 			arithOp:             op,
 			lvl:                 Dense,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		if t.name == "Pow" {
-			t.EqFailTypeClassName = "dtype.Complex"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		}
 		tests = append(tests, t)
 	}
@@ -307,11 +307,11 @@ func generateDenseMethodScalarTests(f io.Writer, ak Kinds) {
 			arithOp:             op,
 			scalars:             true,
 			lvl:                 Dense,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		switch t.name {
 		case "Pow":
-			t.EqFailTypeClassName = "dtype.Complex"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		case "Sub":
 			t.EqFailTypeClassName = "dtype.Unsigned"
 		}

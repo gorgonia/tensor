@@ -99,7 +99,7 @@ func generateAPIUnaryTests(f io.Writer, ak Kinds) {
 	for _, op := range conditionalUnaries {
 		t := &unaryTest{
 			unaryOp:             op,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 
 		tests = append(tests, t)
@@ -108,13 +108,13 @@ func generateAPIUnaryTests(f io.Writer, ak Kinds) {
 	for _, op := range unconditionalUnaries {
 		t := &unaryTest{
 			unaryOp:             op,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		switch op.name {
 		case "Square":
-			t.InvTypeClass = "floatcmplxTypes"
+			t.InvTypeClass = "dtype.FloatComplex"
 		case "Cube":
-			t.InvTypeClass = "floatTypes"
+			t.InvTypeClass = "dtype.Floats"
 		}
 
 		tests = append(tests, t)

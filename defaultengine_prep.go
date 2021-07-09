@@ -62,7 +62,7 @@ func handleFuncOpts(expShape Shape, expType dtype.Dtype, o DataOrder, strict boo
 	return
 }
 
-func binaryCheck(a, b Tensor, tc *typeclass) (err error) {
+func binaryCheck(a, b Tensor, tc dtype.TypeClass) (err error) {
 	// check if the tensors are accessible
 	if !a.IsNativelyAccessible() {
 		return errors.Errorf(inaccessibleData, a)
@@ -74,11 +74,11 @@ func binaryCheck(a, b Tensor, tc *typeclass) (err error) {
 
 	at := a.Dtype()
 	bt := b.Dtype()
-	if tc != nil {
-		if err = typeclassCheck(at, tc); err != nil {
+	if tc != nilTC {
+		if err = dtype.TypeClassCheck(at, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "a")
 		}
-		if err = typeclassCheck(bt, tc); err != nil {
+		if err = dtype.TypeClassCheck(bt, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "b")
 		}
 	}
@@ -92,13 +92,13 @@ func binaryCheck(a, b Tensor, tc *typeclass) (err error) {
 	return nil
 }
 
-func unaryCheck(a Tensor, tc *typeclass) error {
+func unaryCheck(a Tensor, tc dtype.TypeClass) error {
 	if !a.IsNativelyAccessible() {
 		return errors.Errorf(inaccessibleData, a)
 	}
 	at := a.Dtype()
-	if tc != nil {
-		if err := typeclassCheck(at, tc); err != nil {
+	if tc != nilTC {
+		if err := dtype.TypeClassCheck(at, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "a")
 		}
 	}

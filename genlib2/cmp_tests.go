@@ -370,7 +370,7 @@ func generateAPICmpTests(f io.Writer, ak Kinds) {
 		t := &CmpTest{
 			cmpOp:               op,
 			lvl:                 API,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		tests = append(tests, t)
 	}
@@ -380,7 +380,7 @@ func generateAPICmpTests(f io.Writer, ak Kinds) {
 			fn.Write(f)
 		}
 		fn.FuncOpt = "assame"
-		fn.TypeClassName = "nonComplexNumberTypes"
+		fn.TypeClassName = "dtype.NonComplexNumber"
 	}
 	for _, fn := range tests {
 		if fn.canWrite() {
@@ -398,7 +398,7 @@ func generateAPICmpMixedTests(f io.Writer, ak Kinds) {
 			cmpOp:               op,
 			lvl:                 API,
 			scalars:             true,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		tests = append(tests, t)
 	}
@@ -408,7 +408,7 @@ func generateAPICmpMixedTests(f io.Writer, ak Kinds) {
 			fn.Write(f)
 		}
 		fn.FuncOpt = "assame"
-		fn.TypeClassName = "nonComplexNumberTypes"
+		fn.TypeClassName = "dtype.NonComplexNumber"
 	}
 	for _, fn := range tests {
 		if fn.canWrite() {
@@ -424,7 +424,7 @@ func generateDenseMethodCmpTests(f io.Writer, ak Kinds) {
 		t := &CmpTest{
 			cmpOp:               op,
 			lvl:                 Dense,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		tests = append(tests, t)
 	}
@@ -434,7 +434,7 @@ func generateDenseMethodCmpTests(f io.Writer, ak Kinds) {
 			fn.Write(f)
 		}
 		fn.FuncOpt = "assame"
-		fn.TypeClassName = "nonComplexNumberTypes"
+		fn.TypeClassName = "dtype.NonComplexNumber"
 	}
 	for _, fn := range tests {
 		if fn.canWrite() {
@@ -451,7 +451,7 @@ func generateDenseMethodCmpMixedTests(f io.Writer, ak Kinds) {
 			cmpOp:               op,
 			lvl:                 Dense,
 			scalars:             true,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		tests = append(tests, t)
 	}
@@ -461,7 +461,7 @@ func generateDenseMethodCmpMixedTests(f io.Writer, ak Kinds) {
 			fn.Write(f)
 		}
 		fn.FuncOpt = "assame"
-		fn.TypeClassName = "nonComplexNumberTypes"
+		fn.TypeClassName = "dtype.NonComplexNumber"
 	}
 	for _, fn := range tests {
 		if fn.canWrite() {

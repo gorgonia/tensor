@@ -517,6 +517,10 @@ func willerr(a *Dense, tc, eqtc dtype.TypeClass) (retVal, willFailEq bool) {
 			willFailEq = true
 		}
 	}
+	if tc == nilTC {
+		retVal = !a.IsNativelyAccessible()
+		return
+	}
 	if err := dtype.TypeClassCheck(a.Dtype(), tc); err != nil {
 		return true, willFailEq
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, nil); err != nil {
+	if err = unaryCheck(a, nilTC); err != nil {
 		err = errors.Wrap(err, "Failed Map()")
 		return
 	}
@@ -254,7 +254,7 @@ func (StdEng) prepReduce(a Tensor, axis int, opts ...FuncOpt) (at, reuse DenseTe
 		return
 	}
 
-	if err = unaryCheck(a, nil); err != nil {
+	if err = unaryCheck(a, nilTC); err != nil {
 		err = errors.Wrap(err, "prepReduce failed")
 		return
 	}

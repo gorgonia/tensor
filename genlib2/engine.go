@@ -276,11 +276,11 @@ func generateStdEngUncondUnary(f io.Writer, ak Kinds) {
 		"FloatComplex", // Exp
 		"FloatComplex", // Tanhh
 		"FloatComplex", // Log
-		"Float",        // Log2
+		"Floats",       // Log2
 		"FloatComplex", // Log10
 		"FloatComplex", // Sqrt
-		"Float",        // Cbrt
-		"Float",        // InvSqrt
+		"Floats",       // Cbrt
+		"Floats",       // InvSqrt
 	}
 	var gen []*EngineUnary
 	for i, u := range unconditionalUnaries {

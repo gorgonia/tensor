@@ -2,11 +2,12 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
 func (e StdEng) Clamp(a Tensor, min, max interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, nonComplexNumberTypes); err != nil {
+	if err = unaryCheck(a, dtype.NonComplexNumber); err != nil {
 		return nil, errors.Wrap(err, "Clamp failed")
 	}
 

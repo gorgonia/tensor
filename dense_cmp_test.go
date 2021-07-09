@@ -6,11 +6,13 @@ import (
 	"reflect"
 	"testing"
 	"testing/quick"
+
+	"gorgonia.org/dtype"
 )
 
 func TestDense_Gt(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Gter)
 		we = we || !ok
 
@@ -68,7 +70,7 @@ func TestDense_Gt(t *testing.T) {
 }
 func TestDense_Gte(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Gteer)
 		we = we || !ok
 
@@ -126,7 +128,7 @@ func TestDense_Gte(t *testing.T) {
 }
 func TestDense_Lt(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Lter)
 		we = we || !ok
 
@@ -184,7 +186,7 @@ func TestDense_Lt(t *testing.T) {
 }
 func TestDense_Lte(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Lteer)
 		we = we || !ok
 
@@ -242,7 +244,7 @@ func TestDense_Lte(t *testing.T) {
 }
 func TestDense_ElEq(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, eqTypes, nil)
+		we, _ := willerr(q, dtype.Eq, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
@@ -298,7 +300,7 @@ func TestDense_ElEq(t *testing.T) {
 	}
 
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, eqTypes, nil)
+		we, _ := willerr(q, dtype.Eq, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
@@ -333,7 +335,7 @@ func TestDense_ElEq(t *testing.T) {
 }
 func TestDense_ElNe(t *testing.T) {
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, eqTypes, nil)
+		we, _ := willerr(q, dtype.Eq, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
@@ -368,11 +370,11 @@ func TestDense_ElNe(t *testing.T) {
 }
 func TestDense_Gt_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Gter)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -428,11 +430,11 @@ func TestDense_Gt_assame(t *testing.T) {
 }
 func TestDense_Gte_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Gteer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -488,11 +490,11 @@ func TestDense_Gte_assame(t *testing.T) {
 }
 func TestDense_Lt_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Lter)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -548,11 +550,11 @@ func TestDense_Lt_assame(t *testing.T) {
 }
 func TestDense_Lte_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Lteer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -608,11 +610,11 @@ func TestDense_Lte_assame(t *testing.T) {
 }
 func TestDense_ElEq_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -666,11 +668,11 @@ func TestDense_ElEq_assame(t *testing.T) {
 	}
 
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -704,11 +706,11 @@ func TestDense_ElEq_assame(t *testing.T) {
 }
 func TestDense_ElNe_assame(t *testing.T) {
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -742,7 +744,7 @@ func TestDense_ElNe_assame(t *testing.T) {
 }
 func TestDense_GtScalar(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Gter)
 		we = we || !ok
 
@@ -798,7 +800,7 @@ func TestDense_GtScalar(t *testing.T) {
 }
 func TestDense_GteScalar(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Gteer)
 		we = we || !ok
 
@@ -854,7 +856,7 @@ func TestDense_GteScalar(t *testing.T) {
 }
 func TestDense_LtScalar(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Lter)
 		we = we || !ok
 
@@ -910,7 +912,7 @@ func TestDense_LtScalar(t *testing.T) {
 }
 func TestDense_LteScalar(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, ordTypes, nil)
+		we, _ := willerr(q, dtype.Ord, nilTC)
 		_, ok := q.Engine().(Lteer)
 		we = we || !ok
 
@@ -966,7 +968,7 @@ func TestDense_LteScalar(t *testing.T) {
 }
 func TestDense_ElEqScalar(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, eqTypes, nil)
+		we, _ := willerr(q, dtype.Eq, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
@@ -1020,7 +1022,7 @@ func TestDense_ElEqScalar(t *testing.T) {
 	}
 
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, eqTypes, nil)
+		we, _ := willerr(q, dtype.Eq, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
@@ -1053,7 +1055,7 @@ func TestDense_ElEqScalar(t *testing.T) {
 }
 func TestDense_ElNeScalar(t *testing.T) {
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, eqTypes, nil)
+		we, _ := willerr(q, dtype.Eq, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
@@ -1086,11 +1088,11 @@ func TestDense_ElNeScalar(t *testing.T) {
 }
 func TestDense_GtScalar_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Gter)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -1144,11 +1146,11 @@ func TestDense_GtScalar_assame(t *testing.T) {
 }
 func TestDense_GteScalar_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Gteer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -1202,11 +1204,11 @@ func TestDense_GteScalar_assame(t *testing.T) {
 }
 func TestDense_LtScalar_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Lter)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -1260,11 +1262,11 @@ func TestDense_LtScalar_assame(t *testing.T) {
 }
 func TestDense_LteScalar_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(Lteer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -1318,11 +1320,11 @@ func TestDense_LteScalar_assame(t *testing.T) {
 }
 func TestDense_ElEqScalar_assame(t *testing.T) {
 	transFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -1374,11 +1376,11 @@ func TestDense_ElEqScalar_assame(t *testing.T) {
 	}
 
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()
@@ -1410,11 +1412,11 @@ func TestDense_ElEqScalar_assame(t *testing.T) {
 }
 func TestDense_ElNeScalar_assame(t *testing.T) {
 	symFn := func(q *Dense) bool {
-		we, _ := willerr(q, nonComplexNumberTypes, nil)
+		we, _ := willerr(q, dtype.NonComplexNumber, nilTC)
 		_, ok := q.Engine().(ElEqer)
 		we = we || !ok
 
-		if err := typeclassCheck(q.Dtype(), nonComplexNumberTypes); err != nil {
+		if err := dtype.TypeClassCheck(q.Dtype(), dtype.NonComplexNumber); err != nil {
 			return true // we exit early if the generated type is not something we can handle
 		}
 		r := newRand()

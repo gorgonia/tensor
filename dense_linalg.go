@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 )
 
 // Trace returns the trace of the matrix (i.e. the sum of the diagonal elements). It only works for matrices
@@ -17,7 +18,7 @@ func (t *Dense) Trace() (retVal interface{}, err error) {
 // Inner performs a dot product on two vectors. If t or other are not vectors, it will return an error.
 func (t *Dense) Inner(other Tensor) (retVal interface{}, err error) {
 	// check that the data is a float
-	if err = typeclassCheck(t.t, floatcmplxTypes); err != nil {
+	if err = dtype.TypeClassCheck(t.t, dtype.FloatComplex); err != nil {
 		return nil, errors.Wrapf(err, unsupportedDtype, t.t, "Inner")
 	}
 
@@ -413,7 +414,7 @@ func handleIncr(res *Dense, reuse, incr Tensor, expectedShape Shape) (retVal *De
 			return
 		}
 
-		if err = typeclassCheck(incrD.t, numberTypes); err != nil {
+		if err = dtype.TypeClassCheck(incrD.t, dtype.Number); err != nil {
 			err = errors.Wrapf(err, "handleIncr only handles Number types. Got %v instead", incrD.t)
 			return
 		}
