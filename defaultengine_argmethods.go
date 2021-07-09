@@ -1,6 +1,9 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
+)
 
 func (e StdEng) Argmax(t Tensor, axis int) (retVal Tensor, err error) {
 
@@ -13,7 +16,7 @@ func (e StdEng) Argmax(t Tensor, axis int) (retVal Tensor, err error) {
 }
 
 func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, opFail, "Argmax")
 	}
 
@@ -100,7 +103,7 @@ func (e StdEng) Argmin(t Tensor, axis int) (retVal Tensor, err error) {
 }
 
 func (e StdEng) argminDenseTensor(t DenseTensor, axis int) (retVal *Dense, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, opFail, "Argmin")
 	}
 

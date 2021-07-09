@@ -5,13 +5,15 @@ package tensor
 import (
 	"testing"
 	"testing/quick"
+
+	"gorgonia.org/dtype"
 )
 
 func TestAdd(t *testing.T) {
 	iden := func(a *Dense) bool {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Adder)
 		we = we || !ok
 
@@ -37,7 +39,7 @@ func TestSub(t *testing.T) {
 	inv := func(a *Dense) bool {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Suber)
 		we = we || !ok
 
@@ -64,7 +66,7 @@ func TestMul(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		b.Memset(identityVal(1, a.t))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Muler)
 		we = we || !ok
 
@@ -91,7 +93,7 @@ func TestDiv(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		b.Memset(identityVal(1, a.t))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Diver)
 		we = we || !ok
 
@@ -118,7 +120,7 @@ func TestPow(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		b.Memset(identityVal(1, a.t))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := a.Engine().(Power)
 		we = we || !ok
 
@@ -144,7 +146,7 @@ func TestAdd_unsafe(t *testing.T) {
 	iden := func(a *Dense) bool {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Adder)
 		we = we || !ok
 
@@ -175,7 +177,7 @@ func TestSub_unsafe(t *testing.T) {
 	inv := func(a *Dense) bool {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Suber)
 		we = we || !ok
 
@@ -207,7 +209,7 @@ func TestMul_unsafe(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		b.Memset(identityVal(1, a.t))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Muler)
 		we = we || !ok
 
@@ -239,7 +241,7 @@ func TestDiv_unsafe(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		b.Memset(identityVal(1, a.t))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Diver)
 		we = we || !ok
 
@@ -271,7 +273,7 @@ func TestPow_unsafe(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		b.Memset(identityVal(1, a.t))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := a.Engine().(Power)
 		we = we || !ok
 
@@ -303,7 +305,7 @@ func TestAdd_reuse(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Adder)
 		we = we || !ok
 
@@ -335,7 +337,7 @@ func TestSub_reuse(t *testing.T) {
 		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Suber)
 		we = we || !ok
 
@@ -368,7 +370,7 @@ func TestMul_reuse(t *testing.T) {
 		b.Memset(identityVal(1, a.t))
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Muler)
 		we = we || !ok
 
@@ -401,7 +403,7 @@ func TestDiv_reuse(t *testing.T) {
 		b.Memset(identityVal(1, a.t))
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Diver)
 		we = we || !ok
 
@@ -434,7 +436,7 @@ func TestPow_reuse(t *testing.T) {
 		b.Memset(identityVal(1, a.t))
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := a.Engine().(Power)
 		we = we || !ok
 
@@ -468,7 +470,7 @@ func TestAdd_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Adder)
 		we = we || !ok
 
@@ -497,7 +499,7 @@ func TestSub_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Suber)
 		we = we || !ok
 
@@ -527,7 +529,7 @@ func TestMul_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Muler)
 		we = we || !ok
 
@@ -557,7 +559,7 @@ func TestDiv_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Diver)
 		we = we || !ok
 
@@ -587,7 +589,7 @@ func TestPow_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := a.Engine().(Power)
 		we = we || !ok
 
@@ -615,7 +617,7 @@ func TestAddScalar(t *testing.T) {
 		b := identityVal(0, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -641,7 +643,7 @@ func TestAddScalar(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := identityVal(0, q.t)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -695,7 +697,7 @@ func TestSubScalar(t *testing.T) {
 		b := identityVal(0, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -721,7 +723,7 @@ func TestSubScalar(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := identityVal(0, q.t)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -775,7 +777,7 @@ func TestMulScalar(t *testing.T) {
 		b := identityVal(1, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -801,7 +803,7 @@ func TestMulScalar(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := identityVal(1, q.t)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -855,7 +857,7 @@ func TestDivScalar(t *testing.T) {
 		b := identityVal(1, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Diver)
 		we = we || !ok
 
@@ -910,7 +912,7 @@ func TestPowScalar(t *testing.T) {
 		b := identityVal(1, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := q.Engine().(Power)
 		we = we || !ok
 
@@ -965,7 +967,7 @@ func TestAddScalar_unsafe(t *testing.T) {
 		b := identityVal(0, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -996,7 +998,7 @@ func TestAddScalar_unsafe(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := identityVal(0, q.t)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -1029,7 +1031,7 @@ func TestSubScalar_unsafe(t *testing.T) {
 		b := identityVal(0, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -1060,7 +1062,7 @@ func TestSubScalar_unsafe(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := identityVal(0, q.t)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -1093,7 +1095,7 @@ func TestMulScalar_unsafe(t *testing.T) {
 		b := identityVal(1, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -1124,7 +1126,7 @@ func TestMulScalar_unsafe(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := identityVal(1, q.t)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -1157,7 +1159,7 @@ func TestDivScalar_unsafe(t *testing.T) {
 		b := identityVal(1, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Diver)
 		we = we || !ok
 
@@ -1191,7 +1193,7 @@ func TestPowScalar_unsafe(t *testing.T) {
 		b := identityVal(1, q.t)
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := q.Engine().(Power)
 		we = we || !ok
 
@@ -1226,7 +1228,7 @@ func TestAddScalar_reuse(t *testing.T) {
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -1258,7 +1260,7 @@ func TestAddScalar_reuse(t *testing.T) {
 		b := identityVal(0, q.t)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -1292,7 +1294,7 @@ func TestSubScalar_reuse(t *testing.T) {
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -1324,7 +1326,7 @@ func TestSubScalar_reuse(t *testing.T) {
 		b := identityVal(0, q.t)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -1358,7 +1360,7 @@ func TestMulScalar_reuse(t *testing.T) {
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -1390,7 +1392,7 @@ func TestMulScalar_reuse(t *testing.T) {
 		b := identityVal(1, q.t)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -1424,7 +1426,7 @@ func TestDivScalar_reuse(t *testing.T) {
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Diver)
 		we = we || !ok
 
@@ -1459,7 +1461,7 @@ func TestPowScalar_reuse(t *testing.T) {
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := q.Engine().(Power)
 		we = we || !ok
 
@@ -1496,7 +1498,7 @@ func TestAddScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -1525,7 +1527,7 @@ func TestAddScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Adder)
 		we = we || !ok
 
@@ -1556,7 +1558,7 @@ func TestSubScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 
@@ -1588,7 +1590,7 @@ func TestMulScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -1617,7 +1619,7 @@ func TestMulScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Muler)
 		we = we || !ok
 
@@ -1648,7 +1650,7 @@ func TestDivScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Diver)
 		we = we || !ok
 
@@ -1680,7 +1682,7 @@ func TestPowScalar_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
 		_, ok := q.Engine().(Power)
 		we = we || !ok
 

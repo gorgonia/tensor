@@ -4,11 +4,12 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
 func (e StdEng) Neg(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, numberTypes); err != nil {
+	if err = unaryCheck(a, dtype.Number); err != nil {
 		err = errors.Wrapf(err, "Neg failed")
 		return
 	}
@@ -76,7 +77,7 @@ func (e StdEng) Neg(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Inv(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, numberTypes); err != nil {
+	if err = unaryCheck(a, dtype.Number); err != nil {
 		err = errors.Wrapf(err, "Inv failed")
 		return
 	}
@@ -144,7 +145,7 @@ func (e StdEng) Inv(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Square(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, numberTypes); err != nil {
+	if err = unaryCheck(a, dtype.Number); err != nil {
 		err = errors.Wrapf(err, "Square failed")
 		return
 	}
@@ -212,7 +213,7 @@ func (e StdEng) Square(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Cube(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, numberTypes); err != nil {
+	if err = unaryCheck(a, dtype.Number); err != nil {
 		err = errors.Wrapf(err, "Cube failed")
 		return
 	}
@@ -280,7 +281,7 @@ func (e StdEng) Cube(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Exp(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatcmplxTypes); err != nil {
+	if err = unaryCheck(a, dtype.FloatComplex); err != nil {
 		err = errors.Wrapf(err, "Exp failed")
 		return
 	}
@@ -348,7 +349,7 @@ func (e StdEng) Exp(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Tanh(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatcmplxTypes); err != nil {
+	if err = unaryCheck(a, dtype.FloatComplex); err != nil {
 		err = errors.Wrapf(err, "Tanh failed")
 		return
 	}
@@ -416,7 +417,7 @@ func (e StdEng) Tanh(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Log(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatcmplxTypes); err != nil {
+	if err = unaryCheck(a, dtype.FloatComplex); err != nil {
 		err = errors.Wrapf(err, "Log failed")
 		return
 	}
@@ -484,7 +485,7 @@ func (e StdEng) Log(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Log2(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatTypes); err != nil {
+	if err = unaryCheck(a, dtype.Floats); err != nil {
 		err = errors.Wrapf(err, "Log2 failed")
 		return
 	}
@@ -552,7 +553,7 @@ func (e StdEng) Log2(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Log10(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatcmplxTypes); err != nil {
+	if err = unaryCheck(a, dtype.FloatComplex); err != nil {
 		err = errors.Wrapf(err, "Log10 failed")
 		return
 	}
@@ -620,7 +621,7 @@ func (e StdEng) Log10(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Sqrt(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatcmplxTypes); err != nil {
+	if err = unaryCheck(a, dtype.FloatComplex); err != nil {
 		err = errors.Wrapf(err, "Sqrt failed")
 		return
 	}
@@ -688,7 +689,7 @@ func (e StdEng) Sqrt(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Cbrt(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatTypes); err != nil {
+	if err = unaryCheck(a, dtype.Floats); err != nil {
 		err = errors.Wrapf(err, "Cbrt failed")
 		return
 	}
@@ -756,7 +757,7 @@ func (e StdEng) Cbrt(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) InvSqrt(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, floatTypes); err != nil {
+	if err = unaryCheck(a, dtype.Floats); err != nil {
 		err = errors.Wrapf(err, "InvSqrt failed")
 		return
 	}
@@ -824,7 +825,7 @@ func (e StdEng) InvSqrt(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Abs(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, signedTypes); err != nil {
+	if err = unaryCheck(a, dtype.Signed); err != nil {
 		err = errors.Wrapf(err, "Abs failed")
 		return
 	}
@@ -892,7 +893,7 @@ func (e StdEng) Abs(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 }
 func (e StdEng) Sign(a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, signedTypes); err != nil {
+	if err = unaryCheck(a, dtype.Signed); err != nil {
 		err = errors.Wrapf(err, "Sign failed")
 		return
 	}

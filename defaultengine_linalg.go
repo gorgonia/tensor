@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/mat"
+	"gorgonia.org/dtype"
 )
 
 //  Trace returns the trace of a matrix (i.e. the sum of the diagonal elements). If the Tensor provided is not a matrix, it will return an error
@@ -15,7 +16,7 @@ func (e StdEng) Trace(t Tensor) (retVal interface{}, err error) {
 		return
 	}
 
-	if err = typeclassCheck(t.Dtype(), numberTypes); err != nil {
+	if err = dtype.TypeClassCheck(t.Dtype(), dtype.Number); err != nil {
 		return nil, errors.Wrap(err, "Trace")
 	}
 
@@ -317,7 +318,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 	if t, ok = a.(*Dense); !ok {
 		return nil, nil, nil, errors.Errorf("StdEng only performs SVDs for DenseTensors. Got %T instead", a)
 	}
-	if err = typeclassCheck(a.Dtype(), floatTypes); err != nil {
+	if err = dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 		return nil, nil, nil, errors.Errorf("StdEng can only perform SVDs for float64 and float32 type. Got tensor of %v instead", t.Dtype())
 	}
 

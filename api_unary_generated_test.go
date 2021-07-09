@@ -5,13 +5,15 @@ package tensor
 import (
 	"testing"
 	"testing/quick"
+
+	"gorgonia.org/dtype"
 )
 
 func TestNeg(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Neger)
 		we = we || !ok
 
@@ -37,7 +39,7 @@ func TestSquare(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Squarer)
 		we = we || !ok
 
@@ -48,7 +50,7 @@ func TestSquare(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatcmplxTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.FloatComplex); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		Sqrt(ret, UseUnsafe())
@@ -66,7 +68,7 @@ func TestCube(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Cuber)
 		we = we || !ok
 
@@ -77,7 +79,7 @@ func TestCube(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		Cbrt(ret, UseUnsafe())
@@ -95,7 +97,7 @@ func TestExp(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Exper)
 		we = we || !ok
 
@@ -121,7 +123,7 @@ func TestLog(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Loger)
 		we = we || !ok
 
@@ -147,7 +149,7 @@ func TestSqrt(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Sqrter)
 		we = we || !ok
 
@@ -173,7 +175,7 @@ func TestCbrt(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Cbrter)
 		we = we || !ok
 
@@ -199,7 +201,7 @@ func TestNeg_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Neger)
 		we = we || !ok
 
@@ -230,7 +232,7 @@ func TestSquare_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Squarer)
 		we = we || !ok
 
@@ -241,7 +243,7 @@ func TestSquare_unsafe(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatcmplxTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.FloatComplex); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		Sqrt(ret, UseUnsafe())
@@ -264,7 +266,7 @@ func TestCube_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Cuber)
 		we = we || !ok
 
@@ -275,7 +277,7 @@ func TestCube_unsafe(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		Cbrt(ret, UseUnsafe())
@@ -298,7 +300,7 @@ func TestExp_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Exper)
 		we = we || !ok
 
@@ -329,7 +331,7 @@ func TestLog_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Loger)
 		we = we || !ok
 
@@ -360,7 +362,7 @@ func TestSqrt_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Sqrter)
 		we = we || !ok
 
@@ -391,7 +393,7 @@ func TestCbrt_unsafe(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Cbrter)
 		we = we || !ok
 
@@ -423,7 +425,7 @@ func TestNeg_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Neger)
 		we = we || !ok
 
@@ -455,7 +457,7 @@ func TestSquare_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Squarer)
 		we = we || !ok
 
@@ -466,7 +468,7 @@ func TestSquare_reuse(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatcmplxTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.FloatComplex); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		Sqrt(ret, UseUnsafe())
@@ -490,7 +492,7 @@ func TestCube_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Cuber)
 		we = we || !ok
 
@@ -501,7 +503,7 @@ func TestCube_reuse(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		Cbrt(ret, UseUnsafe())
@@ -525,7 +527,7 @@ func TestExp_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Exper)
 		we = we || !ok
 
@@ -557,7 +559,7 @@ func TestLog_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Loger)
 		we = we || !ok
 
@@ -589,7 +591,7 @@ func TestSqrt_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Sqrter)
 		we = we || !ok
 
@@ -621,7 +623,7 @@ func TestCbrt_reuse(t *testing.T) {
 		a := q.Clone().(*Dense)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Cbrter)
 		we = we || !ok
 
@@ -655,7 +657,7 @@ func TestNeg_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Neger)
 		we = we || !ok
 
@@ -688,7 +690,7 @@ func TestSquare_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Squarer)
 		we = we || !ok
 
@@ -699,7 +701,7 @@ func TestSquare_incr(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatcmplxTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.FloatComplex); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		if ret, err = Sub(ret, identityVal(100, a.Dtype()), UseUnsafe()); err != nil {
@@ -724,7 +726,7 @@ func TestCube_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := q.Engine().(Cuber)
 		we = we || !ok
 
@@ -735,7 +737,7 @@ func TestCube_incr(t *testing.T) {
 			}
 			return true
 		}
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true // uninvertible due to type class implementation issues
 		}
 		if ret, err = Sub(ret, identityVal(100, a.Dtype()), UseUnsafe()); err != nil {
@@ -760,7 +762,7 @@ func TestExp_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Exper)
 		we = we || !ok
 
@@ -793,7 +795,7 @@ func TestLog_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Loger)
 		we = we || !ok
 
@@ -826,7 +828,7 @@ func TestSqrt_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatcmplxTypes, nil)
+		we, willFailEq := willerr(a, dtype.FloatComplex, nilTC)
 		_, ok := q.Engine().(Sqrter)
 		we = we || !ok
 
@@ -859,7 +861,7 @@ func TestCbrt_incr(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Cbrter)
 		we = we || !ok
 

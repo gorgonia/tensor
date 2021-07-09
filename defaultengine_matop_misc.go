@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
@@ -370,7 +371,7 @@ func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 		return
 	}
 
-	if err = typeclassCheck(a.Dtype(), numberTypes); err != nil {
+	if err = dtype.TypeClassCheck(a.Dtype(), dtype.Number); err != nil {
 		return nil, errors.Wrap(err, "Diagonal")
 	}
 
