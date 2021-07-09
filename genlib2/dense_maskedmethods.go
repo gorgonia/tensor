@@ -35,15 +35,15 @@ func (t *Dense) {{.Name}}({{if ge .NumArgs 1 -}} val1 interface{} {{end}} {{if g
 			return
 	}
 	{{end}}
-	
+
 	if !t.IsMasked() {
-		t.makeMask()		
-	}	
-    	
+		t.makeMask()
+	}
+
     {{$numargs := .NumArgs}}
 	{{$name := .Name}}
-    {{$fn := .CmpFn}}	
-	{{$reqFloat := .ReqFloat}}	
+    {{$fn := .CmpFn}}
+	{{$reqFloat := .ReqFloat}}
 	switch t.t.Kind(){
 	{{range .Kinds -}}
 	{{if isParameterized . -}}
@@ -55,8 +55,8 @@ func (t *Dense) {{.Name}}({{if ge .NumArgs 1 -}} val1 interface{} {{end}} {{if g
 			mask := t.mask
 			{{if ge $numargs 1 -}} x := val1.({{asType .}}) {{end}}
 			{{if ge $numargs 2 -}} y := val2.({{asType .}}){{end}}
-			{{if ge $numargs 3 -}} 
-				{{if eq $name "MaskedValues"}} 
+			{{if ge $numargs 3 -}}
+				{{if eq $name "MaskedValues"}}
 					delta := float64(1.0e-8)
 					if len(val3) > 0 {
 					delta = float64(val3[0].({{asType .}})) + float64(y)*math.Abs(float64(x))
@@ -64,19 +64,19 @@ func (t *Dense) {{.Name}}({{if ge .NumArgs 1 -}} val1 interface{} {{end}} {{if g
 				{{else}}
 					z := val3.({{asType .}})
 				{{end}}
-			{{end}}			
+			{{end}}
 			if t.maskIsSoft{
-					for i := range data {					
+					for i := range data {
 					a := data[i]
 					mask[i] = ({{$fn}})
 				}
 			} else {
-				for i := range data {					
-					a := data[i]					
+				for i := range data {
+					a := data[i]
 					mask[i] = mask[i] || ({{$fn}})
 				}
 			}
-						
+
     {{end}}
     {{end}}
 	{{end}}

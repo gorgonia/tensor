@@ -9,7 +9,7 @@ import (
 
 func TestRandom(t *testing.T) {
 	const size = 50
-	for _, typ := range numberTypes.set {
+	for _, typ := range numberTypes {
 		r := Random(typ, size)
 
 		typR := reflect.TypeOf(r).Elem()

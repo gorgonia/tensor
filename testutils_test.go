@@ -344,8 +344,8 @@ func (g TensorGenerator) Generate(r *rand.Rand, size int) reflect.Value {
 
 func (t *Dense) Generate(r *rand.Rand, size int) reflect.Value {
 	// generate type
-	ri := r.Intn(len(specializedTypes.set))
-	of := specializedTypes.set[ri]
+	ri := r.Intn(len(specializedTypes))
+	of := specializedTypes[ri]
 	datatyp := reflect.SliceOf(of.Type)
 	gendat, _ := quick.Value(datatyp, r)
 	// generate dims
@@ -552,7 +552,7 @@ func qcErrCheck(t *testing.T, name string, a Dtyper, b interface{}, we bool, err
 }
 
 func qcIsFloat(dt dtype.Dtype) bool {
-	if err := typeclassCheck(dt, floatcmplxTypes); err == nil {
+	if err := dtype.TypeClassCheck(dt, dtype.FloatComplex); err == nil {
 		return true
 	}
 	return false

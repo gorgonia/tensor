@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
 )
 
@@ -21,7 +22,7 @@ type MyType struct {
 func (T MyType) Format(s fmt.State, c rune) { fmt.Fprintf(s, "(%d, %d)", T.x, T.y) }
 
 // MyDtype this the dtype of MyType. This value is populated in the init() function below
-var MyDtype tensor.Dtype
+var MyDtype dtype.Dtype
 
 // MyEngine supports additions of MyType, as well as other Dtypes
 type MyEngine struct {
@@ -73,7 +74,7 @@ func (e MyEngine) Add(a, b tensor.Tensor, opts ...tensor.FuncOpt) (retVal tensor
 }
 
 func init() {
-	MyDtype = tensor.Dtype{reflect.TypeOf(&MyType{})}
+	MyDtype = dtype.Dtype{reflect.TypeOf(&MyType{})}
 }
 
 func Example_extension() {
