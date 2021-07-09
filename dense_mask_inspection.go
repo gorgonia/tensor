@@ -1,10 +1,12 @@
 package tensor
 
+import "gorgonia.org/dtype"
+
 type maskedReduceFn func(Tensor) interface{}
 
 // MaskedReduce applies a reduction function of type maskedReduceFn to mask, and returns
 // either an int, or another array
-func MaskedReduce(t *Dense, retType Dtype, fn maskedReduceFn, axis ...int) interface{} {
+func MaskedReduce(t *Dense, retType dtype.Dtype, fn maskedReduceFn, axis ...int) interface{} {
 	if len(axis) == 0 || t.IsVector() {
 		return fn(t)
 	}

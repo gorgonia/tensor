@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/execution"
 )
 
@@ -11,7 +12,7 @@ type StdEng struct {
 }
 
 // makeArray allocates a slice for the array
-func (e StdEng) makeArray(arr *array, t Dtype, size int) {
+func (e StdEng) makeArray(arr *array, t dtype.Dtype, size int) {
 
 	arr.Raw = malloc(t, size)
 	arr.t = t

@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
@@ -34,11 +35,11 @@ type Dense struct {
 }
 
 // NewDense creates a new *Dense. It tries its best to get from the tensor pool.
-func NewDense(dt Dtype, shape Shape, opts ...ConsOpt) *Dense {
+func NewDense(dt dtype.Dtype, shape Shape, opts ...ConsOpt) *Dense {
 	return recycledDense(dt, shape, opts...)
 }
 
-func recycledDense(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
+func recycledDense(dt dtype.Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 	retVal = recycledDenseNoFix(dt, shape, opts...)
 	retVal.fix()
 	if err := retVal.sanity(); err != nil {
@@ -47,7 +48,7 @@ func recycledDense(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 	return
 }
 
-func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
+func recycledDenseNoFix(dt dtype.Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 	//	size := shape.TotalSize()
 	//if shape.IsScalar() {
 	//	size = 1
@@ -102,7 +103,7 @@ func (t *Dense) makeArray(size int) {
 func (t *Dense) Info() *AP { return &t.AP }
 
 // Dtype returns the data type of the *Dense tensor.
-func (t *Dense) Dtype() Dtype { return t.t }
+func (t *Dense) Dtype() dtype.Dtype { return t.t }
 
 // Data returns the underlying array. If the *Dense represents a scalar value, the scalar value is returned instead
 func (t *Dense) Data() interface{} {
@@ -287,7 +288,7 @@ func (t *Dense) fix() {
 		} else {
 			t.SetShape(size) // vector
 		}
-	case t.array.Header.Raw == nil && t.t != Dtype{}:
+	case t.array.Header.Raw == nil && t.t != dtype.Dtype{}:
 		size := t.Shape().TotalSize()
 		t.makeArray(size)
 

@@ -3,6 +3,7 @@ package tensor
 import (
 	"reflect"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
@@ -10,7 +11,7 @@ import (
 type ConsOpt func(Tensor)
 
 // Of is a construction option for a Tensor.
-func Of(a Dtype) ConsOpt {
+func Of(a dtype.Dtype) ConsOpt {
 	Register(a)
 	f := func(t Tensor) {
 		switch tt := t.(type) {
@@ -113,7 +114,7 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 			xv0 := xv.Index(0)                 // xv[0]
 			xv0.Set(reflect.ValueOf(x))
 			tt.array.Header.Raw = storage.AsByteSlice(xv.Interface())
-			tt.t = Dtype{xT}
+			tt.t = dtype.Dtype{xT}
 			tt.mask = mask
 
 		default:

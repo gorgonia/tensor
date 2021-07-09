@@ -16,6 +16,7 @@ import (
 
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/serialization/fb"
 	"gorgonia.org/tensor/internal/serialization/pb"
 )
@@ -423,7 +424,7 @@ func (t *Dense) WriteCSV(w io.Writer, formats ...string) (err error) {
 
 // convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice.
 // If into is nil, then a backing slice will be created.
-func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, error) {
+func convFromStrs(to dtype.Dtype, record []string, into interface{}) (interface{}, error) {
 	var err error
 	switch to.Kind() {
 	case reflect.Int:

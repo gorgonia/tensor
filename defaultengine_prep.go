@@ -4,11 +4,12 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 	// "log"
 )
 
-func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
+func handleFuncOpts(expShape Shape, expType dtype.Dtype, o DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
 	fo := ParseFuncOpts(opts...)
 
 	reuseT, incr := fo.IncrReuse()
@@ -106,13 +107,13 @@ func unaryCheck(a Tensor, tc *typeclass) error {
 
 // scalarDtypeCheck checks that a scalar value has the same dtype as the dtype of a given tensor.
 func scalarDtypeCheck(a Tensor, b interface{}) error {
-	var dt Dtype
+	var dt dtype.Dtype
 	switch bt := b.(type) {
 	case Dtyper:
 		dt = bt.Dtype()
 	default:
 		t := reflect.TypeOf(b)
-		dt = Dtype{t}
+		dt = dtype.Dtype{t}
 	}
 
 	if a.Dtype() != dt {

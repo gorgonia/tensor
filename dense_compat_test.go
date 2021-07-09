@@ -11,13 +11,14 @@ import (
 	arrowTensor "github.com/apache/arrow/go/arrow/tensor"
 	"github.com/stretchr/testify/assert"
 	"gonum.org/v1/gonum/mat"
+	"gorgonia.org/dtype"
 )
 
 var toMat64Tests = []struct {
 	data   interface{}
 	sliced interface{}
 	shape  Shape
-	dt     Dtype
+	dt     dtype.Dtype
 }{
 	{Range(Int, 0, 6), []int{0, 1, 3, 4}, Shape{2, 3}, Int},
 	{Range(Int8, 0, 6), []int8{0, 1, 3, 4}, Shape{2, 3}, Int8},

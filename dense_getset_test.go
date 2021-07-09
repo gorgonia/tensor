@@ -8,10 +8,11 @@ import (
 	"testing/quick"
 
 	"github.com/stretchr/testify/assert"
+	"gorgonia.org/dtype"
 )
 
 var denseSetGetTests = []struct {
-	of   Dtype
+	of   dtype.Dtype
 	data interface{}
 	set  interface{}
 
@@ -48,7 +49,7 @@ func TestDense_setget(t *testing.T) {
 }
 
 var denseMemsetTests = []struct {
-	of    Dtype
+	of    dtype.Dtype
 	data  interface{}
 	val   interface{}
 	shape Shape
@@ -88,7 +89,7 @@ func TestDense_memset(t *testing.T) {
 }
 
 var denseZeroTests = []struct {
-	of   Dtype
+	of   dtype.Dtype
 	data interface{}
 
 	correct interface{}

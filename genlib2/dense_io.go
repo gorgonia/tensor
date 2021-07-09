@@ -348,7 +348,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 
 const readCSVRaw = `// convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice.
 // If into is nil, then a backing slice will be created.
-func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, error) {
+func convFromStrs(to dtype.Dtype, record []string, into interface{}) (interface{}, error) {
 	var err error
 	switch to.Kind() {
 		{{range .Kinds -}}

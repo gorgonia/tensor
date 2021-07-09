@@ -1,5 +1,7 @@
 package tensor
 
+import "gorgonia.org/dtype"
+
 // DataOrder is a flag that indicates the order of data. The default DataOrder (0)
 // is what this package uses by default.
 type DataOrder byte
@@ -123,7 +125,7 @@ type OpOpt struct {
 	incr   Tensor
 	unsafe bool
 	same   bool
-	t      Dtype
+	t      dtype.Dtype
 }
 
 // ParseFuncOpts parses a list of FuncOpt into a single unified method call structure.
@@ -164,4 +166,4 @@ func (fo *OpOpt) Same() bool { return fo.same }
 //		a.Add(b, As(Int))
 // indicates that the result of `Add()` should be converted to a Tensor of Int.
 // Note that this function is not yet supported in most operations.
-func (fo *OpOpt) As() Dtype { return fo.t }
+func (fo *OpOpt) As() dtype.Dtype { return fo.t }

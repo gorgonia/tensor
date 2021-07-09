@@ -7,10 +7,11 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	. "gorgonia.org/tensor"
 )
 
-func checkNativeSelectable(t *Dense, axis int, dt Dtype) error {
+func checkNativeSelectable(t *Dense, axis int, dt dtype.Dtype) error {
 	if !t.IsNativelyAccessible() {
 		return errors.New("Cannot select on non-natively accessible data")
 	}

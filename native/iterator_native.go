@@ -7,10 +7,11 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	. "gorgonia.org/tensor"
 )
 
-func checkNativeIterable(t *Dense, dims int, dt Dtype) error {
+func checkNativeIterable(t *Dense, dims int, dt dtype.Dtype) error {
 	// checks:
 	if !t.IsNativelyAccessible() {
 		return errors.Errorf("Cannot convert *Dense to *mat.Dense. Data is inaccessible")

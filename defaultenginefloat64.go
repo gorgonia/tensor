@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/execution"
 	"gorgonia.org/tensor/internal/storage"
 
@@ -112,7 +113,7 @@ type Float64Engine struct {
 }
 
 // makeArray allocates a slice for the array
-func (e Float64Engine) makeArray(arr *array, t Dtype, size int) {
+func (e Float64Engine) makeArray(arr *array, t dtype.Dtype, size int) {
 	if t != Float64 {
 		panic("Float64Engine only creates float64s")
 	}

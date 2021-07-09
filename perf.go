@@ -89,7 +89,7 @@ func ReturnTensor(t Tensor) {
 		}
 
 		// array reset
-		tt.t = Dtype{}
+		tt.t = dtype.Dtype{}
 		tt.array.Header.Raw = nil
 
 		// engine and flag reset
@@ -262,7 +262,7 @@ func returnOpOpt(oo *OpOpt) {
 	oo.incr = nil
 	oo.unsafe = false
 	oo.same = false
-	oo.t = Dtype{}
+	oo.t = dtype.Dtype{}
 	// if len(optPool) < cap(optPool) {
 	// 	optPool <- oo
 	// }
