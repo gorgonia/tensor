@@ -507,11 +507,17 @@ func (e dummyEngine2) WorksWith(order DataOrder) bool           { return e.e.Wor
 func (e dummyEngine2) Argmax(t Tensor, axis int) (Tensor, error) { return e.e.Argmax(t, axis) }
 func (e dummyEngine2) Argmin(t Tensor, axis int) (Tensor, error) { return e.e.Argmin(t, axis) }
 
-func willerr(a *Dense, tc, eqtc *typeclass) (retVal, willFailEq bool) {
-	if err := typeclassCheck(a.Dtype(), eqtc); err == nil {
+var nilTC dtype.TypeClass = -1
+
+func willerr(a *Dense, tc, eqtc dtype.TypeClass) (retVal, willFailEq bool) {
+	if eqtc == nilTC {
 		willFailEq = true
+	} else {
+		if err := dtype.TypeClassCheck(a.Dtype(), eqtc); err == nil {
+			willFailEq = true
+		}
 	}
-	if err := typeclassCheck(a.Dtype(), tc); err != nil {
+	if err := dtype.TypeClassCheck(a.Dtype(), tc); err != nil {
 		return true, willFailEq
 	}
 

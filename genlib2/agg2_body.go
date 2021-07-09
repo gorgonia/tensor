@@ -19,7 +19,7 @@ const arithPrepRaw = `var safe, toReuse, incr bool
 	}
 `
 
-const prepVVRaw = `if err = binaryCheck(a, b, {{.TypeClassCheck | lower}}Types); err != nil {
+const prepVVRaw = `if err = binaryCheck(a, b, dtype.{{.TypeClassCheck}}); err != nil {
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
 
@@ -36,7 +36,7 @@ const prepVVRaw = `if err = binaryCheck(a, b, {{.TypeClassCheck | lower}}Types);
 	}
 `
 
-const prepMixedRaw = `if err = unaryCheck(t, {{.TypeClassCheck | lower}}Types); err != nil {
+const prepMixedRaw = `if err = unaryCheck(t, dtype.{{.TypeClassCheck}}); err != nil {
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
 
@@ -67,7 +67,7 @@ const prepMixedRaw = `if err = unaryCheck(t, {{.TypeClassCheck | lower}}Types); 
 
 `
 
-const prepUnaryRaw = `if err = unaryCheck(a, {{.TypeClassCheck | lower}}Types); err != nil {
+const prepUnaryRaw = `if err = unaryCheck(a, dtype.{{.TypeClassCheck}}); err != nil {
 		err = errors.Wrapf(err, "{{.Name}} failed")
 		return
 	}

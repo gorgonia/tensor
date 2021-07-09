@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"sync"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 

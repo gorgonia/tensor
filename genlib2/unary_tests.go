@@ -15,7 +15,7 @@ const unaryTestBodyRaw = `invFn := func(q *Dense) bool {
 
 	we, willFailEq := willerr(a, {{.TypeClassName}}, {{.EqFailTypeClassName}})
 	_, ok := q.Engine().({{interfaceName .Name}}); we = we || !ok
-	
+
 	ret, err := {{.Name}}(a {{template "funcoptuse"}})
 	if err, retEarly := qcErrCheck(t, "{{.Name}}", a, nil, we, err); retEarly{
 		if err != nil {
@@ -24,7 +24,7 @@ const unaryTestBodyRaw = `invFn := func(q *Dense) bool {
 		return true
 	}
 	{{if ne .InvTypeClass "" -}}
-	if err := typeclassCheck(a.Dtype(), {{.InvTypeClass}}); err != nil {
+	if err := dtype.TypeClassCheck(a.Dtype(), {{.InvTypeClass}}); err != nil {
 		return true // uninvertible due to type class implementation issues
 	}
 	{{end -}}

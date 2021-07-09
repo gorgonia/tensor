@@ -138,7 +138,7 @@ func getFloatDenseTensor(t Tensor) (retVal DenseTensor, err error) {
 	if t == nil {
 		return
 	}
-	if err = typeclassCheck(t.Dtype(), floatTypes); err != nil {
+	if err = dtype.TypeClassCheck(t.Dtype(), dtype.Floats); err != nil {
 		err = errors.Wrapf(err, "getFloatDense only handles floats. Got %v instead", t.Dtype())
 		return
 	}
@@ -159,7 +159,7 @@ func getFloatComplexDenseTensor(t Tensor) (retVal DenseTensor, err error) {
 	if t == nil {
 		return
 	}
-	if err = typeclassCheck(t.Dtype(), floatcmplxTypes); err != nil {
+	if err = dtype.TypeClassCheck(t.Dtype(), dtype.FloatComplex); err != nil {
 		err = errors.Wrapf(err, "getFloatDense only handles floats and complex. Got %v instead", t.Dtype())
 		return
 	}

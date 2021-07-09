@@ -63,7 +63,7 @@ func (r *binaryReader) Err() error {
 // If tensor is masked, invalid values are replaced by the default fill value.
 func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	var npdt string
-	if npdt, err = t.t.numpyDtype(); err != nil{
+	if npdt, err = t.t.NumpyDtype(); err != nil{
 		return
 	}
 
@@ -290,7 +290,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 	}
 
 	// TODO: check for endianness. For now we assume everything is little endian
-	if t.t, err = fromNumpyDtype(string(match[1][1:])); err != nil {
+	if t.t, err = dtype.FromNumpyDtype(string(match[1][1:])); err != nil {
 		return
 	}
 

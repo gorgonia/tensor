@@ -25,7 +25,7 @@ var cmpSymbolTemplates = [...]string{
 }
 
 var nonFloatConditionalUnarySymbolTemplates = [...]string{
-	`{{if isFloat .Kind -}} 
+	`{{if isFloat .Kind -}}
 	{{.Range}}[{{.Index0}}] = {{mathPkg .Kind}}Abs({{.Range}}[{{.Index0}}]) {{else -}}
 	if {{.Range}}[{{.Index0}}] < 0 {
 		{{.Range}}[{{.Index0}}] = -{{.Range}}[{{.Index0}}]
@@ -85,7 +85,7 @@ var funcOptDecl = map[string]string{
 	"reuse":  "reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))\n",
 	"incr":   "incr := New(Of(a.t), WithShape(a.Shape().Clone()...))\n",
 	"unsafe": "",
-	"assame": `if err := typeclassCheck(q.Dtype(), {{.TypeClassName}}); err != nil {
+	"assame": `if err := dtype.TypeClassCheck(q.Dtype(), {{.TypeClassName}}); err != nil {
 		return true // we exit early if the generated type is not something we can handle
 	}
 	`,
@@ -427,51 +427,51 @@ func init() {
 	// ops
 
 	arithBinOps = []arithOp{
-		{basicBinOp{"", "Add", false, isAddable}, "numberTypes", true, 0, false, "", true, false},
-		{basicBinOp{"", "Sub", false, isNumber}, "numberTypes", false, 0, true, "Add", false, true},
-		{basicBinOp{"", "Mul", false, isNumber}, "numberTypes", true, 1, false, "", true, false},
-		{basicBinOp{"", "Div", false, isNumber}, "numberTypes", false, 1, true, "Mul", false, false},
-		{basicBinOp{"", "Pow", true, isFloatCmplx}, "floatcmplxTypes", true, 1, false, "", false, false},
-		{basicBinOp{"", "Mod", false, isNonComplexNumber}, "nonComplexNumberTypes", false, 0, false, "", false, false},
+		{basicBinOp{"", "Add", false, isAddable}, "dtype.Number", true, 0, false, "", true, false},
+		{basicBinOp{"", "Sub", false, isNumber}, "dtype.Number", false, 0, true, "Add", false, true},
+		{basicBinOp{"", "Mul", false, isNumber}, "dtype.Number", true, 1, false, "", true, false},
+		{basicBinOp{"", "Div", false, isNumber}, "dtype.Number", false, 1, true, "Mul", false, false},
+		{basicBinOp{"", "Pow", true, isFloatCmplx}, "dtype.FloatComplex", true, 1, false, "", false, false},
+		{basicBinOp{"", "Mod", false, isNonComplexNumber}, "dtype.NonComplexNumber", false, 0, false, "", false, false},
 	}
 	for i := range arithBinOps {
 		arithBinOps[i].symbol = arithSymbolTemplates[i]
 	}
 
 	cmpBinOps = []cmpOp{
-		{basicBinOp{"", "Gt", false, isOrd}, "ordTypes", "Lt", true, false},
-		{basicBinOp{"", "Gte", false, isOrd}, "ordTypes", "Lte", true, false},
-		{basicBinOp{"", "Lt", false, isOrd}, "ordTypes", "Gt", true, false},
-		{basicBinOp{"", "Lte", false, isOrd}, "ordTypes", "Gte", true, false},
-		{basicBinOp{"", "Eq", false, isEq}, "eqTypes", "Eq", true, true},
-		{basicBinOp{"", "Ne", false, isEq}, "eqTypes", "Ne", false, true},
+		{basicBinOp{"", "Gt", false, isOrd}, "dtype.Ord", "Lt", true, false},
+		{basicBinOp{"", "Gte", false, isOrd}, "dtype.Ord", "Lte", true, false},
+		{basicBinOp{"", "Lt", false, isOrd}, "dtype.Ord", "Gt", true, false},
+		{basicBinOp{"", "Lte", false, isOrd}, "dtype.Ord", "Gte", true, false},
+		{basicBinOp{"", "Eq", false, isEq}, "dtype.Eq", "Eq", true, true},
+		{basicBinOp{"", "Ne", false, isEq}, "dtype.Eq", "Ne", false, true},
 	}
 	for i := range cmpBinOps {
 		cmpBinOps[i].symbol = cmpSymbolTemplates[i]
 	}
 
 	conditionalUnaries = []unaryOp{
-		{"", "Abs", false, isSignedNumber, "signedTypes", ""},
-		{"", "Sign", false, isSignedNumber, "signedTypes", ""},
+		{"", "Abs", false, isSignedNumber, "dtype.Signed", ""},
+		{"", "Sign", false, isSignedNumber, "dtype.Signed", ""},
 	}
 	for i := range conditionalUnaries {
 		conditionalUnaries[i].symbol = nonFloatConditionalUnarySymbolTemplates[i]
 	}
 
 	unconditionalUnaries = []unaryOp{
-		{"", "Neg", false, isNumber, "numberTypes", "Neg"},
-		{"", "Inv", false, isNumber, "numberTypes", ""},
-		{"", "Square", false, isNumber, "numberTypes", "Sqrt"},
-		{"", "Cube", false, isNumber, "numberTypes", "Cbrt"},
+		{"", "Neg", false, isNumber, "dtype.Number", "Neg"},
+		{"", "Inv", false, isNumber, "dtype.Number", ""},
+		{"", "Square", false, isNumber, "dtype.Number", "Sqrt"},
+		{"", "Cube", false, isNumber, "dtype.Number", "Cbrt"},
 
-		{"", "Exp", true, isFloatCmplx, "floatcmplxTypes", "Log"},
-		{"", "Tanh", true, isFloatCmplx, "floatcmplxTypes", ""},
-		{"", "Log", true, isFloatCmplx, "floatcmplxTypes", "Exp"},
-		{"", "Log2", true, isFloat, "floatTypes", ""},
-		{"", "Log10", true, isFloatCmplx, "floatcmplxTypes", ""},
-		{"", "Sqrt", true, isFloatCmplx, "floatcmplxTypes", "Square"},
-		{"", "Cbrt", true, isFloat, "floatTypes", "Cube"},
-		{"", "InvSqrt", true, isFloat, "floatTypes", ""}, // TODO: cmplx requires to much finagling to the template. Come back to it later
+		{"", "Exp", true, isFloatCmplx, "dtype.FloatComplex", "Log"},
+		{"", "Tanh", true, isFloatCmplx, "dtype.FloatComplex", ""},
+		{"", "Log", true, isFloatCmplx, "dtype.FloatComplex", "Exp"},
+		{"", "Log2", true, isFloat, "dtype.Floats", ""},
+		{"", "Log10", true, isFloatCmplx, "dtype.FloatComplex", ""},
+		{"", "Sqrt", true, isFloatCmplx, "dtype.FloatComplex", "Square"},
+		{"", "Cbrt", true, isFloat, "dtype.Floats", "Cube"},
+		{"", "InvSqrt", true, isFloat, "dtype.Floats", ""}, // TODO: cmplx requires to much finagling to the template. Come back to it later
 	}
 	nonF := len(unconditionalNumUnarySymbolTemplates)
 	for i := range unconditionalNumUnarySymbolTemplates {
@@ -482,7 +482,7 @@ func init() {
 	}
 
 	specialUnaries = []UnaryOp{
-		specialUnaryOp{unaryOp{clampBody, "Clamp", false, isNonComplexNumber, "nonComplexNumberTypes", ""}, []string{"min", "max"}},
+		specialUnaryOp{unaryOp{clampBody, "Clamp", false, isNonComplexNumber, "dtype.NonComplexNumber", ""}, []string{"min", "max"}},
 	}
 
 	// typed operations
