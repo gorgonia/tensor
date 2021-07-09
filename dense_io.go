@@ -794,12 +794,11 @@ func (t *Dense) FBDecode(buf []byte) error {
 		t.strides[i] = int(serialized.Strides(i))
 	}
 	typ := string(serialized.Type())
-	for _, dt := range allTypes.set {
-		if dt.String() == typ {
-			t.t = dt
-			break
-		}
+	dt, err := dtype.FindByName(typ)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode FlatBuffers")
 	}
+	t.t = dt
 
 	if t.e == nil {
 		t.e = StdEng{}
@@ -871,12 +870,11 @@ func (t *Dense) PBDecode(buf []byte) error {
 	}
 	t.Δ = Triangle(toSerialize.T)
 	typ := string(toSerialize.Type)
-	for _, dt := range allTypes.set {
-		if dt.String() == typ {
-			t.t = dt
-			break
-		}
+	dt, err := dtype.FindByName(typ)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode ProtoBuf")
 	}
+	t.t = dt
 
 	if t.e == nil {
 		t.e = StdEng{}

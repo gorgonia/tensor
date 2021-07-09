@@ -5,6 +5,7 @@ import (
 	"testing/quick"
 
 	"github.com/stretchr/testify/assert"
+	"gorgonia.org/dtype"
 )
 
 func TestIssue70(t *testing.T) {
@@ -43,7 +44,7 @@ func TestIssue72(t *testing.T) {
 		b := identityVal(0, q.t)
 		reuse := New(Of(a.t), WithShape(a.Shape().Clone()...))
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := q.Engine().(Suber)
 		we = we || !ok
 		//log.Printf("b-a(r) | b:%v, a %v, r %v", b, a.Shape(), reuse.Shape())

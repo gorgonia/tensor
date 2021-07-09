@@ -8,6 +8,9 @@ import (
 	"gorgonia.org/dtype"
 )
 
+// Dtype is an alias for dtype.Dtype. This alias is here for backward compatibility purposes, for when users are transitioning out of the older tensor libraries.
+type Dtype = dtype.Dtype
+
 var parameterizedKinds = [...]reflect.Kind{
 	reflect.Array,
 	reflect.Chan,
@@ -27,6 +30,8 @@ func isParameterizedKind(k reflect.Kind) bool {
 	}
 	return false
 }
+
+func isFloat(dt dtype.Dtype) bool { return dt == Float64 || dt == Float32 }
 
 // type aliases
 var (
