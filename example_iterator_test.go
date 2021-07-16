@@ -58,8 +58,8 @@ func ExampleSliceIter() {
 		fmt.Printf("Err %v\n", err)
 		return
 	}
-	fmt.Printf("S (requires iterator? %t)\n%v\n", S.(*Dense).RequiresIterator(), S)
-	it := IteratorFromDense(S.(*Dense))
+	fmt.Printf("S (requires iterator? %t)\n%v\n", S.(DenseView).RequiresIterator(), S)
+	it := IteratorFromDense(S.(DenseView))
 	for i, err := it.Start(); err == nil; i, err = it.Next() {
 		fmt.Printf("i %d, coord %v\n", i, it.Coord())
 	}
