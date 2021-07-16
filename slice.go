@@ -1,5 +1,12 @@
 package tensor
 
+import (
+	"gorgonia.org/shapes"
+)
+
+var xxx Slice = ss(1)
+var _ shapes.Slice = xxx
+
 // A Slice represents a slicing operation for a Tensor.
 type Slice interface {
 	Start() int
