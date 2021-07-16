@@ -4,6 +4,8 @@ import (
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
+
+	"gorgonia.org/shapes"
 )
 
 var (
@@ -52,9 +54,11 @@ func (e StdEng) RepeatReuse(t Tensor, reuse Tensor, axis int, repeats ...int) (T
 }
 
 func (StdEng) denseRepeatCheck(t Tensor, axis int, repeats []int) (newShape Shape, newRepeats []int, newAxis, size int, err error) {
-	if newShape, newRepeats, size, err = t.Shape().Repeat(axis, repeats...); err != nil {
+	var newShapelike shapes.Shapelike
+	if newShapelike, newRepeats, size, err = t.Shape().Repeat(shapes.Axis(axis), repeats...); err != nil {
 		return nil, nil, -1, -1, errors.Wrap(err, "Unable to get repeated shape")
 	}
+	newShape = newShapelike.(Shape)
 	newAxis = axis
 	if axis == AllAxes {
 		newAxis = 0
@@ -253,10 +257,11 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 		}
 	}
 
-	var newShape Shape
-	if newShape, err = a.Shape().Concat(axis, ss...); err != nil {
+	var newShapelike shapes.Shapelike
+	if newShapelike, err = a.Shape().Concat(shapes.Axis(axis), shapes.ShapesToShapelikes(ss)...); err != nil {
 		return nil, errors.Wrap(err, "Unable to find new shape that results from concatenation")
 	}
+	newShape := newShapelike.(Shape)
 
 	retVal := recycledDense(a.Dtype(), newShape, WithEngine(e))
 	if isMasked {
