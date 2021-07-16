@@ -235,7 +235,7 @@ func AsDenseDiag(backing interface{}) ConsOpt {
 			sli := reflect.MakeSlice(xT, l*l, l*l)
 
 			shape := Shape{l, l}
-			strides := shape.CalcStrides()
+			strides := CalcStrides(shape)
 			for i := 0; i < l; i++ {
 				idx, err := Ltoi(shape, strides, i, i)
 				if err != nil {
