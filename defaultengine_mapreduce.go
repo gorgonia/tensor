@@ -74,7 +74,7 @@ func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, e
 	// SET RETVAL
 	switch {
 	case reuse != nil:
-		if err = reuseCheckShape(reuse, a.Shape()); err != nil {
+		if err = checkFixShape(reuse, a.Shape()); err != nil {
 			err = errors.Wrapf(err, "Reuse shape check failed")
 			return
 		}
