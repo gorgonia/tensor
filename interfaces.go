@@ -141,6 +141,11 @@ type Kinder interface {
 	Kind() reflect.Kind
 }
 
+// MakeAliker is any Tensor that can make more like itself.
+type MakeAliker interface {
+	MakeAike(opts ...ConsOpt) Tensor
+}
+
 type headerer interface {
 	hdr() *storage.Header
 }

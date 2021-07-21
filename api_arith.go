@@ -580,36 +580,36 @@ func MatMul(a, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	// check whether retVal has the same size as the resulting matrix would be: mxn
 	expectedShape := Shape{m, n}
 
-	// find an engine
-	aEng, aok := a.Engine().(MatMuler)
-	bEng, bok := b.Engine().(MatMuler)
-	mm := aEng
-	var eng Engine = a.Engine()
-	if !aok {
-		mm = bEng
+	eng := a.Engine()
+	mm, ok := eng.(MatMuler)
+	if !ok {
 		eng = b.Engine()
-		if !bok {
-			return nil, errors.Errorf("Neither a or b have an engine that is a MatMuler. a: %T, b: %T", a.Engine(), b.Engine())
-		}
+		mm, ok = eng.(MatMuler)
+	}
+	if !ok {
+		return nil, errors.Errorf("Neither a or b have an engine that is a MatMuler. a: %T, b: %T", a.Engine(), b.Engine())
 	}
 
-	// parse function options, and get a preallocated value
-	var reuse *Dense
+	var reuse Tensor
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
-	if reuse, err = handleReuse(fo.Reuse(), expectedShape, true); err != nil {
-		err = errors.Wrapf(err, opFail, "MatMul")
-		return
+	reuse = fo.Reuse()
+	if reuse == nil {
+		return nil, errors.Errorf("MatMul requires passing in of a reuse Tensor for now.")
+	}
+	if err := checkFixShape(reuse, expectedShape); err != nil {
+		return nil, errors.Wrapf(err, opFail, "MatMul")
+	}
+	if err = mm.MatMul(a, b, reuse); err != nil {
+		return nil, errors.Wrapf(err, opFail, "MatMul")
 	}
 
-	if reuse == nil {
-		reuse = recycledDense(a.Dtype(), expectedShape, WithEngine(eng))
+	incr := fo.Incr()
+	if incr != nil {
+		return Add(incr, reuse, UseUnsafe())
 	}
-	retVal = reuse
-	if err = mm.MatMul(a, b, retVal); err != nil {
-		return
-	}
-	return handleIncr(retVal.(*Dense), fo.Reuse(), fo.Incr(), expectedShape)
+	return reuse, nil
+
 }
 
 // MatVecMul performs matrix-vector multiplication between two Tensors. `a` is expected to be a matrix, and `b` is expected to be a vector

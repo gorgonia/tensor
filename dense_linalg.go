@@ -390,7 +390,7 @@ func handleReuse(reuse Tensor, expectedShape Shape, safe bool) (retVal *Dense, e
 		if !safe {
 			return
 		}
-		if err = reuseCheckShape(retVal, expectedShape); err != nil {
+		if err = checkFixShape(retVal, expectedShape); err != nil {
 			err = errors.Wrapf(err, "Unable to process reuse *Dense Tensor. Shape error.")
 			return
 		}
