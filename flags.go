@@ -167,3 +167,30 @@ func (fo *OpOpt) Same() bool { return fo.same }
 // indicates that the result of `Add()` should be converted to a Tensor of Int.
 // Note that this function is not yet supported in most operations.
 func (fo *OpOpt) As() dtype.Dtype { return fo.t }
+
+// SetReuse allows the reuse parameter to be set.
+func (fo *OpOpt) SetReuse(reuse Tensor) { fo.reuse = reuse }
+
+// SetIncr allows the incr parameter to be set.
+func (fo *OpOpt) SetIncr(incr Tensor) { fo.incr = incr }
+
+// FuncOpts is the inverse of ParseFuncOpts.
+func (fo *OpOpt) FuncOpts() []FuncOpt {
+	retVal := make([]FuncOpt, 0, 4)
+	if fo.reuse != nil {
+		retVal = append(retVal, WithReuse(fo.reuse))
+	}
+	if fo.incr != nil {
+		retVal = append(retVal, WithIncr(fo.incr))
+	}
+	if fo.unsafe {
+		retVal = append(retVal, UseUnsafe())
+	}
+	if fo.same {
+		retVal = append(retVal, AsSameType())
+	}
+	if fo.t != (Dtype{}) {
+		retVal = append(retVal, As(fo.t))
+	}
+	return retVal
+}
