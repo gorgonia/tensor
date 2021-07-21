@@ -584,6 +584,14 @@ func (t *Dense) Eq(other interface{}) bool {
 
 		return t.array.Eq(&ot.array)
 	}
+	if ot, ok := other.(DenseTensor); ok {
+		if !t.Shape().Eq(ot.Shape()) {
+			return false
+		}
+
+		return t.array.Eq(ot.arrPtr())
+	}
+
 	return false
 }
 
