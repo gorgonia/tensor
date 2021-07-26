@@ -28,9 +28,16 @@ func (e StdEng) Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err 
 		// create reuse
 		reuse = New(WithShape(shp...), Of(a.Dtype()))
 	case reuse == nil && !fo.Safe():
-		// check shape of `a`
+		// check shape of `a` - the last dim of a must be at least max+1
+		if a.Shape()[a.Dims()-1] < max+1 {
+			return nil, errors.Errorf("Cannot Scatter - the last dim of `a` %v must be at least %v, which is the maximum value of the indices + 1", a.Shape(), max+1)
+		}
+		reuse = a
 	case reuse != nil:
-		// check shape of `reuse`
+		// check shape of `reuse` - last dim of `reuse` must at least be as large as max+1
+		if reuse.Shape()[reuse.Dims()-1] < max+1 {
+			return nil, errors.Errorf("Cannot Scatter. The last dim of `reuse` %v must be at least %v, which is the maximum value off the indices + 1", reuse.Shape(), max+1)
+		}
 	}
 
 	oldShape := a.Shape().Clone()
@@ -88,7 +95,7 @@ func (e StdEng) Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err 
 
 	}
 
-	panic("NYI")
+	panic("unreachable")
 }
 
 type iteratorPair struct {
