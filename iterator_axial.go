@@ -15,7 +15,8 @@ type AxialIterator struct {
 	fixed     bool
 }
 
-func AxialIteratorFromDense(t *Dense, axis, axisSz int, fixedAxis bool) *AxialIterator {
+// AxialIteratorFromDense creates and axial iterator that will iterate along the given axis. `fixedAxis` defines if the axisSz is fixed.
+func AxialIteratorFromDense(t DenseTensor, axis, axisSz int, fixedAxis bool) *AxialIterator {
 	ap := t.Info()
 	return &AxialIterator{
 		AP:     ap,
@@ -78,6 +79,15 @@ func (it *AxialIterator) ndNext() (int, error) {
 
 	for i := v; i >= 0; i-- {
 		if i == it.axis {
+			if i == 0 {
+				if it.fixed || track[it.axis] == coord[it.axis] || it.axisSz >= coord[it.axis] {
+					track[it.axis] = 0
+					it.done = true
+					break
+				}
+				it.axisSz++
+				track[it.axis] = it.axisSz
+			}
 			continue // we're iterating along an axis.
 		}
 		track[i]++

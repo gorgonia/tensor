@@ -203,7 +203,6 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 			}
 
 			// we can straightaway broadcast
-
 			continue
 		}
 

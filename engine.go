@@ -399,6 +399,10 @@ type ByIndiceser interface {
 	SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
 }
 
+type Scatterer interface {
+	Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error)
+}
+
 /* Internal interfaces for faster shit */
 
 type denseArgmaxer interface {
