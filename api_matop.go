@@ -162,3 +162,10 @@ func ByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor,
 	}
 	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
 }
+
+func Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sc, ok := a.Engine().(Scatterer); ok {
+		return sc.Scatter(a, indices, opts...)
+	}
+	return nil, errors.Errorf("Unable to scatter. Engine %T does not support Scattering.", a.Engine())
+}
