@@ -89,7 +89,6 @@ func ExampleArgmax_sliced() {
 	//
 	// Argmax: 0
 	// Argmax is *tensor.Dense of int
-
 }
 
 func ExampleArgmin() {
@@ -108,4 +107,23 @@ func ExampleArgmin() {
 	//
 	// Argmin: [0  1]
 	// Argmin is *tensor.Dense of int
+}
+
+func ExampleMax() {
+	T := New(WithBacking([]int{1, 2, 5, 3, 4, 1}), WithShape(2, 3))
+	fmt.Printf("T\n%v\n", T)
+
+	// Max along all axes
+	m, _ := Max(T)
+	fmt.Printf("Max: %v\n", m)
+	fmt.Printf("Max is %T of %v", m, m.Dtype())
+
+	// Output:
+	// T
+	// ⎡1  2  5⎤
+	// ⎣3  4  1⎦
+	//
+	// Max: 5
+	// Max is *tensor.Dense of int
+
 }
