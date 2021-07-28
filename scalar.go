@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"unsafe"
 
+	"gorgonia.org/dtype"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
 )
@@ -87,7 +89,7 @@ func (s Scalar) GobEncode() ([]byte, error) {
 }
 func (s Scalar) GobDecode([]byte) error { return errors.Errorf(methodNYI, "GobDecode", "Scalar") } // TODO
 
-func (s Scalar) standardEngine() standardEngine { return StdEng{} }
+func (s Scalar) standardEngine() StandardEngine { return StdEng{} }
 func (s Scalar) hdr() *storage.Header           { return nil }
 func (s Scalar) arr() array                     { return array{} }
 func (s Scalar) arrPtr() *array                 { return nil }

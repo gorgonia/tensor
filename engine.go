@@ -26,7 +26,16 @@ type Engine interface {
 	WorksWith(order DataOrder) bool           // WorksWith returns true if the data order can be directly worked with
 }
 
+// StandardEngine is any engine that wraps a StdEng{}.
 type StandardEngine interface {
+	StandardEngine2
+
+	// anything that wraps StdEng will contain the following interfaces:
+	arrayMaker
+}
+
+// StandardEngine2 is any engine that implements the basic operations of a standard engine.
+type StandardEngine2 interface {
 	Engine
 
 	Adder
