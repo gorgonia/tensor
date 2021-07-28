@@ -3,8 +3,10 @@
 package tensor
 
 import (
+	"context"
 	"testing"
 	"testing/quick"
+	"time"
 
 	"gorgonia.org/dtype"
 )
@@ -165,7 +167,6 @@ func TestAdd_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -197,7 +198,6 @@ func TestSub_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -228,7 +228,6 @@ func TestMul_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -261,7 +260,6 @@ func TestDiv_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -292,7 +290,6 @@ func TestPow_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -594,6 +591,204 @@ func TestPow_incr(t *testing.T) {
 		we = we || !ok
 
 		ret, err := Pow(a, b, WithIncr(incr))
+		if err, retEarly := qcErrCheck(t, "Pow", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Pow failed: %v", err)
+	}
+
+}
+func TestAdd_context(t *testing.T) {
+	iden := func(a *Dense) bool {
+		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := a.Engine().(Adder)
+		we = we || !ok
+
+		ret, err := Add(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Add", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Add failed: %v", err)
+	}
+
+}
+func TestSub_context(t *testing.T) {
+	inv := func(a *Dense) bool {
+		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := a.Engine().(Suber)
+		we = we || !ok
+
+		ret, err := Sub(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Sub", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+		ret, err = Add(ret, b, UseUnsafe())
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Inv test for Sub failed: %v", err)
+	}
+}
+func TestMul_context(t *testing.T) {
+	iden := func(a *Dense) bool {
+		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		b.Memset(identityVal(1, a.t))
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := a.Engine().(Muler)
+		we = we || !ok
+
+		ret, err := Mul(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Mul", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Mul failed: %v", err)
+	}
+
+}
+func TestDiv_context(t *testing.T) {
+	inv := func(a *Dense) bool {
+		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		b.Memset(identityVal(1, a.t))
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := a.Engine().(Diver)
+		we = we || !ok
+
+		ret, err := Div(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Div", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+		ret, err = Mul(ret, b, UseUnsafe())
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Inv test for Div failed: %v", err)
+	}
+}
+func TestPow_context(t *testing.T) {
+	iden := func(a *Dense) bool {
+		b := New(Of(a.t), WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		b.Memset(identityVal(1, a.t))
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
+		_, ok := a.Engine().(Power)
+		we = we || !ok
+
+		ret, err := Pow(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
 		if err, retEarly := qcErrCheck(t, "Pow", a, b, we, err); retEarly {
 			if err != nil {
 				return false
@@ -986,7 +1181,6 @@ func TestAddScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -1017,7 +1211,6 @@ func TestAddScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1051,7 +1244,6 @@ func TestSubScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1082,7 +1274,6 @@ func TestSubScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1114,7 +1305,6 @@ func TestMulScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -1145,7 +1335,6 @@ func TestMulScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1179,7 +1368,6 @@ func TestDivScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1212,7 +1400,6 @@ func TestPowScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -1687,6 +1874,330 @@ func TestPowScalar_incr(t *testing.T) {
 		we = we || !ok
 
 		ret, err := Pow(a, b, WithIncr(incr))
+		if err, retEarly := qcErrCheck(t, "Pow", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+
+	if err := quick.Check(iden1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Pow (tensor as left, scalar as right) failed: %v", err)
+	}
+
+}
+func TestAddScalar_context(t *testing.T) {
+	iden1 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(0, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := q.Engine().(Adder)
+		we = we || !ok
+
+		ret, err := Add(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Add", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+
+	if err := quick.Check(iden1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Add (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	iden2 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(0, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := q.Engine().(Adder)
+		we = we || !ok
+
+		ret, err := Add(b, a, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Add", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(iden2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Add (scalar as left, tensor as right) failed: %v", err)
+	}
+
+}
+func TestSubScalar_context(t *testing.T) {
+	inv1 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(0, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
+		_, ok := q.Engine().(Suber)
+		we = we || !ok
+
+		ret, err := Sub(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "SubVS", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+		ret, err = Add(ret, b, UseUnsafe())
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Inv test for Sub (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	inv2 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(0, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
+		_, ok := q.Engine().(Suber)
+		we = we || !ok
+
+		ret, err := Sub(b, a, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "SubSV", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+		ret, err = Sub(b, ret, UseUnsafe())
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(inv2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Inv test for Sub (scalar as left, tensor as right) failed: %v", err)
+	}
+}
+func TestMulScalar_context(t *testing.T) {
+	iden1 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(1, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := q.Engine().(Muler)
+		we = we || !ok
+
+		ret, err := Mul(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Mul", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+
+	if err := quick.Check(iden1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Mul (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	iden2 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(1, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := q.Engine().(Muler)
+		we = we || !ok
+
+		ret, err := Mul(b, a, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "Mul", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(iden2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Identity test for Mul (scalar as left, tensor as right) failed: %v", err)
+	}
+
+}
+func TestDivScalar_context(t *testing.T) {
+	inv1 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(1, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
+		_, ok := q.Engine().(Diver)
+		we = we || !ok
+
+		ret, err := Div(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
+		if err, retEarly := qcErrCheck(t, "DivVS", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+		ret, err = Mul(ret, b, UseUnsafe())
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+		return true
+	}
+	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Inv test for Div (tensor as left, scalar as right) failed: %v", err)
+	}
+
+}
+func TestPowScalar_context(t *testing.T) {
+	iden1 := func(q *Dense) bool {
+		a := q.Clone().(*Dense)
+		b := identityVal(1, q.t)
+		rng := newRand()
+		r := rng.Intn(10)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if r < 5 {
+			ctx, cancel = context.WithTimeout(context.Background(), 1*time.Microsecond)
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r*100)*time.Second)
+		}
+		defer cancel()
+
+		correct := a.Clone().(*Dense)
+		we, willFailEq := willerr(a, dtype.FloatComplex, dtype.Complexes)
+		_, ok := q.Engine().(Power)
+		we = we || !ok
+
+		ret, err := Pow(a, b, WithContext(ctx))
+		if _, ok := err.(NoOpError); ok && r < 5 {
+			return true // short circuit
+		}
 		if err, retEarly := qcErrCheck(t, "Pow", a, b, we, err); retEarly {
 			if err != nil {
 				return false

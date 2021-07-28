@@ -220,7 +220,6 @@ func TestNeg_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -254,7 +253,6 @@ func TestSquare_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -288,7 +286,6 @@ func TestCube_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -319,7 +316,6 @@ func TestExp_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -350,7 +346,6 @@ func TestLog_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -381,7 +376,6 @@ func TestSqrt_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -412,7 +406,6 @@ func TestCbrt_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 

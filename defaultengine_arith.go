@@ -4,7 +4,6 @@ package tensor
 
 import (
 	"context"
-	"log"
 
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
