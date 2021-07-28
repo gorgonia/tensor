@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
@@ -21,8 +22,12 @@ func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, e
 
 	var reuse DenseTensor
 	var safe, _, incr bool
-	if reuse, safe, _, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, _, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.
 	}
 	switch {
 	case safe && reuse == nil:
@@ -261,8 +266,12 @@ func (StdEng) prepReduce(a Tensor, axis int, opts ...FuncOpt) (at, reuse DenseTe
 
 	// FUNC PREP
 	var safe bool
-	if reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		err = errors.Wrap(err, "Unable to prep unary tensor")
+		return
+	}
+	if err = handleCtx(ctx); err != nil {
 		return
 	}
 

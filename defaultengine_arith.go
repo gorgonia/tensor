@@ -3,6 +3,9 @@
 package tensor
 
 import (
+	"context"
+	"log"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
@@ -17,8 +20,12 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -82,8 +89,12 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -147,8 +158,12 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -212,8 +227,12 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -277,8 +296,12 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -342,8 +365,12 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -411,8 +438,12 @@ func (e StdEng) AddScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -514,8 +545,12 @@ func (e StdEng) SubScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -617,8 +652,12 @@ func (e StdEng) MulScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -720,8 +759,12 @@ func (e StdEng) DivScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -823,8 +866,12 @@ func (e StdEng) PowScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -926,8 +973,12 @@ func (e StdEng) ModScalar(t Tensor, s interface{}, leftTensor bool, opts ...Func
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 	a := t
 	typ := t.Dtype().Type
