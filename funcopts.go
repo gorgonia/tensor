@@ -78,8 +78,12 @@ type OpOpt struct {
 // ParseFuncOpts parses a list of FuncOpt into a single unified method call structure.
 func ParseFuncOpts(opts ...FuncOpt) *OpOpt {
 	retVal := borrowOpOpt()
+
 	for _, opt := range opts {
 		opt(retVal)
+	}
+	if retVal.ctx == nil {
+		retVal.ctx = context.Background() // default context - required for no panics.
 	}
 	return retVal
 }

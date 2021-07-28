@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
 
@@ -27,8 +29,12 @@ func (e StdEng) SelectByIndices(a, b Tensor, axis int, opts ...FuncOpt) (retVal 
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
-	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.
 	}
 	if safe || !toReuse && reuse == nil && safe {
 		// create reuse
@@ -150,8 +156,12 @@ func (e StdEng) SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt
 
 	var reuse DenseTensor
 	var _, toReuse, _ bool
-	if reuse, _, toReuse, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, _, toReuse, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.
 	}
 	if !toReuse && reuse == nil {
 		// create reuse

@@ -1,16 +1,17 @@
 package tensor
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
-	// "log"
 )
 
-func handleFuncOpts(expShape Shape, expType dtype.Dtype, o DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
+func handleFuncOpts(expShape Shape, expType dtype.Dtype, o DataOrder, strict bool, opts ...FuncOpt) (ctx context.Context, reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
 	fo := ParseFuncOpts(opts...)
+	ctx = fo.Context()
 
 	reuseT, incr := fo.IncrReuse()
 	safe = fo.Safe()
@@ -60,6 +61,15 @@ func handleFuncOpts(expShape Shape, expType dtype.Dtype, o DataOrder, strict boo
 	}
 	returnOpOpt(fo)
 	return
+}
+
+func handleCtx(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return noopError{}
+	default:
+	}
+	return nil
 }
 
 func binaryCheck(a, b Tensor, tc dtype.TypeClass) (err error) {
