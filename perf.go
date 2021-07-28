@@ -264,6 +264,7 @@ func returnOpOpt(oo *OpOpt) {
 	oo.unsafe = false
 	oo.same = false
 	oo.t = dtype.Dtype{}
+	oo.ctx = nil
 	// if len(optPool) < cap(optPool) {
 	// 	optPool <- oo
 	// }

@@ -165,7 +165,6 @@ func TestDense_Add_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -197,7 +196,6 @@ func TestDense_Sub_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -228,7 +226,6 @@ func TestDense_Mul_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -261,7 +258,6 @@ func TestDense_Div_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -292,7 +288,6 @@ func TestDense_Pow_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -986,7 +981,6 @@ func TestDense_AddScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -1017,7 +1011,6 @@ func TestDense_AddScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1051,7 +1044,6 @@ func TestDense_SubScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1082,7 +1074,6 @@ func TestDense_SubScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1114,7 +1105,6 @@ func TestDense_MulScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 
@@ -1145,7 +1135,6 @@ func TestDense_MulScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(iden2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1179,7 +1168,6 @@ func TestDense_DivScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
@@ -1212,7 +1200,6 @@ func TestDense_PowScalar_unsafe(t *testing.T) {
 			t.Errorf("Expected ret to be the same as a")
 			return false
 		}
-
 		return true
 	}
 

@@ -57,10 +57,11 @@ var unconditionalFloatUnarySymbolTemplates = [...]string{
 }
 
 var funcOptUse = map[string]string{
-	"reuse":  ",WithReuse(reuse)",
-	"incr":   ",WithIncr(incr)",
-	"unsafe": ",UseUnsafe()",
-	"assame": ", AsSameType()",
+	"reuse":   ",WithReuse(reuse)",
+	"incr":    ",WithIncr(incr)",
+	"unsafe":  ",UseUnsafe()",
+	"assame":  ", AsSameType()",
+	"context": ", WithContext(ctx)",
 }
 
 var funcOptCheck = map[string]string{
@@ -77,7 +78,10 @@ var funcOptCheck = map[string]string{
 		t.Errorf("Expected ret to be the same as a")
 		return false
 	}
-
+	`,
+	"context": `if _, ok := err.(NoOpError); ok && r < 5 {
+		return true // short circuit
+	}
 	`,
 }
 
@@ -89,6 +93,17 @@ var funcOptDecl = map[string]string{
 		return true // we exit early if the generated type is not something we can handle
 	}
 	`,
+	"context": `rng := newRand()
+	r := rng.Intn(10)
+	var ctx context.Context
+	var cancel context.CancelFunc
+	if r < 5 {
+		ctx, cancel = context.WithTimeout(context.Background(), 1 * time.Microsecond)
+	} else {
+		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(r * 100)*time.Second)
+	}
+	defer cancel()
+`,
 }
 
 var funcOptCorrect = map[string]string{
@@ -96,7 +111,8 @@ var funcOptCorrect = map[string]string{
 	"incr": `incr.Memset(identityVal(100, a.t))
 	correct.Add(incr, UseUnsafe())
 	`,
-	"unsafe": "",
+	"unsafe":  "",
+	"context": "",
 }
 
 var stdTypes = [...]string{

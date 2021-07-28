@@ -143,6 +143,7 @@ func (fn *ArithTest) writeInv(w io.Writer) {
 
 	t.Execute(w, fn)
 }
+
 func (fn *ArithTest) WriteScalarWrongType(w io.Writer) {
 	if !fn.scalars {
 		return
@@ -209,6 +210,13 @@ func generateAPIArithTests(f io.Writer, ak Kinds) {
 		if fn.canWrite() {
 			fn.Write(f)
 		}
+		fn.FuncOpt = "context"
+	}
+
+	for _, fn := range tests {
+		if fn.canWrite() {
+			fn.Write(f)
+		}
 	}
 }
 
@@ -249,6 +257,13 @@ func generateAPIArithScalarTests(f io.Writer, ak Kinds) {
 			fn.Write(f)
 		}
 		fn.FuncOpt = "incr"
+	}
+
+	for _, fn := range tests {
+		if fn.canWrite() {
+			fn.Write(f)
+		}
+		fn.FuncOpt = "context"
 	}
 
 	for _, fn := range tests {
