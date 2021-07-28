@@ -84,7 +84,7 @@ func (t *Dense) makeArray(size int) {
 	case arrayMaker:
 		te.makeArray(&t.array, t.t, size)
 		return
-	case StandardEngine:
+	case StandardEngine2:
 	default:
 
 	}

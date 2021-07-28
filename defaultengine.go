@@ -13,7 +13,6 @@ type StdEng struct {
 
 // makeArray allocates a slice for the array
 func (e StdEng) makeArray(arr *array, t dtype.Dtype, size int) {
-
 	arr.Raw = malloc(t, size)
 	arr.t = t
 }
