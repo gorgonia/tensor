@@ -239,10 +239,10 @@ func ReturnBools(is []bool) {
 // var optPool = make(chan *OpOpt, PoolSize)
 // var optPool = newRingbuffer(PoolSize)
 var optPool = &sync.Pool{
-	New: func() interface{} { return new(OpOpt) },
+	New: func() interface{} { return new(opOpt) },
 }
 
-func borrowOpOpt() *OpOpt {
+func borrowOpOpt() *opOpt {
 	// select {
 	// case fo := <-optPool:
 	// 	return fo
@@ -250,7 +250,7 @@ func borrowOpOpt() *OpOpt {
 	// 	return new(OpOpt)
 	// }
 
-	return optPool.Get().(*OpOpt)
+	return optPool.Get().(*opOpt)
 
 	// if fo, err := optPool.Get(); err == nil {
 	// 	return (*OpOpt)(fo)
@@ -258,7 +258,7 @@ func borrowOpOpt() *OpOpt {
 	// return new(OpOpt)
 }
 
-func returnOpOpt(oo *OpOpt) {
+func returnOpOpt(oo *opOpt) {
 	oo.reuse = nil
 	oo.incr = nil
 	oo.unsafe = false
