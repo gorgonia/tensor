@@ -1,7 +1,6 @@
 package tensor
 
 import (
-	"log"
 	"reflect"
 	"runtime"
 	"unsafe"
@@ -38,12 +37,14 @@ func BatchSelectF64(t *Dense, axis int, limit int) *BatchedNativeSelectF64 {
 	it := make([][]float64, 0, limit)
 	var i, r int
 	for i, r = 0, 0; r < limit; i += stride {
-		s := make([]float64, 0)
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&s))
+		// this block of code is basically
+		// 	it = append(it, data[i:i+stride])
+		// TODO: benchmark
+		it = append(it, make([]float64, 0))
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&it[len(it)-1]))
 		hdr.Data = uintptr(unsafe.Pointer(&data[i]))
 		hdr.Len = stride
 		hdr.Cap = stride
-		it = append(it, s)
 		r++
 	}
 
@@ -58,7 +59,7 @@ func BatchSelectF64(t *Dense, axis int, limit int) *BatchedNativeSelectF64 {
 }
 
 func (it *BatchedNativeSelectF64) Start() (curBatch [][]float64, hasRemainingRows bool) {
-	if it.r != it.limit || len(it.it) != it.limit {
+	if it.r != it.limit || it.IsTruncated() {
 		// then it's been moved, so we reset
 		it.Reset()
 	}
@@ -71,29 +72,42 @@ func (it *BatchedNativeSelectF64) Start() (curBatch [][]float64, hasRemainingRow
 func (it *BatchedNativeSelectF64) Next() (curBatch [][]float64, hasRemaingRows bool) {
 	var (
 		i int // data ptr
-		r int // relative row
+		r int // relative row / row counter for this batch
 		s int // absolute row
 	)
+	if it.r == it.upper {
+		return it.it, false
+	}
 	data := it.t.Float64s()
+
+	// this loop statement looks scary. But it isn't. Let me break it down:
+	// Initialization:
+	// 	i := it.r*it.stride // the data pointer is the row number * the stride of the matrix.
+	// 	r := 0 		    // loop counter. We're gonna iterate `it.limit` times.
+	//	s := it.r 	    // the current row number of the matrix.
+	// Condition (continue if the following are true):
+	//	r < it.limit 	// we only want to iterate at most `it.limit` times.
+	// 	s < it.upper	// we want to make sure we don't iterate more rows than there are rows in the matrix.
+	// Next:
+	//	i = i + it.stride // we're ready to go to the next row.
+	//	r = r+1 	  // we increment the row counter.
+	//	s = s+1		  // we increment the absolute row number.
+	//
+	// Could this be written in a less concise way? Sure. But then there'd be a lot more places to keep track of things.
 	for i, r, s = it.r*it.stride, 0, it.r; r < it.limit && s < it.upper; i, r, s = i+it.stride, r+1, s+1 {
-		sl := it.it[r]
-		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&sl))
+		// the block of code below is basically:
+		//	it.it[r] = data[i:i+stride]
+		//	r++
+		// For some reason when this is done, Go actually does a lot more allocations.
+		hdr := (*reflect.SliceHeader)(unsafe.Pointer(&it.it[r]))
 		hdr.Data = uintptr(unsafe.Pointer(&data[i]))
-		hdr.Len = it.stride
-		hdr.Cap = it.stride
-		it.it[r] = sl
 	}
 	it.r = s
 
-	log.Printf("r %v limit %v, s %v upper %v", r, it.limit, s, it.upper)
-
-	if r < it.limit {
-		// truncate it.it
+	if it.r == it.upper && r < it.limit {
+		// truncate it.it because iterated rows is less than the limit.
+		// This implies that there are some extra rows.
 		it.it = it.it[:r]
-		return it.it, false
-	}
-	if it.r == it.upper {
-		return it.it, false
 	}
 
 	return it.it, true
@@ -115,6 +129,7 @@ func (it *BatchedNativeSelectF64) Reset() {
 		it.it[r] = sl
 		r++
 	}
+	it.r = r
 }
 
 func (it *BatchedNativeSelectF64) IsTruncated() bool { return len(it.it) != it.limit }
