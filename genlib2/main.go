@@ -117,16 +117,16 @@ func main() {
 	// native iterators - the ones in the tensor package
 	pipeline(tensorPkgLoc, "iterator_native.go", Kinds{allKinds}, generateNativeIterators(false))
 	pipeline(tensorPkgLoc, "iterator_native_test.go", Kinds{allKinds}, generateNativeIteratorTests(false))
-	pipeline(tensorPkgLoc, "iterator_native2.go", Kinds{allKinds}, generateNativeSelect(false))
-	pipeline(tensorPkgLoc, "iterator_native2_test.go", Kinds{allKinds}, generateNativeSelectTests(false))
+	pipeline(tensorPkgLoc, "select_native.go", Kinds{allKinds}, generateNativeSelect(false))
+	pipeline(tensorPkgLoc, "select_native_test.go", Kinds{allKinds}, generateNativeSelectTests(false))
 
 	// native iterators - exported  into gorgonia.org/tensor/native
 	pipeline(nativePkgLoc+"_unsafe", "iterator_native.go", Kinds{allKinds}, generateNativeIteratorStubs)
 	pipeline(nativePkgLoc+"_purego", "iterator_native_purego.go", Kinds{allKinds}, generateNativeIterators(true))
 	pipeline(nativePkgLoc, "iterator_native_test.go", Kinds{allKinds}, generateNativeIteratorTests(true))
-	pipeline(nativePkgLoc+"_unsafe", "iterator_native2.go", Kinds{allKinds}, generateNativeSelectStubs)
-	pipeline(nativePkgLoc+"_purego", "iterator_native2_purego.go", Kinds{allKinds}, generateNativeSelect(true))
-	pipeline(nativePkgLoc, "iterator_native2_test.go", Kinds{allKinds}, generateNativeSelectTests(true))
+	pipeline(nativePkgLoc+"_unsafe", "select_native.go", Kinds{allKinds}, generateNativeSelectStubs)
+	pipeline(nativePkgLoc+"_purego", "select_native_purego.go", Kinds{allKinds}, generateNativeSelect(true))
+	pipeline(nativePkgLoc, "select_native_test.go", Kinds{allKinds}, generateNativeSelectTests(true))
 	pipeline(nativePkgLoc, "utils.go", Kinds{allKinds}, generateNativeIterChecks, generateNativeSelChecks)
 }
 
