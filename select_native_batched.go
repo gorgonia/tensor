@@ -7,7 +7,7 @@ import (
 	"unsafe"
 )
 
-type LazySelectF64 struct {
+type BatchedNativeSelectF64 struct {
 	t  *Dense
 	it [][]float64 // FUTURE: this can be made into generic in the future
 
@@ -19,7 +19,7 @@ type LazySelectF64 struct {
 	r      int // current row
 }
 
-func NewLazySelectF64(t *Dense, axis int, limit int) *LazySelectF64 {
+func BatchSelectF64(t *Dense, axis int, limit int) *BatchedNativeSelectF64 {
 	if err := checkNativeSelectable(t, axis, Float64); err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func NewLazySelectF64(t *Dense, axis int, limit int) *LazySelectF64 {
 		r++
 	}
 
-	return &LazySelectF64{
+	return &BatchedNativeSelectF64{
 		t:      t,
 		it:     it,
 		upper:  upper,
@@ -58,7 +58,7 @@ func NewLazySelectF64(t *Dense, axis int, limit int) *LazySelectF64 {
 }
 
 // Next moves the next batch into the native iterator.
-func (it *LazySelectF64) Next() (hasRemaingRows, truncated bool) {
+func (it *BatchedNativeSelectF64) Next() (hasRemaingRows, truncated bool) {
 	var (
 		i int // data ptr
 		r int // relative row
@@ -89,9 +89,9 @@ func (it *LazySelectF64) Next() (hasRemaingRows, truncated bool) {
 	return true, false
 }
 
-func (it *LazySelectF64) Native() [][]float64 { return it.it }
+func (it *BatchedNativeSelectF64) Native() [][]float64 { return it.it }
 
-func (it *LazySelectF64) Reset() {
+func (it *BatchedNativeSelectF64) Reset() {
 	it.it = it.it[:it.limit]
 
 	data := it.t.Float64s()
