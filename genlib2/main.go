@@ -114,15 +114,22 @@ func main() {
 	pipeline(tensorPkgLoc, "api_cmp_generated_test.go", Kinds{allKinds}, generateAPICmpTests, generateAPICmpMixedTests)
 	pipeline(tensorPkgLoc, "dense_cmp_test.go", Kinds{allKinds}, generateDenseMethodCmpTests, generateDenseMethodCmpMixedTests)
 
-	// native iterators
-	pipeline(nativePkgLoc, "iterator_native.go", Kinds{allKinds}, generateNativeIterators)
-	pipeline(nativePkgLoc, "iterator_native_test.go", Kinds{allKinds}, generateNativeIteratorTests)
+	// native iterators - the ones in the tensor package
+	pipeline(tensorPkgLoc, "iterator_native.go", Kinds{allKinds}, generateNativeIterators(false))
+	pipeline(tensorPkgLoc, "iterator_native_test.go", Kinds{allKinds}, generateNativeIteratorTests(false))
 	pipeline(nativePkgLoc, "iterator_native2.go", Kinds{allKinds}, generateNativeSelect)
 	pipeline(nativePkgLoc, "iterator_native2_test.go", Kinds{allKinds}, generateNativeSelectTests)
+
+	// native iterators - exported  into gorgonia.org/tensor/native
+	pipeline(nativePkgLoc+"_unsafe", "iterator_native.go", Kinds{allKinds}, generateNativeIteratorStubs)
+	pipeline(nativePkgLoc+"_purego", "iterator_native_purego.go", Kinds{allKinds}, generateNativeIterators(true))
+	pipeline(nativePkgLoc, "iterator_native_test.go", Kinds{allKinds}, generateNativeIteratorTests(true))
+	pipeline(nativePkgLoc, "utils.go", Kinds{allKinds}, generateNativeChecks)
 }
 
 func pipeline(pkg, filename string, kinds Kinds, fns ...func(io.Writer, Kinds)) {
-	fullpath := path.Join(pkg, filename)
+	pkgpath := strings.Replace(strings.Replace(pkg, "_unsafe", "", -1), "_purego", "", -1)
+	fullpath := path.Join(pkgpath, filename)
 	f, err := os.Create(fullpath)
 	if err != nil {
 		log.Printf("fullpath %q", fullpath)
