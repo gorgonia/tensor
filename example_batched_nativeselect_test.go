@@ -4,29 +4,25 @@ import (
 	"fmt"
 )
 
-func ExampleLazySelectF64() {
+func ExampleBatchedNativeSelectF64() {
 	T := New(WithShape(50, 5), WithBacking(Range(Float64, 1, 251)))
 
 	// now let's iterate this using a lazy native select, selecting 10 rows at time
 
-	it := NewLazySelectF64(T, 0, 10)
+	it := BatchSelectF64(T, 0, 10)
 
 	var i int
-	cur := it.Native()
-	fmt.Printf("%d: %v\n", i, cur)
-	hasRem, trunc := it.Next()
-	i++
-	for ; hasRem; hasRem, trunc = it.Next() {
+	var cur [][]float64
+	for hasRem, trunc := it.Start(); hasRem; hasRem, trunc = it.Next() {
 		cur = it.Native()
 		fmt.Printf("%d: %v\n", i, cur)
+		if trunc {
+		}
 
 		i++
 	}
 	cur = it.Native()
 	fmt.Printf("%d: %v\n", i, cur)
-	if trunc {
-		// do something
-	}
 
 	// Output:
 	// 0: [[1 2 3 4 5] [6 7 8 9 10] [11 12 13 14 15] [16 17 18 19 20] [21 22 23 24 25] [26 27 28 29 30] [31 32 33 34 35] [36 37 38 39 40] [41 42 43 44 45] [46 47 48 49 50]]

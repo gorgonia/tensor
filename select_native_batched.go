@@ -57,6 +57,16 @@ func BatchSelectF64(t *Dense, axis int, limit int) *BatchedNativeSelectF64 {
 	}
 }
 
+func (it *BatchedNativeSelectF64) Start() (hasRemainingRows, truncated bool) {
+	if it.r != it.limit || len(it.it) != it.limit {
+		// then it's been moved, so we reset
+		it.Reset()
+	}
+	hasRemainingRows = it.upper > it.r
+	truncated = false
+	return
+}
+
 // Next moves the next batch into the native iterator.
 func (it *BatchedNativeSelectF64) Next() (hasRemaingRows, truncated bool) {
 	var (
@@ -82,7 +92,7 @@ func (it *BatchedNativeSelectF64) Next() (hasRemaingRows, truncated bool) {
 		it.it = it.it[:r]
 		return false, true
 	}
-	if s == it.upper {
+	if it.r == it.upper {
 		return false, false
 	}
 
