@@ -264,7 +264,7 @@ func generateNativeIteratorStubs(f io.Writer, ak Kinds) {
 	}
 }
 
-func generateNativeChecks(f io.Writer, ak Kinds) {
+func generateNativeIterChecks(f io.Writer, ak Kinds) {
 	fmt.Fprintf(f, importUnqualifiedTensor)
 	fmt.Fprintf(f, "%v\n", checkNativeiterable)
 }

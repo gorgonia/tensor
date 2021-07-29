@@ -28,3 +28,19 @@ func checkNativeIterable(t *Dense, dims int, dt dtype.Dtype) error {
 
 	return nil
 }
+
+func checkNativeSelectable(t *Dense, axis int, dt dtype.Dtype) error {
+	if !t.IsNativelyAccessible() {
+		return errors.New("Cannot select on non-natively accessible data")
+	}
+	if axis >= t.Shape().Dims() && !(t.IsScalar() && axis == 0) {
+		return errors.Errorf("Cannot select on axis %d. Shape is %v", axis, t.Shape())
+	}
+	if t.F() || t.RequiresIterator() {
+		return errors.Errorf("Not yet implemented: native select for colmajor or unpacked matrices")
+	}
+	if t.Dtype() != dt {
+		return errors.Errorf("Native selection only works on %v. Got %v", dt, t.Dtype())
+	}
+	return nil
+}
