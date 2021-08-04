@@ -278,7 +278,28 @@ func (t *Dense) fix() {
 		t.oe = oe
 	}
 
+	_, isNonStdEng := t.e.(NonStdEngine)
+
 	switch {
+	case isNonStdEng && t.Shape() != nil:
+		// if there is already data in the array, we should back it up now
+		raw := t.array.Header.Raw
+
+		// make the array
+		size := t.Shape().TotalSize()
+		if t.Shape().IsScalar() {
+			size = 1
+		}
+		t.makeArray(size)
+
+		if len(raw) != 0 {
+			// copy over if natively accessible
+			if t.IsNativelyAccessible() {
+				bs := t.byteSlice()
+				copy(bs, raw)
+			}
+		}
+
 	case t.IsScalar() && t.array.Header.Raw == nil:
 		t.makeArray(1)
 	case t.Shape() == nil && t.array.Header.Raw != nil:
