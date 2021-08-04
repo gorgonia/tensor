@@ -133,3 +133,31 @@ func (it *BatchedNativeSelectF64) Reset() {
 }
 
 func (it *BatchedNativeSelectF64) IsTruncated() bool { return len(it.it) != it.limit }
+
+type IterSelect struct {
+	r      int
+	upper  int
+	stride int
+	total  int
+}
+
+func NewIterSelect(t *Dense, axis int) *IterSelect {
+	upper := ProdInts(t.Shape()[:axis+1])
+	stride := t.Strides()[axis]
+	total := t.DataSize()
+	return &IterSelect{upper: upper, stride: stride, total: total}
+}
+
+func (it *IterSelect) Start() (start, end int, hasRem bool) {
+	if it.r > it.stride {
+		it.Reset()
+	}
+	return it.r, it.stride, it.r*it.stride+it.stride < it.total
+}
+
+func (it *IterSelect) Next() (start, end int, hasRem bool) {
+	it.r += it.stride
+	return it.r, it.r + it.stride, it.r+it.stride <= it.total
+}
+
+func (it *IterSelect) Reset() { it.r = 0 }

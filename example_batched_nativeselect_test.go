@@ -71,3 +71,38 @@ func ExampleBatchedNativeSelectF64() {
 	// Is Truncated? true
 
 }
+
+func ExampleIterSelect() {
+	T := New(WithShape(20, 5), WithBacking(Range(Float64, 1, 101)))
+	it := NewIterSelect(T, 0)
+	data := T.Float64s()
+	var rowNo int
+	for start, end, hasRem := it.Start(); hasRem; start, end, hasRem = it.Next() {
+		sl := data[start:end]
+		fmt.Printf("%d: %v\n", rowNo, sl)
+		rowNo++
+	}
+
+	// Output:
+	// 0: [1 2 3 4 5]
+	// 1: [6 7 8 9 10]
+	// 2: [11 12 13 14 15]
+	// 3: [16 17 18 19 20]
+	// 4: [21 22 23 24 25]
+	// 5: [26 27 28 29 30]
+	// 6: [31 32 33 34 35]
+	// 7: [36 37 38 39 40]
+	// 8: [41 42 43 44 45]
+	// 9: [46 47 48 49 50]
+	// 10: [51 52 53 54 55]
+	// 11: [56 57 58 59 60]
+	// 12: [61 62 63 64 65]
+	// 13: [66 67 68 69 70]
+	// 14: [71 72 73 74 75]
+	// 15: [76 77 78 79 80]
+	// 16: [81 82 83 84 85]
+	// 17: [86 87 88 89 90]
+	// 18: [91 92 93 94 95]
+	// 19: [96 97 98 99 100]
+
+}
