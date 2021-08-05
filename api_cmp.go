@@ -1,6 +1,8 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 // public API for comparison ops
 
@@ -295,12 +297,26 @@ func ElNe(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 		eleqer, ok = at.Engine().(ElEqer)
 		switch bt := b.(type) {
 		case Tensor:
-			if !ok {
-				if eleqer, ok = bt.Engine().(ElEqer); !ok {
-					return nil, errors.Errorf("Neither operands have engines that support ElEq")
+			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor comparison
+				if !ok {
+					if eleqer, ok = bt.Engine().(ElEqer); !ok {
+						return nil, errors.Errorf("Neither operands have engines that support ElEq")
+					}
 				}
+				return eleqer.ElNe(at, bt, opts...)
+			} else {
+				var leftTensor bool
+				if !bt.Shape().IsScalar() {
+					leftTensor = false
+					at, bt = bt, at
+				} else {
+					leftTensor = true
+				}
+				if !ok {
+					return nil, errors.Errorf("Engine does not support ElNE")
+				}
+				return eleqer.NeScalar(at, bt, leftTensor, opts...)
 			}
-			return eleqer.ElNe(at, bt, opts...)
 		default:
 			if !ok {
 				return nil, errors.Errorf("Engine does not support ElEq")
