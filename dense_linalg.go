@@ -16,7 +16,13 @@ func (t *Dense) Trace() (retVal interface{}, err error) {
 }
 
 // Inner performs a dot product on two vectors. If t or other are not vectors, it will return an error.
-func (t *Dense) Inner(other Tensor) (retVal interface{}, err error) {
+func (t *Dense) Inner(other Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
+	fo := ParseFuncOpts(opts...)
+	ctx := fo.Context()
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	// check that the data is a float
 	if err = dtype.TypeClassCheck(t.t, dtype.FloatComplex); err != nil {
 		return nil, errors.Wrapf(err, unsupportedDtype, t.t, "Inner")
