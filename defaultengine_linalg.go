@@ -10,7 +10,7 @@ import (
 )
 
 //  Trace returns the trace of a matrix (i.e. the sum of the diagonal elements). If the Tensor provided is not a matrix, it will return an error
-func (e StdEng) Trace(t Tensor) (retVal interface{}, err error) {
+func (e StdEng) Trace(t Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
 	if t.Dims() != 2 {
 		err = errors.Errorf(dimMismatch, 2, t.Dims())
 		return
@@ -372,7 +372,13 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 
 // Inner is a thin layer over BLAS's D/Sdot.
 // It returns a scalar value, wrapped in an interface{}, which is not quite nice.
-func (e StdEng) Inner(a, b Tensor) (retVal interface{}, err error) {
+func (e StdEng) Inner(a, b Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
+	fo := ParseFuncOpts(opts...)
+	ctx := fo.Context()
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	var ad, bd DenseTensor
 	if ad, bd, err = e.checkTwoFloatComplexTensors(a, b); err != nil {
 		return nil, errors.Wrapf(err, opFail, "StdEng.Inner")
