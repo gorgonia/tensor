@@ -6,22 +6,17 @@ import (
 )
 
 // Trace returns the trace of the matrix (i.e. the sum of the diagonal elements). It only works for matrices
-func (t *Dense) Trace() (retVal interface{}, err error) {
+func (t *Dense) Trace(opts ...FuncOpt) (retVal interface{}, err error) {
 	e := t.e
 
 	if tracer, ok := e.(Tracer); ok {
-		return tracer.Trace(t)
+		return tracer.Trace(t, opts...)
 	}
 	return nil, errors.Errorf("Engine %T does not support Trace", e)
 }
 
 // Inner performs a dot product on two vectors. If t or other are not vectors, it will return an error.
 func (t *Dense) Inner(other Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
-	fo := ParseFuncOpts(opts...)
-	ctx := fo.Context()
-	if err = handleCtx(ctx); err != nil {
-		return nil, err // this err will be noopError{}, no need to wrap.
-	}
 
 	// check that the data is a float
 	if err = dtype.TypeClassCheck(t.t, dtype.FloatComplex); err != nil {
@@ -42,11 +37,11 @@ func (t *Dense) Inner(other Tensor, opts ...FuncOpt) (retVal interface{}, err er
 	e := t.e
 	switch ip := e.(type) {
 	case InnerProderF32:
-		return ip.Inner(t, other)
+		return ip.Inner(t, other, opts...)
 	case InnerProderF64:
-		return ip.Inner(t, other)
+		return ip.Inner(t, other, opts...)
 	case InnerProder:
-		return ip.Inner(t, other)
+		return ip.Inner(t, other, opts...)
 	}
 
 	return nil, errors.Errorf("Engine does not support Inner()")

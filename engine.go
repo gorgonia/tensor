@@ -172,7 +172,7 @@ type Moder interface {
 
 // Tracer is any engine that can return the trace (aka the sum of the diagonal elements).
 type Tracer interface {
-	Trace(a Tensor) (interface{}, error)
+	Trace(a Tensor, opts ...FuncOpt) (interface{}, error)
 }
 
 // FMAer is any engine that can perform fused multiply add functions: A * X + Y. Also known as Axpy.
@@ -193,17 +193,17 @@ type MatVecMuler interface {
 
 // InnerProder is any engine that can perform inner product multiplication
 type InnerProder interface {
-	Inner(a, b Tensor) (interface{}, error) // Inner always returns a scalar value
+	Inner(a, b Tensor, opts ...FuncOpt) (interface{}, error) // Inner always returns a scalar value
 }
 
 // InnerProderF32 is an optimization for float32 - results are returned as float32.
 type InnerProderF32 interface {
-	Inner(a, b Tensor) (float32, error)
+	Inner(a, b Tensor, opts ...FuncOpt) (float32, error)
 }
 
 // InnerProderF64 is an optimization for float64 - results are returned as float64
 type InnerProderF64 interface {
-	Inner(a, b Tensor) (float64, error)
+	Inner(a, b Tensor, opts ...FuncOpt) (float64, error)
 }
 
 // OuterProder is any engine that can perform outer product (kronecker) multiplication

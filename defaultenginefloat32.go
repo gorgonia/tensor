@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/execution"
@@ -9,9 +11,10 @@ import (
 	"gorgonia.org/vecf32"
 )
 
-func handleFuncOptsF32(expShape Shape, o DataOrder, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr bool, err error) {
+func handleFuncOptsF32(expShape Shape, o DataOrder, opts ...FuncOpt) (ctx context.Context, reuse DenseTensor, safe, toReuse, incr bool, err error) {
 	fo := ParseFuncOpts(opts...)
 
+	ctx = fo.Context()
 	reuseT, incr := fo.IncrReuse()
 	safe = fo.Safe()
 	toReuse = reuseT != nil
@@ -179,9 +182,14 @@ func (e Float32Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, err = handleFuncOptsF32(a.Shape(), a.DataOrder(), opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, err = handleFuncOptsF32(a.Shape(), a.DataOrder(), opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	if err = e.checkThree(a, b, reuse); err != nil {
 		return nil, errors.Wrap(err, "Failed checks")
 	}
@@ -220,7 +228,13 @@ func (e Float32Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 	return
 }
 
-func (e Float32Engine) Inner(a, b Tensor) (retVal float32, err error) {
+func (e Float32Engine) Inner(a, b Tensor, opts ...FuncOpt) (retVal float32, err error) {
+	fo := ParseFuncOpts(opts...)
+	ctx := fo.Context()
+	if err = handleCtx(ctx); err != nil {
+		return 0, err // this err will be noopError{}, no need to wrap.
+	}
+
 	var A, B []float32
 	var AD, BD *Dense
 	var ok bool
