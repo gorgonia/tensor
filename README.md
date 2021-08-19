@@ -5,16 +5,16 @@ Package `tensor` is a package that provides efficient, generic (by some definiti
 The main purpose of this package is to support the operations required by [Gorgonia](https://gorgonia.org/gorgonia).
 
 ## Introduction ##
-In the data analysis world, [Numpy](http://http://www.numpy.org/) and [Matlab](https://www.mathworks.com/products/matlab.html) currently reign supreme. Both tools rely heavily on having performant n-dimensional arrays, or tensors. **There is an obvious need for multidimensional arrays in Go**. 
+In the data analysis world, [Numpy](http://http://www.numpy.org/) and [Matlab](https://www.mathworks.com/products/matlab.html) currently reign supreme. Both tools rely heavily on having performant n-dimensional arrays, or tensors. **There is an obvious need for multidimensional arrays in Go**.
 
 While slices are cool, a large majority of scientific and numeric computing work relies heavily on matrices (two-dimensional arrays), three dimensional arrays and so on. In Go, the typical way of getting multidimensional arrays is to use something like `[][]T`. Applications that are more math heavy may opt to use the very excellent Gonum [`matrix` package](https://github.com/gonum/matrix). What then if we want to go beyond having a `float64` matrix? What if we wanted a 3-dimensional `float32` array?
 
-It comes to reason then there should be a data structure that handles these things. The `tensor` package fits in that niche. 
+It comes to reason then there should be a data structure that handles these things. The `tensor` package fits in that niche.
 
 ### Basic Idea: Tensor ###
 A tensor is a multidimensional array. It's like a slice, but works in multiple dimensions.
 
-With slices, there are usage patterns that are repeated enough that warrant abstraction - `append`, `len`, `cap`, `range` are abstractions used to manipulate and query slices. Additionally slicing operations (`a[:1]` for example) are also abstractions provided by the language. Andrew Gerrand wrote a very good write up on [Go's slice usage and internals](https://blog.golang.org/go-slices-usage-and-internals). 
+With slices, there are usage patterns that are repeated enough that warrant abstraction - `append`, `len`, `cap`, `range` are abstractions used to manipulate and query slices. Additionally slicing operations (`a[:1]` for example) are also abstractions provided by the language. Andrew Gerrand wrote a very good write up on [Go's slice usage and internals](https://blog.golang.org/go-slices-usage-and-internals).
 
 Tensors come with their own set of usage patterns and abstractions. Most of these have analogues in slices, enumerated below (do note that certain slice operation will have more than one tensor analogue - this is due to the number of options available):
 
@@ -26,7 +26,7 @@ Tensors come with their own set of usage patterns and abstractions. Most of thes
 | `a[0]`          | `T.At(x,y)`      |
 | `append(a, ...)`| `T.Stack(...)`, `T.Concat(...)`   |
 | `copy(dest, src)`| `T.CopyTo(dest)`, `tensor.Copy(dest, src)` |
-| `for _, v := range a` | `for i, err := iterator.Next(); err == nil; i, err = iterator.Next()` | 
+| `for _, v := range a` | `for i, err := iterator.Next(); err == nil; i, err = iterator.Next()` |
 
 Some operations for a tensor does not have direct analogues to slice operations. However, they stem from the same idea, and can be considered a superset of all operations common to slices. They're enumerated below:
 
@@ -77,7 +77,7 @@ fmt.Printf("a:\n%v\n", a)
 
 To create a 3-Tensor is just as easy - just put the correct shape and you're good to go:
 
-```go 
+```go
 // Creating a (2,3,4) 3-Tensor of float32
 b := New(WithBacking(Range(Float32, 0, 24)), WithShape(2, 3, 4))
 fmt.Printf("b:\n%1.1f\n", b)
@@ -133,6 +133,12 @@ fmt.Printf("b:\n%v", b)
 There is a whole laundry list of methods and functions available at the [godoc](https://godoc.org/gorgonia.org/tensor) page
 
 
+## API Notes ##
+
+This package has a notion of "layers" in its API. This section clarifies the different patterns seen in the API.
+
+
+
 
 ## Design of `*Dense` ##
 
@@ -142,7 +148,7 @@ The design of the `*Dense` tensor is quite simple in concept. However, let's sta
 
 The data structure for `*Dense` is similar, but a lot more complex. Much of the complexity comes from the need to do accounting work on the data structure as well as preserving references to memory locations. This is how the `*Dense` is defined:
 
-```go 
+```go
 type Dense struct {
 	*AP
 	array
@@ -168,7 +174,7 @@ type array struct {
 }
 ```
 
-`*storage.Header` is the same structure as `reflect.SliceHeader`, except it stores a `unsafe.Pointer` instead of a `uintptr`. This is done so that eventually when more tests are done to determine how the garbage collector marks data, the `v` field may be removed. 
+`*storage.Header` is the same structure as `reflect.SliceHeader`, except it stores a `unsafe.Pointer` instead of a `uintptr`. This is done so that eventually when more tests are done to determine how the garbage collector marks data, the `v` field may be removed.
 
 The `storage.Header` field of the `array` (and hence `*Dense`) is there to provide a quick and easy way to translate back into a slice for operations that use familiar slice semantics, of which much of the operations are dependent upon.
 
@@ -205,17 +211,17 @@ The alternative designs can be seen in the [ALTERNATIVE DESIGNS document](https:
 
 Example:
 
-```go 
+```go
 
 x := New(WithBacking([]string{"hello", "world", "hello", "world"}), WithShape(2,2))
 x = New(WithBacking([]int{1,2,3,4}), WithShape(2,2))
 ```
 
-The above code will not cause a compile error, because the structure holding the underlying array (of `string`s and then of `int`s) is a `*Dense`. 
+The above code will not cause a compile error, because the structure holding the underlying array (of `string`s and then of `int`s) is a `*Dense`.
 
 One could argue that this sidesteps the compiler's type checking system, deferring it to runtime (which a number of people consider dangerous). However, tools are being developed to type check these things, and until Go does support typechecked generics, unfortunately this will be the way it has to be.
 
-Currently, the tensor package supports limited type of genericity - limited to a tensor of any primitive type. 
+Currently, the tensor package supports limited type of genericity - limited to a tensor of any primitive type.
 
 # How This Package is Developed #
 Much of the code in this package is generated. The code to generate them is in the directory `genlib2`. `genlib2` requires [`goimports`](https://godoc.org/golang.org/x/tools/cmd/goimports) binary to be available in the $PATH.
@@ -246,7 +252,7 @@ See also: CONTRIBUTING.md
 
 ## Contributors and Significant Contributors ##
 
-All contributions are welcome. However, there is a new class of contributor, called Significant Contributors. 
+All contributions are welcome. However, there is a new class of contributor, called Significant Contributors.
 
 A Significant Contributor is one who has shown *deep understanding* of how the library works and/or its environs.  Here are examples of what constitutes a Significant Contribution:
 
