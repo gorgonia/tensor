@@ -232,7 +232,11 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 }
 
 // Concat tensors
-func (e StdEng) Concat(t Tensor, axis int, others ...Tensor) (retVal Tensor, err error) {
+func (e StdEng) Concat(ctx context.Context, t Tensor, axis int, others ...Tensor) (retVal Tensor, err error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	switch tt := t.(type) {
 	case DenseTensor:
 		var denses []DenseTensor
