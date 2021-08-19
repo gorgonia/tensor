@@ -69,6 +69,11 @@ type arrayMaker interface {
 	makeArray(arr *array, t dtype.Dtype, size int)
 }
 
+// contexter is any engine (or type) that returns the current context.
+type contexter interface {
+	Context() context.Context
+}
+
 // NonStdEngine are any engines that do not allocate using the default built in allocator
 type NonStdEngine interface {
 	NonStdAlloc() // noop

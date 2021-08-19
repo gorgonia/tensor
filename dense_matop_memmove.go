@@ -43,13 +43,14 @@ func (t *Dense) Transpose() error {
 	}
 
 	// actually move data
-	var e Engine = t.e
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
 
 	transposer, ok := e.(Transposer)
 	if !ok {
 		return errors.Errorf("Engine does not support Transpose()")
 	}
-	return transposer.Transpose(t, expStrides)
+	return transposer.Transpose(ctx, t, expStrides)
 }
 
 // Repeat is like Numpy's repeat. It repeats the elements of an array.
@@ -67,11 +68,12 @@ func (t *Dense) Repeat(axis int, repeats ...int) (retVal Tensor, err error) {
 // Concat concatenates the other tensors along the given axis. It is like Numpy's concatenate() function.
 func (t *Dense) Concat(axis int, Ts ...*Dense) (retVal *Dense, err error) {
 	e := t.Engine()
+	ctx := ctxFromEngine(e)
 
 	if c, ok := e.(Concater); ok {
 		var ret Tensor
 		others := densesToTensors(Ts)
-		if ret, err = c.Concat(t, axis, others...); err != nil {
+		if ret, err = c.Concat(ctx, t, axis, others...); err != nil {
 			return nil, errors.Wrapf(err, opFail, "Concat")
 		}
 		return ret.(*Dense), nil
