@@ -8,19 +8,19 @@ import (
 )
 
 func (e StdEng) Argmax(ctx context.Context, t Tensor, axis int) (retVal Tensor, err error) {
-	if err = handleCtx(ctx); err != nil {
-		return nil, err
-	}
 
 	switch tt := t.(type) {
 	case DenseTensor:
-		return e.argmaxDenseTensor(tt, axis)
+		return e.argmaxDenseTensor(ctx, tt, axis)
 	default:
 		return nil, errors.Errorf(typeNYI, "StdEng.Argmax", t)
 	}
 }
 
-func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err error) {
+func (e StdEng) argmaxDenseTensor(ctx context.Context, t DenseTensor, axis int) (retVal *Dense, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, opFail, "Argmax")
 	}
@@ -98,19 +98,19 @@ func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err e
 }
 
 func (e StdEng) Argmin(ctx context.Context, t Tensor, axis int) (retVal Tensor, err error) {
-	if err = handleCtx(ctx); err != nil {
-		return nil, err
-	}
 
 	switch tt := t.(type) {
 	case DenseTensor:
-		return e.argminDenseTensor(tt, axis)
+		return e.argminDenseTensor(ctx, tt, axis)
 	default:
 		return nil, errors.Errorf(typeNYI, "StdEng.Argmin", t)
 	}
 }
 
-func (e StdEng) argminDenseTensor(t DenseTensor, axis int) (retVal *Dense, err error) {
+func (e StdEng) argminDenseTensor(ctx context.Context, t DenseTensor, axis int) (retVal *Dense, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, opFail, "Argmin")
 	}
