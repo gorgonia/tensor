@@ -526,19 +526,24 @@ func Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 
 // FMA performs Y = A * X + Y.
 func FMA(a Tensor, x interface{}, y Tensor) (retVal Tensor, err error) {
-	var e FMAer
+	var fm FMAer
+
 	if xTensor, ok := x.(Tensor); ok {
 		for _, T := range [3]Tensor{a, xTensor, y} {
-			e, ok = T.Engine().(FMAer)
+			e := T.Engine()
+			ctx := ctxFromEngine(e)
+			fm, ok = e.(FMAer)
 			if ok {
-				return e.FMA(a, xTensor, y)
+				return fm.FMA(ctx, a, xTensor, y)
 			}
 		}
 	} else {
 		for _, T := range [2]Tensor{a, y} {
-			e, ok = T.Engine().(FMAer)
+			e := T.Engine()
+			ctx := ctxFromEngine(e)
+			fm, ok = e.(FMAer)
 			if ok {
-				return e.FMAScalar(a, x, y)
+				return fm.FMAScalar(ctx, a, x, y)
 			}
 		}
 	}
@@ -593,14 +598,16 @@ func MatMul(a, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	var reuse Tensor
 	fo := ParseFuncOpts(opts...)
 	defer returnOpOpt(fo)
+	ctx := fo.Context()
 	reuse = fo.Reuse()
 	if reuse == nil {
 		return nil, errors.Errorf("MatMul requires passing in of a reuse Tensor for now.")
 	}
+
 	if err := checkFixShape(reuse, expectedShape); err != nil {
 		return nil, errors.Wrapf(err, opFail, "MatMul")
 	}
-	if err = mm.MatMul(a, b, reuse); err != nil {
+	if err = mm.MatMul(ctx, a, b, reuse); err != nil {
 		return nil, errors.Wrapf(err, opFail, "MatMul")
 	}
 

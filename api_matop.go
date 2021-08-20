@@ -9,16 +9,20 @@ import (
 
 // Repeat repeats a Tensor along the axis and given the number of repeats.
 func Repeat(t Tensor, axis int, repeats ...int) (retVal Tensor, err error) {
-	if r, ok := t.Engine().(Repeater); ok {
-		return r.Repeat(t, axis, repeats...)
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
+	if r, ok := e.(Repeater); ok {
+		return r.Repeat(ctx, t, axis, repeats...)
 	}
 	return nil, errors.New("Engine does not support Repeat")
 }
 
 // RepeatReuse repeats a Tensor along the axis and the given number of repeats, and puts the results in the provided reuse tensor. If the reuse tensor is not correctly sized, then  an error will be given, but the results will still be valid.
 func RepeatReuse(t, reuse Tensor, axis int, repeats ...int) (retval Tensor, err error) {
-	if r, ok := t.Engine().(Repeater); ok {
-		return r.RepeatReuse(t, reuse, axis, repeats...)
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
+	if r, ok := e.(Repeater); ok {
+		return r.RepeatReuse(ctx, t, reuse, axis, repeats...)
 	}
 	return nil, errors.New("Engine does not support Repeat")
 }
@@ -134,8 +138,10 @@ func Materialize(t Tensor) Tensor {
 }
 
 func Diag(t Tensor) (retVal Tensor, err error) {
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
 	if d, ok := t.Engine().(Diager); ok {
-		return d.Diag(t)
+		return d.Diag(ctx, t)
 	}
 	return nil, errors.Errorf("Unable to perform diagonalization of tensor ")
 }
