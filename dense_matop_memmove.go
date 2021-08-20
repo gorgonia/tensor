@@ -58,9 +58,10 @@ func (t *Dense) Transpose() error {
 // Just like NumPy, the repeats param is broadcasted to fit the size of the given axis.
 func (t *Dense) Repeat(axis int, repeats ...int) (retVal Tensor, err error) {
 	e := t.Engine()
+	ctx := ctxFromEngine(e)
 
 	if rp, ok := e.(Repeater); ok {
-		return rp.Repeat(t, axis, repeats...)
+		return rp.Repeat(ctx, t, axis, repeats...)
 	}
 	return nil, errors.New("Engine does not support Repeat")
 }
@@ -129,8 +130,10 @@ func (t *Dense) Stack(axis int, others ...*Dense) (retVal *Dense, err error) {
 }
 
 func (t *Dense) stackDense(axis int, others ...DenseTensor) (retVal DenseTensor, err error) {
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
 	if ds, ok := t.Engine().(DenseStacker); ok {
-		return ds.StackDense(t, axis, others...)
+		return ds.StackDense(ctx, t, axis, others...)
 	}
 	return nil, errors.Errorf("Engine does not support DenseStacker")
 }

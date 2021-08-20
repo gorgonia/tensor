@@ -7,6 +7,7 @@ import (
 )
 
 type EngineArith struct {
+	isStdDenseEng  bool
 	Name           string
 	VecVar         string
 	PrepData       string
@@ -33,9 +34,11 @@ func (fn *EngineArith) Signature() *Signature {
 	case fn.VV:
 		paramNames = []string{"a", "b", "opts"}
 		paramTemplates = []*template.Template{tensorType, tensorType, splatFuncOptType}
+
 	default:
 		paramNames = []string{"t", "s", "leftTensor", "opts"}
 		paramTemplates = []*template.Template{tensorType, interfaceType, boolType, splatFuncOptType}
+
 	}
 	return &Signature{
 		Name:           fn.methName(),

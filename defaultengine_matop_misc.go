@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
@@ -17,7 +19,11 @@ type fastcopier interface {
 }
 
 // Repeat ...
-func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
+func (e StdEng) Repeat(ctx context.Context, t Tensor, axis int, repeats ...int) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	switch tt := t.(type) {
 	case DenseTensor:
 		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
@@ -32,7 +38,11 @@ func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 }
 
 // RepeatReuse is like Repeat, but with a provided reuse Tensor. The reuseTensor must be of the same type as the input t.
-func (e StdEng) RepeatReuse(t Tensor, reuse Tensor, axis int, repeats ...int) (Tensor, error) {
+func (e StdEng) RepeatReuse(ctx context.Context, t Tensor, reuse Tensor, axis int, repeats ...int) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	switch tt := t.(type) {
 	case DenseTensor:
 		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
@@ -368,7 +378,11 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 }
 
 // Diag ...
-func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
+func (e StdEng) Diag(ctx context.Context, t Tensor) (retVal Tensor, err error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a, ok := t.(DenseTensor)
 	if !ok {
 		return nil, errors.Errorf("StdEng only works with DenseTensor for Diagonal()")

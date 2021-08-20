@@ -1,12 +1,23 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 )
 
 // This file contains code for the execution engine to stack tensors
 
-func (e StdEng) StackDense(t DenseTensor, axis int, others ...DenseTensor) (retVal DenseTensor, err error) {
+var (
+	//	_ Stacker      = StdEng{}
+	_ DenseStacker = StdEng{}
+)
+
+func (e StdEng) StackDense(ctx context.Context, t DenseTensor, axis int, others ...DenseTensor) (retVal DenseTensor, err error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	opdims := t.Dims()
 	if axis >= opdims+1 {
 		err = errors.Errorf(dimMismatch, opdims+1, axis)
