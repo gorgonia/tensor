@@ -80,9 +80,15 @@ func (e StdEng) Clamp(a Tensor, min, max interface{}, opts ...FuncOpt) (retVal T
 	return
 }
 
-func (e StdEng) FMA(a, x, y Tensor) (Tensor, error) {
+func (e StdEng) FMA(ctx context.Context, a, x, y Tensor) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	return e.Mul(a, x, WithIncr(y))
 }
-func (e StdEng) FMAScalar(a Tensor, x interface{}, y Tensor) (Tensor, error) {
+func (e StdEng) FMAScalar(ctx context.Context, a Tensor, x interface{}, y Tensor) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	return e.MulScalar(a, x, true, WithIncr(y))
 }
