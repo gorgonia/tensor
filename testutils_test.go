@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"math"
 	"math/cmplx"
@@ -504,8 +505,12 @@ func (e dummyEngine2) Memcpy(dst, src Memory) error             { return e.e.Mem
 func (e dummyEngine2) Accessible(mem Memory) (Memory, error)    { return e.e.Accessible(mem) }
 func (e dummyEngine2) WorksWith(order DataOrder) bool           { return e.e.WorksWith(order) }
 
-func (e dummyEngine2) Argmax(t Tensor, axis int) (Tensor, error) { return e.e.Argmax(t, axis) }
-func (e dummyEngine2) Argmin(t Tensor, axis int) (Tensor, error) { return e.e.Argmin(t, axis) }
+func (e dummyEngine2) Argmax(ctx context.Context, t Tensor, axis int) (Tensor, error) {
+	return e.e.Argmax(ctx, t, axis)
+}
+func (e dummyEngine2) Argmin(ctx context.Context, t Tensor, axis int) (Tensor, error) {
+	return e.e.Argmin(ctx, t, axis)
+}
 
 func willerr(a *Dense, tc, eqtc dtype.TypeClass) (retVal, willFailEq bool) {
 	if eqtc == nilTC {

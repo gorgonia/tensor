@@ -1,11 +1,16 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/dtype"
 )
 
-func (e StdEng) Argmax(t Tensor, axis int) (retVal Tensor, err error) {
+func (e StdEng) Argmax(ctx context.Context, t Tensor, axis int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
 
 	switch tt := t.(type) {
 	case DenseTensor:
@@ -92,7 +97,10 @@ func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err e
 	return New(WithShape(newShape...), WithBacking(indices)), nil
 }
 
-func (e StdEng) Argmin(t Tensor, axis int) (retVal Tensor, err error) {
+func (e StdEng) Argmin(ctx context.Context, t Tensor, axis int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
 
 	switch tt := t.(type) {
 	case DenseTensor:
