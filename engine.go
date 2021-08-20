@@ -222,7 +222,7 @@ type OuterProder interface {
 
 // Dotter is used to implement sparse matrices
 type Dotter interface {
-	Dot(ctx context.Context, a, b Tensor) (Tensor, error)
+	Dot(a, b Tensor, opts ...FuncOpt) (Tensor, error)
 }
 
 // SVDer is any engine that can perform SVD
