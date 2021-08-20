@@ -6,9 +6,14 @@ import (
 	"gorgonia.org/tensor/internal/execution"
 )
 
+// stdDenseEng is the default execution engine for dense tensor operations.
+type stdDenseEng struct {
+	execution.E
+}
+
 // StdEng is the default execution engine that comes with the tensors. To use other execution engines, use the WithEngine construction option.
 type StdEng struct {
-	execution.E
+	stdDenseEng
 }
 
 // makeArray allocates a slice for the array
