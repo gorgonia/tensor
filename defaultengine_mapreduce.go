@@ -181,7 +181,11 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 	return
 }
 
-func (e StdEng) Sum(a Tensor, along ...int) (retVal Tensor, err error) {
+func (e StdEng) Sum(ctx context.Context, a Tensor, along ...int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a2 := a
 	if v, ok := a.(View); ok && v.IsMaterializable() {
 		a2 = v.Materialize()
@@ -189,7 +193,11 @@ func (e StdEng) Sum(a Tensor, along ...int) (retVal Tensor, err error) {
 	return e.reduce("Sum", execution.MonotonicSum, execution.SumMethods, a2, along...)
 }
 
-func (e StdEng) Min(a Tensor, along ...int) (retVal Tensor, err error) {
+func (e StdEng) Min(ctx context.Context, a Tensor, along ...int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a2 := a
 	if v, ok := a.(View); ok && v.IsMaterializable() {
 		a2 = v.Materialize()
@@ -197,7 +205,11 @@ func (e StdEng) Min(a Tensor, along ...int) (retVal Tensor, err error) {
 	return e.reduce("Min", execution.MonotonicMin, execution.MinMethods, a2, along...)
 }
 
-func (e StdEng) Max(a Tensor, along ...int) (retVal Tensor, err error) {
+func (e StdEng) Max(ctx context.Context, a Tensor, along ...int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a2 := a
 	if v, ok := a.(View); ok && v.IsMaterializable() {
 		a2 = v.Materialize()
