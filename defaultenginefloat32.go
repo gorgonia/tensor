@@ -127,7 +127,11 @@ func (e Float32Engine) makeArray(arr *array, t dtype.Dtype, size int) {
 	arr.t = t
 }
 
-func (e Float32Engine) FMA(a, x, y Tensor) (retVal Tensor, err error) {
+func (e Float32Engine) FMA(ctx context.Context, a, x, y Tensor) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	reuse := y
 	if err = e.checkThree(a, x, reuse); err != nil {
 		return nil, errors.Wrap(err, "Failed checks")
@@ -150,7 +154,11 @@ func (e Float32Engine) FMA(a, x, y Tensor) (retVal Tensor, err error) {
 	return
 }
 
-func (e Float32Engine) FMAScalar(a Tensor, x interface{}, y Tensor) (retVal Tensor, err error) {
+func (e Float32Engine) FMAScalar(ctx context.Context, a Tensor, x interface{}, y Tensor) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	reuse := y
 	if err = e.checkTwo(a, reuse); err != nil {
 		return nil, errors.Wrap(err, "Failed checks")
@@ -228,9 +236,7 @@ func (e Float32Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 	return
 }
 
-func (e Float32Engine) Inner(a, b Tensor, opts ...FuncOpt) (retVal float32, err error) {
-	fo := ParseFuncOpts(opts...)
-	ctx := fo.Context()
+func (e Float32Engine) Inner(ctx context.Context, a, b Tensor) (retVal float32, err error) {
 	if err = handleCtx(ctx); err != nil {
 		return 0, err // this err will be noopError{}, no need to wrap.
 	}

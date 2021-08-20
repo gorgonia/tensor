@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
@@ -10,7 +11,11 @@ import (
 )
 
 //  Trace returns the trace of a matrix (i.e. the sum of the diagonal elements). If the Tensor provided is not a matrix, it will return an error
-func (e StdEng) Trace(t Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
+func (e StdEng) Trace(ctx context.Context, t Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	if t.Dims() != 2 {
 		err = errors.Errorf(dimMismatch, 2, t.Dims())
 		return
@@ -119,6 +124,12 @@ func (e StdEng) Trace(t Tensor, opts ...FuncOpt) (retVal interface{}, err error)
 }
 
 func (e StdEng) Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
+	fo := ParseFuncOpts(opts...)
+	ctx := fo.Context()
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	if _, ok := x.(DenseTensor); !ok {
 		err = errors.Errorf("Engine only supports working on x that is a DenseTensor. Got %T instead", x)
 		return
@@ -138,8 +149,6 @@ func (e StdEng) Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 		err = errors.Wrapf(err, opFail, "Dot")
 		return
 	}
-
-	fo := ParseFuncOpts(opts...)
 
 	var reuse, incr DenseTensor
 	if reuse, err = getFloatDenseTensor(fo.reuse); err != nil {
@@ -212,7 +221,7 @@ func (e StdEng) Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 				return
 			}
 			var ret interface{}
-			if ret, err = e.Inner(a, b); err != nil {
+			if ret, err = e.Inner(ctx, a, b); err != nil {
 				return nil, errors.Wrapf(err, opFail, "Dot")
 			}
 			return New(FromScalar(ret)), nil
@@ -309,7 +318,11 @@ func (e StdEng) Dot(x, y Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 }
 
 // TODO: make it take DenseTensor
-func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
+func (e StdEng) SVD(ctx context.Context, a Tensor, uv, full bool) (s, u, v Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, nil, nil, err
+	}
+
 	var t *Dense
 	var ok bool
 	if err = e.checkAccessible(a); err != nil {
@@ -372,9 +385,7 @@ func (e StdEng) SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error) {
 
 // Inner is a thin layer over BLAS's D/Sdot.
 // It returns a scalar value, wrapped in an interface{}, which is not quite nice.
-func (e StdEng) Inner(a, b Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
-	fo := ParseFuncOpts(opts...)
-	ctx := fo.Context()
+func (e StdEng) Inner(ctx context.Context, a, b Tensor) (retVal interface{}, err error) {
 	if err = handleCtx(ctx); err != nil {
 		return nil, err // this err will be noopError{}, no need to wrap.
 	}
@@ -405,7 +416,11 @@ func (e StdEng) Inner(a, b Tensor, opts ...FuncOpt) (retVal interface{}, err err
 // Because DGEMV computes:
 // 		y = αA * x + βy
 // we set beta to 0, so we don't have to manually zero out the reused/retval tensor data
-func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
+func (e StdEng) MatVecMul(ctx context.Context, a, b, prealloc Tensor) (err error) {
+	if err := handleCtx(ctx); err != nil {
+		return err
+	}
+
 	// check all are DenseTensors
 	var ad, bd, pd DenseTensor
 	if ad, bd, pd, err = e.checkThreeFloatComplexTensors(a, b, prealloc); err != nil {
@@ -477,7 +492,11 @@ func (e StdEng) MatVecMul(a, b, prealloc Tensor) (err error) {
 // DGEMM computes:
 //		C = αA * B +  βC
 // To prevent needless zeroing out of the slice, we just set β to 0
-func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
+func (e StdEng) MatMul(ctx context.Context, a, b, prealloc Tensor) (err error) {
+	if err := handleCtx(ctx); err != nil {
+		return err
+	}
+
 	// check all are DenseTensors
 	var ad, bd, pd DenseTensor
 	if ad, bd, pd, err = e.checkThreeFloatComplexTensors(a, b, prealloc); err != nil {
@@ -585,7 +604,11 @@ func (e StdEng) MatMul(a, b, prealloc Tensor) (err error) {
 }
 
 // Outer is a thin wrapper over S/Dger
-func (e StdEng) Outer(a, b, prealloc Tensor) (err error) {
+func (e StdEng) Outer(ctx context.Context, a, b, prealloc Tensor) (err error) {
+	if err = handleCtx(ctx); err != nil {
+		return err
+	}
+
 	// check all are DenseTensors
 	var ad, bd, pd DenseTensor
 	if ad, bd, pd, err = e.checkThreeFloatComplexTensors(a, b, prealloc); err != nil {
