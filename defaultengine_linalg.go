@@ -636,7 +636,7 @@ func (e StdEng) Outer(ctx context.Context, a, b, prealloc Tensor) (err error) {
 			return err
 		}
 
-		if err = e.MatMul(a, b, prealloc); err != nil {
+		if err = e.MatMul(ctx, a, b, prealloc); err != nil {
 			return err
 		}
 

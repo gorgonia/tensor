@@ -413,12 +413,12 @@ type InfChecker interface {
 
 // ByIndiceser allows for values in tensor `a` to be selected by the indices listed in the `indices` tensor.
 type ByIndiceser interface {
-	SelectByIndices(ctx context.Context, a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-	SelectByIndicesB(ctx context.Context, a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+	SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+	SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
 }
 
 type Scatterer interface {
-	Scatter(ctx context.Context, a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error)
+	Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error)
 }
 
 /* Internal interfaces for faster shit */
