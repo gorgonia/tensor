@@ -10,7 +10,7 @@ func (t *Dense) Argmax(axis int) (retVal *Dense, err error) {
 	ctx := ctxFromEngine(e)
 	switch am := e.(type) {
 	case denseArgmaxer:
-		return am.argmaxDenseTensor(t, axis)
+		return am.argmaxDenseTensor(ctx, t, axis)
 	case Argmaxer:
 		var ret Tensor
 		var ok bool
@@ -33,7 +33,7 @@ func (t *Dense) Argmin(axis int) (retVal *Dense, err error) {
 	ctx := ctxFromEngine(e)
 	switch am := e.(type) {
 	case denseArgminer:
-		return am.argminDenseTensor(t, axis)
+		return am.argminDenseTensor(ctx, t, axis)
 	case Argminer:
 		var ret Tensor
 		var ok bool

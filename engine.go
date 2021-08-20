@@ -424,9 +424,9 @@ type Scatterer interface {
 /* Internal interfaces for faster shit */
 
 type denseArgmaxer interface {
-	argmaxDenseTensor(t DenseTensor, axis int) (*Dense, error)
+	argmaxDenseTensor(ctx context.Context, t DenseTensor, axis int) (*Dense, error)
 }
 
 type denseArgminer interface {
-	argminDenseTensor(t DenseTensor, axis int) (*Dense, error)
+	argminDenseTensor(ctx context.Context, t DenseTensor, axis int) (*Dense, error)
 }
