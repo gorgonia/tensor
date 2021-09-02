@@ -644,7 +644,7 @@ func Inner(a, b Tensor, opts ...FuncOpt) (retVal interface{}, err error) {
 	switch at := a.(type) {
 	case *Dense:
 		bt := b.(*Dense)
-		return at.Inner(bt, opts...)
+		return at.Inner(bt)
 	}
 	panic("Unreachable")
 }
