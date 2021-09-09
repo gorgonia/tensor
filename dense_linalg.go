@@ -159,12 +159,6 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 
 // Outer finds the outer product of two vectors
 func (t *Dense) Outer(other Tensor, opts ...FuncOpt) (retVal *Dense, err error) {
-	// check both are vectors
-	if !t.Shape().IsVector() || !other.Shape().IsVector() {
-		err = errors.Errorf("Outer only works when there are two vectors. t's shape: %v. other's shape: %v", t.Shape(), other.Shape())
-		return
-	}
-
 	m := t.Size()
 	n := other.Size()
 

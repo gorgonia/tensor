@@ -131,7 +131,9 @@ func (t *Dense) SetAt(v interface{}, coords ...int) error {
 		return errors.Errorf(inaccessibleData, t)
 	}
 
-	if len(coords) != t.Dims() {
+	switch {
+	case t.IsScalar() && len(coords) == 1:
+	case len(coords) != t.Dims():
 		return errors.Errorf(dimMismatch, t.Dims(), len(coords))
 	}
 

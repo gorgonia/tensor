@@ -334,6 +334,16 @@ type InvSqrter interface {
 	InvSqrt(a Tensor, opts ...FuncOpt) (Tensor, error)
 }
 
+// Expm1er is any engine that can perform expm1 on the values of a Tensor.
+type Expm1er interface {
+	Expm1(a Tensor, opts ...FuncOpt) (Tensor, error)
+}
+
+// Log1per is any engine that can perform log1p on the values of a Tensor.
+type Log1per interface {
+	Log1p(a Tensor, opts ...FuncOpt) (Tensor, error)
+}
+
 // Signer is any engine that can perform a sign function on the values of a Tensor.
 type Signer interface {
 	Sign(a Tensor, opts ...FuncOpt) (Tensor, error)
