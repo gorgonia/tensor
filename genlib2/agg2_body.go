@@ -379,7 +379,7 @@ const agg2MinMaxBodyRaw = `// check to see if anything needs to be created
 			return
 		case same && safe && reuse != nil && !leftTensor:
 			storage.Copy(typ,dataReuse,dataB)
-			err = e.E.{{.Inv}}(typ, dataReuse, dataA)
+			err = e.E.{{.Name}}(typ, dataReuse, dataA)
 			retVal = reuse
 			return
 		}
@@ -389,7 +389,7 @@ const agg2MinMaxBodyRaw = `// check to see if anything needs to be created
 	// standard
 	switch {
 		case !safe && same && reuse == nil:
-			err = e.E.{{.Name}}Same(typ, dataA, dataB)
+			err = e.E.{{.Name}}(typ, dataA, dataB)
 			retVal = a
 		{{if .VV -}}
 		case same && safe && reuse != nil:
