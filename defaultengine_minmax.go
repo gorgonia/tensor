@@ -7,6 +7,11 @@ import (
 	"gorgonia.org/tensor/internal/storage"
 )
 
+var (
+	_ MinBetweener = StdEng{}
+	_ MaxBetweener = StdEng{}
+)
+
 func (e StdEng) MinBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, ordTypes); err != nil {
 		return nil, errors.Wrapf(err, "MinBetween failed")

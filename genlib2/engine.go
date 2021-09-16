@@ -317,6 +317,7 @@ func (fn *EngineMinMax) Write(w io.Writer) {
 	fn.WriteBody(w)
 	w.Write([]byte("}\n\n"))
 }
+
 func generateStdEngMinMax(f io.Writer, ak Kinds) {
 	methods := []*EngineMinMax{
 		&EngineMinMax{
@@ -330,7 +331,11 @@ func generateStdEngMinMax(f io.Writer, ak Kinds) {
 			TypeClassCheck: "Ord",
 		},
 	}
-
+	f.Write([]byte(`var (
+	_ MinBetweener = StdEng{}
+	_ MaxBetweener = StdEng{}
+)
+`))
 	// VV
 	for _, meth := range methods {
 		meth.Write(f)
