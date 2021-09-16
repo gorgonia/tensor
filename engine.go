@@ -44,6 +44,8 @@ type standardEngine interface {
 	Gter
 	Gteer
 	ElEqer
+	MinBetweener
+	MaxBetweener
 
 	// Anything that returns interface{} cannot be added here because they will likely have additional
 	// optimized versions of the functions for types.
@@ -155,6 +157,20 @@ type Moder interface {
 	// ModScalar performs a % b where one of the operands is scalar. leftTensor indicates if the tensor is the left operand.
 	// Whether or not hte input tensor is clobbered is left to the implementation
 	ModScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+}
+
+// MinBetweener is any engine that can perform an elementwise min=between.
+type MinBetweener interface {
+	MinBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+
+	MinBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+}
+
+// MaxBetweener is any engine that can perform an elementwise ma<x-between.
+type MaxBetweener interface {
+	MaxBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+
+	MaxBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
 }
 
 /* LINEAR ALGEBRA INTERFACES */

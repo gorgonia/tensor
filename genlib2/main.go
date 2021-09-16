@@ -73,6 +73,7 @@ func main() {
 	pipeline(execLoc, "eng_arith.go", Kinds{allKinds}, generateEArith)
 	pipeline(execLoc, "eng_map.go", Kinds{allKinds}, generateEMap)
 	pipeline(execLoc, "eng_cmp.go", Kinds{allKinds}, generateECmp)
+	pipeline(execLoc, "eng_minmaxbetween.go", Kinds{allKinds}, generateEMinMaxBetween)
 	pipeline(execLoc, "eng_reduce.go", Kinds{allKinds}, generateEReduce)
 	pipeline(execLoc, "eng_unary.go", Kinds{allKinds}, generateUncondEUnary, generateCondEUnary, generateSpecialEUnaries)
 	pipeline(execLoc, "reduction_specialization.go", Kinds{allKinds}, generateReductionSpecialization)
@@ -82,6 +83,7 @@ func main() {
 	pipeline(tensorPkgLoc, "defaultengine_arith.go", Kinds{allKinds}, generateStdEngArith)
 	pipeline(tensorPkgLoc, "defaultengine_cmp.go", Kinds{allKinds}, generateStdEngCmp)
 	pipeline(tensorPkgLoc, "defaultengine_unary.go", Kinds{allKinds}, generateStdEngUncondUnary, generateStdEngCondUnary)
+	pipeline(tensorPkgLoc, "defaultengine_minmax.go", Kinds{allKinds}, generateStdEngMinMax)
 
 	// level 3 aggregation
 	pipeline(tensorPkgLoc, "dense_arith.go", Kinds{allKinds}, generateDenseArith)
