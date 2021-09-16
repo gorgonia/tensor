@@ -19,6 +19,12 @@ const arithPrepRaw = `var safe, toReuse, incr bool
 	}
 `
 
+const minmaxPrepRaw = `var safe bool
+	if reuse, safe, _, _, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
+		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+`
+
 const prepVVRaw = `if err = binaryCheck(a, b, {{.TypeClassCheck | lower}}Types); err != nil {
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
@@ -332,24 +338,24 @@ const agg2MinMaxBodyRaw = `// check to see if anything needs to be created
 
 	if useIter {
 		switch {
-		case !safe && same && reuse == nil:
+		case !safe && reuse == nil:
 			err = e.E.{{.Name}}Iter(typ, dataA, dataB, ait, bit)
 			retVal = a
 		{{if .VV -}}
-		case same && safe && reuse != nil:
+		case  safe && reuse != nil:
 			storage.CopyIter(typ,dataReuse,dataA, iit, ait)
 			ait.Reset()
 			iit.Reset()
 			err = e.E.{{.Name}}Iter(typ, dataReuse, dataB, iit, bit)
 			retVal = reuse
 		{{else -}}
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.CopyIter(typ,dataReuse,dataB, iit, bit)
 			bit.Reset()
 			iit.Reset()
 			err = e.E.{{.Name}}Iter(typ, dataA, dataReuse, ait, bit)
 			retVal = reuse
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.CopyIter(typ,dataReuse,dataA, iit, ait)
 			ait.Reset()
 			iit.Reset()
@@ -372,12 +378,12 @@ const agg2MinMaxBodyRaw = `// check to see if anything needs to be created
 	// handle special case where A and B have both len 1
 	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.Copy(typ,dataReuse,dataA)
 			err = e.E.{{.Name}}(typ, dataReuse, dataB)
 			retVal = reuse
 			return
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.Copy(typ,dataReuse,dataB)
 			err = e.E.{{.Name}}(typ, dataReuse, dataA)
 			retVal = reuse
@@ -388,20 +394,20 @@ const agg2MinMaxBodyRaw = `// check to see if anything needs to be created
 
 	// standard
 	switch {
-		case !safe && same && reuse == nil:
+		case !safe  && reuse == nil:
 			err = e.E.{{.Name}}(typ, dataA, dataB)
 			retVal = a
 		{{if .VV -}}
-		case same && safe && reuse != nil:
+		case  safe && reuse != nil:
 			storage.Copy(typ,dataReuse,dataA)
 			err = e.E.{{.Name}}(typ, dataReuse, dataB)
 			retVal = reuse
 		{{else -}}
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.Copy(typ,dataReuse,dataA)
 			err = e.E.{{.Name}}(typ, dataReuse, dataB)
 			retVal = reuse
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.Copy(typ,dataReuse,dataB)
 			err = e.E.{{.Name}}(typ, dataA, dataReuse)
 			retVal = reuse

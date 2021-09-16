@@ -290,7 +290,7 @@ func (fn *EngineMinMax) WriteBody(w io.Writer) {
 		fn.PrepData = "prepDataSV"
 		prep = prepMixed
 	}
-	template.Must(prep.New("prep").Parse(cmpPrepRaw))
+	template.Must(prep.New("prep").Parse(minmaxPrepRaw))
 	prep.Execute(w, fn)
 	agg2MinMaxBody.Execute(w, fn)
 }

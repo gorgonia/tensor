@@ -18,12 +18,9 @@ func (e StdEng) MinBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 	}
 
 	var reuse DenseTensor
-	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
+	var safe bool
+	if reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
-	}
-	if !safe {
-		same = true
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -47,10 +44,10 @@ func (e StdEng) MinBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	if useIter {
 		switch {
-		case !safe && same && reuse == nil:
+		case !safe && reuse == nil:
 			err = e.E.MinBetweenIter(typ, dataA, dataB, ait, bit)
 			retVal = a
-		case same && safe && reuse != nil:
+		case safe && reuse != nil:
 			storage.CopyIter(typ, dataReuse, dataA, iit, ait)
 			ait.Reset()
 			iit.Reset()
@@ -64,10 +61,10 @@ func (e StdEng) MinBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	// standard
 	switch {
-	case !safe && same && reuse == nil:
+	case !safe && reuse == nil:
 		err = e.E.MinBetween(typ, dataA, dataB)
 		retVal = a
-	case same && safe && reuse != nil:
+	case safe && reuse != nil:
 		storage.Copy(typ, dataReuse, dataA)
 		err = e.E.MinBetween(typ, dataReuse, dataB)
 		retVal = reuse
@@ -83,12 +80,9 @@ func (e StdEng) MaxBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 	}
 
 	var reuse DenseTensor
-	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
+	var safe bool
+	if reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
-	}
-	if !safe {
-		same = true
 	}
 	typ := a.Dtype().Type
 	var dataA, dataB, dataReuse *storage.Header
@@ -112,10 +106,10 @@ func (e StdEng) MaxBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	if useIter {
 		switch {
-		case !safe && same && reuse == nil:
+		case !safe && reuse == nil:
 			err = e.E.MaxBetweenIter(typ, dataA, dataB, ait, bit)
 			retVal = a
-		case same && safe && reuse != nil:
+		case safe && reuse != nil:
 			storage.CopyIter(typ, dataReuse, dataA, iit, ait)
 			ait.Reset()
 			iit.Reset()
@@ -129,10 +123,10 @@ func (e StdEng) MaxBetween(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	// standard
 	switch {
-	case !safe && same && reuse == nil:
+	case !safe && reuse == nil:
 		err = e.E.MaxBetween(typ, dataA, dataB)
 		retVal = a
-	case same && safe && reuse != nil:
+	case safe && reuse != nil:
 		storage.Copy(typ, dataReuse, dataA)
 		err = e.E.MaxBetween(typ, dataReuse, dataB)
 		retVal = reuse
@@ -152,12 +146,9 @@ func (e StdEng) MinBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 	}
 
 	var reuse DenseTensor
-	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
+	var safe bool
+	if reuse, safe, _, _, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
-	}
-	if !safe {
-		same = true
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -188,16 +179,16 @@ func (e StdEng) MinBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 
 	if useIter {
 		switch {
-		case !safe && same && reuse == nil:
+		case !safe && reuse == nil:
 			err = e.E.MinBetweenIter(typ, dataA, dataB, ait, bit)
 			retVal = a
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.CopyIter(typ, dataReuse, dataB, iit, bit)
 			bit.Reset()
 			iit.Reset()
 			err = e.E.MinBetweenIter(typ, dataA, dataReuse, ait, bit)
 			retVal = reuse
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.CopyIter(typ, dataReuse, dataA, iit, ait)
 			ait.Reset()
 			iit.Reset()
@@ -216,12 +207,12 @@ func (e StdEng) MinBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 	// handle special case where A and B have both len 1
 	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
 			err = e.E.MinBetween(typ, dataReuse, dataB)
 			retVal = reuse
 			return
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.Copy(typ, dataReuse, dataB)
 			err = e.E.MinBetween(typ, dataReuse, dataA)
 			retVal = reuse
@@ -230,14 +221,14 @@ func (e StdEng) MinBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 	}
 	// standard
 	switch {
-	case !safe && same && reuse == nil:
+	case !safe && reuse == nil:
 		err = e.E.MinBetween(typ, dataA, dataB)
 		retVal = a
-	case same && safe && reuse != nil && leftTensor:
+	case safe && reuse != nil && leftTensor:
 		storage.Copy(typ, dataReuse, dataA)
 		err = e.E.MinBetween(typ, dataReuse, dataB)
 		retVal = reuse
-	case same && safe && reuse != nil && !leftTensor:
+	case safe && reuse != nil && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.MinBetween(typ, dataA, dataReuse)
 		retVal = reuse
@@ -261,12 +252,9 @@ func (e StdEng) MaxBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 	}
 
 	var reuse DenseTensor
-	var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), false, opts...); err != nil {
+	var safe bool
+	if reuse, safe, _, _, _, err = handleFuncOpts(t.Shape(), t.Dtype(), t.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
-	}
-	if !safe {
-		same = true
 	}
 	a := t
 	typ := t.Dtype().Type
@@ -297,16 +285,16 @@ func (e StdEng) MaxBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 
 	if useIter {
 		switch {
-		case !safe && same && reuse == nil:
+		case !safe && reuse == nil:
 			err = e.E.MaxBetweenIter(typ, dataA, dataB, ait, bit)
 			retVal = a
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.CopyIter(typ, dataReuse, dataB, iit, bit)
 			bit.Reset()
 			iit.Reset()
 			err = e.E.MaxBetweenIter(typ, dataA, dataReuse, ait, bit)
 			retVal = reuse
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.CopyIter(typ, dataReuse, dataA, iit, ait)
 			ait.Reset()
 			iit.Reset()
@@ -325,12 +313,12 @@ func (e StdEng) MaxBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 	// handle special case where A and B have both len 1
 	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
 		switch {
-		case same && safe && reuse != nil && leftTensor:
+		case safe && reuse != nil && leftTensor:
 			storage.Copy(typ, dataReuse, dataA)
 			err = e.E.MaxBetween(typ, dataReuse, dataB)
 			retVal = reuse
 			return
-		case same && safe && reuse != nil && !leftTensor:
+		case safe && reuse != nil && !leftTensor:
 			storage.Copy(typ, dataReuse, dataB)
 			err = e.E.MaxBetween(typ, dataReuse, dataA)
 			retVal = reuse
@@ -339,14 +327,14 @@ func (e StdEng) MaxBetweenScalar(t Tensor, s interface{}, leftTensor bool, opts 
 	}
 	// standard
 	switch {
-	case !safe && same && reuse == nil:
+	case !safe && reuse == nil:
 		err = e.E.MaxBetween(typ, dataA, dataB)
 		retVal = a
-	case same && safe && reuse != nil && leftTensor:
+	case safe && reuse != nil && leftTensor:
 		storage.Copy(typ, dataReuse, dataA)
 		err = e.E.MaxBetween(typ, dataReuse, dataB)
 		retVal = reuse
-	case same && safe && reuse != nil && !leftTensor:
+	case safe && reuse != nil && !leftTensor:
 		storage.Copy(typ, dataReuse, dataB)
 		err = e.E.MaxBetween(typ, dataA, dataReuse)
 		retVal = reuse
