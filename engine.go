@@ -157,6 +157,20 @@ type Moder interface {
 	ModScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
 }
 
+// MinBetweener is any engine that can perform an elementwise min=between.
+type MinBetweener interface {
+	MinBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+
+	MinBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+}
+
+// MaxBetweener is any engine that can perform an elementwise max-between.
+type MaxBetweener interface {
+	MaxBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+
+	MaxBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+}
+
 /* LINEAR ALGEBRA INTERFACES */
 
 // Tracer is any engine that can return the trace (aka the sum of the diagonal elements).
