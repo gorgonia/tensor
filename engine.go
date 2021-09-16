@@ -44,6 +44,8 @@ type standardEngine interface {
 	Gter
 	Gteer
 	ElEqer
+	MinBetweener
+	MaxBetweener
 
 	// Anything that returns interface{} cannot be added here because they will likely have additional
 	// optimized versions of the functions for types.
@@ -164,7 +166,7 @@ type MinBetweener interface {
 	MinBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
 }
 
-// MaxBetweener is any engine that can perform an elementwise max-between.
+// MaxBetweener is any engine that can perform an elementwise ma<x-between.
 type MaxBetweener interface {
 	MaxBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
 
