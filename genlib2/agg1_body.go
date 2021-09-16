@@ -350,6 +350,59 @@ const (
 		return errors.Errorf("Unsupported type %v for {{$name}}", t)
 	}
 	`
+	eMinMaxSameRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
+	{{$name := .Name}}
+	switch t {
+		{{range .Kinds -}}
+		{{if isOrd . -}}
+		case {{reflectKind .}}:
+			at := a.{{sliceOf .}}
+			bt := b.{{sliceOf .}}
+			switch {
+			case as && bs:
+				Vec{{$name}}{{short .}}(at, bt)
+			case as && !bs:
+				{{$name}}SV{{short .}}(at[0], bt)
+			case !as && bs:
+				{{$name}}VS{{short .}}(at, bt[0])
+			default:
+				Vec{{$name}}{{short .}}(at, bt)
+			}
+			return
+		{{end -}}
+		{{end -}}
+		default:
+		return errors.Errorf("Unsupported type %v for {{$name}}", t)
+	}
+	`
+
+	eMinMaxSameIterRaw = `as := isScalar(a, t)
+	bs := isScalar(b, t)
+	{{$name := .Name}}
+	switch t {
+		{{range .Kinds -}}
+		{{if isOrd . -}}
+	case {{reflectKind .}}:
+		at := a.{{sliceOf .}}
+		bt := b.{{sliceOf .}}
+		switch {
+		case as && bs :
+			Vec{{$name}}{{short .}}(at, bt)
+		case as && !bs:
+			{{$name}}IterSV{{short .}}(at[0], bt, bit)
+		case !as && bs:
+			{{$name}}IterVS{{short .}}(at, bt[0], ait)
+		default:
+			Vec{{$name}}Iter{{short .}}(at, bt, ait, bit)
+		}
+		return
+		{{end -}}
+		{{end -}}
+	default:
+		return errors.Errorf("Unsupported type %v for {{$name}}", t)
+	}
+	`
 
 	complexAbs = `{{if eq .Kind.String "complex64" -}}
 	{{else if eq .Kind.String "complex128" -}}
@@ -597,6 +650,9 @@ var (
 	eCmpBoolIter *template.Template
 	eCmpSameIter *template.Template
 
+	eMinMaxSame *template.Template
+	eMinMaxIter *template.Template
+
 	eReduce        *template.Template
 	eReduceFirst   *template.Template
 	eReduceLast    *template.Template
@@ -626,6 +682,9 @@ func init() {
 	eCmpSame = template.Must(template.New("eCmpSame").Funcs(funcs).Parse(eCmpSameRaw))
 	eCmpBoolIter = template.Must(template.New("eCmpBoolIter").Funcs(funcs).Parse(eCmpBoolIterRaw))
 	eCmpSameIter = template.Must(template.New("eCmpSameIter").Funcs(funcs).Parse(eCmpSameIterRaw))
+
+	eMinMaxSame = template.Must(template.New("eMinMaxSame").Funcs(funcs).Parse(eMinMaxSameRaw))
+	eMinMaxIter = template.Must(template.New("eMinMaxSameIter").Funcs(funcs).Parse(eMinMaxSameIterRaw))
 
 	eReduce = template.Must(template.New("eReduce").Funcs(funcs).Parse(eReduceRaw))
 	eReduceFirst = template.Must(template.New("eReduceFirst").Funcs(funcs).Parse(eReduceFirstRaw))
