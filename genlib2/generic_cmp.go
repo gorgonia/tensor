@@ -394,6 +394,23 @@ const genericElMinMaxRaw = `func VecMin{{short . | title}}(a, b []{{asType .}}) 
 		}
 	}
 }
+
+func MinSV{{short . | title}}(a {{asType .}}, b []{{asType .}}){
+	for i := range b {
+		if a < b[i]{
+			b[i] = a
+		}
+	}
+}
+
+func MinVS{{short . | title}}(a []{{asType .}}, b {{asType .}}){
+	for i := range a {
+		if b < a[i]{
+			a[i] = b
+		}
+	}
+}
+
 func VecMax{{short . | title}}(a, b []{{asType .}}) {
 	a = a[:len(a)]
 	b = b[:len(a)]
@@ -404,6 +421,138 @@ func VecMax{{short . | title}}(a, b []{{asType .}}) {
 		}
 	}
 }
+
+
+
+func MaxSV{{short . | title}}(a {{asType .}}, b []{{asType .}}){
+	for i := range b {
+		if a > b[i]{
+			b[i] = a
+		}
+	}
+}
+
+func MaxVS{{short . | title}}(a []{{asType .}}, b {{asType .}}){
+	for i := range a {
+		if b > a[i]{
+			a[i] = b
+		}
+	}
+}
+`
+
+// Iter Min/Max
+const genericIterMinMaxRaw = `func MinIterSV{{short . | title}}(a {{asType .}}, b []{{asType .}}, bit Iterator) (err error){
+	var i int
+	var validi bool
+	for {
+		if i, validi, err = bit.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if validi {
+			if a < b[i] {
+				b[i] = a
+			}
+		}
+	}
+	return
+}
+
+func MinIterVS{{short . | title}}(a []{{asType .}}, b {{asType .}}, ait Iterator) (err error){
+	var i int
+	var validi bool
+	for {
+		if i, validi, err = ait.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if validi {
+			if b < a[i] {
+				a[i] = b
+			}
+		}
+	}
+	return
+}
+
+func VecMinIter{{short . | title}}(a , b []{{asType .}}, ait, bit Iterator) (err error){
+	var i,j int
+	var validi ,validj bool
+	for {
+		if i, validi, err = ait.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if j, validj, err = bit.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if validi && validj {
+			if b[j] < a[i] {
+				a[i] = b[j]
+			}
+		}
+	}
+	return
+}
+
+
+func MaxIterSV{{short . | title}}(a {{asType .}}, b []{{asType .}}, bit Iterator) (err error){
+	var i int
+	var validi bool
+	for {
+		if i, validi, err = bit.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if validi {
+			if a > b[i] {
+				b[i] = a
+			}
+		}
+	}
+	return
+}
+
+func MaxIterVS{{short . | title}}(a []{{asType .}}, b {{asType .}}, ait Iterator) (err error){
+	var i int
+	var validi bool
+	for {
+		if i, validi, err = ait.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if validi {
+			if b > a[i] {
+				a[i] = b
+			}
+		}
+	}
+	return
+}
+
+func VecMaxIter{{short . | title}}(a , b []{{asType .}}, ait, bit Iterator) (err error){
+	var i,j int
+	var validi, validj bool
+	for {
+		if i, validi, err = ait.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if j, validj, err = bit.NextValidity(); err != nil{
+			err = handleNoOp(err)
+			break
+		}
+		if validi && validj {
+			if b[j] > a[i] {
+				a[i] = b[j]
+			}
+		}
+	}
+	return
+}
+
 `
 
 // scalar Min/Max
@@ -413,6 +562,7 @@ const genericScalarMinMaxRaw = `func Min{{short .}}(a, b {{asType .}}) (c {{asTy
 	return b
 }
 
+
 func Max{{short .}}(a, b {{asType .}}) (c {{asType .}}) {if a > b {
 	return a
 	}
@@ -421,13 +571,15 @@ func Max{{short .}}(a, b {{asType .}}) (c {{asType .}}) {if a > b {
 `
 
 var (
-	genericElMinMax *template.Template
-	genericMinMax   *template.Template
+	genericElMinMax     *template.Template
+	genericMinMax       *template.Template
+	genericElMinMaxIter *template.Template
 )
 
 func init() {
 	genericElMinMax = template.Must(template.New("genericVecVecMinMax").Funcs(funcs).Parse(genericElMinMaxRaw))
 	genericMinMax = template.Must(template.New("genericMinMax").Funcs(funcs).Parse(genericScalarMinMaxRaw))
+	genericElMinMaxIter = template.Must(template.New("genericIterMinMax").Funcs(funcs).Parse(genericIterMinMaxRaw))
 }
 
 func generateMinMax(f io.Writer, ak Kinds) {
@@ -437,5 +589,9 @@ func generateMinMax(f io.Writer, ak Kinds) {
 
 	for _, k := range filter(ak.Kinds, isOrd) {
 		genericMinMax.Execute(f, k)
+	}
+
+	for _, k := range filter(ak.Kinds, isOrd) {
+		genericElMinMaxIter.Execute(f, k)
 	}
 }
