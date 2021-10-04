@@ -28,8 +28,12 @@ const arithPrepRaw = `var safe, toReuse, incr bool
 `
 
 const minmaxPrepRaw = `var safe bool
-	if reuse, safe, _, _, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
+	var ctx context.Context
+	if ctx, reuse, safe, _, _, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err !=nil{
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 `
 

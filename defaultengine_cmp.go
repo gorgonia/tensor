@@ -16,6 +16,7 @@ import (
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Ord); err != nil {
+
 		return nil, errors.Wrapf(err, "Gt failed")
 	}
 
@@ -98,6 +99,7 @@ func (e StdEng) Gt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Ord); err != nil {
+
 		return nil, errors.Wrapf(err, "Gte failed")
 	}
 
@@ -180,6 +182,7 @@ func (e StdEng) Gte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Ord); err != nil {
+
 		return nil, errors.Wrapf(err, "Lt failed")
 	}
 
@@ -262,6 +265,7 @@ func (e StdEng) Lt(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err erro
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Ord); err != nil {
+
 		return nil, errors.Wrapf(err, "Lte failed")
 	}
 
@@ -344,6 +348,7 @@ func (e StdEng) Lte(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Eq); err != nil {
+
 		return nil, errors.Wrapf(err, "Eq failed")
 	}
 
@@ -426,6 +431,7 @@ func (e StdEng) ElEq(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err er
 // Tensors used in WithReuse has to have the same Dtype as the return value's Dtype.
 func (e StdEng) ElNe(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Eq); err != nil {
+
 		return nil, errors.Wrapf(err, "Ne failed")
 	}
 

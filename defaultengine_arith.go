@@ -14,6 +14,7 @@ import (
 // Acceptable FuncOpts are: UseUnsafe(), WithReuse(T), WithIncr(T)
 func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Number); err != nil {
+
 		return nil, errors.Wrapf(err, "Add failed")
 	}
 
@@ -83,6 +84,7 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Acceptable FuncOpts are: UseUnsafe(), WithReuse(T), WithIncr(T)
 func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Number); err != nil {
+
 		return nil, errors.Wrapf(err, "Sub failed")
 	}
 
@@ -152,6 +154,7 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Acceptable FuncOpts are: UseUnsafe(), WithReuse(T), WithIncr(T)
 func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Number); err != nil {
+
 		return nil, errors.Wrapf(err, "Mul failed")
 	}
 
@@ -221,6 +224,7 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Acceptable FuncOpts are: UseUnsafe(), WithReuse(T), WithIncr(T)
 func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Number); err != nil {
+
 		return nil, errors.Wrapf(err, "Div failed")
 	}
 
@@ -290,6 +294,7 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Acceptable FuncOpts are: UseUnsafe(), WithReuse(T), WithIncr(T)
 func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Number); err != nil {
+
 		return nil, errors.Wrapf(err, "Pow failed")
 	}
 
@@ -359,6 +364,7 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 // Acceptable FuncOpts are: UseUnsafe(), WithReuse(T), WithIncr(T)
 func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
 	if err = binaryCheck(a, b, dtype.Number); err != nil {
+
 		return nil, errors.Wrapf(err, "Mod failed")
 	}
 
