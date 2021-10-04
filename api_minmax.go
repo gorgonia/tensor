@@ -4,18 +4,18 @@ import "github.com/pkg/errors"
 
 func MinBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var minbetweener MinBetweener
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor addition
 				if oe != nil {
 					return oe.MinBetween(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.MinBetween(at, bt, opts...)
 				}
 				if minbetweener, ok = at.Engine().(MinBetweener); ok {
@@ -40,7 +40,7 @@ func MinBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.MinBetweenScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.MinBetweenScalar(at, bt, leftTensor, opts...)
 				}
 				if minbetweener, ok = at.Engine().(MinBetweener); ok {
@@ -64,7 +64,7 @@ func MinBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.MinBetweenScalar(bt, at, false, opts...)
 			}
 			if minbetweener, ok = bt.Engine().(MinBetweener); ok {
@@ -80,18 +80,18 @@ func MinBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 
 func MaxBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	var maxbetweener MaxBetweener
-	var oe standardEngine
+	var oe StandardEngine
 	var ok bool
 	switch at := a.(type) {
 	case Tensor:
-		oe = at.standardEngine()
+		oe, _ = at.Engine().(StandardEngine)
 		switch bt := b.(type) {
 		case Tensor:
 			if !bt.Shape().IsScalar() && !at.Shape().IsScalar() { // non-scalar Tensor addition
 				if oe != nil {
 					return oe.MaxBetween(at, bt, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.MaxBetween(at, bt, opts...)
 				}
 				if maxbetweener, ok = at.Engine().(MaxBetweener); ok {
@@ -116,7 +116,7 @@ func MaxBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 				if oe != nil {
 					return oe.MaxBetweenScalar(at, bt, leftTensor, opts...)
 				}
-				if oe = bt.standardEngine(); oe != nil {
+				if oe, ok = bt.Engine().(StandardEngine); ok {
 					return oe.MaxBetweenScalar(at, bt, leftTensor, opts...)
 				}
 				if maxbetweener, ok = at.Engine().(MaxBetweener); ok {
@@ -140,7 +140,7 @@ func MaxBetween(a, b interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
 	default:
 		switch bt := b.(type) {
 		case Tensor:
-			if oe = bt.standardEngine(); oe != nil {
+			if oe, ok = bt.Engine().(StandardEngine); ok {
 				return oe.MaxBetweenScalar(bt, at, false, opts...)
 			}
 			if maxbetweener, ok = bt.Engine().(MaxBetweener); ok {
