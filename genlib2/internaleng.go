@@ -308,6 +308,102 @@ func generateECmp(f io.Writer, kinds Kinds) {
 	}
 }
 
+/* MIN/MAX BETWEEN */
+
+type InternalEngMinMaxBetween struct {
+	BinOp
+	Kinds []reflect.Kind
+	Iter  bool
+}
+
+func (fn *InternalEngMinMaxBetween) Name() string {
+	name := fn.BinOp.Name()
+
+	switch {
+	case fn.Iter:
+		return fmt.Sprintf("%sBetweenIter", name)
+	default:
+		return name + "Between"
+	}
+}
+
+func (fn *InternalEngMinMaxBetween) Signature() *Signature {
+	var paramNames []string
+	var paramTemplates []*template.Template
+
+	switch {
+	case fn.Iter:
+		paramNames = []string{"t", "a", "b", "ait", "bit"}
+		paramTemplates = []*template.Template{reflectType, arrayType, arrayType, iteratorType, iteratorType}
+	default:
+		paramNames = []string{"t", "a", "b"}
+		paramTemplates = []*template.Template{reflectType, arrayType, arrayType}
+	}
+	return &Signature{
+		Name:           fn.Name(),
+		NameTemplate:   plainName,
+		ParamNames:     paramNames,
+		ParamTemplates: paramTemplates,
+
+		Err: true,
+	}
+}
+
+func (fn *InternalEngMinMaxBetween) WriteBody(w io.Writer) {
+	var T *template.Template
+
+	switch {
+	case fn.Iter:
+		T = eMinMaxIter
+	default:
+		T = eMinMaxSame
+	}
+
+	lb := eLoopBody{
+		BinOp: fn.BinOp,
+		Kinds: fn.Kinds,
+	}
+	T.Execute(w, lb)
+}
+
+func (fn *InternalEngMinMaxBetween) Write(w io.Writer) {
+	w.Write([]byte("func (e E) "))
+	sig := fn.Signature()
+	sig.Write(w)
+	w.Write([]byte("{\n"))
+	fn.WriteBody(w)
+	w.Write([]byte("}\n\n"))
+}
+
+func generateEMinMaxBetween(f io.Writer, kinds Kinds) {
+	minmaxOps := []cmpOp{cmpBinOps[0], cmpBinOps[2]} // Gt and Lt
+	minmaxOps[0].name = "Max"
+	minmaxOps[1].name = "Min"
+	var methods []*InternalEngMinMaxBetween
+	for _, bo := range minmaxOps {
+		var ks []reflect.Kind
+		for _, k := range kinds.Kinds {
+			if tc := bo.TypeClass(); tc != nil && tc(k) {
+				ks = append(ks, k)
+			}
+		}
+		meth := &InternalEngMinMaxBetween{
+			BinOp: bo,
+			Kinds: ks,
+		}
+		methods = append(methods, meth)
+	}
+
+	for _, meth := range methods {
+		meth.Write(f)
+		meth.Iter = true
+	}
+	for _, meth := range methods {
+		meth.Write(f)
+	}
+
+}
+
 /* REDUCTION */
 
 type InternalEngReduce struct {

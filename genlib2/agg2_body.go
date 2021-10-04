@@ -27,7 +27,14 @@ const arithPrepRaw = `var safe, toReuse, incr bool
 	}
 `
 
+const minmaxPrepRaw = `var safe bool
+	if reuse, safe, _, _, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
+		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+`
+
 const prepVVRaw = `if err = binaryCheck(a, b, dtype.{{.TypeClassCheck}}); err != nil {
+
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
 
@@ -324,6 +331,112 @@ const agg2CmpBodyRaw = `// check to see if anything needs to be created
 	return
 `
 
+const agg2MinMaxBodyRaw = `// check to see if anything needs to be created
+	if reuse == nil{
+		{{if .VV -}}
+		if swap{
+			reuse = NewDense(b.Dtype(), b.Shape().Clone(), WithEngine(e))
+		} else{
+			reuse = NewDense(a.Dtype(), a.Shape().Clone(), WithEngine(e))
+		}
+		{{else -}}
+		reuse = NewDense(a.Dtype(), a.Shape().Clone(), WithEngine(e))
+		{{end -}}
+		dataReuse = reuse.hdr()
+		if useIter{
+		iit = IteratorFromDense(reuse)
+		}
+	}
+
+
+	if useIter {
+		switch {
+		case !safe && reuse == nil:
+			err = e.E.{{.Name}}Iter(typ, dataA, dataB, ait, bit)
+			retVal = a
+		{{if .VV -}}
+		case  safe && reuse != nil:
+			storage.CopyIter(typ,dataReuse,dataA, iit, ait)
+			ait.Reset()
+			iit.Reset()
+			err = e.E.{{.Name}}Iter(typ, dataReuse, dataB, iit, bit)
+			retVal = reuse
+		{{else -}}
+		case safe && reuse != nil && !leftTensor:
+			storage.CopyIter(typ,dataReuse,dataB, iit, bit)
+			bit.Reset()
+			iit.Reset()
+			err = e.E.{{.Name}}Iter(typ, dataA, dataReuse, ait, bit)
+			retVal = reuse
+		case safe && reuse != nil && leftTensor:
+			storage.CopyIter(typ,dataReuse,dataA, iit, ait)
+			ait.Reset()
+			iit.Reset()
+			err = e.E.{{.Name}}Iter(typ, dataReuse, dataB, iit, bit)
+			retVal = reuse
+		{{end -}}
+		default: // safe && bool
+			panic("Unreachable")
+		}
+		{{if not .VV -}}
+		if newAlloc{
+		freeScalar(scalarHeader.Raw)
+		}
+		returnHeader(scalarHeader)
+		{{end -}}
+		return
+	}
+
+	{{if not .VV -}}
+	// handle special case where A and B have both len 1
+	if len(dataA.Raw) == int(typ.Size()) && len(dataB.Raw) == int(typ.Size()) {
+		switch {
+		case safe && reuse != nil && leftTensor:
+			storage.Copy(typ,dataReuse,dataA)
+			err = e.E.{{.Name}}(typ, dataReuse, dataB)
+			retVal = reuse
+			return
+		case safe && reuse != nil && !leftTensor:
+			storage.Copy(typ,dataReuse,dataB)
+			err = e.E.{{.Name}}(typ, dataReuse, dataA)
+			retVal = reuse
+			return
+		}
+	}
+	{{end -}}
+
+	// standard
+	switch {
+		case !safe  && reuse == nil:
+			err = e.E.{{.Name}}(typ, dataA, dataB)
+			retVal = a
+		{{if .VV -}}
+		case  safe && reuse != nil:
+			storage.Copy(typ,dataReuse,dataA)
+			err = e.E.{{.Name}}(typ, dataReuse, dataB)
+			retVal = reuse
+		{{else -}}
+		case safe && reuse != nil && leftTensor:
+			storage.Copy(typ,dataReuse,dataA)
+			err = e.E.{{.Name}}(typ, dataReuse, dataB)
+			retVal = reuse
+		case safe && reuse != nil && !leftTensor:
+			storage.Copy(typ,dataReuse,dataB)
+			err = e.E.{{.Name}}(typ, dataA, dataReuse)
+			retVal = reuse
+		{{end -}}
+		default:
+			panic("Unreachable")
+	}
+	{{if not .VV -}}
+	if newAlloc{
+		freeScalar(scalarHeader.Raw)
+	}
+	returnHeader(scalarHeader)
+	{{end -}}
+	return
+`
+
 const agg2UnaryBodyRaw = `
 	if useIter{
 		switch {
@@ -374,12 +487,13 @@ const agg2UnaryBodyRaw = `
 `
 
 var (
-	prepVV        *template.Template
-	prepMixed     *template.Template
-	prepUnary     *template.Template
-	agg2Body      *template.Template
-	agg2CmpBody   *template.Template
-	agg2UnaryBody *template.Template
+	prepVV         *template.Template
+	prepMixed      *template.Template
+	prepUnary      *template.Template
+	agg2Body       *template.Template
+	agg2CmpBody    *template.Template
+	agg2UnaryBody  *template.Template
+	agg2MinMaxBody *template.Template
 )
 
 func init() {
@@ -389,4 +503,5 @@ func init() {
 	agg2Body = template.Must(template.New("agg2body").Funcs(funcs).Parse(agg2BodyRaw))
 	agg2CmpBody = template.Must(template.New("agg2CmpBody").Funcs(funcs).Parse(agg2CmpBodyRaw))
 	agg2UnaryBody = template.Must(template.New("agg2UnaryBody").Funcs(funcs).Parse(agg2UnaryBodyRaw))
+	agg2MinMaxBody = template.Must(template.New("agg2MinMaxBody").Funcs(funcs).Parse(agg2MinMaxBodyRaw))
 }
