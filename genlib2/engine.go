@@ -237,6 +237,123 @@ func generateStdEngCmp(f io.Writer, ak Kinds) {
 	}
 }
 
+type EngineMinMax struct {
+	Name           string
+	VecVar         string
+	PrepData       string
+	TypeClassCheck string
+	Kinds          []reflect.Kind
+
+	VV      bool
+	LeftVec bool
+}
+
+func (fn *EngineMinMax) methName() string {
+	switch {
+	case fn.VV:
+		return fn.Name
+	default:
+		return fn.Name + "Scalar"
+	}
+}
+
+func (fn *EngineMinMax) Signature() *Signature {
+	var paramNames []string
+	var paramTemplates []*template.Template
+
+	switch {
+	case fn.VV:
+		paramNames = []string{"a", "b", "opts"}
+		paramTemplates = []*template.Template{tensorType, tensorType, splatFuncOptType}
+	default:
+		paramNames = []string{"t", "s", "leftTensor", "opts"}
+		paramTemplates = []*template.Template{tensorType, interfaceType, boolType, splatFuncOptType}
+	}
+	return &Signature{
+		Name:           fn.methName(),
+		NameTemplate:   plainName,
+		ParamNames:     paramNames,
+		ParamTemplates: paramTemplates,
+		Err:            false,
+	}
+}
+
+func (fn *EngineMinMax) WriteBody(w io.Writer) {
+	var prep *template.Template
+	switch {
+	case fn.VV:
+		prep = prepVV
+		fn.VecVar = "a"
+	case !fn.VV && fn.LeftVec:
+		fn.VecVar = "t"
+		fn.PrepData = "prepDataVS"
+		prep = prepMixed
+	default:
+		fn.VecVar = "t"
+		fn.PrepData = "prepDataSV"
+		prep = prepMixed
+	}
+	template.Must(prep.New("prep").Parse(minmaxPrepRaw))
+	prep.Execute(w, fn)
+	agg2MinMaxBody.Execute(w, fn)
+}
+
+func (fn *EngineMinMax) Write(w io.Writer) {
+	if tmpl, ok := cmpDocStrings[fn.methName()]; ok {
+		type tmp struct {
+			Left, Right string
+		}
+		var ds tmp
+		if fn.VV {
+			ds.Left = "a"
+			ds.Right = "b"
+		} else {
+			ds.Left = "t"
+			ds.Right = "s"
+		}
+		tmpl.Execute(w, ds)
+	}
+	sig := fn.Signature()
+	w.Write([]byte("func (e StdEng) "))
+	sig.Write(w)
+	w.Write([]byte("(retVal Tensor, err error) {\n"))
+	fn.WriteBody(w)
+	w.Write([]byte("}\n\n"))
+}
+
+func generateStdEngMinMax(f io.Writer, ak Kinds) {
+	methods := []*EngineMinMax{
+		&EngineMinMax{
+			Name:           "MinBetween",
+			VV:             true,
+			TypeClassCheck: "Ord",
+		},
+		&EngineMinMax{
+			Name:           "MaxBetween",
+			VV:             true,
+			TypeClassCheck: "Ord",
+		},
+	}
+	f.Write([]byte(`var (
+	_ MinBetweener = StdEng{}
+	_ MaxBetweener = StdEng{}
+)
+`))
+	// VV
+	for _, meth := range methods {
+		meth.Write(f)
+		meth.VV = false
+	}
+
+	// Scalar-Vector
+	for _, meth := range methods {
+		meth.Write(f)
+		meth.LeftVec = true
+	}
+}
+
+/* UNARY METHODS */
+
 type EngineUnary struct {
 	Name           string
 	TypeClassCheck string
