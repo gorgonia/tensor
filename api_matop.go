@@ -135,7 +135,7 @@ func ByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err
 	if sbi, ok := a.Engine().(ByIndiceser); ok {
 		return sbi.SelectByIndices(a, indices, axis, opts...)
 	}
-	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
+	return nil, errors.Errorf("Unable to select by indices. Engine %T does not support that.", a.Engine())
 }
 
 // ByIndicesB is the backpropagation of ByIndices.
@@ -146,5 +146,14 @@ func ByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor,
 	if sbi, ok := a.Engine().(ByIndiceser); ok {
 		return sbi.SelectByIndicesB(a, b, indices, axis, opts...)
 	}
-	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
+	return nil, errors.Errorf("Unable to select by indices. Engine %T does not support that.", a.Engine())
+}
+
+// LogSoftMax applies log softmax to the given tensor.
+func LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := x.Engine().(softMaxer); ok {
+		return sm.LogSoftMax(x, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply LogSoftMax. Engine %T does not support that.", x.Engine())
 }

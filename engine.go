@@ -422,3 +422,7 @@ type denseArgmaxer interface {
 type denseArgminer interface {
 	argminDenseTensor(t DenseTensor, axis int) (*Dense, error)
 }
+
+type softMaxer interface {
+	LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+}
