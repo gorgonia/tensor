@@ -228,8 +228,8 @@ func (e StdEng) selectByIndicesB(axis int, indices []int, typ reflect.Type, data
 	for i, idx := range indices {
 		dstCoord[axis] = idx
 		srcCoord[axis] = i
-		dstStart, _ := Ltoi(apB.shape, apB.strides, dstCoord...)
-		start, _ := Ltoi(apRet.shape, apRet.strides, srcCoord...)
+		dstStart, _ := Ltoi(apRet.shape, apRet.strides, dstCoord...)
+		start, _ := Ltoi(apB.shape, apB.strides, srcCoord...)
 
 		for o := 0; o < outer; o++ {
 			dstEnd := dstStart + axStride
