@@ -18,6 +18,40 @@ func resolveAxis(axis int, dims int) int {
 	return res
 }
 
+func (e StdEng) SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	axis = resolveAxis(axis, x.Dims())
+	expectedShape := x.Shape().Clone()
+
+	var reuse DenseTensor
+	var safe, toReuse, _ bool
+	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, x.Dtype(), x.DataOrder(), true, opts...); err != nil {
+		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if safe || !toReuse && reuse == nil && safe {
+		// create reuse
+		reuse = New(WithShape(expectedShape...), Of(x.Dtype()))
+	}
+
+	switch x.Dtype() {
+	case Float32:
+		if expectedShape.Dims()-1 == axis {
+			e.softMaxLastDimF32(reuse, x, axis, false)
+		} else {
+			e.softMaxInnerDimF32(reuse, x, axis, false)
+		}
+	case Float64:
+		if expectedShape.Dims()-1 == axis {
+			e.softMaxLastDimF64(reuse, x, axis, false)
+		} else {
+			e.softMaxInnerDimF64(reuse, x, axis, false)
+		}
+	default:
+		return nil, fmt.Errorf("type %v not supported", x.Dtype())
+	}
+
+	return reuse, nil
+}
+
 func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	axis = resolveAxis(axis, x.Dims())
 	expectedShape := x.Shape().Clone()
@@ -35,13 +69,13 @@ func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, 
 	switch x.Dtype() {
 	case Float32:
 		if expectedShape.Dims()-1 == axis {
-			e.logSoftMaxLastDimF32(reuse, x, axis)
+			e.softMaxLastDimF32(reuse, x, axis, true)
 		} else {
 			e.softMaxInnerDimF32(reuse, x, axis, true)
 		}
 	case Float64:
 		if expectedShape.Dims()-1 == axis {
-			e.logSoftMaxLastDimF64(reuse, x, axis)
+			e.softMaxLastDimF64(reuse, x, axis, true)
 		} else {
 			e.softMaxInnerDimF64(reuse, x, axis, true)
 		}
@@ -52,7 +86,7 @@ func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, 
 	return reuse, nil
 }
 
-func (e StdEng) logSoftMaxLastDimF64(output Tensor, x Tensor, axis int) {
+func (e StdEng) softMaxLastDimF64(output Tensor, x Tensor, axis int, logSoftMax bool) {
 	outputArr := output.Data().([]float64)
 	xArr := x.Data().([]float64)
 	xShape := x.Shape()
@@ -73,20 +107,33 @@ func (e StdEng) logSoftMaxLastDimF64(output Tensor, x Tensor, axis int) {
 			}
 		}
 
-		sumExp := 0.0
+		sumExp := float64(0.0)
 		for j := 0; j < dimSize; j++ {
 			i := ii*dimSize + j
+			z := xArr[i] - maxInput
+			exp := math.Exp(z)
 
-			outputArr[i] = xArr[i] - maxInput
+			if logSoftMax {
+				outputArr[i] = z
+			} else {
+				outputArr[i] = exp
+			}
 
-			exp := math.Exp(outputArr[i])
 			sumExp += exp
+		}
+
+		if !logSoftMax {
+			sumExp = 1 / sumExp
 		}
 
 		for j := 0; j < dimSize; j++ {
 			i := ii*dimSize + j
 
-			outputArr[i] -= math.Log(sumExp)
+			if logSoftMax {
+				outputArr[i] -= math.Log(sumExp)
+			} else {
+				outputArr[i] *= sumExp
+			}
 		}
 	}
 }
@@ -157,7 +204,7 @@ func (e StdEng) softMaxInnerDimF64(output Tensor, x Tensor, axis int, logSoftmax
 	}
 }
 
-func (e StdEng) logSoftMaxLastDimF32(output Tensor, x Tensor, axis int) {
+func (e StdEng) softMaxLastDimF32(output Tensor, x Tensor, axis int, logSoftMax bool) {
 	outputArr := output.Data().([]float32)
 	xArr := x.Data().([]float32)
 	xShape := x.Shape()
@@ -181,17 +228,30 @@ func (e StdEng) logSoftMaxLastDimF32(output Tensor, x Tensor, axis int) {
 		sumExp := float32(0.0)
 		for j := 0; j < dimSize; j++ {
 			i := ii*dimSize + j
+			z := xArr[i] - maxInput
+			exp := math32.Exp(z)
 
-			outputArr[i] = xArr[i] - maxInput
+			if logSoftMax {
+				outputArr[i] = z
+			} else {
+				outputArr[i] = exp
+			}
 
-			exp := math32.Exp(outputArr[i])
 			sumExp += exp
+		}
+
+		if !logSoftMax {
+			sumExp = 1 / sumExp
 		}
 
 		for j := 0; j < dimSize; j++ {
 			i := ii*dimSize + j
 
-			outputArr[i] -= math32.Log(sumExp)
+			if logSoftMax {
+				outputArr[i] -= math32.Log(sumExp)
+			} else {
+				outputArr[i] *= sumExp
+			}
 		}
 	}
 }

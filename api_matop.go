@@ -157,3 +157,12 @@ func LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) 
 
 	return nil, errors.Errorf("Unable to apply LogSoftMax. Engine %T does not support that.", x.Engine())
 }
+
+// SoftMax applies softmax to the given tensor.
+func SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := x.Engine().(softMaxer); ok {
+		return sm.SoftMax(x, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply SoftMax. Engine %T does not support that.", x.Engine())
+}
