@@ -1,6 +1,6 @@
 module gorgonia.org/tensor
 
-go 1.13
+go 1.15
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20201229220542-30ce2eb5d4dc
