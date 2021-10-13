@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"fmt"
-	"log"
 	"math"
 
 	"github.com/chewxy/math32"
@@ -77,17 +76,16 @@ func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal
 
 	switch output.Dtype() {
 	case Float32:
-		// if expectedShape.Dims()-1 == axis {
-		// 	e.softMaxBLastDimF32(reuse, output, grad, axis, false)
-		// } else {
-		// 	e.softMaxBInnerDimF32(reuse, output, grad, axis, false)
-		// }
-		panic("float32 not implemented yet")
+		if expectedShape.Dims()-1 == axis {
+			e.softMaxBLastDimF32(reuse, output, grad, axis, false)
+		} else {
+			e.softMaxBInnerDimF32(reuse, output, grad, axis, false)
+		}
 	case Float64:
 		if expectedShape.Dims()-1 == axis {
 			e.softMaxBLastDimF64(reuse, output, grad, axis, false)
 		} else {
-			// e.softMaxBInnerDimF64(reuse, output, grad, axis, false)
+			e.softMaxBInnerDimF64(reuse, output, grad, axis, false)
 		}
 	default:
 		return nil, fmt.Errorf("type %v not supported", output.Dtype())
@@ -154,17 +152,16 @@ func (e StdEng) LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (ret
 
 	switch output.Dtype() {
 	case Float32:
-		// if expectedShape.Dims()-1 == axis {
-		// 	e.softMaxLastBDimF32(reuse, output, grad, axis, true)
-		// } else {
-		// 	e.softMaxInnerBDimF32(reuse, output, grad, axis, true)
-		// }
-		panic("float32 not implemented yet")
+		if expectedShape.Dims()-1 == axis {
+			e.softMaxBLastDimF32(reuse, output, grad, axis, true)
+		} else {
+			e.softMaxBInnerDimF32(reuse, output, grad, axis, true)
+		}
 	case Float64:
 		if expectedShape.Dims()-1 == axis {
 			e.softMaxBLastDimF64(reuse, output, grad, axis, true)
 		} else {
-			// e.softMaxBInnerDimF64(reuse, output, grad, axis, true)
+			e.softMaxBInnerDimF64(reuse, output, grad, axis, true)
 		}
 	default:
 		return nil, fmt.Errorf("type %v not supported", output.Dtype())
@@ -247,23 +244,19 @@ func (e StdEng) softMaxBLastDimF64(inputGrad, output, grad Tensor, axis int, log
 				sum += gradArr[i]
 			}
 
-			log.Printf("sum: %v", sum)
-
 			for j := 0; j < dimSize; j++ {
 				i := ii*dimSize + j
 
 				dx[i] = gradArr[i] - (math.Exp(outputArr[i]) * sum)
 			}
 		} else {
-			mul := make([]float64, dimSize) // TODO: avoid extra alloc
+			mul := make([]float64, dimSize)
 
 			for j := 0; j < dimSize; j++ {
 				i := ii*dimSize + j
 
 				mul[j] = outputArr[i] * gradArr[i]
 			}
-
-			log.Printf("mul: %v", mul)
 
 			sum := mul[0]
 			for j := 1; j < dimSize; j++ {
@@ -276,8 +269,6 @@ func (e StdEng) softMaxBLastDimF64(inputGrad, output, grad Tensor, axis int, log
 				dx[i] = (gradArr[i] - sum) * outputArr[i]
 			}
 		}
-
-		log.Printf("dx: %#v", dx)
 	}
 }
 
@@ -307,7 +298,7 @@ func (e StdEng) softMaxInnerDimF64(output Tensor, x Tensor, axis int, logSoftmax
 		inputPart := xArr[outerIndex*outerStride+innerIndex:]
 		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
 
-		maxInput := xArr[0]
+		maxInput := inputPart[0]
 		for j := 1; j < dimSize; j++ {
 			i := j * dimStride
 
@@ -342,6 +333,57 @@ func (e StdEng) softMaxInnerDimF64(output Tensor, x Tensor, axis int, logSoftmax
 				outputPart[i] = inputPart[i] - maxInput - sumExp
 			} else {
 				outputPart[i] *= sumExp
+			}
+		}
+	}
+}
+
+func (e StdEng) softMaxBInnerDimF64(inputGrad, output, grad Tensor, axis int, logSoftmax bool) {
+	dxShape := inputGrad.Shape()
+
+	innerSize, outerSize := 1, 1
+	for i := 0; i < axis; i++ {
+		outerSize *= dxShape[i]
+	}
+
+	for i := axis + 1; i < dxShape.Dims(); i++ {
+		innerSize *= dxShape[i]
+	}
+
+	dimSize := dxShape[axis]
+	dimStride := innerSize
+	outerStride := dimSize * dimStride
+
+	dxArr := inputGrad.Data().([]float64)
+	outputArr := output.Data().([]float64)
+	gradArr := grad.Data().([]float64)
+
+	for ii := 0; ii < innerSize*outerSize; ii++ {
+		outerIndex := ii / innerSize
+		innerIndex := ii % innerSize
+
+		gradPart := gradArr[outerIndex*outerStride+innerIndex:]
+		dxPart := dxArr[outerIndex*outerStride+innerIndex:]
+		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
+
+		sum := 0.0
+		for j := 0; j < dimSize; j++ {
+			i := j * dimStride
+
+			if logSoftmax {
+				sum += gradPart[i]
+			} else {
+				sum += gradPart[i] * outputPart[i]
+			}
+		}
+
+		for j := 0; j < dimSize; j++ {
+			i := j * dimStride
+
+			if logSoftmax {
+				dxPart[i] = gradPart[i] - math.Exp(outputPart[i])*sum
+			} else {
+				dxPart[i] = outputPart[i] * (gradPart[i] - sum)
 			}
 		}
 	}
@@ -399,6 +441,56 @@ func (e StdEng) softMaxLastDimF32(output Tensor, x Tensor, axis int, logSoftMax 
 	}
 }
 
+func (e StdEng) softMaxBLastDimF32(inputGrad, output, grad Tensor, axis int, logSoftMax bool) {
+	dx := inputGrad.Data().([]float32)
+	outputArr := output.Data().([]float32)
+	gradArr := grad.Data().([]float32)
+
+	outputShape := output.Shape()
+
+	outerSize := 1
+	dimSize := outputShape[axis]
+	for i := 0; i < axis; i++ {
+		outerSize *= outputShape[i]
+	}
+
+	for ii := 0; ii < outerSize; ii++ {
+		if logSoftMax {
+			sum := gradArr[ii*dimSize]
+			for j := 1; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				sum += gradArr[i]
+			}
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				dx[i] = gradArr[i] - (math32.Exp(outputArr[i]) * sum)
+			}
+		} else {
+			mul := make([]float32, dimSize)
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				mul[j] = outputArr[i] * gradArr[i]
+			}
+
+			sum := mul[0]
+			for j := 1; j < dimSize; j++ {
+				sum += mul[j]
+			}
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				dx[i] = (gradArr[i] - sum) * outputArr[i]
+			}
+		}
+	}
+}
+
 func (e StdEng) softMaxInnerDimF32(output Tensor, x Tensor, axis int, logSoftmax bool) {
 	xShape := x.Shape()
 
@@ -425,7 +517,7 @@ func (e StdEng) softMaxInnerDimF32(output Tensor, x Tensor, axis int, logSoftmax
 		inputPart := xArr[outerIndex*outerStride+innerIndex:]
 		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
 
-		maxInput := xArr[0]
+		maxInput := inputPart[0]
 		for j := 1; j < dimSize; j++ {
 			i := j * dimStride
 
@@ -460,6 +552,57 @@ func (e StdEng) softMaxInnerDimF32(output Tensor, x Tensor, axis int, logSoftmax
 				outputPart[i] = inputPart[i] - maxInput - sumExp
 			} else {
 				outputPart[i] *= sumExp
+			}
+		}
+	}
+}
+
+func (e StdEng) softMaxBInnerDimF32(inputGrad, output, grad Tensor, axis int, logSoftmax bool) {
+	dxShape := inputGrad.Shape()
+
+	innerSize, outerSize := 1, 1
+	for i := 0; i < axis; i++ {
+		outerSize *= dxShape[i]
+	}
+
+	for i := axis + 1; i < dxShape.Dims(); i++ {
+		innerSize *= dxShape[i]
+	}
+
+	dimSize := dxShape[axis]
+	dimStride := innerSize
+	outerStride := dimSize * dimStride
+
+	dxArr := inputGrad.Data().([]float32)
+	outputArr := output.Data().([]float32)
+	gradArr := grad.Data().([]float32)
+
+	for ii := 0; ii < innerSize*outerSize; ii++ {
+		outerIndex := ii / innerSize
+		innerIndex := ii % innerSize
+
+		gradPart := gradArr[outerIndex*outerStride+innerIndex:]
+		dxPart := dxArr[outerIndex*outerStride+innerIndex:]
+		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
+
+		sum := float32(0.0)
+		for j := 0; j < dimSize; j++ {
+			i := j * dimStride
+
+			if logSoftmax {
+				sum += gradPart[i]
+			} else {
+				sum += gradPart[i] * outputPart[i]
+			}
+		}
+
+		for j := 0; j < dimSize; j++ {
+			i := j * dimStride
+
+			if logSoftmax {
+				dxPart[i] = gradPart[i] - math32.Exp(outputPart[i])*sum
+			} else {
+				dxPart[i] = outputPart[i] * (gradPart[i] - sum)
 			}
 		}
 	}
