@@ -6,6 +6,7 @@ name: test and build
 env:
   GOPROXY: "https://proxy.golang.org"
   CI_NO_PYTHON: "true"
+  ASSUME_NO_MOVING_GC_UNSAFE_RISK_IT_WITH=devel
 jobs:
   test:
     strategy:
