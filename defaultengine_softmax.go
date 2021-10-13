@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"fmt"
+	"log"
 	"math"
 
 	"github.com/chewxy/math32"
@@ -52,6 +53,49 @@ func (e StdEng) SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err
 	return reuse, nil
 }
 
+func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if !output.Shape().Eq(grad.Shape()) {
+		return nil, fmt.Errorf("output and grad shapes don't match")
+	}
+
+	if !output.Dtype().Eq(grad.Dtype()) {
+		return nil, fmt.Errorf("output and grad types don't match")
+	}
+
+	axis = resolveAxis(axis, output.Dims())
+	expectedShape := output.Shape().Clone()
+
+	var reuse DenseTensor
+	var safe, toReuse, _ bool
+	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, output.Dtype(), output.DataOrder(), true, opts...); err != nil {
+		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if safe || !toReuse && reuse == nil && safe {
+		// create reuse
+		reuse = New(WithShape(expectedShape...), Of(output.Dtype()))
+	}
+
+	switch output.Dtype() {
+	case Float32:
+		// if expectedShape.Dims()-1 == axis {
+		// 	e.softMaxBLastDimF32(reuse, output, grad, axis, false)
+		// } else {
+		// 	e.softMaxBInnerDimF32(reuse, output, grad, axis, false)
+		// }
+		panic("float32 not implemented yet")
+	case Float64:
+		if expectedShape.Dims()-1 == axis {
+			e.softMaxBLastDimF64(reuse, output, grad, axis, false)
+		} else {
+			// e.softMaxBInnerDimF64(reuse, output, grad, axis, false)
+		}
+	default:
+		return nil, fmt.Errorf("type %v not supported", output.Dtype())
+	}
+
+	return reuse, nil
+}
+
 func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	axis = resolveAxis(axis, x.Dims())
 	expectedShape := x.Shape().Clone()
@@ -81,6 +125,49 @@ func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, 
 		}
 	default:
 		return nil, fmt.Errorf("type %v not supported", x.Dtype())
+	}
+
+	return reuse, nil
+}
+
+func (e StdEng) LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if !output.Shape().Eq(grad.Shape()) {
+		return nil, fmt.Errorf("output and grad shapes don't match")
+	}
+
+	if !output.Dtype().Eq(grad.Dtype()) {
+		return nil, fmt.Errorf("output and grad types don't match")
+	}
+
+	axis = resolveAxis(axis, output.Dims())
+	expectedShape := output.Shape().Clone()
+
+	var reuse DenseTensor
+	var safe, toReuse, _ bool
+	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, output.Dtype(), output.DataOrder(), true, opts...); err != nil {
+		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if safe || !toReuse && reuse == nil && safe {
+		// create reuse
+		reuse = New(WithShape(expectedShape...), Of(output.Dtype()))
+	}
+
+	switch output.Dtype() {
+	case Float32:
+		// if expectedShape.Dims()-1 == axis {
+		// 	e.softMaxLastBDimF32(reuse, output, grad, axis, true)
+		// } else {
+		// 	e.softMaxInnerBDimF32(reuse, output, grad, axis, true)
+		// }
+		panic("float32 not implemented yet")
+	case Float64:
+		if expectedShape.Dims()-1 == axis {
+			e.softMaxBLastDimF64(reuse, output, grad, axis, true)
+		} else {
+			// e.softMaxBInnerDimF64(reuse, output, grad, axis, true)
+		}
+	default:
+		return nil, fmt.Errorf("type %v not supported", output.Dtype())
 	}
 
 	return reuse, nil
@@ -135,6 +222,62 @@ func (e StdEng) softMaxLastDimF64(output Tensor, x Tensor, axis int, logSoftMax 
 				outputArr[i] *= sumExp
 			}
 		}
+	}
+}
+
+func (e StdEng) softMaxBLastDimF64(inputGrad, output, grad Tensor, axis int, logSoftMax bool) {
+	dx := inputGrad.Data().([]float64)
+	outputArr := output.Data().([]float64)
+	gradArr := grad.Data().([]float64)
+
+	outputShape := output.Shape()
+
+	outerSize := 1
+	dimSize := outputShape[axis]
+	for i := 0; i < axis; i++ {
+		outerSize *= outputShape[i]
+	}
+
+	for ii := 0; ii < outerSize; ii++ {
+		if logSoftMax {
+			sum := gradArr[ii*dimSize]
+			for j := 1; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				sum += gradArr[i]
+			}
+
+			log.Printf("sum: %v", sum)
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				dx[i] = gradArr[i] - (math.Exp(outputArr[i]) * sum)
+			}
+		} else {
+			mul := make([]float64, dimSize) // TODO: avoid extra alloc
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				mul[j] = outputArr[i] * gradArr[i]
+			}
+
+			log.Printf("mul: %v", mul)
+
+			sum := mul[0]
+			for j := 1; j < dimSize; j++ {
+				sum += mul[j]
+			}
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				dx[i] = (gradArr[i] - sum) * outputArr[i]
+			}
+		}
+
+		log.Printf("dx: %#v", dx)
 	}
 }
 

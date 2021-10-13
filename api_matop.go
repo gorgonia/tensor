@@ -166,3 +166,21 @@ func SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 
 	return nil, errors.Errorf("Unable to apply SoftMax. Engine %T does not support that.", x.Engine())
 }
+
+// SoftMaxB applies softmax backwards operation
+func SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := output.Engine().(softMaxer); ok {
+		return sm.SoftMaxB(output, grad, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply SoftMaxB. Engine %T does not support that.", output.Engine())
+}
+
+// LogSoftMaxB applies softmax backwards operation
+func LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := output.Engine().(softMaxer); ok {
+		return sm.LogSoftMaxB(output, grad, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply SoftMaxB. Engine %T does not support that.", output.Engine())
+}
