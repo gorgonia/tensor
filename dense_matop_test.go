@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -636,6 +637,70 @@ func TestDense_Slice(t *testing.T) {
 	_, err = T.Slice(makeRS(-1, 1))
 	if err == nil {
 		t.Error("Expected a IndexError")
+	}
+}
+
+func TestDense_Narrow(t *testing.T) {
+	testCases := []struct {
+		x                  *Dense
+		dim, start, lenght int
+		expected           *Dense
+	}{
+		{
+			x: New(
+				WithShape(3),
+				WithBacking([]int{1, 2, 3}),
+			),
+			dim:    0,
+			start:  1,
+			lenght: 1,
+			expected: New(
+				WithShape(),
+				WithBacking([]int{2}),
+			),
+		},
+		{
+			x: New(
+				WithShape(3, 3),
+				WithBacking([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}),
+			),
+			dim:    0,
+			start:  0,
+			lenght: 2,
+			expected: New(
+				WithShape(2, 3),
+				WithBacking([]int{1, 2, 3, 4, 5, 6}),
+			),
+		},
+		{
+			x: New(
+				WithShape(3, 3),
+				WithBacking([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}),
+			),
+			dim:    1,
+			start:  1,
+			lenght: 2,
+			expected: New(
+				WithShape(3, 2),
+				WithBacking([]int{2, 3, 5, 6, 8, 9}),
+			),
+		},
+	}
+
+	for i, tC := range testCases {
+		t.Run(fmt.Sprintf("Example #%d narrow(%v,%d,%d,%v)", i+1, tC.x.Shape(), tC.dim, tC.start, tC.lenght), func(t *testing.T) {
+			c := assert.New(t)
+
+			y, err := tC.x.Narrow(tC.dim, tC.start, tC.lenght)
+			c.NoError(err)
+
+			yMat := y.Materialize()
+			c.Equal(tC.expected.Shape(), yMat.Shape())
+			c.Equal(tC.expected.Data(), yMat.Data())
+
+			c.Equal(tC.expected.Shape(), y.Shape())
+			c.Equal(tC.expected.Data(), y.Data())
+		})
 	}
 }
 

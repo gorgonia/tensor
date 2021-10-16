@@ -7,31 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type dummySlice struct {
-	start, end, step int
-}
-
-func (s dummySlice) Start() int { return s.start }
-func (s dummySlice) End() int   { return s.end }
-func (s dummySlice) Step() int  { return s.step }
-
-func sli(start int, opt ...int) dummySlice {
-	var end, step int
-	switch len(opt) {
-	case 0:
-		end = start + 1
-		step = 0
-	case 1:
-		end = opt[0]
-		step = 1
-	default:
-		end = opt[0]
-		step = opt[1]
-
-	}
-	return dummySlice{start: start, end: end, step: step}
-}
-
 func dummyScalar1() AP { return AP{} }
 
 func dummyScalar2() AP { return AP{shape: Shape{1}} }
@@ -203,16 +178,16 @@ var sliceTests = []struct {
 	contiguous    bool
 }{
 	// vectors
-	{"a[0]", Shape{5}, []Slice{sli(0)}, 0, 1, ScalarShape(), nil, true},
-	{"a[0:2]", Shape{5}, []Slice{sli(0, 2)}, 0, 2, Shape{2}, []int{1}, true},
-	{"a[1:3]", Shape{5}, []Slice{sli(1, 3)}, 1, 3, Shape{2}, []int{1}, true},
-	{"a[1:5:2]", Shape{5}, []Slice{sli(1, 5, 2)}, 1, 5, Shape{2}, []int{2}, false},
+	{"a[0]", Shape{5}, []Slice{S(0)}, 0, 1, ScalarShape(), nil, true},
+	{"a[0:2]", Shape{5}, []Slice{S(0, 2)}, 0, 2, Shape{2}, []int{1}, true},
+	{"a[1:3]", Shape{5}, []Slice{S(1, 3)}, 1, 3, Shape{2}, []int{1}, true},
+	{"a[1:5:2]", Shape{5}, []Slice{S(1, 5, 2)}, 1, 5, Shape{2}, []int{2}, false},
 
 	// matrix
-	{"A[0]", Shape{2, 3}, []Slice{sli(0)}, 0, 3, Shape{1, 3}, []int{1}, true},
-	{"A[1:3]", Shape{4, 5}, []Slice{sli(1, 3)}, 5, 15, Shape{2, 5}, []int{5, 1}, true},
-	{"A[0:10] (intentionally over)", Shape{4, 5}, []Slice{sli(0, 10)}, 0, 20, Shape{4, 5}, []int{5, 1}, true}, // as if nothing happened
-	{"A[:, 1:3]", Shape{4, 5}, []Slice{nil, sli(1, 3)}, 1, 18, Shape{4, 2}, []int{5, 1}, false},
+	{"A[0]", Shape{2, 3}, []Slice{S(0)}, 0, 3, Shape{1, 3}, []int{1}, true},
+	{"A[1:3]", Shape{4, 5}, []Slice{S(1, 3)}, 5, 15, Shape{2, 5}, []int{5, 1}, true},
+	{"A[0:10] (intentionally over)", Shape{4, 5}, []Slice{S(0, 10)}, 0, 20, Shape{4, 5}, []int{5, 1}, true}, // as if nothing happened
+	{"A[:, 1:3]", Shape{4, 5}, []Slice{nil, S(1, 3)}, 1, 18, Shape{4, 2}, []int{5, 1}, false},
 
 	// tensor
 	{"tensor[0, :, :]", Shape{1, 2, 2}, []Slice{rs{0, 1, 1}, nil, nil}, 0, 4, Shape{2, 2}, []int{2, 1}, true},

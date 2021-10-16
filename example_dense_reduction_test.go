@@ -9,7 +9,7 @@ func Example_sum_Sliced() {
 		1, 2, 3, 4,
 		5, 6, 7, 8,
 	}))
-	s, _ := T.Slice(sli(1, 3), sli(1, 3))
+	s, _ := T.Slice(S(1, 3), S(1, 3))
 	sum, _ := Sum(s)
 
 	fmt.Printf("T:\n%v\nsliced:\n%v\nSum: %v", T, s, sum)
