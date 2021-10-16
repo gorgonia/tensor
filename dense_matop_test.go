@@ -685,6 +685,19 @@ func TestDense_Narrow(t *testing.T) {
 				WithBacking([]int{2, 3, 5, 6, 8, 9}),
 			),
 		},
+		{
+			x: New(
+				WithShape(3, 3),
+				WithBacking([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}),
+			),
+			dim:    1,
+			start:  0,
+			lenght: 1,
+			expected: New(
+				WithShape(3),
+				WithBacking([]int{1, 4, 7}),
+			),
+		},
 	}
 
 	for i, tC := range testCases {
