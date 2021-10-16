@@ -151,7 +151,7 @@ func ByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor,
 
 // LogSoftMax applies log softmax to the given tensor.
 func LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
-	if sm, ok := x.Engine().(softMaxer); ok {
+	if sm, ok := x.Engine().(SoftMaxer); ok {
 		return sm.LogSoftMax(x, axis, opts...)
 	}
 
@@ -160,7 +160,7 @@ func LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) 
 
 // SoftMax applies softmax to the given tensor.
 func SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
-	if sm, ok := x.Engine().(softMaxer); ok {
+	if sm, ok := x.Engine().(SoftMaxer); ok {
 		return sm.SoftMax(x, axis, opts...)
 	}
 
@@ -169,7 +169,7 @@ func SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 
 // SoftMaxB applies softmax backwards operation
 func SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
-	if sm, ok := output.Engine().(softMaxer); ok {
+	if sm, ok := output.Engine().(SoftMaxer); ok {
 		return sm.SoftMaxB(output, grad, axis, opts...)
 	}
 
@@ -178,7 +178,7 @@ func SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, er
 
 // LogSoftMaxB applies softmax backwards operation
 func LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
-	if sm, ok := output.Engine().(softMaxer); ok {
+	if sm, ok := output.Engine().(SoftMaxer); ok {
 		return sm.LogSoftMaxB(output, grad, axis, opts...)
 	}
 

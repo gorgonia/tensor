@@ -292,8 +292,7 @@ func (e StdEng) softMaxInnerDimF64(output Tensor, x Tensor, axis int, logSoftmax
 	xArr := x.Data().([]float64)
 
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex := ii / innerSize
-		innerIndex := ii % innerSize
+		outerIndex, innerIndex := divmod(ii, innerSize)
 
 		inputPart := xArr[outerIndex*outerStride+innerIndex:]
 		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
@@ -359,8 +358,7 @@ func (e StdEng) softMaxBInnerDimF64(inputGrad, output, grad Tensor, axis int, lo
 	gradArr := grad.Data().([]float64)
 
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex := ii / innerSize
-		innerIndex := ii % innerSize
+		outerIndex, innerIndex := divmod(ii, innerSize)
 
 		gradPart := gradArr[outerIndex*outerStride+innerIndex:]
 		dxPart := dxArr[outerIndex*outerStride+innerIndex:]
@@ -511,8 +509,7 @@ func (e StdEng) softMaxInnerDimF32(output Tensor, x Tensor, axis int, logSoftmax
 	xArr := x.Data().([]float32)
 
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex := ii / innerSize
-		innerIndex := ii % innerSize
+		outerIndex, innerIndex := divmod(ii, innerSize)
 
 		inputPart := xArr[outerIndex*outerStride+innerIndex:]
 		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
@@ -578,8 +575,7 @@ func (e StdEng) softMaxBInnerDimF32(inputGrad, output, grad Tensor, axis int, lo
 	gradArr := grad.Data().([]float32)
 
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex := ii / innerSize
-		innerIndex := ii % innerSize
+		outerIndex, innerIndex := divmod(ii, innerSize)
 
 		gradPart := gradArr[outerIndex*outerStride+innerIndex:]
 		dxPart := dxArr[outerIndex*outerStride+innerIndex:]
