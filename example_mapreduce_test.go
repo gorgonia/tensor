@@ -35,7 +35,7 @@ func ExampleSum_sliced() {
 	T := New(WithBacking([]float64{0, 1, 2, 3}), WithShape(2, 2))
 	fmt.Printf("T:\n%v\n", T)
 
-	V, _ := T.Slice(nil, sli(1))
+	V, _ := T.Slice(nil, S(1))
 	fmt.Printf("V:\n%v\n", V)
 
 	Σ, _ := Sum(V)
@@ -75,7 +75,7 @@ func ExampleArgmax_sliced() {
 	fmt.Printf("T:\n%v\n", T)
 
 	// slice  creates a view
-	V, _ := T.Slice(nil, sli(1))
+	V, _ := T.Slice(nil, S(1))
 
 	// argmax along the x-axis
 	am, _ := Argmax(V, 0)
