@@ -18,6 +18,11 @@ func resolveAxis(axis int, dims int) int {
 	return res
 }
 
+// SoftMax performs the softmax operation on the given tensor. Currently it expects the tensor to be a Dense tensor.
+// Please make a pull request to support sparse tensors.
+//
+// The softmax function is defined as :
+//	σ(x) = e^x_i / Σ(e^x_i)
 func (e StdEng) SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	axis = resolveAxis(axis, x.Dims())
 	expectedShape := x.Shape().Clone()
@@ -52,6 +57,8 @@ func (e StdEng) SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err
 	return reuse, nil
 }
 
+// SoftMaxB computes gradient of the input `x`, given the `output = SoftMax(x)` and its associated gradient. Currently it expects the tensor to be a Dense tensor.
+// Please make a pull request to support sparse tensors.
 func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !output.Shape().Eq(grad.Shape()) {
 		return nil, fmt.Errorf("output and grad shapes don't match")
@@ -94,6 +101,10 @@ func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal
 	return reuse, nil
 }
 
+// LogSoftMax performs softmax but in log space. This provides some amount of numerical stabilization.
+// Conceptually it is the same as performing a logarithm after applying the softmax function.
+// Currently it expects the tensor to be a Dense tensor.
+// Please make a pull request to support sparse tensors.
 func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	axis = resolveAxis(axis, x.Dims())
 	expectedShape := x.Shape().Clone()
@@ -128,6 +139,9 @@ func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, 
 	return reuse, nil
 }
 
+// LogSoftMaxB computes the gradient of the input `x`, given the `output = LogSoftmax(x)` and its associated gradient.
+// Currently it expects the tensor to be a Dense tensor.
+// Please make a pull request to support sparse tensors.
 func (e StdEng) LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !output.Shape().Eq(grad.Shape()) {
 		return nil, fmt.Errorf("output and grad shapes don't match")
