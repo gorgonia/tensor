@@ -710,6 +710,10 @@ func TestDense_Narrow(t *testing.T) {
 			yMat := y.Materialize()
 			c.Equal(tC.expected.Shape(), yMat.Shape())
 			c.Equal(tC.expected.Data(), yMat.Data())
+			
+      // err = y.Memset(1024)
+			// c.Nil(err)
+			// t.Logf("example %d y \n%v\n%v", i+1, y, y.Data())
 		})
 	}
 }
