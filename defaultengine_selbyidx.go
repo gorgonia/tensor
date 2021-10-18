@@ -7,23 +7,24 @@ import (
 	"reflect"
 )
 
-func (e StdEng) SelectByIndices(a, b Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
-	if !b.Shape().IsVectorLike() {
-		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", b.Shape())
+// SelectByIndices selects the values given the in `indices` tensor.
+func (e StdEng) SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if !indices.Shape().IsVectorLike() {
+		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", indices.Shape())
 	}
-	if b.Dtype() != Int {
-		return nil, errors.Errorf("Expected indices to be a vector of ints. Got %v instead", b.Dtype())
+	if indices.Dtype() != Int {
+		return nil, errors.Errorf("Expected indices to be a vector of ints. Got %v instead", indices.Dtype())
 	}
 
 	// if b is a scalar, then use Slice
 	if a.Shape().IsScalarEquiv() {
 		slices := make([]Slice, a.Shape().Dims())
-		slices[axis] = ss(b.Data().([]int)[0])
+		slices[axis] = ss(indices.Data().([]int)[0])
 		return a.Slice(slices...)
 	}
 
 	expectedShape := a.Shape().Clone()
-	expectedShape[axis] = b.Shape().TotalSize()
+	expectedShape[axis] = indices.Shape().TotalSize()
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
@@ -36,9 +37,9 @@ func (e StdEng) SelectByIndices(a, b Tensor, axis int, opts ...FuncOpt) (retVal 
 	}
 
 	if !safe {
-		if a.Shape()[axis] != b.Shape().TotalSize() {
+		if a.Shape()[axis] != indices.Shape().TotalSize() {
 			expected := a.Shape().Clone()
-			expected[axis] = b.Shape().TotalSize()
+			expected[axis] = indices.Shape().TotalSize()
 			return nil, errors.Errorf("Expected a safe resuse to have the same shape as the expected shape of the result: %v. The input a has %v ", expected, a.Shape())
 		}
 
@@ -49,7 +50,7 @@ func (e StdEng) SelectByIndices(a, b Tensor, axis int, opts ...FuncOpt) (retVal 
 	var dataA, dataB, dataReuse *storage.Header
 	var ait, bit, iit Iterator
 	var useIter bool
-	if dataA, dataB, dataReuse, ait, bit, iit, useIter, _, err = prepDataVV(a, b, reuse); err != nil {
+	if dataA, dataB, dataReuse, ait, bit, iit, useIter, _, err = prepDataVV(a, indices, reuse); err != nil {
 		return nil, errors.Wrapf(err, "StdEng.Add")
 	}
 
@@ -130,8 +131,8 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 	}
 }
 
-// SelectByIndicesB is the backwards function of SelectByIndices.
-func (e StdEng) SelectByIndicesB(output, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+// SelectByIndicesB computes the gradient of the result of `SelectByIndices`.
+func (e StdEng) SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !indices.Shape().IsVectorLike() {
 		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", outGrad.Shape())
 	}
@@ -140,29 +141,29 @@ func (e StdEng) SelectByIndicesB(output, outGrad, indices Tensor, axis int, opts
 	}
 
 	// if b is a scalar, then use Slice
-	if output.Shape().IsScalarEquiv() {
-		slices := make([]Slice, output.Shape().Dims())
+	if input.Shape().IsScalarEquiv() {
+		slices := make([]Slice, input.Shape().Dims())
 		slices[axis] = ss(outGrad.Data().([]int)[0])
-		return output.Slice(slices...)
+		return input.Slice(slices...)
 	}
 
-	expectedShape := output.Shape().Clone()
+	expectedShape := input.Shape().Clone()
 
 	var reuse DenseTensor
 	var _, toReuse, _ bool
-	if reuse, _, toReuse, _, _, err = handleFuncOpts(output.Shape(), output.Dtype(), output.DataOrder(), true, opts...); err != nil {
+	if reuse, _, toReuse, _, _, err = handleFuncOpts(input.Shape(), input.Dtype(), input.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !toReuse && reuse == nil {
 		// create reuse
-		reuse = New(WithShape(expectedShape...), Of(output.Dtype()))
+		reuse = New(WithShape(expectedShape...), Of(input.Dtype()))
 	}
 
-	typ := output.Dtype().Type
+	typ := input.Dtype().Type
 	var _, dataB, dataReuse *storage.Header
 	var _, bit, iit Iterator
 	var useIter bool
-	if _, dataB, dataReuse, _, bit, iit, useIter, _, err = prepDataVV(output, outGrad, reuse); err != nil {
+	if _, dataB, dataReuse, _, bit, iit, useIter, _, err = prepDataVV(input, outGrad, reuse); err != nil {
 		return nil, errors.Wrapf(err, "StdEng.SelectByIndicesB")
 	}
 
