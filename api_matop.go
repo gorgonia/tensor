@@ -7,6 +7,16 @@ import (
 // this file handles matops. While by default most of these matops should already have been defined as part of the
 // Tensor interface, not all are possible(for example, concatenating a sparse tensor), hence the need for the following functions
 
+// Narrow narrows the tensor.
+func Narrow(t Tensor, dim, start, length int) (View, error) {
+	dim = resolveAxis(dim, t.Dims())
+
+	slices := make([]Slice, MinInt(dim+1, t.Dims()))
+	slices[dim] = S(start, start+length, 1)
+
+	return t.Slice(slices...)
+}
+
 // Repeat repeats a Tensor along the axis and given the number of repeats.
 func Repeat(t Tensor, axis int, repeats ...int) (retVal Tensor, err error) {
 	if r, ok := t.Engine().(Repeater); ok {
