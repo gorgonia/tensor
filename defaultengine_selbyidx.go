@@ -131,38 +131,38 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 }
 
 // SelectByIndicesB is the backwards function of SelectByIndices.
-func (e StdEng) SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+func (e StdEng) SelectByIndicesB(output, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !indices.Shape().IsVectorLike() {
-		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", b.Shape())
+		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", outGrad.Shape())
 	}
 	if indices.Dtype() != Int {
-		return nil, errors.Errorf("Expected indices to be a vector of ints. Got %v instead", b.Dtype())
+		return nil, errors.Errorf("Expected indices to be a vector of ints. Got %v instead", outGrad.Dtype())
 	}
 
 	// if b is a scalar, then use Slice
-	if a.Shape().IsScalarEquiv() {
-		slices := make([]Slice, a.Shape().Dims())
-		slices[axis] = ss(b.Data().([]int)[0])
-		return a.Slice(slices...)
+	if output.Shape().IsScalarEquiv() {
+		slices := make([]Slice, output.Shape().Dims())
+		slices[axis] = ss(outGrad.Data().([]int)[0])
+		return output.Slice(slices...)
 	}
 
-	expectedShape := a.Shape().Clone()
+	expectedShape := output.Shape().Clone()
 
 	var reuse DenseTensor
 	var _, toReuse, _ bool
-	if reuse, _, toReuse, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	if reuse, _, toReuse, _, _, err = handleFuncOpts(output.Shape(), output.Dtype(), output.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !toReuse && reuse == nil {
 		// create reuse
-		reuse = New(WithShape(expectedShape...), Of(a.Dtype()))
+		reuse = New(WithShape(expectedShape...), Of(output.Dtype()))
 	}
 
-	typ := a.Dtype().Type
+	typ := output.Dtype().Type
 	var _, dataB, dataReuse *storage.Header
 	var _, bit, iit Iterator
 	var useIter bool
-	if _, dataB, dataReuse, _, bit, iit, useIter, _, err = prepDataVV(a, b, reuse); err != nil {
+	if _, dataB, dataReuse, _, bit, iit, useIter, _, err = prepDataVV(output, outGrad, reuse); err != nil {
 		return nil, errors.Wrapf(err, "StdEng.SelectByIndicesB")
 	}
 
@@ -172,7 +172,7 @@ func (e StdEng) SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt
 		return
 	}
 
-	e.selectByIndicesB(axis, indices.Data().([]int), typ, dataB, dataReuse, b.(*Dense).AP, reuse.(*Dense).AP)
+	e.selectByIndicesB(axis, indices.Data().([]int), typ, dataB, dataReuse, outGrad.(*Dense).AP, reuse.(*Dense).AP)
 
 	return reuse, nil
 }
