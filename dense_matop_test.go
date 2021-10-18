@@ -643,7 +643,7 @@ func TestDense_Slice(t *testing.T) {
 func TestDense_Narrow(t *testing.T) {
 	testCases := []struct {
 		x                  *Dense
-		dim, start, lenght int
+		dim, start, length int
 		expected           *Dense
 	}{
 		{
@@ -653,7 +653,7 @@ func TestDense_Narrow(t *testing.T) {
 			),
 			dim:    0,
 			start:  1,
-			lenght: 1,
+			length: 1,
 			expected: New(
 				WithShape(),
 				WithBacking([]int{2}),
@@ -666,7 +666,7 @@ func TestDense_Narrow(t *testing.T) {
 			),
 			dim:    0,
 			start:  0,
-			lenght: 2,
+			length: 2,
 			expected: New(
 				WithShape(2, 3),
 				WithBacking([]int{1, 2, 3, 4, 5, 6}),
@@ -679,7 +679,7 @@ func TestDense_Narrow(t *testing.T) {
 			),
 			dim:    1,
 			start:  1,
-			lenght: 2,
+			length: 2,
 			expected: New(
 				WithShape(3, 2),
 				WithBacking([]int{2, 3, 5, 6, 8, 9}),
@@ -692,7 +692,7 @@ func TestDense_Narrow(t *testing.T) {
 			),
 			dim:    1,
 			start:  0,
-			lenght: 1,
+			length: 1,
 			expected: New(
 				WithShape(3),
 				WithBacking([]int{1, 4, 7}),
@@ -701,18 +701,15 @@ func TestDense_Narrow(t *testing.T) {
 	}
 
 	for i, tC := range testCases {
-		t.Run(fmt.Sprintf("Example #%d narrow(%v,%d,%d,%v)", i+1, tC.x.Shape(), tC.dim, tC.start, tC.lenght), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Example #%d narrow(%v,%d,%d,%v)", i+1, tC.x.Shape(), tC.dim, tC.start, tC.length), func(t *testing.T) {
 			c := assert.New(t)
 
-			y, err := tC.x.Narrow(tC.dim, tC.start, tC.lenght)
+			y, err := tC.x.Narrow(tC.dim, tC.start, tC.length)
 			c.NoError(err)
 
 			yMat := y.Materialize()
 			c.Equal(tC.expected.Shape(), yMat.Shape())
 			c.Equal(tC.expected.Data(), yMat.Data())
-
-			c.Equal(tC.expected.Shape(), y.Shape())
-			c.Equal(tC.expected.Data(), y.Data())
 		})
 	}
 }
