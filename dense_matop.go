@@ -198,12 +198,12 @@ func (t *Dense) CopyTo(other *Dense) error {
 	return errors.Errorf(methodNYI, "CopyTo", "views")
 }
 
-// Narrow narrows the tensor
-func (t *Dense) Narrow(dim, start, lenght int) (View, error) {
+// Narrow narrows the tensor.
+func (t *Dense) Narrow(dim, start, length int) (View, error) {
 	dim = resolveAxis(dim, t.Dims())
 
 	slices := make([]Slice, MinInt(dim+1, t.Dims()))
-	slices[dim] = S(start, start+lenght, 1)
+	slices[dim] = S(start, start+length, 1)
 
 	return t.Slice(slices...)
 }
