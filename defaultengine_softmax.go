@@ -25,7 +25,7 @@ func resolveAxis(axis int, dims int) int {
 //	σ(x) = e^x_i / Σ(e^x_i)
 func (e StdEng) SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	axis = resolveAxis(axis, x.Dims())
-	expectedShape := x.Shape().Clone()
+	expectedShape := x.Shape()
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
@@ -69,7 +69,7 @@ func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal
 	}
 
 	axis = resolveAxis(axis, output.Dims())
-	expectedShape := output.Shape().Clone()
+	expectedShape := output.Shape()
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
@@ -107,7 +107,7 @@ func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal
 // Please make a pull request to support sparse tensors.
 func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	axis = resolveAxis(axis, x.Dims())
-	expectedShape := x.Shape().Clone()
+	expectedShape := x.Shape()
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
@@ -152,7 +152,7 @@ func (e StdEng) LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (ret
 	}
 
 	axis = resolveAxis(axis, output.Dims())
-	expectedShape := output.Shape().Clone()
+	expectedShape := output.Shape()
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
