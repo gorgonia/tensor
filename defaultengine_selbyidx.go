@@ -22,7 +22,7 @@ func (e StdEng) SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (r
 	// if b is a scalar, then use Slice
 	if a.Shape().IsScalarEquiv() {
 		slices := make([]Slice, a.Shape().Dims())
-		slices[axis] = ss(indices.Data().([]int)[0])
+		slices[axis] = ss(getInts(indices)[0])
 		return a.Slice(slices...)
 	}
 
@@ -179,7 +179,7 @@ func (e StdEng) SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts 
 		return
 	}
 
-	e.selectByIndicesB(axis, indices.Data().([]int), typ, dataB, dataReuse, outGrad.(*Dense).AP, reuse.(*Dense).AP)
+	e.selectByIndicesB(axis, getInts(indices), typ, dataB, dataReuse, outGrad.(*Dense).AP, reuse.(*Dense).AP)
 
 	return reuse, nil
 }
