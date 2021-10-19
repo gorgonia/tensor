@@ -8,6 +8,9 @@ import (
 )
 
 // SelectByIndices selects the values given the in `indices` tensor.
+//
+// Currently SelectByIndices only supports Dense tensors that do not require the use of iterators.
+// Please make a pull request to support tensors that require the use of an iterator to traverse data.
 func (e StdEng) SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !indices.Shape().IsVectorLike() {
 		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", indices.Shape())
@@ -132,6 +135,9 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 }
 
 // SelectByIndicesB computes the gradient of the result of `SelectByIndices`.
+//
+// Currently SelectByIndicesB only supports Dense tensors that do not require the use of iterators.
+// Please make a pull request to support tensors that require the use of an iterator to traverse data.
 func (e StdEng) SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
 	if !indices.Shape().IsVectorLike() {
 		return nil, errors.Errorf("Expected indices to be a vector. Got %v instead", outGrad.Shape())
