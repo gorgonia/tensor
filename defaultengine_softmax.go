@@ -264,22 +264,22 @@ func (e StdEng) softMaxBLastDimF64(inputGrad, output, grad Tensor, axis int, log
 				dx[i] = gradArr[i] - (math.Exp(outputArr[i]) * sum)
 			}
 		} else {
-			mul := make([]float64, dimSize)
-
+			//mul := make([]float64, dimSize)
+			var sum float64
 			for j := 0; j < dimSize; j++ {
 				i := ii*dimSize + j
 
-				mul[j] = outputArr[i] * gradArr[i]
+				// mul[j] = outputArr[i] * gradArr[i]
+				sum += outputArr[i] * gradArr[i]
 			}
 
-			sum := mul[0]
-			for j := 1; j < dimSize; j++ {
-				sum += mul[j]
-			}
+			//sum := mul[0]
+			//for j := 1; j < dimSize; j++ {
+			//	sum += mul[j]
+			//}
 
 			for j := 0; j < dimSize; j++ {
 				i := ii*dimSize + j
-
 				dx[i] = (gradArr[i] - sum) * outputArr[i]
 			}
 		}
@@ -481,18 +481,19 @@ func (e StdEng) softMaxBLastDimF32(inputGrad, output, grad Tensor, axis int, log
 				dx[i] = gradArr[i] - (math32.Exp(outputArr[i]) * sum)
 			}
 		} else {
-			mul := make([]float32, dimSize)
-
+			// mul := make([]float32, dimSize)
+			var sum float32
 			for j := 0; j < dimSize; j++ {
 				i := ii*dimSize + j
 
-				mul[j] = outputArr[i] * gradArr[i]
+				//mul[j] = outputArr[i] * gradArr[i]
+				sum += outputArr[i] * gradArr[i]
 			}
 
-			sum := mul[0]
-			for j := 1; j < dimSize; j++ {
-				sum += mul[j]
-			}
+			// sum := mul[0]
+			// for j := 1; j < dimSize; j++ {
+			//	sum += mul[j]
+			//}
 
 			for j := 0; j < dimSize; j++ {
 				i := ii*dimSize + j
