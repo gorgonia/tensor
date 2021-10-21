@@ -3,6 +3,7 @@ package tensor
 import (
 	"fmt"
 	"math"
+	"sync"
 
 	"github.com/chewxy/math32"
 	"github.com/pkg/errors"
@@ -196,45 +197,52 @@ func (e StdEng) softMaxLastDimF64(output Tensor, x Tensor, axis int, logSoftMax 
 		outerSize *= xShape[i]
 	}
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < outerSize; ii++ {
-		maxInput := xArr[0]
-		for j := 1; j < dimSize; j++ {
-			i := ii*dimSize + j
+		wg.Add(1)
+		go func(ii int, wg *sync.WaitGroup) {
+			maxInput := xArr[0]
+			for j := 1; j < dimSize; j++ {
+				i := ii*dimSize + j
 
-			if xArr[i] > maxInput {
-				maxInput = xArr[i]
-			}
-		}
-
-		sumExp := float64(0.0)
-		for j := 0; j < dimSize; j++ {
-			i := ii*dimSize + j
-			z := xArr[i] - maxInput
-			exp := math.Exp(z)
-
-			if logSoftMax {
-				outputArr[i] = z
-			} else {
-				outputArr[i] = exp
+				if xArr[i] > maxInput {
+					maxInput = xArr[i]
+				}
 			}
 
-			sumExp += exp
-		}
+			sumExp := float64(0.0)
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+				z := xArr[i] - maxInput
+				exp := math.Exp(z)
 
-		if !logSoftMax {
-			sumExp = 1 / sumExp
-		}
+				if logSoftMax {
+					outputArr[i] = z
+				} else {
+					outputArr[i] = exp
+				}
 
-		for j := 0; j < dimSize; j++ {
-			i := ii*dimSize + j
-
-			if logSoftMax {
-				outputArr[i] -= math.Log(sumExp)
-			} else {
-				outputArr[i] *= sumExp
+				sumExp += exp
 			}
-		}
+
+			if !logSoftMax {
+				sumExp = 1 / sumExp
+			}
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				if logSoftMax {
+					outputArr[i] -= math.Log(sumExp)
+				} else {
+					outputArr[i] *= sumExp
+				}
+			}
+			wg.Done()
+		}(ii, &wg)
+
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxBLastDimF64(inputGrad, output, grad Tensor, axis int, logSoftMax bool) {
@@ -250,41 +258,51 @@ func (e StdEng) softMaxBLastDimF64(inputGrad, output, grad Tensor, axis int, log
 		outerSize *= outputShape[i]
 	}
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < outerSize; ii++ {
+		wg.Add(1)
 		if logSoftMax {
-			sum := gradArr[ii*dimSize]
-			for j := 1; j < dimSize; j++ {
-				i := ii*dimSize + j
+			go func(gradArr, dx []float64, ii int, wg *sync.WaitGroup) {
+				sum := gradArr[ii*dimSize]
+				for j := 1; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				sum += gradArr[i]
-			}
+					sum += gradArr[i]
+				}
 
-			for j := 0; j < dimSize; j++ {
-				i := ii*dimSize + j
+				for j := 0; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				dx[i] = gradArr[i] - (math.Exp(outputArr[i]) * sum)
-			}
+					dx[i] = gradArr[i] - (math.Exp(outputArr[i]) * sum)
+				}
+				wg.Done()
+			}(gradArr, dx, ii, &wg)
+
 		} else {
-			//mul := make([]float64, dimSize)
-			var sum float64
-			for j := 0; j < dimSize; j++ {
-				i := ii*dimSize + j
+			go func(outputArr, gradArr, dx []float64, ii int, wg *sync.WaitGroup) {
+				//mul := make([]float64, dimSize)
+				var sum float64
+				for j := 0; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				//mul[j] = outputArr[i] * gradArr[i]
-				sum += outputArr[i] * gradArr[i]
-			}
+					//mul[j] = outputArr[i] * gradArr[i]
+					sum += outputArr[i] * gradArr[i]
+				}
 
-			// sum := mul[0]
-			// for j := 1; j < dimSize; j++ {
-			// 	sum += mul[j]
-			// }
+				// sum := mul[0]
+				// for j := 1; j < dimSize; j++ {
+				// 	sum += mul[j]
+				// }
 
-			for j := 0; j < dimSize; j++ {
-				i := ii*dimSize + j
-				dx[i] = (gradArr[i] - sum) * outputArr[i]
-			}
+				for j := 0; j < dimSize; j++ {
+					i := ii*dimSize + j
+					dx[i] = (gradArr[i] - sum) * outputArr[i]
+				}
+				wg.Done()
+			}(outputArr, gradArr, dx, ii, &wg)
 		}
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxInnerDimF64(output Tensor, x Tensor, axis int, logSoftmax bool) {
@@ -306,50 +324,56 @@ func (e StdEng) softMaxInnerDimF64(output Tensor, x Tensor, axis int, logSoftmax
 	outputArr := getFloat64s(output)
 	xArr := getFloat64s(x)
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex, innerIndex := divmod(ii, innerSize)
+		wg.Add(1)
+		go func(ii int, wg *sync.WaitGroup) {
+			outerIndex, innerIndex := divmod(ii, innerSize)
 
-		inputPart := xArr[outerIndex*outerStride+innerIndex:]
-		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
+			inputPart := xArr[outerIndex*outerStride+innerIndex:]
+			outputPart := outputArr[outerIndex*outerStride+innerIndex:]
 
-		maxInput := inputPart[0]
-		for j := 1; j < dimSize; j++ {
-			i := j * dimStride
+			maxInput := inputPart[0]
+			for j := 1; j < dimSize; j++ {
+				i := j * dimStride
 
-			if inputPart[i] > maxInput {
-				maxInput = inputPart[i]
-			}
-		}
-
-		sumExp := 0.0
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
-
-			exp := math.Exp(inputPart[i] - maxInput)
-
-			if !logSoftmax {
-				outputPart[i] = exp
+				if inputPart[i] > maxInput {
+					maxInput = inputPart[i]
+				}
 			}
 
-			sumExp += exp
-		}
+			sumExp := 0.0
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
 
-		if logSoftmax {
-			sumExp = math.Log(sumExp)
-		} else {
-			sumExp = 1 / sumExp
-		}
+				exp := math.Exp(inputPart[i] - maxInput)
 
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
+				if !logSoftmax {
+					outputPart[i] = exp
+				}
+
+				sumExp += exp
+			}
 
 			if logSoftmax {
-				outputPart[i] = inputPart[i] - maxInput - sumExp
+				sumExp = math.Log(sumExp)
 			} else {
-				outputPart[i] *= sumExp
+				sumExp = 1 / sumExp
 			}
-		}
+
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
+
+				if logSoftmax {
+					outputPart[i] = inputPart[i] - maxInput - sumExp
+				} else {
+					outputPart[i] *= sumExp
+				}
+			}
+			wg.Done()
+		}(ii, &wg)
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxBInnerDimF64(inputGrad, output, grad Tensor, axis int, logSoftmax bool) {
@@ -372,34 +396,41 @@ func (e StdEng) softMaxBInnerDimF64(inputGrad, output, grad Tensor, axis int, lo
 	outputArr := getFloat64s(output)
 	gradArr := getFloat64s(grad)
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex, innerIndex := divmod(ii, innerSize)
+		wg.Add(1)
+		go func(ii int, wg *sync.WaitGroup) {
+			outerIndex, innerIndex := divmod(ii, innerSize)
 
-		gradPart := gradArr[outerIndex*outerStride+innerIndex:]
-		dxPart := dxArr[outerIndex*outerStride+innerIndex:]
-		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
+			gradPart := gradArr[outerIndex*outerStride+innerIndex:]
+			dxPart := dxArr[outerIndex*outerStride+innerIndex:]
+			outputPart := outputArr[outerIndex*outerStride+innerIndex:]
 
-		sum := 0.0
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
+			sum := 0.0
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
 
-			if logSoftmax {
-				sum += gradPart[i]
-			} else {
-				sum += gradPart[i] * outputPart[i]
+				if logSoftmax {
+					sum += gradPart[i]
+				} else {
+					sum += gradPart[i] * outputPart[i]
+				}
 			}
-		}
 
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
 
-			if logSoftmax {
-				dxPart[i] = gradPart[i] - math.Exp(outputPart[i])*sum
-			} else {
-				dxPart[i] = outputPart[i] * (gradPart[i] - sum)
+				if logSoftmax {
+					dxPart[i] = gradPart[i] - math.Exp(outputPart[i])*sum
+				} else {
+					dxPart[i] = outputPart[i] * (gradPart[i] - sum)
+				}
 			}
-		}
+			wg.Done()
+		}(ii, &wg)
+
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxLastDimF32(output Tensor, x Tensor, axis int, logSoftMax bool) {
@@ -413,45 +444,51 @@ func (e StdEng) softMaxLastDimF32(output Tensor, x Tensor, axis int, logSoftMax 
 		outerSize *= xShape[i]
 	}
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < outerSize; ii++ {
-		maxInput := xArr[0]
-		for j := 1; j < dimSize; j++ {
-			i := ii*dimSize + j
+		wg.Add(1)
+		go func(ii int, wg *sync.WaitGroup) {
+			maxInput := xArr[0]
+			for j := 1; j < dimSize; j++ {
+				i := ii*dimSize + j
 
-			if xArr[i] > maxInput {
-				maxInput = xArr[i]
-			}
-		}
-
-		sumExp := float32(0.0)
-		for j := 0; j < dimSize; j++ {
-			i := ii*dimSize + j
-			z := xArr[i] - maxInput
-			exp := math32.Exp(z)
-
-			if logSoftMax {
-				outputArr[i] = z
-			} else {
-				outputArr[i] = exp
+				if xArr[i] > maxInput {
+					maxInput = xArr[i]
+				}
 			}
 
-			sumExp += exp
-		}
+			sumExp := float32(0.0)
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+				z := xArr[i] - maxInput
+				exp := math32.Exp(z)
 
-		if !logSoftMax {
-			sumExp = 1 / sumExp
-		}
+				if logSoftMax {
+					outputArr[i] = z
+				} else {
+					outputArr[i] = exp
+				}
 
-		for j := 0; j < dimSize; j++ {
-			i := ii*dimSize + j
-
-			if logSoftMax {
-				outputArr[i] -= math32.Log(sumExp)
-			} else {
-				outputArr[i] *= sumExp
+				sumExp += exp
 			}
-		}
+
+			if !logSoftMax {
+				sumExp = 1 / sumExp
+			}
+
+			for j := 0; j < dimSize; j++ {
+				i := ii*dimSize + j
+
+				if logSoftMax {
+					outputArr[i] -= math32.Log(sumExp)
+				} else {
+					outputArr[i] *= sumExp
+				}
+			}
+			wg.Done()
+		}(ii, &wg)
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxBLastDimF32(inputGrad, output, grad Tensor, axis int, logSoftMax bool) {
@@ -467,42 +504,52 @@ func (e StdEng) softMaxBLastDimF32(inputGrad, output, grad Tensor, axis int, log
 		outerSize *= outputShape[i]
 	}
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < outerSize; ii++ {
+		wg.Add(1)
+
 		if logSoftMax {
-			sum := gradArr[ii*dimSize]
-			for j := 1; j < dimSize; j++ {
-				i := ii*dimSize + j
+			go func(ii int, wg *sync.WaitGroup) {
+				sum := gradArr[ii*dimSize]
+				for j := 1; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				sum += gradArr[i]
-			}
+					sum += gradArr[i]
+				}
 
-			for j := 0; j < dimSize; j++ {
-				i := ii*dimSize + j
+				for j := 0; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				dx[i] = gradArr[i] - (math32.Exp(outputArr[i]) * sum)
-			}
+					dx[i] = gradArr[i] - (math32.Exp(outputArr[i]) * sum)
+				}
+				wg.Done()
+			}(ii, &wg)
 		} else {
-			//mul := make([]float32, dimSize)
-			var sum float32
-			for j := 0; j < dimSize; j++ {
-				i := ii*dimSize + j
+			go func(ii int, wg *sync.WaitGroup) {
+				//mul := make([]float32, dimSize)
+				var sum float32
+				for j := 0; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				//mul[j] = outputArr[i] * gradArr[i]
-				sum += outputArr[i] * gradArr[i]
-			}
+					//mul[j] = outputArr[i] * gradArr[i]
+					sum += outputArr[i] * gradArr[i]
+				}
 
-			// sum := mul[0]
-			// for j := 1; j < dimSize; j++ {
-			// 	sum += mul[j]
-			// }
+				// sum := mul[0]
+				// for j := 1; j < dimSize; j++ {
+				// 	sum += mul[j]
+				// }
 
-			for j := 0; j < dimSize; j++ {
-				i := ii*dimSize + j
+				for j := 0; j < dimSize; j++ {
+					i := ii*dimSize + j
 
-				dx[i] = (gradArr[i] - sum) * outputArr[i]
-			}
+					dx[i] = (gradArr[i] - sum) * outputArr[i]
+				}
+				wg.Done()
+			}(ii, &wg)
 		}
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxInnerDimF32(output Tensor, x Tensor, axis int, logSoftmax bool) {
@@ -524,50 +571,57 @@ func (e StdEng) softMaxInnerDimF32(output Tensor, x Tensor, axis int, logSoftmax
 	outputArr := getFloat32s(output)
 	xArr := getFloat32s(x)
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex, innerIndex := divmod(ii, innerSize)
+		wg.Add(1)
 
-		inputPart := xArr[outerIndex*outerStride+innerIndex:]
-		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
+		go func(ii int, wg *sync.WaitGroup) {
+			outerIndex, innerIndex := divmod(ii, innerSize)
 
-		maxInput := inputPart[0]
-		for j := 1; j < dimSize; j++ {
-			i := j * dimStride
+			inputPart := xArr[outerIndex*outerStride+innerIndex:]
+			outputPart := outputArr[outerIndex*outerStride+innerIndex:]
 
-			if inputPart[i] > maxInput {
-				maxInput = inputPart[i]
-			}
-		}
+			maxInput := inputPart[0]
+			for j := 1; j < dimSize; j++ {
+				i := j * dimStride
 
-		sumExp := float32(0.0)
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
-
-			exp := math32.Exp(inputPart[i] - maxInput)
-
-			if !logSoftmax {
-				outputPart[i] = exp
+				if inputPart[i] > maxInput {
+					maxInput = inputPart[i]
+				}
 			}
 
-			sumExp += exp
-		}
+			sumExp := float32(0.0)
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
 
-		if logSoftmax {
-			sumExp = math32.Log(sumExp)
-		} else {
-			sumExp = 1 / sumExp
-		}
+				exp := math32.Exp(inputPart[i] - maxInput)
 
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
+				if !logSoftmax {
+					outputPart[i] = exp
+				}
+
+				sumExp += exp
+			}
 
 			if logSoftmax {
-				outputPart[i] = inputPart[i] - maxInput - sumExp
+				sumExp = math32.Log(sumExp)
 			} else {
-				outputPart[i] *= sumExp
+				sumExp = 1 / sumExp
 			}
-		}
+
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
+
+				if logSoftmax {
+					outputPart[i] = inputPart[i] - maxInput - sumExp
+				} else {
+					outputPart[i] *= sumExp
+				}
+			}
+			wg.Done()
+		}(ii, &wg)
 	}
+	wg.Wait()
 }
 
 func (e StdEng) softMaxBInnerDimF32(inputGrad, output, grad Tensor, axis int, logSoftmax bool) {
@@ -590,32 +644,39 @@ func (e StdEng) softMaxBInnerDimF32(inputGrad, output, grad Tensor, axis int, lo
 	outputArr := getFloat32s(output)
 	gradArr := getFloat32s(grad)
 
+	var wg sync.WaitGroup
 	for ii := 0; ii < innerSize*outerSize; ii++ {
-		outerIndex, innerIndex := divmod(ii, innerSize)
+		wg.Add(1)
 
-		gradPart := gradArr[outerIndex*outerStride+innerIndex:]
-		dxPart := dxArr[outerIndex*outerStride+innerIndex:]
-		outputPart := outputArr[outerIndex*outerStride+innerIndex:]
+		go func(ii int, wg *sync.WaitGroup) {
+			outerIndex, innerIndex := divmod(ii, innerSize)
 
-		sum := float32(0.0)
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
+			gradPart := gradArr[outerIndex*outerStride+innerIndex:]
+			dxPart := dxArr[outerIndex*outerStride+innerIndex:]
+			outputPart := outputArr[outerIndex*outerStride+innerIndex:]
 
-			if logSoftmax {
-				sum += gradPart[i]
-			} else {
-				sum += gradPart[i] * outputPart[i]
+			sum := float32(0.0)
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
+
+				if logSoftmax {
+					sum += gradPart[i]
+				} else {
+					sum += gradPart[i] * outputPart[i]
+				}
 			}
-		}
 
-		for j := 0; j < dimSize; j++ {
-			i := j * dimStride
+			for j := 0; j < dimSize; j++ {
+				i := j * dimStride
 
-			if logSoftmax {
-				dxPart[i] = gradPart[i] - math32.Exp(outputPart[i])*sum
-			} else {
-				dxPart[i] = outputPart[i] * (gradPart[i] - sum)
+				if logSoftmax {
+					dxPart[i] = gradPart[i] - math32.Exp(outputPart[i])*sum
+				} else {
+					dxPart[i] = outputPart[i] * (gradPart[i] - sum)
+				}
 			}
-		}
+			wg.Done()
+		}(ii, &wg)
 	}
+	wg.Wait()
 }
