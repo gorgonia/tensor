@@ -703,17 +703,19 @@ func TestDense_Narrow(t *testing.T) {
 	for i, tC := range testCases {
 		t.Run(fmt.Sprintf("Example #%d narrow(%v,%d,%d,%v)", i+1, tC.x.Shape(), tC.dim, tC.start, tC.length), func(t *testing.T) {
 			c := assert.New(t)
+			// t.Logf("X:\n%v", tC.x)
 
 			y, err := tC.x.Narrow(tC.dim, tC.start, tC.length)
 			c.NoError(err)
+			// t.Logf("y:\n%v", y)
 
 			yMat := y.Materialize()
 			c.Equal(tC.expected.Shape(), yMat.Shape())
 			c.Equal(tC.expected.Data(), yMat.Data())
-			
-      // err = y.Memset(1024)
-			// c.Nil(err)
-			// t.Logf("example %d y \n%v\n%v", i+1, y, y.Data())
+
+			// err = y.Memset(1024)
+			// c.NoError(err)
+			// t.Logf("After Memset\nY: %v\nX:\n%v", y, tC.x)
 		})
 	}
 }
