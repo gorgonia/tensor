@@ -300,6 +300,27 @@ func allones(a []int) bool {
 	return true
 }
 
+func getFloat64s(a Tensor) []float64 {
+	if um, ok := a.(unsafeMem); ok {
+		return um.Float64s()
+	}
+	return a.Data().([]float64)
+}
+
+func getFloat32s(a Tensor) []float32 {
+	if um, ok := a.(unsafeMem); ok {
+		return um.Float32s()
+	}
+	return a.Data().([]float32)
+}
+
+func getInts(a Tensor) []int {
+	if um, ok := a.(unsafeMem); ok {
+		return um.Ints()
+	}
+	return a.Data().([]int)
+}
+
 /* FOR ILLUSTRATIVE PURPOSES */
 
 // Permute permutates a pattern according to xs. This function exists for illustrative purposes (i.e. the dumb, unoptimized version)

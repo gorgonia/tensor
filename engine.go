@@ -410,7 +410,7 @@ type InfChecker interface {
 // ByIndiceser allows for values in tensor `a` to be selected by the indices listed in the `indices` tensor.
 type ByIndiceser interface {
 	SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-	SelectByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+	SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
 }
 
 /* Internal interfaces for faster shit */
@@ -421,4 +421,12 @@ type denseArgmaxer interface {
 
 type denseArgminer interface {
 	argminDenseTensor(t DenseTensor, axis int) (*Dense, error)
+}
+
+type SoftMaxer interface {
+	LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+	LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+
+	SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+	SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
 }

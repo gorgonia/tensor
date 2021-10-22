@@ -7,6 +7,16 @@ import (
 // this file handles matops. While by default most of these matops should already have been defined as part of the
 // Tensor interface, not all are possible(for example, concatenating a sparse tensor), hence the need for the following functions
 
+// Narrow narrows the tensor.
+func Narrow(t Tensor, dim, start, length int) (View, error) {
+	dim = resolveAxis(dim, t.Dims())
+
+	slices := make([]Slice, MinInt(dim+1, t.Dims()))
+	slices[dim] = S(start, start+length, 1)
+
+	return t.Slice(slices...)
+}
+
 // Repeat repeats a Tensor along the axis and given the number of repeats.
 func Repeat(t Tensor, axis int, repeats ...int) (retVal Tensor, err error) {
 	if r, ok := t.Engine().(Repeater); ok {
@@ -135,7 +145,7 @@ func ByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err
 	if sbi, ok := a.Engine().(ByIndiceser); ok {
 		return sbi.SelectByIndices(a, indices, axis, opts...)
 	}
-	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
+	return nil, errors.Errorf("Unable to select by indices. Engine %T does not support that.", a.Engine())
 }
 
 // ByIndicesB is the backpropagation of ByIndices.
@@ -146,5 +156,41 @@ func ByIndicesB(a, b, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor,
 	if sbi, ok := a.Engine().(ByIndiceser); ok {
 		return sbi.SelectByIndicesB(a, b, indices, axis, opts...)
 	}
-	return nil, errors.Errorf("Unable to select by indices. Egnine %T does not support that.", a.Engine())
+	return nil, errors.Errorf("Unable to select by indices. Engine %T does not support that.", a.Engine())
+}
+
+// LogSoftMax applies log softmax to the given tensor.
+func LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := x.Engine().(SoftMaxer); ok {
+		return sm.LogSoftMax(x, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply LogSoftMax. Engine %T does not support that.", x.Engine())
+}
+
+// SoftMax applies softmax to the given tensor.
+func SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := x.Engine().(SoftMaxer); ok {
+		return sm.SoftMax(x, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply SoftMax. Engine %T does not support that.", x.Engine())
+}
+
+// SoftMaxB applies softmax backwards operation
+func SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := output.Engine().(SoftMaxer); ok {
+		return sm.SoftMaxB(output, grad, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply SoftMaxB. Engine %T does not support that.", output.Engine())
+}
+
+// LogSoftMaxB applies softmax backwards operation
+func LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sm, ok := output.Engine().(SoftMaxer); ok {
+		return sm.LogSoftMaxB(output, grad, axis, opts...)
+	}
+
+	return nil, errors.Errorf("Unable to apply SoftMaxB. Engine %T does not support that.", output.Engine())
 }
