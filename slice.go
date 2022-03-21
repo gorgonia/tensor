@@ -7,12 +7,7 @@ import (
 var xxx Slice = ss(1)
 var _ shapes.Slice = xxx
 
-// A Slice represents a slicing operation for a Tensor.
-type Slice interface {
-	Start() int
-	End() int
-	Step() int
-}
+type Slice = shapes.Slice
 
 type rs struct {
 	start, end, step int
