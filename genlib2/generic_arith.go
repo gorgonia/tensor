@@ -474,10 +474,6 @@ func generateGenericVecVecArith(f io.Writer, ak Kinds) {
 	for _, g := range gen {
 		g.Incr = false
 		g.Iter = false
-		aop := g.TypedBinOp.BinOp.(arithOp)
-		if aop.IsCommutative {
-			continue
-		}
 		g.WithRecv = true
 		g.Write(f)
 	}

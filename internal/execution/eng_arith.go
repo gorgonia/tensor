@@ -5194,6 +5194,111 @@ func (e E) ModIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 	}
 }
 
+func (e E) AddRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	switch t {
+	case Int:
+		at := a.Ints()
+		bt := b.Ints()
+		rt := recv.Ints()
+		AddRecvI(at, bt, rt)
+		return
+	case Int8:
+		at := a.Int8s()
+		bt := b.Int8s()
+		rt := recv.Int8s()
+		AddRecvI8(at, bt, rt)
+		return
+	case Int16:
+		at := a.Int16s()
+		bt := b.Int16s()
+		rt := recv.Int16s()
+		AddRecvI16(at, bt, rt)
+		return
+	case Int32:
+		at := a.Int32s()
+		bt := b.Int32s()
+		rt := recv.Int32s()
+		AddRecvI32(at, bt, rt)
+		return
+	case Int64:
+		at := a.Int64s()
+		bt := b.Int64s()
+		rt := recv.Int64s()
+		AddRecvI64(at, bt, rt)
+		return
+	case Uint:
+		at := a.Uints()
+		bt := b.Uints()
+		rt := recv.Uints()
+		AddRecvU(at, bt, rt)
+		return
+	case Uint8:
+		at := a.Uint8s()
+		bt := b.Uint8s()
+		rt := recv.Uint8s()
+		AddRecvU8(at, bt, rt)
+		return
+	case Uint16:
+		at := a.Uint16s()
+		bt := b.Uint16s()
+		rt := recv.Uint16s()
+		AddRecvU16(at, bt, rt)
+		return
+	case Uint32:
+		at := a.Uint32s()
+		bt := b.Uint32s()
+		rt := recv.Uint32s()
+		AddRecvU32(at, bt, rt)
+		return
+	case Uint64:
+		at := a.Uint64s()
+		bt := b.Uint64s()
+		rt := recv.Uint64s()
+		AddRecvU64(at, bt, rt)
+		return
+	case Float32:
+		at := a.Float32s()
+		bt := b.Float32s()
+		rt := recv.Float32s()
+		AddRecvF32(at, bt, rt)
+		return
+	case Float64:
+		at := a.Float64s()
+		bt := b.Float64s()
+		rt := recv.Float64s()
+		AddRecvF64(at, bt, rt)
+		return
+	case Complex64:
+		at := a.Complex64s()
+		bt := b.Complex64s()
+		rt := recv.Complex64s()
+		AddRecvC64(at, bt, rt)
+		return
+	case Complex128:
+		at := a.Complex128s()
+		bt := b.Complex128s()
+		rt := recv.Complex128s()
+		AddRecvC128(at, bt, rt)
+		return
+	case String:
+		at := a.Strings()
+		bt := b.Strings()
+		rt := recv.Strings()
+		AddRecvStr(at, bt, rt)
+		return
+	default:
+		return errors.Errorf("Unsupported type %v for AddRecv", t)
+	}
+}
+
 func (e E) SubRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
 	as := isScalar(a, t)
 	bs := isScalar(b, t)
@@ -5290,6 +5395,105 @@ func (e E) SubRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *s
 		return
 	default:
 		return errors.Errorf("Unsupported type %v for SubRecv", t)
+	}
+}
+
+func (e E) MulRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	switch t {
+	case Int:
+		at := a.Ints()
+		bt := b.Ints()
+		rt := recv.Ints()
+		MulRecvI(at, bt, rt)
+		return
+	case Int8:
+		at := a.Int8s()
+		bt := b.Int8s()
+		rt := recv.Int8s()
+		MulRecvI8(at, bt, rt)
+		return
+	case Int16:
+		at := a.Int16s()
+		bt := b.Int16s()
+		rt := recv.Int16s()
+		MulRecvI16(at, bt, rt)
+		return
+	case Int32:
+		at := a.Int32s()
+		bt := b.Int32s()
+		rt := recv.Int32s()
+		MulRecvI32(at, bt, rt)
+		return
+	case Int64:
+		at := a.Int64s()
+		bt := b.Int64s()
+		rt := recv.Int64s()
+		MulRecvI64(at, bt, rt)
+		return
+	case Uint:
+		at := a.Uints()
+		bt := b.Uints()
+		rt := recv.Uints()
+		MulRecvU(at, bt, rt)
+		return
+	case Uint8:
+		at := a.Uint8s()
+		bt := b.Uint8s()
+		rt := recv.Uint8s()
+		MulRecvU8(at, bt, rt)
+		return
+	case Uint16:
+		at := a.Uint16s()
+		bt := b.Uint16s()
+		rt := recv.Uint16s()
+		MulRecvU16(at, bt, rt)
+		return
+	case Uint32:
+		at := a.Uint32s()
+		bt := b.Uint32s()
+		rt := recv.Uint32s()
+		MulRecvU32(at, bt, rt)
+		return
+	case Uint64:
+		at := a.Uint64s()
+		bt := b.Uint64s()
+		rt := recv.Uint64s()
+		MulRecvU64(at, bt, rt)
+		return
+	case Float32:
+		at := a.Float32s()
+		bt := b.Float32s()
+		rt := recv.Float32s()
+		MulRecvF32(at, bt, rt)
+		return
+	case Float64:
+		at := a.Float64s()
+		bt := b.Float64s()
+		rt := recv.Float64s()
+		MulRecvF64(at, bt, rt)
+		return
+	case Complex64:
+		at := a.Complex64s()
+		bt := b.Complex64s()
+		rt := recv.Complex64s()
+		MulRecvC64(at, bt, rt)
+		return
+	case Complex128:
+		at := a.Complex128s()
+		bt := b.Complex128s()
+		rt := recv.Complex128s()
+		MulRecvC128(at, bt, rt)
+		return
+	default:
+		return errors.Errorf("Unsupported type %v for MulRecv", t)
 	}
 }
 

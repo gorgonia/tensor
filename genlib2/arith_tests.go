@@ -7,21 +7,28 @@ import (
 )
 
 const (
-	APICallVVRaw = `ret, err := {{.Name}}(a, b {{template "funcoptuse"}})`
-	APICallVSRaw = `ret, err := {{.Name}}(a, b {{template "funcoptuse"}})`
-	APICallSVRaw = `ret, err := {{.Name}}(b, a {{template "funcoptuse"}})`
+	APICallVVxRaw        = `correct, err := {{.Name}}(a, b)` // no funcopt
+	APICallVVReuseMutRaw = `ret, err = {{.Name}}(a, b`
+	APICallVVRaw         = `ret, err := {{.Name}}(a, b {{template "funcoptuse"}})`
+	APICallVSRaw         = `ret, err := {{.Name}}(a, b {{template "funcoptuse"}})`
+	APICallSVRaw         = `ret, err := {{.Name}}(b, a {{template "funcoptuse"}})`
 
 	APIInvVVRaw = `ret, err = {{.Inv}}(ret, b, UseUnsafe())`
 	APIInvVSRaw = `ret, err = {{.Inv}}(ret, b, UseUnsafe())`
 	APIInvSVRaw = `ret, err = {{.Name}}(b, ret, UseUnsafe())`
 
-	DenseMethodCallVVRaw = `ret, err := a.{{.Name}}(b {{template "funcoptuse"}})`
-	DenseMethodCallVSRaw = `ret, err := a.{{.Name}}Scalar(b, true {{template "funcoptuse"}})`
-	DenseMethodCallSVRaw = `ret, err := a.{{.Name}}Scalar(b, false {{template "funcoptuse"}})`
+	DenseMethodCallVVxRaw        = `correct, err := a.{{.Name}}(b)` // no funcopt
+	DenseMethodCallVVReuseMutRaw = `ret, err = a.{{.Name}}(b`
+	DenseMethodCallVVRaw         = `ret, err := a.{{.Name}}(b {{template "funcoptuse"}})`
+	DenseMethodCallVSRaw         = `ret, err := a.{{.Name}}Scalar(b, true {{template "funcoptuse"}})`
+	DenseMethodCallSVRaw         = `ret, err := a.{{.Name}}Scalar(b, false {{template "funcoptuse"}})`
 
 	DenseMethodInvVVRaw = `ret, err = ret.{{.Inv}}(b, UseUnsafe())`
 	DenseMethodInvVSRaw = `ret, err = ret.{{.Inv}}Scalar(b, true, UseUnsafe())`
 	DenseMethodInvSVRaw = `ret, err = ret.{{.Name}}Scalar(b, false, UseUnsafe())`
+
+	APIRetType   = `Tensor`
+	DenseRetType = `*Dense`
 )
 
 type ArithTest struct {
@@ -65,6 +72,10 @@ func (fn *ArithTest) WriteBody(w io.Writer) {
 		fn.writeInv(w)
 	}
 	fn.WriteScalarWrongType(w)
+
+	if fn.FuncOpt == "reuse" {
+		fn.writeReuseMutate(w)
+	}
 }
 
 func (fn *ArithTest) canWrite() bool {
@@ -143,6 +154,24 @@ func (fn *ArithTest) writeInv(w io.Writer) {
 
 	t.Execute(w, fn)
 }
+
+func (fn *ArithTest) writeReuseMutate(w io.Writer) {
+	t := template.Must(template.New("Reuse mutation test").Funcs(funcs).Parse(denseArithReuseMutationTestRaw))
+	switch fn.lvl {
+	case API:
+		return // tmp
+	case Dense:
+		template.Must(t.New("callVanilla").Parse(DenseMethodCallVVxRaw))
+		template.Must(t.New("retType").Parse(DenseRetType))
+		template.Must(t.New("call0").Parse(DenseMethodCallVVReuseMutRaw))
+
+	}
+	template.Must(t.New("funcoptdecl").Parse(funcOptDecl[fn.FuncOpt]))
+	template.Must(t.New("funcoptuse").Parse(funcOptUse[fn.FuncOpt]))
+	template.Must(t.New("funcoptcheck").Parse(funcOptCheck[fn.FuncOpt]))
+	t.Execute(w, fn)
+}
+
 func (fn *ArithTest) WriteScalarWrongType(w io.Writer) {
 	if !fn.scalars {
 		return

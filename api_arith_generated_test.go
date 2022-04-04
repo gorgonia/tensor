@@ -686,7 +686,7 @@ func TestAddScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Add (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Add (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestSubScalar(t *testing.T) {
@@ -766,7 +766,7 @@ func TestSubScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Sub (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Sub (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestMulScalar(t *testing.T) {
@@ -846,7 +846,7 @@ func TestMulScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Mul (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Mul (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDivScalar(t *testing.T) {
@@ -901,7 +901,7 @@ func TestDivScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Div (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Div (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestPowScalar(t *testing.T) {
@@ -956,7 +956,7 @@ func TestPowScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Pow (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Pow (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestAddScalar_unsafe(t *testing.T) {

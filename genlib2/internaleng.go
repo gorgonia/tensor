@@ -143,10 +143,6 @@ func generateEArith(f io.Writer, kinds Kinds) {
 
 	// write recv
 	for _, meth := range methods {
-		aop := meth.BinOp.(arithOp)
-		if aop.IsCommutative {
-			continue
-		}
 		meth.WithRecv = true
 		meth.Write(f)
 	}

@@ -153,16 +153,7 @@ const agg2BodyRaw = `if useIter {
 		retVal = reuse
 	{{if .VV -}}
 	case toReuse:
-		{{if not .IsCommutative -}}
-		// {{.Name}} is not a commutative operation. We'll use the Recv variant of the function.
 		err = e.E.{{.Name}}Recv(typ, dataA, dataB, dataReuse)
-
-		{{else -}}
-				storage.Copy(typ,dataReuse, dataA)
-		err = e.E.{{.Name}}(typ, dataReuse, dataB)
-		{{end -}}
-
-
 		retVal = reuse
 	{{else -}}
 	case toReuse && leftTensor:
