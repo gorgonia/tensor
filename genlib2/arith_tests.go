@@ -73,7 +73,7 @@ func (fn *ArithTest) WriteBody(w io.Writer) {
 	}
 	fn.WriteScalarWrongType(w)
 
-	if fn.FuncOpt == "reuse" {
+	if fn.FuncOpt == "reuse" && fn.arithOp.Name() != "Pow" {
 		fn.writeReuseMutate(w)
 	}
 }

@@ -668,58 +668,6 @@ func TestDense_Pow_reuse(t *testing.T) {
 		t.Errorf("Identity test for Pow failed: %v", err)
 	}
 
-	mut := func(a, b *Dense, reuseA bool) bool {
-		// req because we're only testing on one kind of tensor/engine combo
-		a.e = StdEng{}
-		a.oe = StdEng{}
-		a.flag = 0
-		b.e = StdEng{}
-		b.oe = StdEng{}
-		b.flag = 0
-
-		if a.Dtype() != b.Dtype() {
-			return true
-		}
-		if !a.Shape().Eq(b.Shape()) {
-			return true
-		}
-
-		correct, err := a.Pow(b)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
-		_, ok := a.Engine().(Power)
-		we = we || !ok
-
-		var ret, reuse *Dense
-		if reuseA {
-			ret, err = a.Pow(b, WithReuse(a))
-			reuse = a
-		} else {
-			ret, err = a.Pow(b, WithReuse(b))
-			reuse = b
-		}
-
-		if err, retEarly := qcErrCheck(t, "Pow", a, b, we, err); retEarly {
-			if err != nil {
-				return false
-			}
-			return true
-		}
-
-		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
-			return false
-		}
-
-		if reuse != ret {
-			t.Errorf("Expected reuse to be the same as retVal")
-			return false
-		}
-
-		return true
-	}
-	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("Reuse Mutation test for Pow failed: %v", err)
-	}
-
 }
 func TestDense_Add_incr(t *testing.T) {
 	iden := func(a *Dense) bool {
@@ -1952,58 +1900,6 @@ func TestDense_PowScalar_reuse(t *testing.T) {
 
 	if err := quick.Check(iden1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Identity test for Pow (tensor as left, scalar as right) failed: %v", err)
-	}
-
-	mut := func(a, b *Dense, reuseA bool) bool {
-		// req because we're only testing on one kind of tensor/engine combo
-		a.e = StdEng{}
-		a.oe = StdEng{}
-		a.flag = 0
-		b.e = StdEng{}
-		b.oe = StdEng{}
-		b.flag = 0
-
-		if a.Dtype() != b.Dtype() {
-			return true
-		}
-		if !a.Shape().Eq(b.Shape()) {
-			return true
-		}
-
-		correct, err := a.Pow(b)
-		we, willFailEq := willerr(a, floatcmplxTypes, complexTypes)
-		_, ok := a.Engine().(Power)
-		we = we || !ok
-
-		var ret, reuse *Dense
-		if reuseA {
-			ret, err = a.Pow(b, WithReuse(a))
-			reuse = a
-		} else {
-			ret, err = a.Pow(b, WithReuse(b))
-			reuse = b
-		}
-
-		if err, retEarly := qcErrCheck(t, "Pow", a, b, we, err); retEarly {
-			if err != nil {
-				return false
-			}
-			return true
-		}
-
-		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
-			return false
-		}
-
-		if reuse != ret {
-			t.Errorf("Expected reuse to be the same as retVal")
-			return false
-		}
-
-		return true
-	}
-	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("Reuse Mutation test for Pow failed: %v", err)
 	}
 
 }
