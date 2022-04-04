@@ -2851,7 +2851,7 @@ func (e E) AddIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 		}
 		return
 	default:
-		return errors.Errorf("Unsupported type %v for Add", t)
+		return errors.Errorf("Unsupported type %v for AddIter", t)
 	}
 }
 
@@ -3057,7 +3057,7 @@ func (e E) SubIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 		}
 		return
 	default:
-		return errors.Errorf("Unsupported type %v for Sub", t)
+		return errors.Errorf("Unsupported type %v for SubIter", t)
 	}
 }
 
@@ -3263,7 +3263,7 @@ func (e E) MulIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 		}
 		return
 	default:
-		return errors.Errorf("Unsupported type %v for Mul", t)
+		return errors.Errorf("Unsupported type %v for MulIter", t)
 	}
 }
 
@@ -3469,7 +3469,7 @@ func (e E) DivIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 		}
 		return
 	default:
-		return errors.Errorf("Unsupported type %v for Div", t)
+		return errors.Errorf("Unsupported type %v for DivIter", t)
 	}
 }
 
@@ -3535,7 +3535,7 @@ func (e E) PowIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 		}
 		return
 	default:
-		return errors.Errorf("Unsupported type %v for Pow", t)
+		return errors.Errorf("Unsupported type %v for PowIter", t)
 	}
 }
 
@@ -3713,7 +3713,7 @@ func (e E) ModIter(t reflect.Type, a *storage.Header, b *storage.Header, ait Ite
 		}
 		return
 	default:
-		return errors.Errorf("Unsupported type %v for Mod", t)
+		return errors.Errorf("Unsupported type %v for ModIter", t)
 	}
 }
 
@@ -4013,7 +4013,7 @@ func (e E) AddIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 			return AddIterIncrStr(at, bt, it, ait, bit, iit)
 		}
 	default:
-		return errors.Errorf("Unsupported type %v for Add", t)
+		return errors.Errorf("Unsupported type %v for AddIterIncr", t)
 	}
 }
 
@@ -4294,7 +4294,7 @@ func (e E) SubIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 			return SubIterIncrC128(at, bt, it, ait, bit, iit)
 		}
 	default:
-		return errors.Errorf("Unsupported type %v for Sub", t)
+		return errors.Errorf("Unsupported type %v for SubIterIncr", t)
 	}
 }
 
@@ -4575,7 +4575,7 @@ func (e E) MulIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 			return MulIterIncrC128(at, bt, it, ait, bit, iit)
 		}
 	default:
-		return errors.Errorf("Unsupported type %v for Mul", t)
+		return errors.Errorf("Unsupported type %v for MulIterIncr", t)
 	}
 }
 
@@ -4856,7 +4856,7 @@ func (e E) DivIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 			return DivIterIncrC128(at, bt, it, ait, bit, iit)
 		}
 	default:
-		return errors.Errorf("Unsupported type %v for Div", t)
+		return errors.Errorf("Unsupported type %v for DivIterIncr", t)
 	}
 }
 
@@ -4947,7 +4947,7 @@ func (e E) PowIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 			return PowIterIncrC128(at, bt, it, ait, bit, iit)
 		}
 	default:
-		return errors.Errorf("Unsupported type %v for Pow", t)
+		return errors.Errorf("Unsupported type %v for PowIterIncr", t)
 	}
 }
 
@@ -5190,6 +5190,330 @@ func (e E) ModIterIncr(t reflect.Type, a *storage.Header, b *storage.Header, inc
 			return ModIterIncrF64(at, bt, it, ait, bit, iit)
 		}
 	default:
-		return errors.Errorf("Unsupported type %v for Mod", t)
+		return errors.Errorf("Unsupported type %v for ModIterIncr", t)
+	}
+}
+
+func (e E) SubRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	switch t {
+	case Int:
+		at := a.Ints()
+		bt := b.Ints()
+		rt := recv.Ints()
+		SubRecvI(at, bt, rt)
+		return
+	case Int8:
+		at := a.Int8s()
+		bt := b.Int8s()
+		rt := recv.Int8s()
+		SubRecvI8(at, bt, rt)
+		return
+	case Int16:
+		at := a.Int16s()
+		bt := b.Int16s()
+		rt := recv.Int16s()
+		SubRecvI16(at, bt, rt)
+		return
+	case Int32:
+		at := a.Int32s()
+		bt := b.Int32s()
+		rt := recv.Int32s()
+		SubRecvI32(at, bt, rt)
+		return
+	case Int64:
+		at := a.Int64s()
+		bt := b.Int64s()
+		rt := recv.Int64s()
+		SubRecvI64(at, bt, rt)
+		return
+	case Uint:
+		at := a.Uints()
+		bt := b.Uints()
+		rt := recv.Uints()
+		SubRecvU(at, bt, rt)
+		return
+	case Uint8:
+		at := a.Uint8s()
+		bt := b.Uint8s()
+		rt := recv.Uint8s()
+		SubRecvU8(at, bt, rt)
+		return
+	case Uint16:
+		at := a.Uint16s()
+		bt := b.Uint16s()
+		rt := recv.Uint16s()
+		SubRecvU16(at, bt, rt)
+		return
+	case Uint32:
+		at := a.Uint32s()
+		bt := b.Uint32s()
+		rt := recv.Uint32s()
+		SubRecvU32(at, bt, rt)
+		return
+	case Uint64:
+		at := a.Uint64s()
+		bt := b.Uint64s()
+		rt := recv.Uint64s()
+		SubRecvU64(at, bt, rt)
+		return
+	case Float32:
+		at := a.Float32s()
+		bt := b.Float32s()
+		rt := recv.Float32s()
+		SubRecvF32(at, bt, rt)
+		return
+	case Float64:
+		at := a.Float64s()
+		bt := b.Float64s()
+		rt := recv.Float64s()
+		SubRecvF64(at, bt, rt)
+		return
+	case Complex64:
+		at := a.Complex64s()
+		bt := b.Complex64s()
+		rt := recv.Complex64s()
+		SubRecvC64(at, bt, rt)
+		return
+	case Complex128:
+		at := a.Complex128s()
+		bt := b.Complex128s()
+		rt := recv.Complex128s()
+		SubRecvC128(at, bt, rt)
+		return
+	default:
+		return errors.Errorf("Unsupported type %v for SubRecv", t)
+	}
+}
+
+func (e E) DivRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	switch t {
+	case Int:
+		at := a.Ints()
+		bt := b.Ints()
+		rt := recv.Ints()
+		DivRecvI(at, bt, rt)
+		return
+	case Int8:
+		at := a.Int8s()
+		bt := b.Int8s()
+		rt := recv.Int8s()
+		DivRecvI8(at, bt, rt)
+		return
+	case Int16:
+		at := a.Int16s()
+		bt := b.Int16s()
+		rt := recv.Int16s()
+		DivRecvI16(at, bt, rt)
+		return
+	case Int32:
+		at := a.Int32s()
+		bt := b.Int32s()
+		rt := recv.Int32s()
+		DivRecvI32(at, bt, rt)
+		return
+	case Int64:
+		at := a.Int64s()
+		bt := b.Int64s()
+		rt := recv.Int64s()
+		DivRecvI64(at, bt, rt)
+		return
+	case Uint:
+		at := a.Uints()
+		bt := b.Uints()
+		rt := recv.Uints()
+		DivRecvU(at, bt, rt)
+		return
+	case Uint8:
+		at := a.Uint8s()
+		bt := b.Uint8s()
+		rt := recv.Uint8s()
+		DivRecvU8(at, bt, rt)
+		return
+	case Uint16:
+		at := a.Uint16s()
+		bt := b.Uint16s()
+		rt := recv.Uint16s()
+		DivRecvU16(at, bt, rt)
+		return
+	case Uint32:
+		at := a.Uint32s()
+		bt := b.Uint32s()
+		rt := recv.Uint32s()
+		DivRecvU32(at, bt, rt)
+		return
+	case Uint64:
+		at := a.Uint64s()
+		bt := b.Uint64s()
+		rt := recv.Uint64s()
+		DivRecvU64(at, bt, rt)
+		return
+	case Float32:
+		at := a.Float32s()
+		bt := b.Float32s()
+		rt := recv.Float32s()
+		DivRecvF32(at, bt, rt)
+		return
+	case Float64:
+		at := a.Float64s()
+		bt := b.Float64s()
+		rt := recv.Float64s()
+		DivRecvF64(at, bt, rt)
+		return
+	case Complex64:
+		at := a.Complex64s()
+		bt := b.Complex64s()
+		rt := recv.Complex64s()
+		DivRecvC64(at, bt, rt)
+		return
+	case Complex128:
+		at := a.Complex128s()
+		bt := b.Complex128s()
+		rt := recv.Complex128s()
+		DivRecvC128(at, bt, rt)
+		return
+	default:
+		return errors.Errorf("Unsupported type %v for DivRecv", t)
+	}
+}
+
+func (e E) PowRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	switch t {
+	case Float32:
+		at := a.Float32s()
+		bt := b.Float32s()
+		rt := recv.Float32s()
+		PowRecvF32(at, bt, rt)
+		return
+	case Float64:
+		at := a.Float64s()
+		bt := b.Float64s()
+		rt := recv.Float64s()
+		PowRecvF64(at, bt, rt)
+		return
+	case Complex64:
+		at := a.Complex64s()
+		bt := b.Complex64s()
+		rt := recv.Complex64s()
+		PowRecvC64(at, bt, rt)
+		return
+	case Complex128:
+		at := a.Complex128s()
+		bt := b.Complex128s()
+		rt := recv.Complex128s()
+		PowRecvC128(at, bt, rt)
+		return
+	default:
+		return errors.Errorf("Unsupported type %v for PowRecv", t)
+	}
+}
+
+func (e E) ModRecv(t reflect.Type, a *storage.Header, b *storage.Header, recv *storage.Header) (err error) {
+	as := isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	switch t {
+	case Int:
+		at := a.Ints()
+		bt := b.Ints()
+		rt := recv.Ints()
+		ModRecvI(at, bt, rt)
+		return
+	case Int8:
+		at := a.Int8s()
+		bt := b.Int8s()
+		rt := recv.Int8s()
+		ModRecvI8(at, bt, rt)
+		return
+	case Int16:
+		at := a.Int16s()
+		bt := b.Int16s()
+		rt := recv.Int16s()
+		ModRecvI16(at, bt, rt)
+		return
+	case Int32:
+		at := a.Int32s()
+		bt := b.Int32s()
+		rt := recv.Int32s()
+		ModRecvI32(at, bt, rt)
+		return
+	case Int64:
+		at := a.Int64s()
+		bt := b.Int64s()
+		rt := recv.Int64s()
+		ModRecvI64(at, bt, rt)
+		return
+	case Uint:
+		at := a.Uints()
+		bt := b.Uints()
+		rt := recv.Uints()
+		ModRecvU(at, bt, rt)
+		return
+	case Uint8:
+		at := a.Uint8s()
+		bt := b.Uint8s()
+		rt := recv.Uint8s()
+		ModRecvU8(at, bt, rt)
+		return
+	case Uint16:
+		at := a.Uint16s()
+		bt := b.Uint16s()
+		rt := recv.Uint16s()
+		ModRecvU16(at, bt, rt)
+		return
+	case Uint32:
+		at := a.Uint32s()
+		bt := b.Uint32s()
+		rt := recv.Uint32s()
+		ModRecvU32(at, bt, rt)
+		return
+	case Uint64:
+		at := a.Uint64s()
+		bt := b.Uint64s()
+		rt := recv.Uint64s()
+		ModRecvU64(at, bt, rt)
+		return
+	case Float32:
+		at := a.Float32s()
+		bt := b.Float32s()
+		rt := recv.Float32s()
+		ModRecvF32(at, bt, rt)
+		return
+	case Float64:
+		at := a.Float64s()
+		bt := b.Float64s()
+		rt := recv.Float64s()
+		ModRecvF64(at, bt, rt)
+		return
+	default:
+		return errors.Errorf("Unsupported type %v for ModRecv", t)
 	}
 }

@@ -10,9 +10,10 @@ import (
 
 type InternalEngArithMethod struct {
 	BinOp
-	Kinds []reflect.Kind
-	Incr  bool
-	Iter  bool
+	Kinds    []reflect.Kind
+	Incr     bool
+	Iter     bool
+	WithRecv bool
 }
 
 type eLoopBody struct {
@@ -30,6 +31,8 @@ func (fn *InternalEngArithMethod) Name() string {
 		return fmt.Sprintf("%sIncr", fn.BinOp.Name())
 	case !fn.Incr && fn.Iter:
 		return fmt.Sprintf("%sIter", fn.BinOp.Name())
+	case fn.WithRecv:
+		return fmt.Sprintf("%sRecv", fn.BinOp.Name())
 	default:
 		return fn.BinOp.Name()
 	}
@@ -47,6 +50,9 @@ func (fn *InternalEngArithMethod) Signature() *Signature {
 		paramTemplates = []*template.Template{reflectType, arrayType, arrayType, iteratorType, iteratorType}
 	case !fn.Iter && fn.Incr:
 		paramNames = []string{"t", "a", "b", "incr"}
+		paramTemplates = []*template.Template{reflectType, arrayType, arrayType, arrayType}
+	case fn.WithRecv:
+		paramNames = []string{"t", "a", "b", "recv"}
 		paramTemplates = []*template.Template{reflectType, arrayType, arrayType, arrayType}
 	default:
 		paramNames = []string{"t", "a", "b"}
@@ -72,6 +78,8 @@ func (fn *InternalEngArithMethod) WriteBody(w io.Writer) {
 		T = eArithIncr
 	case fn.Iter && !fn.Incr:
 		T = eArithIter
+	case fn.WithRecv:
+		T = eArithRecv
 	default:
 		T = eArith
 	}
@@ -107,22 +115,39 @@ func generateEArith(f io.Writer, kinds Kinds) {
 		methods = append(methods, meth)
 	}
 
+	// write vanilla
 	for _, meth := range methods {
 		meth.Write(f)
 		meth.Incr = true
 	}
 
+	// write incr
 	for _, meth := range methods {
 		meth.Write(f)
 		meth.Incr = false
 		meth.Iter = true
 	}
+
+	// write iter
 	for _, meth := range methods {
 		meth.Write(f)
 		meth.Incr = true
 	}
 
+	// write iter incr
 	for _, meth := range methods {
+		meth.Write(f)
+		meth.Incr = false
+		meth.Iter = false
+	}
+
+	// write recv
+	for _, meth := range methods {
+		aop := meth.BinOp.(arithOp)
+		if aop.IsCommutative {
+			continue
+		}
+		meth.WithRecv = true
 		meth.Write(f)
 	}
 }

@@ -120,8 +120,9 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.SubIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Sub(typ, dataReuse, dataB)
+		// Sub is not a commutative operation. We'll use the Recv variant of the function.
+		err = e.E.SubRecv(typ, dataA, dataB, dataReuse)
+
 		retVal = reuse
 	case !safe:
 		err = e.E.Sub(typ, dataA, dataB)
@@ -250,8 +251,9 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.DivIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Div(typ, dataReuse, dataB)
+		// Div is not a commutative operation. We'll use the Recv variant of the function.
+		err = e.E.DivRecv(typ, dataA, dataB, dataReuse)
+
 		retVal = reuse
 	case !safe:
 		err = e.E.Div(typ, dataA, dataB)
@@ -315,8 +317,9 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.PowIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Pow(typ, dataReuse, dataB)
+		// Pow is not a commutative operation. We'll use the Recv variant of the function.
+		err = e.E.PowRecv(typ, dataA, dataB, dataReuse)
+
 		retVal = reuse
 	case !safe:
 		err = e.E.Pow(typ, dataA, dataB)
@@ -380,8 +383,9 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.ModIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Mod(typ, dataReuse, dataB)
+		// Mod is not a commutative operation. We'll use the Recv variant of the function.
+		err = e.E.ModRecv(typ, dataA, dataB, dataReuse)
+
 		retVal = reuse
 	case !safe:
 		err = e.E.Mod(typ, dataA, dataB)
