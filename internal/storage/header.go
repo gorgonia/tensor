@@ -35,6 +35,12 @@ func CopySliced(t reflect.Type, dst *Header, dstart, dend int, src *Header, ssta
 	return copied / size
 }
 
+func SwapCopy(a, b *Header) {
+	for i := range a.Raw {
+		a.Raw[i], b.Raw[i] = b.Raw[i], a.Raw[i]
+	}
+}
+
 func Fill(t reflect.Type, dst, src *Header) int {
 	dstBA := dst.Raw
 	srcBA := src.Raw

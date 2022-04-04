@@ -153,8 +153,7 @@ const agg2BodyRaw = `if useIter {
 		retVal = reuse
 	{{if .VV -}}
 	case toReuse:
-		storage.Copy(typ,dataReuse, dataA)
-		err = e.E.{{.Name}}(typ, dataReuse, dataB)
+		err = e.E.{{.Name}}Recv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	{{else -}}
 	case toReuse && leftTensor:

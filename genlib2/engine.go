@@ -11,6 +11,7 @@ type EngineArith struct {
 	VecVar         string
 	PrepData       string
 	TypeClassCheck string
+	IsCommutative  bool
 
 	VV      bool
 	LeftVec bool
@@ -97,6 +98,7 @@ func generateStdEngArith(f io.Writer, ak Kinds) {
 			Name:           abo.Name(),
 			VV:             true,
 			TypeClassCheck: "Number",
+			IsCommutative:  abo.IsCommutative,
 		}
 		methods = append(methods, meth)
 	}
