@@ -4637,3 +4637,717 @@ func ModIterIncrF64(a []float64, b []float64, incr []float64, ait Iterator, bit 
 	}
 	return
 }
+
+func AddRecvI(a []int, b []int, recv []int) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvI8(a []int8, b []int8, recv []int8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvI16(a []int16, b []int16, recv []int16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvI32(a []int32, b []int32, recv []int32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvI64(a []int64, b []int64, recv []int64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvU(a []uint, b []uint, recv []uint) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvU8(a []uint8, b []uint8, recv []uint8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvU16(a []uint16, b []uint16, recv []uint16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvU32(a []uint32, b []uint32, recv []uint32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvU64(a []uint64, b []uint64, recv []uint64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvF32(a []float32, b []float32, recv []float32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvF64(a []float64, b []float64, recv []float64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvC64(a []complex64, b []complex64, recv []complex64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvC128(a []complex128, b []complex128, recv []complex128) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func AddRecvStr(a []string, b []string, recv []string) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] + b[i]
+	}
+}
+
+func SubRecvI(a []int, b []int, recv []int) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvI8(a []int8, b []int8, recv []int8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvI16(a []int16, b []int16, recv []int16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvI32(a []int32, b []int32, recv []int32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvI64(a []int64, b []int64, recv []int64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvU(a []uint, b []uint, recv []uint) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvU8(a []uint8, b []uint8, recv []uint8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvU16(a []uint16, b []uint16, recv []uint16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvU32(a []uint32, b []uint32, recv []uint32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvU64(a []uint64, b []uint64, recv []uint64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvF32(a []float32, b []float32, recv []float32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvF64(a []float64, b []float64, recv []float64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvC64(a []complex64, b []complex64, recv []complex64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func SubRecvC128(a []complex128, b []complex128, recv []complex128) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] - b[i]
+	}
+}
+
+func MulRecvI(a []int, b []int, recv []int) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvI8(a []int8, b []int8, recv []int8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvI16(a []int16, b []int16, recv []int16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvI32(a []int32, b []int32, recv []int32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvI64(a []int64, b []int64, recv []int64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvU(a []uint, b []uint, recv []uint) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvU8(a []uint8, b []uint8, recv []uint8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvU16(a []uint16, b []uint16, recv []uint16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvU32(a []uint32, b []uint32, recv []uint32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvU64(a []uint64, b []uint64, recv []uint64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvF32(a []float32, b []float32, recv []float32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvF64(a []float64, b []float64, recv []float64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvC64(a []complex64, b []complex64, recv []complex64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func MulRecvC128(a []complex128, b []complex128, recv []complex128) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] * b[i]
+	}
+}
+
+func DivRecvI(a []int, b []int, recv []int) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvI8(a []int8, b []int8, recv []int8) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvI16(a []int16, b []int16, recv []int16) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvI32(a []int32, b []int32, recv []int32) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvI64(a []int64, b []int64, recv []int64) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvU(a []uint, b []uint, recv []uint) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvU8(a []uint8, b []uint8, recv []uint8) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvU16(a []uint16, b []uint16, recv []uint16) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvU32(a []uint32, b []uint32, recv []uint32) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvU64(a []uint64, b []uint64, recv []uint64) (err error) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	var errs errorIndices
+	for i := range recv {
+		if b[i] == 0 {
+			errs = append(errs, i)
+			recv[i] = 0
+			continue
+		}
+		recv[i] = a[i] / b[i]
+	}
+	if err != nil {
+		return
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}
+
+func DivRecvF32(a []float32, b []float32, recv []float32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] / b[i]
+	}
+}
+
+func DivRecvF64(a []float64, b []float64, recv []float64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] / b[i]
+	}
+}
+
+func DivRecvC64(a []complex64, b []complex64, recv []complex64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] / b[i]
+	}
+}
+
+func DivRecvC128(a []complex128, b []complex128, recv []complex128) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] / b[i]
+	}
+}
+
+func PowRecvF32(a []float32, b []float32, recv []float32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = math32.Pow(a[i], b[i])
+	}
+}
+
+func PowRecvF64(a []float64, b []float64, recv []float64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = math.Pow(a[i], b[i])
+	}
+}
+
+func PowRecvC64(a []complex64, b []complex64, recv []complex64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = complex64(cmplx.Pow(complex128(a[i]), complex128(b[i])))
+	}
+}
+
+func PowRecvC128(a []complex128, b []complex128, recv []complex128) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = cmplx.Pow(a[i], b[i])
+	}
+}
+
+func ModRecvI(a []int, b []int, recv []int) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvI8(a []int8, b []int8, recv []int8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvI16(a []int16, b []int16, recv []int16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvI32(a []int32, b []int32, recv []int32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvI64(a []int64, b []int64, recv []int64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvU(a []uint, b []uint, recv []uint) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvU8(a []uint8, b []uint8, recv []uint8) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvU16(a []uint16, b []uint16, recv []uint16) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvU32(a []uint32, b []uint32, recv []uint32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvU64(a []uint64, b []uint64, recv []uint64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = a[i] % b[i]
+	}
+}
+
+func ModRecvF32(a []float32, b []float32, recv []float32) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = math32.Mod(a[i], b[i])
+	}
+}
+
+func ModRecvF64(a []float64, b []float64, recv []float64) {
+	a = a[:len(recv)]
+	b = b[:len(recv)]
+	for i := range recv {
+		recv[i] = math.Mod(a[i], b[i])
+	}
+}

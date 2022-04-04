@@ -11,6 +11,7 @@ type GenericVecVecArith struct {
 	TypedBinOp
 	Iter          bool
 	Incr          bool
+	WithRecv      bool      // not many BinOps have this
 	Check         TypeClass // can be nil
 	CheckTemplate string
 }
@@ -23,6 +24,8 @@ func (fn *GenericVecVecArith) Name() string {
 		return fmt.Sprintf("%sIter", fn.TypedBinOp.Name())
 	case !fn.Iter && fn.Incr:
 		return fmt.Sprintf("%sIncr", fn.TypedBinOp.Name())
+	case fn.WithRecv:
+		return fmt.Sprintf("%vRecv", fn.TypedBinOp.Name())
 	default:
 		return fmt.Sprintf("Vec%s", fn.TypedBinOp.Name())
 	}
@@ -44,6 +47,9 @@ func (fn *GenericVecVecArith) Signature() *Signature {
 		err = true
 	case !fn.Iter && fn.Incr:
 		paramNames = []string{"a", "b", "incr"}
+		paramTemplates = []*template.Template{sliceType, sliceType, sliceType}
+	case fn.WithRecv:
+		paramNames = []string{"a", "b", "recv"}
 		paramTemplates = []*template.Template{sliceType, sliceType, sliceType}
 	default:
 		paramNames = []string{"a", "b"}
@@ -97,6 +103,11 @@ func (fn *GenericVecVecArith) WriteBody(w io.Writer) {
 		Right = "b[i]"
 		T = template.Must(T.Parse(genericLoopRaw))
 		template.Must(T.New("loopbody").Parse(basicIncr))
+	case fn.WithRecv:
+		Range = "recv"
+		Right = "b[i]"
+		T = template.Must(T.Parse(genericLoopRaw))
+		template.Must(T.New("loopbody").Parse(basicSet))
 	default:
 		Right = "b[i]"
 		T = template.Must(T.Parse(genericLoopRaw))
@@ -130,7 +141,7 @@ func (fn *GenericVecVecArith) WriteBody(w io.Writer) {
 
 func (fn *GenericVecVecArith) Write(w io.Writer) {
 	sig := fn.Signature()
-	if !fn.Iter && isFloat(fn.Kind()) {
+	if !fn.Iter && isFloat(fn.Kind()) && !fn.WithRecv {
 		// golinkPragma.Execute(w, fn)
 		w.Write([]byte("func "))
 		sig.Write(w)
@@ -148,7 +159,9 @@ func (fn *GenericVecVecArith) Write(w io.Writer) {
 	switch {
 	case !fn.Iter && fn.Incr:
 		w.Write([]byte("{\na = a[:len(a)]; b = b[:len(a)]; incr = incr[:len(a)]\n"))
-	case !fn.Iter && !fn.Incr:
+	case fn.WithRecv:
+		w.Write([]byte("{\na = a[:len(recv)]; b = b[:len(recv)]\n"))
+	case !fn.Iter && !fn.Incr && !fn.WithRecv:
 		w.Write([]byte("{\na = a[:len(a)]; b = b[:len(a)]\n"))
 	default:
 		w.Write([]byte("{\n"))
@@ -390,6 +403,7 @@ func makeGenericVecVecAriths(tbo []TypedBinOp) (retVal []*GenericVecVecArith) {
 			fn.Check = panicsDiv0
 			fn.CheckTemplate = check0
 		}
+
 		retVal = append(retVal, fn)
 
 	}
@@ -455,6 +469,12 @@ func generateGenericVecVecArith(f io.Writer, ak Kinds) {
 		g.Incr = true
 	}
 	for _, g := range gen {
+		g.Write(f)
+	}
+	for _, g := range gen {
+		g.Incr = false
+		g.Iter = false
+		g.WithRecv = true
 		g.Write(f)
 	}
 }

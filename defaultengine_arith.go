@@ -55,8 +55,7 @@ func (e StdEng) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.AddIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Add(typ, dataReuse, dataB)
+		err = e.E.AddRecv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case !safe:
 		err = e.E.Add(typ, dataA, dataB)
@@ -120,8 +119,7 @@ func (e StdEng) Sub(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.SubIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Sub(typ, dataReuse, dataB)
+		err = e.E.SubRecv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case !safe:
 		err = e.E.Sub(typ, dataA, dataB)
@@ -185,8 +183,7 @@ func (e StdEng) Mul(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.MulIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Mul(typ, dataReuse, dataB)
+		err = e.E.MulRecv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case !safe:
 		err = e.E.Mul(typ, dataA, dataB)
@@ -250,8 +247,7 @@ func (e StdEng) Div(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.DivIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Div(typ, dataReuse, dataB)
+		err = e.E.DivRecv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case !safe:
 		err = e.E.Div(typ, dataA, dataB)
@@ -315,8 +311,7 @@ func (e StdEng) Pow(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.PowIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Pow(typ, dataReuse, dataB)
+		err = e.E.PowRecv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case !safe:
 		err = e.E.Pow(typ, dataA, dataB)
@@ -380,8 +375,7 @@ func (e StdEng) Mod(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, err err
 		err = e.E.ModIncr(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case toReuse:
-		storage.Copy(typ, dataReuse, dataA)
-		err = e.E.Mod(typ, dataReuse, dataB)
+		err = e.E.ModRecv(typ, dataA, dataB, dataReuse)
 		retVal = reuse
 	case !safe:
 		err = e.E.Mod(typ, dataA, dataB)

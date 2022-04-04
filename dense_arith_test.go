@@ -329,6 +329,58 @@ func TestDense_Add_reuse(t *testing.T) {
 		t.Errorf("Identity test for Add failed: %v", err)
 	}
 
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Add(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Adder)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Add(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Add(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Add", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Add failed: %v", err)
+	}
+
 }
 func TestDense_Sub_reuse(t *testing.T) {
 	inv := func(a *Dense) bool {
@@ -361,6 +413,58 @@ func TestDense_Sub_reuse(t *testing.T) {
 	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Inv test for Sub failed: %v", err)
 	}
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Sub(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Suber)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Sub(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Sub(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Sub", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Sub failed: %v", err)
+	}
+
 }
 func TestDense_Mul_reuse(t *testing.T) {
 	iden := func(a *Dense) bool {
@@ -392,6 +496,58 @@ func TestDense_Mul_reuse(t *testing.T) {
 	}
 	if err := quick.Check(iden, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Identity test for Mul failed: %v", err)
+	}
+
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Mul(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Muler)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Mul(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Mul(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Mul", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Mul failed: %v", err)
 	}
 
 }
@@ -427,6 +583,58 @@ func TestDense_Div_reuse(t *testing.T) {
 	if err := quick.Check(inv, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Inv test for Div failed: %v", err)
 	}
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Div(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Diver)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Div(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Div(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Div", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Div failed: %v", err)
+	}
+
 }
 func TestDense_Pow_reuse(t *testing.T) {
 	iden := func(a *Dense) bool {
@@ -686,7 +894,7 @@ func TestDense_AddScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Add (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Add (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDense_SubScalar(t *testing.T) {
@@ -766,7 +974,7 @@ func TestDense_SubScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Sub (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Sub (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDense_MulScalar(t *testing.T) {
@@ -846,7 +1054,7 @@ func TestDense_MulScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Mul (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Mul (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDense_DivScalar(t *testing.T) {
@@ -901,7 +1109,7 @@ func TestDense_DivScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Div (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Div (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDense_PowScalar(t *testing.T) {
@@ -956,7 +1164,7 @@ func TestDense_PowScalar(t *testing.T) {
 		return true
 	}
 	if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-		t.Errorf("WrongTYpe test for Pow (tensor as right, scalar as left) failed: %v", err)
+		t.Errorf("WrongType test for Pow (tensor as right, scalar as left) failed: %v", err)
 	}
 }
 func TestDense_AddScalar_unsafe(t *testing.T) {
@@ -1284,6 +1492,58 @@ func TestDense_AddScalar_reuse(t *testing.T) {
 		t.Errorf("Identity test for Add (scalar as left, tensor as right) failed: %v", err)
 	}
 
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Add(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Adder)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Add(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Add(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Add", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Add failed: %v", err)
+	}
+
 }
 func TestDense_SubScalar_reuse(t *testing.T) {
 	inv1 := func(q *Dense) bool {
@@ -1350,6 +1610,58 @@ func TestDense_SubScalar_reuse(t *testing.T) {
 	if err := quick.Check(inv2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Inv test for Sub (scalar as left, tensor as right) failed: %v", err)
 	}
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Sub(b)
+		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		_, ok := a.Engine().(Suber)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Sub(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Sub(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Sub", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Sub failed: %v", err)
+	}
+
 }
 func TestDense_MulScalar_reuse(t *testing.T) {
 	iden1 := func(q *Dense) bool {
@@ -1416,6 +1728,58 @@ func TestDense_MulScalar_reuse(t *testing.T) {
 		t.Errorf("Identity test for Mul (scalar as left, tensor as right) failed: %v", err)
 	}
 
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Mul(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Muler)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Mul(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Mul(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Mul", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Mul failed: %v", err)
+	}
+
 }
 func TestDense_DivScalar_reuse(t *testing.T) {
 	inv1 := func(q *Dense) bool {
@@ -1449,6 +1813,58 @@ func TestDense_DivScalar_reuse(t *testing.T) {
 	}
 	if err := quick.Check(inv1, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
 		t.Errorf("Inv test for Div (tensor as left, scalar as right) failed: %v", err)
+	}
+
+	mut := func(a, b *Dense, reuseA bool) bool {
+		// req because we're only testing on one kind of tensor/engine combo
+		a.e = StdEng{}
+		a.oe = StdEng{}
+		a.flag = 0
+		b.e = StdEng{}
+		b.oe = StdEng{}
+		b.flag = 0
+
+		if a.Dtype() != b.Dtype() {
+			return true
+		}
+		if !a.Shape().Eq(b.Shape()) {
+			return true
+		}
+
+		correct, err := a.Div(b)
+		we, willFailEq := willerr(a, numberTypes, nil)
+		_, ok := a.Engine().(Diver)
+		we = we || !ok
+
+		var ret, reuse *Dense
+		if reuseA {
+			ret, err = a.Div(b, WithReuse(a))
+			reuse = a
+		} else {
+			ret, err = a.Div(b, WithReuse(b))
+			reuse = b
+		}
+
+		if err, retEarly := qcErrCheck(t, "Div", a, b, we, err); retEarly {
+			if err != nil {
+				return false
+			}
+			return true
+		}
+
+		if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+			return false
+		}
+
+		if reuse != ret {
+			t.Errorf("Expected reuse to be the same as retVal")
+			return false
+		}
+
+		return true
+	}
+	if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+		t.Errorf("Reuse Mutation test for Div failed: %v", err)
 	}
 
 }

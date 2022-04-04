@@ -87,7 +87,7 @@ const (
 		return
 		{{end -}}
 	default:
-		return errors.Errorf("Unsupported type %v for {{$name}}", t)
+		return errors.Errorf("Unsupported type %v for {{$name}}Iter", t)
 	}
 	`
 
@@ -122,7 +122,30 @@ const (
 		}
 		{{end -}}
 	default:
-		return errors.Errorf("Unsupported type %v for {{$name}}", t)
+		return errors.Errorf("Unsupported type %v for {{$name}}IterIncr", t)
+	}
+	`
+
+	eArithRecvRaw = `as :=isScalar(a, t)
+	bs := isScalar(b, t)
+	rs := isScalar(recv, t)
+
+	if ((as && !bs) || (bs && !as)) && rs {
+		return errors.Errorf("Cannot increment on a scalar increment. len(a): %d, len(b) %d", a.TypedLen(t), b.TypedLen(t))
+	}
+
+	{{$name := .Name}}
+	switch t{
+		{{range .Kinds -}}
+	case {{reflectKind .}}:
+		at := a.{{sliceOf .}}
+		bt := b.{{sliceOf .}}
+		rt := recv.{{sliceOf .}}
+		{{$name}}Recv{{short .}}(at, bt, rt)
+		return
+		{{end -}}
+	default:
+		return errors.Errorf("Unsupported type %v for {{$name}}Recv", t)
 	}
 	`
 
@@ -641,6 +664,7 @@ var (
 	eArithIncr     *template.Template
 	eArithIter     *template.Template
 	eArithIterIncr *template.Template
+	eArithRecv     *template.Template
 
 	eMap     *template.Template
 	eMapIter *template.Template
@@ -674,6 +698,7 @@ func init() {
 	eArithIncr = template.Must(template.New("eArithIncr").Funcs(funcs).Parse(eArithIncrRaw))
 	eArithIter = template.Must(template.New("eArithIter").Funcs(funcs).Parse(eArithIterRaw))
 	eArithIterIncr = template.Must(template.New("eArithIterIncr").Funcs(funcs).Parse(eArithIterIncrRaw))
+	eArithRecv = template.Must(template.New("eArithRecv").Funcs(funcs).Parse(eArithRecvRaw))
 
 	eMap = template.Must(template.New("eMap").Funcs(funcs).Parse(eMapRaw))
 	eMapIter = template.Must(template.New("eMapIter").Funcs(funcs).Parse(eMapIterRaw))
