@@ -141,7 +141,7 @@ func (t *Dense) Reshape(dims ...int) error {
 	}
 
 	if t.viewOf != 0 && t.o.IsNotContiguous() {
-		return errors.Errorf(methodNYI, "Reshape", "non-contiguous views")
+		return nyierr(methodNYI, "non-contiguous views")
 	}
 
 	if !t.old.IsZero() {

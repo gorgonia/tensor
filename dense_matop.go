@@ -197,7 +197,7 @@ func (t *Dense) CopyTo(other *Dense) error {
 	}
 
 	// TODO: use copyDenseIter
-	return errors.Errorf(methodNYI, "CopyTo", "views")
+	return nyierr(methodNYI, "views")
 }
 
 // Slice performs slicing on the *Dense Tensor. It returns a view which shares the same underlying memory as the original *Dense.
@@ -236,12 +236,31 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 // SliceInto is a convenience method. It does NOT copy the values - it simply updates the AP of the view.
 // The underlying data is the same.
 // This method will override ALL the metadata in view.
-func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error) {
+func (t *Dense) SliceInto(view Tensor, slices ...Slice) (retVal View, err error) {
+	switch view := view.(type) {
+	case DenseView:
+		v := view.Dense
+		if v, err = t.sliceIntoDense(v, slices...); err != nil {
+			return nil, err
+		}
+		return DenseView{v}, nil
+
+	case *Dense:
+		if view, err = t.sliceIntoDense(view, slices...); err != nil {
+			return nil, err
+		}
+		return DenseView{view}, nil
+	default:
+		return nil, nyierr(typeNYI)
+	}
+}
+
+func (t *Dense) sliceIntoDense(view *Dense, slices ...Slice) (retVal *Dense, err error) {
 	var newAP AP
 	var ndStart, ndEnd int
 
 	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
-		return
+		return nil, err
 	}
 
 	view.AP.zero()
@@ -257,8 +276,7 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 	if t.IsMasked() {
 		view.mask = t.mask[ndStart:ndEnd]
 	}
-
-	return DenseView{view}, err
+	return view, nil
 }
 
 // RollAxis rolls the axis backwards until it lies in the given position.

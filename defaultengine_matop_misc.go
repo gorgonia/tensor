@@ -33,7 +33,7 @@ func (e StdEng) Repeat(ctx context.Context, t Tensor, axis int, repeats ...int) 
 		rr := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
 		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
@@ -59,7 +59,7 @@ func (e StdEng) RepeatReuse(ctx context.Context, t Tensor, reuse Tensor, axis in
 		}
 		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
@@ -255,7 +255,7 @@ func (e StdEng) Concat(ctx context.Context, t Tensor, axis int, others ...Tensor
 		}
 		return e.denseConcat(tt, axis, denses)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
@@ -435,7 +435,7 @@ func (e StdEng) Diag(ctx context.Context, t Tensor) (retVal Tensor, err error) {
 			bdata[i] = adata[i*stride]
 		}
 	default:
-		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag", t)
+		return nil, nyierr(typeNYI, "Arbitrary-sized .Diag()", t)
 	}
 	return b, nil
 }

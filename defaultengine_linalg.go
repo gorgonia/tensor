@@ -10,7 +10,7 @@ import (
 	"gorgonia.org/dtype"
 )
 
-//  Trace returns the trace of a matrix (i.e. the sum of the diagonal elements). If the Tensor provided is not a matrix, it will return an error
+// Trace returns the trace of a matrix (i.e. the sum of the diagonal elements). If the Tensor provided is not a matrix, it will return an error
 func (e StdEng) Trace(ctx context.Context, t Tensor) (retVal interface{}, err error) {
 	if err := handleCtx(ctx); err != nil {
 		return nil, err
@@ -482,7 +482,7 @@ func (e StdEng) MatVecMul(ctx context.Context, a, b, prealloc Tensor) (err error
 		var alpha, beta complex128 = complex(1, 0), complex(0, 0)
 		whichblas.Zgemv(tA, m, n, alpha, A, lda, x, incX, beta, y, incY)
 	default:
-		return errors.Errorf(typeNYI, "matVecMul", bd.Data())
+		return nyierr(typeNYI, bd.Data())
 	}
 
 	return nil
@@ -598,7 +598,8 @@ func (e StdEng) MatMul(ctx context.Context, a, b, prealloc Tensor) (err error) {
 			whichblas.Zgemm(tA, tB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
 		}
 	default:
-		return errors.Errorf(typeNYI, "matMul", ad.Data())
+		return nyierr(typeNYI, ad.Data())
+
 	}
 	return
 }
@@ -674,7 +675,7 @@ func (e StdEng) Outer(ctx context.Context, a, b, prealloc Tensor) (err error) {
 		var alpha complex128 = complex(1, 0)
 		whichblas.Zgeru(m, n, alpha, x, incX, y, incY, A, lda)
 	default:
-		return errors.Errorf(typeNYI, "outer", b.Data())
+		return nyierr(typeNYI, b.Data())
 	}
 	return nil
 }

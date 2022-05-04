@@ -234,7 +234,7 @@ func (t *CS) T(axes ...int) error {
 	UnsafePermute(axes, []int(t.s))
 	t.o = t.o.toggleColMajor()
 	t.o = MakeDataOrder(t.o, Transposed)
-	return errors.Errorf(methodNYI, "T", t)
+	return nyierr(typeNYI, t)
 }
 
 // UT untransposes the CS
@@ -243,9 +243,7 @@ func (t *CS) UT() { t.T(); t.o = t.o.clearTransposed() }
 // Transpose is a no-op. The data does not move
 func (t *CS) Transpose() error { return nil }
 
-func (t *CS) Apply(fn interface{}, opts ...FuncOpt) (Tensor, error) {
-	return nil, errors.Errorf(methodNYI, "Apply", t)
-}
+func (t *CS) Apply(fn interface{}, opts ...FuncOpt) (Tensor, error) { return nil, nyierr(typeNYI, t) }
 
 func (t *CS) Eq(other interface{}) bool {
 	if ot, ok := other.(*CS); ok {

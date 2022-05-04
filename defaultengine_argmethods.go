@@ -13,7 +13,7 @@ func (e StdEng) Argmax(ctx context.Context, t Tensor, axis int) (retVal Tensor, 
 	case DenseTensor:
 		return e.argmaxDenseTensor(ctx, tt, axis)
 	default:
-		return nil, errors.Errorf(typeNYI, "StdEng.Argmax", t)
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
@@ -103,7 +103,7 @@ func (e StdEng) Argmin(ctx context.Context, t Tensor, axis int) (retVal Tensor, 
 	case DenseTensor:
 		return e.argminDenseTensor(ctx, tt, axis)
 	default:
-		return nil, errors.Errorf(typeNYI, "StdEng.Argmin", t)
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
