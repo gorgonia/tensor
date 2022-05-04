@@ -164,7 +164,7 @@ func (e StdEng) SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts 
 	var reuse DenseTensor
 	var _, toReuse, _ bool
 	var ctx context.Context
-	if ctx, reuse, _, toReuse, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	if ctx, reuse, _, toReuse, _, _, err = handleFuncOpts(input.Shape(), input.Dtype(), input.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if err = handleCtx(ctx); err != nil {

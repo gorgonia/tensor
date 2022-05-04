@@ -408,11 +408,13 @@ var outerTests = []linalgTest{
 		[]float32{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float32{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float32{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		false, false, false},
 
+	/* TODO: this test is no longer valid with the new impl of outer
 	// stupids - a or b not vector
 	{Range(Float64, 0, 3), Range(Float64, 0, 6), Shape{3}, Shape{3, 2}, false, false,
 		Range(Float64, 52, 61), Range(Float64, 100, 109), Shape{3, 3}, Shape{3, 3},
 		[]float64{0, 0, 0, 0, 1, 2, 0, 2, 4}, []float64{100, 101, 102, 103, 105, 107, 106, 109, 112}, []float64{100, 101, 102, 103, 106, 109, 106, 111, 116}, Shape{3, 3},
 		true, false, false},
+	*/
 
 	//	stupids - bad incr shape
 	{Range(Float64, 0, 3), Range(Float64, 0, 3), Shape{3}, Shape{3}, false, false,

@@ -343,7 +343,7 @@ func TestDense_Add_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Add(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Adder)
 		we = we || !ok
 
@@ -427,7 +427,7 @@ func TestDense_Sub_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Sub(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Suber)
 		we = we || !ok
 
@@ -512,7 +512,7 @@ func TestDense_Mul_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Mul(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Muler)
 		we = we || !ok
 
@@ -597,7 +597,7 @@ func TestDense_Div_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Div(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Diver)
 		we = we || !ok
 
@@ -1498,7 +1498,7 @@ func TestDense_AddScalar_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Add(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Adder)
 		we = we || !ok
 
@@ -1616,7 +1616,7 @@ func TestDense_SubScalar_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Sub(b)
-		we, willFailEq := willerr(a, numberTypes, unsignedTypes)
+		we, willFailEq := willerr(a, dtype.Number, dtype.Unsigned)
 		_, ok := a.Engine().(Suber)
 		we = we || !ok
 
@@ -1734,7 +1734,7 @@ func TestDense_MulScalar_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Mul(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Muler)
 		we = we || !ok
 
@@ -1821,7 +1821,7 @@ func TestDense_DivScalar_reuse(t *testing.T) {
 		}
 
 		correct, err := a.Div(b)
-		we, willFailEq := willerr(a, numberTypes, nil)
+		we, willFailEq := willerr(a, dtype.Number, nilTC)
 		_, ok := a.Engine().(Diver)
 		we = we || !ok
 

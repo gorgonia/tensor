@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"fmt"
-	"log"
 )
 
 func ExampleBatchedNativeSelectF64() {
@@ -19,7 +18,6 @@ func ExampleBatchedNativeSelectF64() {
 	}
 	fmt.Printf("Is Truncated? %t\n", it.IsTruncated())
 
-	log.Printf("XXX")
 	fmt.Println("Reusing the same iterator for another loop")
 	batchNo = 0
 	for cur, hasRem := it.Start(); hasRem; cur, hasRem = it.Next() {
