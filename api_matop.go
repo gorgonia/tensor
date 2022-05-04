@@ -45,10 +45,9 @@ func T(t Tensor, axes ...int) (retVal Tensor, err error) {
 	case DenseView:
 		var ret *Dense
 		if ret, err = tt.SafeT(axes...); err != nil {
-			return nil, errors.Wrap(err, ".T() off a DenseView")
+			return nil, errors.Wrap(err, "T() off a DenseView")
 		}
 		return DenseView{ret}, nil
-
 	default:
 		return nil, nyierr(typeNYI, t)
 	}
