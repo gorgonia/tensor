@@ -1,6 +1,6 @@
 module gorgonia.org/tensor
 
-go 1.13
+go 1.15
 
 replace gorgonia.org/dtype => /home/chewxy/workspace/gorgoniaws/src/gorgonia.org/dtype
 
@@ -8,8 +8,9 @@ replace gorgonia.org/shapes => /home/chewxy/workspace/gorgoniaws/src/gorgonia.or
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20201229220542-30ce2eb5d4dc
-	github.com/chewxy/math32 v1.0.6
-	github.com/gogo/protobuf v1.3.1
+	github.com/chewxy/hm v1.0.0
+	github.com/chewxy/math32 v1.0.8
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
 	github.com/google/flatbuffers v1.12.0
 	github.com/pkg/errors v0.9.1

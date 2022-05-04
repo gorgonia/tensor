@@ -296,6 +296,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 				offset++
 			}
 		}
+
 		newAP = MakeAP(newShape, newStrides, order, ap.Δ)
 	}
 	return

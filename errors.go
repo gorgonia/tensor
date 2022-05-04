@@ -49,7 +49,7 @@ const (
 	sliceIndexOOB     = "Slice index out of bounds: Start: %d, End: %d. Length: %d"
 	broadcastError    = "Cannot broadcast together. Resulting shape will be at least (%d, 1). Repeats is (%d, 1)"
 	lenMismatch       = "Cannot compare with differing lengths: %d and %d"
-	typeMismatch      = "TypeMismatch: a %T and b %T"
+	typeMismatch      = "TypeMismatch: a %v and b %v"
 	typeclassMismatch = "Typeclass mismatch on %v"
 	shapeMismatch     = "Shape mismatch. Expected %v. Got %v"
 	sizeMismatch      = "Size Mismatch. %d and %d"
