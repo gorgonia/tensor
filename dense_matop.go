@@ -246,8 +246,10 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 // SliceInto is a convenience method. It does NOT copy the values - it simply updates the AP of the view.
 // The underlying data is the same.
 // This method will override ALL the metadata in view.
-func (t *Dense) SliceInto(view Tensor, slices ...Slice) (retVal View, err error) {
+func (t *Dense) SliceInto(view Tensor, slices ...Slice) (retVal Tensor, err error) {
 	switch view := view.(type) {
+	case nil:
+		return t.Slice(slices...)
 	case DenseView:
 		v := view.Dense
 		if v, err = t.sliceIntoDense(v, slices...); err != nil {
@@ -261,7 +263,7 @@ func (t *Dense) SliceInto(view Tensor, slices ...Slice) (retVal View, err error)
 		}
 		return DenseView{view}, nil
 	default:
-		return nil, nyierr(typeNYI)
+		return nil, nyierr(typeNYI, view)
 	}
 }
 
