@@ -42,6 +42,15 @@ func T(t Tensor, axes ...int) (retVal Tensor, err error) {
 	switch tt := t.(type) {
 	case *Dense:
 		return tt.SafeT(axes...)
+	case DenseView:
+		var ret *Dense
+		if ret, err = tt.SafeT(axes...); err != nil {
+			return nil, errors.Wrap(err, ".T() off a DenseView")
+		}
+		return DenseView{ret}, nil
+
+	default:
+		return nil, nyierr(typeNYI, t)
 	}
 	panic("Unreachable")
 }
@@ -52,11 +61,20 @@ func Transpose(t Tensor, axes ...int) (retVal Tensor, err error) {
 	case *Dense:
 		var ret *Dense
 		if ret, err = tt.SafeT(axes...); err != nil {
-			return
+			return nil, errors.Wrap(err, "Unable to perform .SafeT() on a *Dense")
 		}
 		ret.Transpose()
 		retVal = ret
 		return
+	case DenseView:
+		var ret *Dense
+		if ret, err = tt.SafeT(axes...); err != nil {
+			return nil, errors.Wrap(err, "Unable to perform .SafeT() on a DenseView")
+		}
+		ret.Transpose()
+		return DenseView{ret}, nil
+	default:
+		return nil, nyierr(typeNYI, t)
 	}
 	panic("Unreachable")
 }
@@ -91,7 +109,8 @@ func Concat(axis int, t Tensor, others ...Tensor) (retVal Tensor, err error) {
 			return nil, errors.Wrapf(err, "Expected all Tensors to be *Dense. Got %T instead", o)
 		}
 		return T.Concat(axis, ts...)
-
+	default:
+		return nil, nyierr(typeNYI, t)
 	}
 	panic("Unreachable")
 }
@@ -114,7 +133,7 @@ func Copy(dst, src Tensor) error {
 		copyDense(dt, st)
 		return nil
 	default:
-		return errors.Errorf("NYI for Copy %T", src)
+		return nyierr(typeNYI, src)
 	}
 	panic("Unreachable")
 }

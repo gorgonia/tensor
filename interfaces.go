@@ -72,6 +72,13 @@ type Slicer interface {
 	Slice(...Slice) (View, error)
 }
 
+// SlicerInto is any tensor that can slice into another tensor.
+// The other tensor may already have data allocated in it.
+// If that is the case then the slice will be a copy operation.
+type SlicerInto interface {
+	SliceInto(view Tensor, slices ...Slice) (retVal Tensor, err error)
+}
+
 // Reslicer is any tensor that can reslice.
 // To reslice is to reuse the container (*Dense, *CS) etc, but with new `Slice`s applied to it.
 //

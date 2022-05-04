@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"sync"
@@ -30,9 +31,14 @@ func (e StdEng) SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
-	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, x.Dtype(), x.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, x.Dtype(), x.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	if safe || !toReuse && reuse == nil && safe {
 		// create reuse
 		reuse = New(WithShape(expectedShape...), Of(x.Dtype()))
@@ -74,9 +80,14 @@ func (e StdEng) SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
-	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, output.Dtype(), output.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, output.Dtype(), output.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	if safe || !toReuse && reuse == nil && safe {
 		// create reuse
 		reuse = New(WithShape(expectedShape...), Of(output.Dtype()))
@@ -112,9 +123,14 @@ func (e StdEng) LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, 
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
-	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, x.Dtype(), x.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, x.Dtype(), x.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	if safe || !toReuse && reuse == nil && safe {
 		// create reuse
 		reuse = New(WithShape(expectedShape...), Of(x.Dtype()))
@@ -157,9 +173,14 @@ func (e StdEng) LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (ret
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
-	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, output.Dtype(), output.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, output.Dtype(), output.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	if safe || !toReuse && reuse == nil && safe {
 		// create reuse
 		reuse = New(WithShape(expectedShape...), Of(output.Dtype()))

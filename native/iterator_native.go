@@ -1,3 +1,4 @@
+//go:build !purego
 // +build !purego
 
 package native

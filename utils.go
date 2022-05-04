@@ -301,13 +301,13 @@ func allones(a []int) bool {
 	return true
 }
 
-
 // ctxFromEngine gets a context from an engine if it's a contexter. Otherwise it returns a context.Background()
 func ctxFromEngine(e Engine) context.Context {
 	if c, ok := e.(contexter); ok {
 		return c.Context()
 	}
 	return context.Background()
+}
 
 func getFloat64s(a Tensor) []float64 {
 	if um, ok := a.(unsafeMem); ok {
