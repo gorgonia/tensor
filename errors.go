@@ -1,6 +1,11 @@
 package tensor
 
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+
+	"github.com/pkg/errors"
+)
 
 // NoOpError is a useful for operations that have no op.
 type NoOpError interface {
@@ -60,6 +65,58 @@ const (
 	maskRequired      = "Masked array type required for %v"
 	inaccessibleData  = "Data in %p inaccessible"
 
-	methodNYI = "%q not yet implemented for %v"
-	typeNYI   = "%q not yet implemented for interactions with %T"
+	// NYI errors
+
+	methodNYI = "%q not yet implemented for %v."
+	typeNYI   = "%q not yet implemented for interactions with %T."
+	typeNYI2  = "%q (%v) not yet implemented for interactions with %T."
+	prmsg     = "Please make a pull request at github.com/gorgonia/tensor if you wish to contribute a solution"
 )
+
+// nyierr is a convenience function that decorates a NYI error message with additional information.
+//
+// It assumes that `msg` is either `typeNYI` or `methodNYI`.
+func nyierr(msg string, args ...interface{}) error {
+	var fnName string = "UNKNOWN FUNCTION"
+	pc, _, _, ok := runtime.Caller(1)
+	if ok {
+		fnName = runtime.FuncForPC(pc).Name()
+	}
+
+	switch len(args) {
+	case 0:
+		// no args
+	case 1:
+		// the usual
+		switch msg {
+		case methodNYI:
+			// do nothing
+		case typeNYI:
+			// do nothing
+		case typeNYI2:
+			// this is the wrong message to use, so we revert to typeNYI.
+			msg = typeNYI
+		default:
+			// do nothing
+		}
+	case 2:
+		switch msg {
+		case methodNYI:
+		// do nothing
+		case typeNYI:
+			// we assume that args[0] is an additional descriptive string.
+			msg = typeNYI2
+		case typeNYI2:
+		// do nothing
+		default:
+			// do nothing
+		}
+	default:
+	}
+
+	// prepend fnName
+	args = append(args, fnName)
+	copy(args[1:], args[0:])
+	args[0] = fnName
+	return errors.Errorf(msg, args...)
+}

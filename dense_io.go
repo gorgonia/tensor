@@ -651,7 +651,7 @@ func convFromStrs(to dtype.Dtype, record []string, into interface{}) (interface{
 		backing = append(backing, record...)
 		return backing, nil
 	default:
-		return nil, errors.Errorf(methodNYI, "convFromStrs", to)
+		return nil, nyierr(typeNYI, to)
 	}
 }
 

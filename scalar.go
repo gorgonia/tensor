@@ -50,17 +50,14 @@ func (s Scalar) RequiresIterator() bool { return false }
 func (s Scalar) Iterator() Iterator     { return nil }
 func (s Scalar) DataOrder() DataOrder   { return 0 } // TODO
 
-func (s Scalar) Slice(...Slice) (View, error)        { return nil, errors.New("Cannot slice a scalar") }
-func (s Scalar) At(at ...int) (interface{}, error)   { return nil, errors.New("Get a value of a scalar") }
-func (s Scalar) SetAt(_ interface{}, _ ...int) error { return errors.New("Cannot set value of scalar") }
-func (s Scalar) Reshape(_ ...int) error              { return errors.New("Cannot reshape a scalar") }
-func (s Scalar) T(_ ...int) error                    { return errors.New("Cannot transpose a scalar") }
-func (s Scalar) UT()                                 {}
-func (s Scalar) Transpose() error                    { return errors.New("Cannot transpose a scalar") }
-func (s Scalar) Apply(fn interface{}, opts ...FuncOpt) (Tensor, error) {
-	// TODO
-	return nil, errors.New("Cannot apply ")
-}
+func (s Scalar) Slice(...Slice) (View, error)                          { return nil, errors.New("Cannot slice a scalar") }
+func (s Scalar) At(at ...int) (interface{}, error)                     { return nil, errors.New("Get a value of a scalar") }
+func (s Scalar) SetAt(_ interface{}, _ ...int) error                   { return errors.New("Cannot set value of scalar") }
+func (s Scalar) Reshape(_ ...int) error                                { return errors.New("Cannot reshape a scalar") }
+func (s Scalar) T(_ ...int) error                                      { return errors.New("Cannot transpose a scalar") }
+func (s Scalar) UT()                                                   {}
+func (s Scalar) Transpose() error                                      { return errors.New("Cannot transpose a scalar") }
+func (s Scalar) Apply(fn interface{}, opts ...FuncOpt) (Tensor, error) { return nyierr(typeNYI, s) }
 
 func (s Scalar) Zero()                     {} //TODO
 func (s Scalar) Memset(interface{}) error  { return errors.New("Cannot Memset") }
@@ -81,13 +78,10 @@ func (s Scalar) IsManuallyManaged() bool    { return false }
 func (s Scalar) Format(t fmt.State, c rune) {} // TODO
 func (s Scalar) String() string             { return fmt.Sprintf("%v", s) }
 
-func (s Scalar) WriteNpy(io.Writer) error { return errors.Errorf(methodNYI, "WriteNpy", "Scalar") }
-func (s Scalar) ReadNpy(io.Reader) error  { return errors.Errorf(methodNYI, "ReadNypy", "Scalar") }
-func (s Scalar) GobEncode() ([]byte, error) {
-	// TODO
-	return nil, errors.Errorf(methodNYI, "GobEncode", "Scalar")
-}
-func (s Scalar) GobDecode([]byte) error { return errors.Errorf(methodNYI, "GobDecode", "Scalar") } // TODO
+func (s Scalar) WriteNpy(io.Writer) error   { return nyierr(typeNYI, s) }
+func (s Scalar) ReadNpy(io.Reader) error    { return nyierr(typeNYI, s) }
+func (s Scalar) GobEncode() ([]byte, error) { return nil, nyierr(typeNYI, s) }
+func (s Scalar) GobDecode([]byte) error     { return nyierr(typeNYI, s) }
 
 func (s Scalar) standardEngine() StandardEngine { return StdEng{} }
 func (s Scalar) hdr() *storage.Header           { return nil }
