@@ -121,6 +121,40 @@ func ExampleDense_Add_reuse() {
 	// T3:
 	// ⎡10  12⎤
 	// ⎣15  17⎦
+
+}
+
+// An optional reuse tensor can also be specified with the WithReuse function option. Passing in an operand would not cause a problem.
+func ExampleDense_Add_reuse_operand() {
+	var T1, T2, T3 *Dense
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Add(T2, WithReuse(T1))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T1: %t\nT3:\n%v\n", T3 == T1, T3)
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Add(T2, WithReuse(T2))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T2: %t\nT3:\n%v\n", T3 == T2, T3)
+
+	// Output:
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T1: true
+	// T3:
+	// ⎡10  12  14⎤
+	// ⎢16  18  20⎥
+	// ⎣22  24  26⎦
+	//
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T2: true
+	// T3:
+	// ⎡10  12  14⎤
+	// ⎢16  18  20⎥
+	// ⎣22  24  26⎦
+
 }
 
 // Incrementing a tensor is also a function option provided by the package
@@ -285,6 +319,38 @@ func ExampleDense_Sub_reuse() {
 	// ⎣ -9   -9⎦
 }
 
+// An optional reuse tensor can also be specified with the WithReuse function option. Passing in an operand would not cause a problem.
+func ExampleDense_Sub_reuse_operand() {
+	var T1, T2, T3 *Dense
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Sub(T2, WithReuse(T1))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T1: %t\nT3:\n%v\n", T3 == T1, T3)
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Sub(T2, WithReuse(T2))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T2: %t\nT3:\n%v\n", T3 == T2, T3)
+
+	// Output:
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T1: true
+	// T3:
+	// ⎡-10  -10  -10⎤
+	// ⎢-10  -10  -10⎥
+	// ⎣-10  -10  -10⎦
+	//
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T2: true
+	// T3:
+	// ⎡-10  -10  -10⎤
+	// ⎢-10  -10  -10⎥
+	// ⎣-10  -10  -10⎦
+}
+
 // Incrementing a tensor is also a function option provided by the package
 func ExampleDense_Sub_incr() {
 	var T1, T2, T3, Incr, V *Dense
@@ -447,6 +513,39 @@ func ExampleDense_Mul_reuse() {
 	// ⎣36  52⎦
 }
 
+// An optional reuse tensor can also be specified with the WithReuse function option. Passing in an operand would not cause a problem.
+func ExampleDense_Mul_reuse_operand() {
+	var T1, T2, T3 *Dense
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Mul(T2, WithReuse(T1))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T1: %t\nT3:\n%v\n", T3 == T1, T3)
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Mul(T2, WithReuse(T2))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T2: %t\nT3:\n%v\n", T3 == T2, T3)
+
+	// Output:
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T1: true
+	// T3:
+	// ⎡  0   11   24⎤
+	// ⎢ 39   56   75⎥
+	// ⎣ 96  119  144⎦
+	//
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T2: true
+	// T3:
+	// ⎡  0   11   24⎤
+	// ⎢ 39   56   75⎥
+	// ⎣ 96  119  144⎦
+
+}
+
 // Incrementing a tensor is also a function option provided by the package
 func ExampleDense_Mul_incr() {
 	var T1, T2, T3, Incr, V *Dense
@@ -607,6 +706,38 @@ func ExampleDense_Div_reuse() {
 	// T3:
 	// ⎡   0  0.09⎤
 	// ⎣ 0.2   0.3⎦
+}
+
+// An optional reuse tensor can also be specified with the WithReuse function option. Passing in an operand would not cause a problem.
+func ExampleDense_Div_reuse_operand() {
+	var T1, T2, T3 *Dense
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Div(T2, WithReuse(T1))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T1: %t\nT3:\n%1.1v\n", T3 == T1, T3)
+
+	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
+	T2 = New(WithBacking(Range(Float64, 10, 19)), WithShape(3, 3))
+	T3, _ = T1.Div(T2, WithReuse(T2))
+	fmt.Printf("Reuse tensor passed in\n======================\nT3 == T2: %t\nT3:\n%1.1v\n", T3 == T2, T3)
+
+	// Output:
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T1: true
+	// T3:
+	// ⎡   0  0.09   0.2⎤
+	// ⎢ 0.2   0.3   0.3⎥
+	// ⎣ 0.4   0.4   0.4⎦
+	//
+	// Reuse tensor passed in
+	// ======================
+	// T3 == T2: true
+	// T3:
+	// ⎡   0  0.09   0.2⎤
+	// ⎢ 0.2   0.3   0.3⎥
+	// ⎣ 0.4   0.4   0.4⎦
 }
 
 // Incrementing a tensor is also a function option provided by the package

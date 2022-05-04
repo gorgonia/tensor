@@ -200,6 +200,16 @@ func (t *Dense) CopyTo(other *Dense) error {
 	return nyierr(methodNYI, "views")
 }
 
+// Narrow narrows the tensor.
+func (t *Dense) Narrow(dim, start, length int) (View, error) {
+	dim = resolveAxis(dim, t.Dims())
+
+	slices := make([]Slice, MinInt(dim+1, t.Dims()))
+	slices[dim] = S(start, start+length, 1)
+
+	return t.Slice(slices...)
+}
+
 // Slice performs slicing on the *Dense Tensor. It returns a view which shares the same underlying memory as the original *Dense.
 //
 // Given:

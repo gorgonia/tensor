@@ -301,8 +301,63 @@ wt2 := func(a *Dense) bool{
 	return true
 }
 if err := quick.Check(wt2, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
-	t.Errorf("WrongTYpe test for {{.Name}} (tensor as right, scalar as left) failed: %v", err)
+	t.Errorf("WrongType test for {{.Name}} (tensor as right, scalar as left) failed: %v", err)
 }
+`
+
+const denseArithReuseMutationTestRaw = `mut := func(a, b *Dense, reuseA bool) bool {
+	// req because we're only testing on one kind of tensor/engine combo
+	a.e = StdEng{}
+	a.oe = StdEng{}
+	a.flag = 0
+	b.e = StdEng{}
+	b.oe = StdEng{}
+	b.flag = 0
+
+	if a.Dtype() != b.Dtype(){
+	return true
+	}
+	if !a.Shape().Eq(b.Shape()){
+	return true
+	}
+
+
+
+	{{template "callVanilla" .}}
+	we, willFailEq := willerr(a, {{.TypeClassName}}, {{.EqFailTypeClassName}})
+	_, ok := a.Engine().({{interfaceName .Name}}); we = we || !ok
+
+
+
+	var ret, reuse {{template "retType" .}}
+	if reuseA {
+		{{template "call0" .}}, WithReuse(a))
+		reuse = a
+	} else {
+		{{template "call0" .}}, WithReuse(b))
+		reuse = b
+	}
+
+
+	if err, retEarly := qcErrCheck(t, "{{.Name}}", a, b, we, err); retEarly{
+		if err != nil {
+			return false
+		}
+		return true
+	}
+
+	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
+		return false
+	}
+
+	{{template "funcoptcheck" -}}
+
+	return true
+}
+if err := quick.Check(mut, &quick.Config{Rand: newRand(), MaxCount: quickchecks}); err != nil {
+	t.Errorf("Reuse Mutation test for {{.Name}} failed: %v", err)
+}
+
 `
 
 var (
