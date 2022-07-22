@@ -664,12 +664,12 @@ func generateDenseIO(f io.Writer, generic Kinds) {
 	fmt.Fprintln(f, npyDescRE)
 	fmt.Fprintln(f, rowOrderRE)
 	fmt.Fprintln(f, shapeRE)
-	fmt.Fprintln(f, writeNpyRaw)
+	f.Write([]byte(writeNpyRaw))
 	readNpy.Execute(f, mk)
 	fmt.Fprint(f, "\n")
 
 	fmt.Fprint(f, "/* CSV SERIALIZATION */\n\n")
-	fmt.Fprintln(f, writeCSVRaw)
+	f.Write([]byte(writeCSVRaw))
 	readCSV.Execute(f, mk)
 	fmt.Fprint(f, "\n")
 
