@@ -11,7 +11,7 @@ require (
 	github.com/google/flatbuffers v1.12.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
-	go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760
+	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230525183740-e7c30c78aeb2
 	gonum.org/v1/gonum v0.8.2
 	gorgonia.org/vecf32 v0.9.0
 	gorgonia.org/vecf64 v0.9.0
