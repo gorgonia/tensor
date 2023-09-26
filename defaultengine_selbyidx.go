@@ -20,7 +20,6 @@ func (e StdEng) SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (r
 	if indices.Dtype() != Int {
 		return nil, errors.Errorf("Expected indices to be a vector of ints. Got %v instead", indices.Dtype())
 	}
-
 	// if b is a scalar, then use Slice
 	if a.Shape().IsScalarEquiv() {
 		slices := make([]Slice, a.Shape().Dims())
@@ -111,7 +110,6 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 			for o := 0; o < outer; o++ {
 				end := start + axStride
 				dstEnd := dstStart + retStride
-
 				storage.CopySliced(typ, dataRetVal, dstStart, dstEnd, dataA, start, end)
 
 				start += prevStride
