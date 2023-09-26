@@ -1,6 +1,6 @@
 package execution
 
-import "github.com/chewxy/inigo/values/tensor/internal"
+import "gorgonia.org/tensor/internal"
 
 type Engine = internal.Engine
 

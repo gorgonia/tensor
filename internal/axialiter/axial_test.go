@@ -3,7 +3,7 @@ package axialiter
 import (
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor/internal"
+	"gorgonia.org/tensor/internal"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/errors"
 	"golang.org/x/exp/constraints"
 	"gorgonia.org/shapes"
 )

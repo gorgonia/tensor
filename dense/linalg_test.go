@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 )

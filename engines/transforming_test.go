@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/dense"
-	stdeng "github.com/chewxy/inigo/values/tensor/engines"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/dense"
+	stdeng "gorgonia.org/tensor/engines"
 )
 
 type BasicAdder[DT any] interface {

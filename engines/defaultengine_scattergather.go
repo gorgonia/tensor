@@ -4,10 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/axialiter"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/axialiter"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 func (e StdEng[DT, T]) Scatter(ctx context.Context, t T, indices tensor.Basic[int], retVal T) error {

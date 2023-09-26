@@ -5,7 +5,7 @@ package stdeng
 import (
 	"context"
 
-	"github.com/chewxy/inigo/values/tensor"
+	"gorgonia.org/tensor"
 )
 
 // Lt performs `a < b`, with a bool tensor as the return value.

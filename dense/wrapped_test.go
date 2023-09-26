@@ -1,7 +1,7 @@
 package dense
 
 import (
-	"github.com/chewxy/inigo/values/tensor"
+	"gorgonia.org/tensor"
 	"gorgonia.org/dtype"
 )
 

@@ -3,8 +3,8 @@ package tensor
 import (
 	"fmt"
 
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 // An AP is an access pattern. It tells the various ndarrays how to access their data through the use of strides

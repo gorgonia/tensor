@@ -3,9 +3,9 @@ package dense
 import (
 	"fmt"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	"github.com/chewxy/inigo/values/tensor/scalar"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/scalar"
 	"golang.org/x/exp/constraints"
 )
 

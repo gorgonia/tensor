@@ -1,7 +1,7 @@
 package execution
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal"
+	"gorgonia.org/tensor/internal"
 	"golang.org/x/exp/constraints"
 )
 

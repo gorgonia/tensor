@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 
-	"github.com/chewxy/inigo/values/tensor/internal/serialization/pb"
+	"gorgonia.org/tensor/internal/serialization/pb"
 	"gorgonia.org/shapes"
 )
 

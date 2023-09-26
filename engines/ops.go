@@ -1,7 +1,7 @@
 package stdeng
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal/execution"
+	"gorgonia.org/tensor/internal/execution"
 )
 
 type vvFunc[DTa, DTb, DTc any] func(a []DTa, b []DTb, c []DTc)

@@ -1,6 +1,6 @@
 package tensor
 
-import "github.com/chewxy/inigo/values/tensor/internal/errors"
+import "gorgonia.org/tensor/internal/errors"
 
 func getEngine(ts ...Engineer) Engine {
 	// TODO: get highest capability engine

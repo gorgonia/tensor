@@ -5,8 +5,8 @@ package stdeng
 import (
 	"context"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 // ElEq performs `a == b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.

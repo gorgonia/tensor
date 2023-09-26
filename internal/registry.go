@@ -3,7 +3,7 @@ package internal
 import (
 	"sync"
 
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 // registry stuff is an incredibly bad pattern. However it's the only way that one can get things to work

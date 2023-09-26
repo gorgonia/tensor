@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/errors"
 	"github.com/chewxy/math32"
 	"gorgonia.org/dtype"
 )

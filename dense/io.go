@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	"github.com/chewxy/inigo/values/tensor/internal/serialization/pb"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/serialization/pb"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 

@@ -1,7 +1,7 @@
 package dense
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal/flatiter"
+	"gorgonia.org/tensor/internal/flatiter"
 )
 
 // cons.go contains convenient construction functions for constructing a *Dense[DT]

@@ -4,10 +4,10 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 )

@@ -3,11 +3,11 @@ package stdeng_test
 import (
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/dense"
-	. "github.com/chewxy/inigo/values/tensor/engines"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/dense"
+	. "gorgonia.org/tensor/engines"
+	"gorgonia.org/tensor/internal/errors"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 var _ tensor.FuncOptHandler[int] = StdOrderedNumEngine[int, *dense.Dense[int]]{}

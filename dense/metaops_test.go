@@ -3,8 +3,8 @@ package dense
 import (
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor/internal"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor/internal"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 )

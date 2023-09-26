@@ -1,6 +1,6 @@
 package execution
 
-import "github.com/chewxy/inigo/values/tensor/internal/errors"
+import "gorgonia.org/tensor/internal/errors"
 
 func MapIter[T any](fn func(T) T, a, retVal []T, ait, rit Iterator) (err error) {
 	var i, j int

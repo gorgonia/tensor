@@ -3,8 +3,8 @@
 package execution
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
 	"golang.org/x/exp/constraints"
 )
 

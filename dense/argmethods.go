@@ -3,8 +3,8 @@ package dense
 import (
 	"log"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 func (t *Dense[DT]) Argmax(axis int, opts ...FuncOpt) (retVal *Dense[int], err error) {

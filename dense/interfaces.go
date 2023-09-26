@@ -1,7 +1,7 @@
 package dense
 
 import (
-	"github.com/chewxy/inigo/values/tensor"
+	"gorgonia.org/tensor"
 )
 
 type DenseTensor[DT any, T tensor.Tensor[DT, T]] interface {
