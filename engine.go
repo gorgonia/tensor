@@ -152,7 +152,7 @@ type Repeater[DT any, T Tensor[DT, T]] interface {
 
 type FancyIndexer[DT any, T Tensor[DT, T]] interface {
 	SelectByIndices(ctx context.Context, a T, indices Basic[int], axis int, retVal T) (err error)
-	SelectByIndicesB(ctx context.Context, input, outGrade T, axis int, retVal T) (err error)
+	SelectByIndicesB(ctx context.Context, input, outGrade T, indices Basic[int], axis int, retVal T) (err error)
 }
 
 type Normer[DT any] interface {
