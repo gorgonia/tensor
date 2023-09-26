@@ -4,14 +4,14 @@ import (
 	"context"
 	"math"
 
+	"gonum.org/v1/gonum/blas"
+	"gonum.org/v1/gonum/blas/gonum"
+	"gonum.org/v1/gonum/mat"
 	"gorgonia.org/tensor"
 	stdeng "gorgonia.org/tensor/engines"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/execution"
-	"gonum.org/v1/gonum/blas"
-	"gonum.org/v1/gonum/blas/gonum"
-	"gonum.org/v1/gonum/mat"
 	"gorgonia.org/vecf64"
 )
 

@@ -1,10 +1,10 @@
 package dense
 
 import (
+	"gonum.org/v1/gonum/mat"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
-	"gonum.org/v1/gonum/mat"
 )
 
 func ToMat64[DT OrderedNum, T tensor.Basic[DT]](t T, opts ...FuncOpt) (retVal *mat.Dense, err error) {
@@ -35,6 +35,7 @@ func ToMat64[DT OrderedNum, T tensor.Basic[DT]](t T, opts ...FuncOpt) (retVal *m
 			data = make([]float64, len(td))
 			copy(data, td)
 		case !toCopy && !t.IsMaterializable():
+			data = any(t.Data()).([]float64)
 		default:
 			// use iterators
 		}
@@ -56,7 +57,6 @@ func ToMat64[DT OrderedNum, T tensor.Basic[DT]](t T, opts ...FuncOpt) (retVal *m
 			err = nil
 		}
 	}
-
 	retVal = mat.NewDense(r, c, data)
 	return
 }
