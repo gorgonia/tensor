@@ -7,9 +7,8 @@ import (
 )
 
 func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	methodName := ".ByIndices()"
 	if err = check(checkFlags(t.e, t), checkValidAxis(axis, t), checkIsVector(indices)); err != nil {
-		return nil, errors.Wrapf(err, errors.FailedSanity, methodName)
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
 	// if t is a scalar, then use slice
@@ -24,17 +23,17 @@ func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncO
 
 	h, ok := t.e.(specialized.FuncOptHandler[DT, *Dense[DT]])
 	if !ok {
-		return nil, errors.Errorf(errors.EngineSupport, t.e, h, methodName)
+		return nil, errors.Errorf(errors.EngineSupport, t.e, h, errors.ThisFn())
 	}
 
 	retVal, fo, err := h.HandleFuncOptsSpecialized(t, expShape, opts...)
 	if err != nil {
-		return nil, errors.Wrapf(err, errors.FailedFuncOpt, methodName)
+		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 
-	e, ok := t.e.(tensor.FancyIndexer[DT, *Dense[DT]])
-	if !ok {
-		return nil, errors.Errorf(errors.EngineSupport, t.e, e, methodName)
+	var e tensor.FancyIndexer[DT, *Dense[DT]]
+	if e, ok = t.e.(tensor.FancyIndexer[DT, *Dense[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
 
 	if err = e.SelectByIndices(fo.Ctx, t, indices, axis, retVal); err != nil {
