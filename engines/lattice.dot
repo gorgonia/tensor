@@ -1,0 +1,24 @@
+graph {
+    rankdir=BT;
+    Bot -- Comparable
+    Bot -- Addable
+    Bot -- Adder
+    Comparable -- Num
+    Comparable -- Ordered
+    Addable -- Num
+    Ordered -- OrderedNum
+    Num -- OrderedNum
+    Addable -- Top
+    Adder -- Top
+    Comparable -- Top
+    Ordered -- Top
+    OrderedNum -- Top
+
+    Bot[label="⊥ (any)"]
+    Comparable[label="Comparable (==)"]
+    Addable[label="Addable (+)"]
+    Adder[label="Adder(Hisssssss)"]
+    Num[label="Num (+ - × ÷)"]
+    Ordered[label="Ordered (<)"]
+    Top[label="⊤"]
+}

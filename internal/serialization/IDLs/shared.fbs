@@ -1,0 +1,8 @@
+namespace gorgonia.org.tensor.internal.serialization;
+
+table AP {
+    shape: [int];
+    strides: [int]
+    order: uint;
+    t
+}
