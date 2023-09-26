@@ -3,12 +3,11 @@ package dense
 import (
 	"context"
 
+	"golang.org/x/exp/constraints"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/execution"
-	"gorgonia.org/tensor/internal/specialized"
-	"golang.org/x/exp/constraints"
-	"gorgonia.org/dtype"
 )
 
 func Max[DT constraints.Ordered](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -58,14 +57,14 @@ func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
+	var prepper tensor.DescFuncOptHandler[DT]
 	var ok bool
-	if prepper, ok = e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+	if prepper, ok = e.(tensor.DescFuncOptHandler[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn())
 	}
 
 	var fo Option
-	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(a, a.Shape(), opts...); err != nil {
+	if retVal, fo, err = prepper.HandleFuncOptsDesc(a, a.Shape(), opts...); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 	if fo.Incr {
@@ -79,7 +78,7 @@ func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage
 	if cmper, ok = e.(tensor.Comparer[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
-	if err = cmper.Lt(ctx, a, b, retVal, asBool); err != nil {
+	if err = cmper.Lt(ctx, a, b, retVal, !asBool); err != nil {
 		return nil, err
 	}
 	return retVal, nil
