@@ -1,96 +1,18 @@
 package tensor
 
-import (
-	"context"
-
-	"gorgonia.org/dtype"
-)
-
-// Memory is a representation of memory of the value.
-//
-// The main reason for requiring both Uintptr() and Pointer() methods is because while Go currently does not have a compacting
-// garbage collector, from the docs of `unsafe`:
-//		Even if a uintptr holds the address of some object, the garbage collector, will not update that uintptr's value if the object moves,
-//		nor will that uintptr keep the object from being reclaimed.
-type Memory interface {
-	Uintptr() uintptr
-	MemSize() uintptr
-}
-
-// Engine is a representation of an execution engine.
-// While different execution engines can have different capabilities, all execution engines must be able to allocate and free memory
-type Engine interface {
-	AllocAccessible() bool                    // AllocAccessible returns true if the engine return Go-accessible memory pointers?
-	Alloc(size int64) (Memory, error)         // Alloc allocates memory
-	Free(mem Memory, size int64) error        // Free rees memory
-	Memset(mem Memory, val interface{}) error // Memset - duh
-	Memclr(mem Memory)                        // Memclr - duh
-	Memcpy(dst, src Memory) error             // Memcpy - duh
-	Accessible(mem Memory) (Memory, error)    // Accessible returns Go-accesible memory pointers, or errors, if it cannot be done
-	WorksWith(order DataOrder) bool           // WorksWith returns true if the data order can be directly worked with
-}
-
-// StandardEngine is any engine that wraps a StdEng{}.
-type StandardEngine interface {
-	StandardEngine2
-
-	// anything that wraps StdEng will contain the following interfaces:
-	arrayMaker
-}
-
-// StandardEngine2 is any engine that implements the basic operations of a standard engine.
-type StandardEngine2 interface {
-	Engine
-
-	Adder
-	Suber
-	Muler
-	Diver
-	Power
-	Moder
-	FMAer
-	MatMuler
-	MatVecMuler
-	OuterProder
-	Dotter
-	SVDer
-	Lter
-	Lteer
-	Gter
-	Gteer
-	ElEqer
-	MinBetweener
-	MaxBetweener
-
-	// Anything that returns interface{} cannot be added here because they will likely have additional
-	// optimized versions of the functions for types.
-	// For example: Tracer and InnerProder both have optimized interfaces for Float32 and Float64 which returns those types specifically.
-}
-
-type arrayMaker interface {
-	makeArray(arr *array, t dtype.Dtype, size int)
-}
-
-// contexter is any engine (or type) that returns the current context.
-type contexter interface {
-	Context() context.Context
-}
-
-// NonStdEngine are any engines that do not allocate using the default built in allocator
-type NonStdEngine interface {
-	NonStdAlloc() // noop
-}
+import "context"
 
 /* Data Agnostic Execution Engine Methods */
 
 // Transposer is any engine that can perform an unsafe transpose of a tensor.
-type Transposer interface {
-	Transpose(ctx context.Context, t Tensor, expStrides []int) error
+type Transposer[DT any, T Tensor[DT, T]] interface {
+	Transpose(ctx context.Context, t T, expStrides []int) error
 }
 
+/*
 // Concater is any enegine that can concatenate multiple Tensors together
-type Concater interface {
-	Concat(ctx context.Context, t Tensor, axis int, others ...Tensor) (Tensor, error)
+type Concater[T any] interface {
+	Concat(ctx context.Context, t Tensor[T], axis int, others ...Tensor) (Tensor, error)
 }
 
 // Stacker is any engine that can stack multiple Tenosrs along an axis
@@ -103,364 +25,137 @@ type DenseStacker interface {
 	StackDense(ctx context.Context, t DenseTensor, axis int, others ...DenseTensor) (retVal DenseTensor, err error)
 }
 
-// Repeater is any engine that can repeat values along the given axis.
-type Repeater interface {
-	Repeat(ctx context.Context, t Tensor, axis int, repeats ...int) (Tensor, error)
-	RepeatReuse(ctx context.Context, t Tensor, reuse Tensor, axis int, repeeats ...int) (Tensor, error)
-}
 
 // Diager is any engine that can return a tensor that only contains the diagonal values of the input
 type Diager interface {
 	Diag(ctx context.Context, a Tensor) (Tensor, error)
 }
-
-/* NUMBER INTERFACES
-All these are expected to be unsafe on the first tensor
 */
 
-// Adder is any engine that can perform elementwise addition.
-type Adder interface {
-	// Add performs a + b
-	Add(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-
-	// AddScalar adds a scalar to the tensor. leftTensor indicates if the tensor is the left operand.
-	// Whether or not the input tensor is clobbered is left to the implementation
-	AddScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+type DescFuncOptHandler[DT any] interface {
+	HandleFuncOptsDesc(a Basic[DT], expShape Shape, opts ...FuncOpt) (retVal DescWithStorage, fo Option, err error)
 }
 
-// Suber is any engine that can perform elementwise subtraction.
-type Suber interface {
-	// Sub performs a - b
-	Sub(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-
-	// SubScalar subtracts a scalar from/to the tensor. leftTensor indicates if the tensor is the left operand.
-	// Whether or not the input tensor is clobbered is left to the implementation
-	SubScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+type SpecializedFuncOptHandler[DT any, T Tensor[DT, T]] interface {
+	HandleFuncOptsSpecialized(a T, expShape Shape, opts ...FuncOpt) (retVal T, fo Option, err error)
 }
 
-// Muler is any engine that can perform elementwise multiplication.
-// For matrix multiplication, an engine should implement MatMul() or MatVecMul() or Inner()
-type Muler interface {
-	// Mul performs a * b
-	Mul(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-
-	// MulScalar multiplies a scalar to the tensor. leftTensor indicates if the tensor is the left operand.
-	// Whether or not the input tensor is clobbered is left to the implementation
-	MulScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+type FuncOptHandler[DT any] interface {
+	HandleFuncOpts(a Basic[DT], expShape Shape, opts ...FuncOpt) (retVal Basic[DT], fo Option, err error)
 }
 
-// Diver is any engine that can perform elementwise division.
-type Diver interface {
-	// Div performs a / b
-	Div(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-
-	// DivScalar divides a scalar from/to the tensor. leftTensor indicates if the tensor is the left operand.
-	// Whether or not the input tensor is clobbered is left to the implementation
-	DivScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+type Adder[DT any, T Basic[DT]] interface {
+	Add(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
+	AddScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
 }
 
-// Power is any engine that can perform elementwise Pow()
-type Power interface {
-	// Pow performs a ^ b
-	Pow(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+type BasicArither[DT any, T Tensor[DT, T]] interface {
+	Adder[DT, T]
 
-	// PowScalar exponentiates a scalar from/to the tensor. leftTensor indicates if the tensor is the left operand.
-	// Whether or not the input tensor is clobbered is left to the implementation
-	PowScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+	Sub(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
+	SubScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+
+	Mul(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
+	MulScalar(ctx context.Context, a T, b DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+
+	Div(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
+	DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
 }
 
-// Moder is any engine that can perform elementwise Mod()
-type Moder interface {
-	// Mod performs a % b
-	Mod(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+type Arither[DT any, T Tensor[DT, T]] interface {
+	BasicArither[DT, T]
 
-	// ModScalar performs a % b where one of the operands is scalar. leftTensor indicates if the tensor is the left operand.
-	// Whether or not hte input tensor is clobbered is left to the implementation
-	ModScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+	Mod(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
+	ModScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+
+	Pow(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
+	PowScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
 }
 
-// MinBetweener is any engine that can perform an elementwise min=between.
-type MinBetweener interface {
-	MinBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+type Comparer[DT any, T Tensor[DT, T]] interface {
+	Lt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 
-	MinBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+	Lte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+
+	ElEq(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+
+	Ne(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error)
+	NeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 }
 
-// MaxBetweener is any engine that can perform an elementwise ma<x-between.
-type MaxBetweener interface {
-	MaxBetween(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+type FullComparer[DT any, T Tensor[DT, T]] interface {
+	Comparer[DT, T]
 
-	MaxBetweenScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+	Gt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	GtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+
+	Gte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	GteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 }
 
-/* LINEAR ALGEBRA INTERFACES */
+type MinMaxer[DT any, T Tensor[DT, T]] interface {
+	MinBetween(ctx context.Context, a, b, retVal T) (err error)
+	MinBetweenScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft bool) (err error)
 
-// Tracer is any engine that can return the trace (aka the sum of the diagonal elements).
-type Tracer interface {
-	Trace(ctx context.Context, a Tensor) (interface{}, error)
+	MaxBetween(ctx context.Context, a, b, retVal T) (err error)
+	MaxBetweenScalar(ctx context.Context, t T, s DT, retval T, scalarOnLeft bool) (err error)
 }
 
-// FMAer is any engine that can perform fused multiply add functions: A * X + Y. Also known as Axpy.
-type FMAer interface {
-	FMA(ctx context.Context, a, x, y Tensor) (Tensor, error)
-	FMAScalar(ctx context.Context, a Tensor, x interface{}, y Tensor) (Tensor, error)
+type Argmethoder[DT any, T Tensor[DT, T]] interface {
+	Argmax(ctx context.Context, a T, axis int) (Basic[int], error)
+	Argmin(ctx context.Context, a T, axis int) (Basic[int], error)
 }
 
-// MatMuler is any engine that can perform matrix multiplication
-type MatMuler interface {
-	MatMul(ctx context.Context, a, b, preallocated Tensor) error
+type Reducer[DT any, T Tensor[DT, T]] interface {
+	Reduce(ctx context.Context, fn any, a T, axis int, defaultValue DT, retVal T) (err error)
+	ReduceAlong(ctx context.Context, fns any, defaultValue DT, a T, retVal T, along ...int) (err error)
+
+	PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, axes []int, retVal T, err error)
 }
 
-// MatVecMuler is any engine that can perform matrix vector multiplication
-type MatVecMuler interface {
-	MatVecMul(ctx context.Context, a, b, preallocated Tensor) error
+type DotIterer[DT any, T Tensor[DT, T]] interface {
+	DotIter(ctx context.Context, reduceWithFn, elwiseFn func(DT, DT) DT, a, b, retVal T) (err error)
 }
 
-// InnerProder is any engine that can perform inner product multiplication
-type InnerProder interface {
-	Inner(ctx context.Context, a, b Tensor) (interface{}, error) // Inner always returns a scalar value
+type Mapper[DT any, T Tensor[DT, T]] interface {
+	Map(ctx context.Context, fn any, a T, retVal T) (err error)
 }
 
-// InnerProderF32 is an optimization for float32 - results are returned as float32.
-type InnerProderF32 interface {
-	Inner(ctx context.Context, a, b Tensor) (float32, error)
+type SVDer[DT any, T Basic[DT]] interface {
+	SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error)
 }
 
-// InnerProderF64 is an optimization for float64 - results are returned as float64
-type InnerProderF64 interface {
-	Inner(ctx context.Context, a, b Tensor) (float64, error)
+type Tracer[DT any, T Basic[DT]] interface {
+	Trace(ctx context.Context, t T) (DT, error)
 }
 
-// OuterProder is any engine that can perform outer product (kronecker) multiplication
-type OuterProder interface {
-	Outer(ctx context.Context, a, b, preallocated Tensor) error
+type Scatterer[DT any, T Tensor[DT, T]] interface {
+	Scatter(ctx context.Context, a T, indices Basic[int], retVal T) (err error)
 }
 
-// Dotter is used to implement sparse matrices
-type Dotter interface {
-	Dot(a, b Tensor, opts ...FuncOpt) (Tensor, error)
+// BLA are any engines that can support basic linear algebra
+type BLA[DT any, T Tensor[DT, T]] interface {
+	Inner(ctx context.Context, a, b T) DT
+	FMA(ctx context.Context, a, x, retVal T) error
+	MatVecMul(ctx context.Context, a, b, retVal T, incr []DT) error
+	MatMul(ctx context.Context, a, b, retVal T, incr []DT) error
+	Outer(ctx context.Context, a, b, retVal T, incr []DT) error
 }
 
-// SVDer is any engine that can perform SVD
-type SVDer interface {
-	SVD(ctx context.Context, a Tensor, uv, full bool) (s, u, v Tensor, err error)
+type Repeater[DT any, T Tensor[DT, T]] interface {
+	Repeat(ctx context.Context, a, retVal T, axis, size int, repeats []int) error
+	PrepRepeat(a T, axis int, repeats []int, opts ...FuncOpt) (ctx context.Context, retVal T, newAxis, size int, newRepeats []int, err error)
 }
 
-/* ORD INTERFACES */
-
-// Lter is any engine that can perform the Lt operation.
-type Lter interface {
-	Lt(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-	LtScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
+type FancyIndexer[DT any, T Tensor[DT, T]] interface {
+	SelectByIndices(ctx context.Context, a T, indices Basic[int], axis int, retVal T) (err error)
+	SelectByIndicesB(ctx context.Context, input, outGrade T, axis int, retVal T) (err error)
 }
 
-// Lteer is any engine that can perform the Lte operation.
-type Lteer interface {
-	Lte(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-	LteScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
-}
-
-// Gter is any engine that can perform the Gt operation.
-type Gter interface {
-	Gt(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-	GtScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
-}
-
-// Gteer is any engine that can perform the Gte operation.
-type Gteer interface {
-	Gte(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-	GteScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
-}
-
-/* EQ INTERFACES */
-
-// ElEqer is any engine that can perform the elementwise equality comparison operation.
-type ElEqer interface {
-	ElEq(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-	EqScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
-
-	ElNe(a, b Tensor, opts ...FuncOpt) (Tensor, error)
-	NeScalar(a Tensor, b interface{}, leftTensor bool, opts ...FuncOpt) (Tensor, error)
-}
-
-/* Unary Operators for Numbers */
-
-// Mapper is any engine that can map a function onto the values of a tensor.
-type Mapper interface {
-	Map(fn interface{}, a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Neger is any engine that can negate the sign of the values in the tensor.d
-type Neger interface {
-	Neg(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Inver is any engine that can perform 1/x for each element in the Tensor.
-type Inver interface {
-	Inv(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Squarer is any engine that can square the values elementwise in a Tensor.
-type Squarer interface {
-	Square(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Cuber is any engine that can cube the values elementwise in a Tensor.
-type Cuber interface {
-	Cube(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Exper is any engine that can perform elementwise natural exponentiation on the values in a Tensor.
-type Exper interface {
-	Exp(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Tanher is any engine that can perform elementwise Tanh on the values in a Tensor.
-type Tanher interface {
-	Tanh(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Loger is any engine that can perform natural log on the values in a Tensor.
-type Loger interface {
-	Log(a Tensor, opt ...FuncOpt) (Tensor, error)
-}
-
-// Log2 is any engine that can perform base-2 logarithm on the values in a Tensor.
-type Log2er interface {
-	Log2(a Tensor, opt ...FuncOpt) (Tensor, error)
-}
-
-// Log10er is any engine that can perform base-10 logarithm on the values in a Tensor.
-type Log10er interface {
-	Log10(a Tensor, opt ...FuncOpt) (Tensor, error)
-}
-
-// Sqrter is any engine that can perform square root on the values in a Tensor.
-type Sqrter interface {
-	Sqrt(a Tensor, opt ...FuncOpt) (Tensor, error)
-}
-
-// Cbrter is any engine that can perform cube root on the values in a Tensor.
-type Cbrter interface {
-	Cbrt(a Tensor, opt ...FuncOpt) (Tensor, error)
-}
-
-// InvSqrter is any engine that can perform 1/sqrt(x) on the values of a Tensor.
-type InvSqrter interface {
-	InvSqrt(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Expm1er is any engine that can perform expm1 on the values of a Tensor.
-type Expm1er interface {
-	Expm1(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Log1per is any engine that can perform log1p on the values of a Tensor.
-type Log1per interface {
-	Log1p(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Signer is any engine that can perform a sign function on the values of a Tensor.
-type Signer interface {
-	Sign(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Abser is any engine that can perform Abs on the values of a Tensor.
-type Abser interface {
-	Abs(a Tensor, opts ...FuncOpt) (Tensor, error)
-}
-
-// Clamper is any engine that can clamp the values in a tensor to between min and max.
-type Clamper interface {
-	Clamp(a Tensor, min, max interface{}, opts ...FuncOpt) (Tensor, error)
-}
-
-/* Reduction */
-
-// Reducer is any engine that can perform a reduction function.
-type Reducer interface {
-	Reduce(fn interface{}, a Tensor, axis int, defaultValue interface{}, opts ...FuncOpt) (Tensor, error)
-}
-
-// OptimizedReducer is any engine that can perform a reduction function with optimizations for the first dimension, last dimension and dimensions in between.
-type OptimizedReducer interface {
-	OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, defaultValue interface{}, opts ...FuncOpt) (Tensor, error)
-}
-
-// Sumer is any engine that can perform summation along an axis of a Tensor.
-type Sumer interface {
-	Sum(ctx context.Context, a Tensor, along ...int) (Tensor, error)
-}
-
-// Proder is any engine that can perform product along an axis of a Tensor.
-type Proder interface {
-	Prod(ctx context.Context, a Tensor, along ...int) (Tensor, error)
-}
-
-// Miner is any engine that can find the minimum value along an axis of a Tensor.
-type Miner interface {
-	Min(ctx context.Context, a Tensor, along ...int) (Tensor, error)
-}
-
-// Maxer is any engine that can find the maximum value along an axis of a Tensor.
-type Maxer interface {
-	Max(ctx context.Context, a Tensor, along ...int) (Tensor, error)
-}
-
-/* Arg methods */
-
-// Argmaxer is any engine that can find the indices of the maximum values along an axis.
-// By convention the returned Tensor has Dtype of Int.
-type Argmaxer interface {
-	Argmax(ctx context.Context, t Tensor, axis int) (Tensor, error)
-}
-
-// Argmaxer is any engine that can find the indices of the minimum values along an axis.
-// By convention the returned Tensor has Dtype of Int.
-type Argminer interface {
-	Argmin(ctx context.Context, t Tensor, axis int) (Tensor, error)
-}
-
-// NaNChecker checks that the tensor contains a NaN
-// Errors are to be returned if the concept of NaN does not apply to the data type.
-// Other errors may also occur. See specific implementations for details
-type NaNChecker interface {
-	HasNaN(ctx context.Context, t Tensor) (bool, error)
-}
-
-// InfChecker checks that the tensor contains a Inf.
-// Errors are to be returned if the concept of Inf does not apply to the data type.
-// Other errors may also occur. See specific implementations for details
-type InfChecker interface {
-	HasInf(ctx context.Context, t Tensor) (bool, error)
-}
-
-/* Advanced Indexing */
-
-// ByIndiceser allows for values in tensor `a` to be selected by the indices listed in the `indices` tensor.
-type ByIndiceser interface {
-	SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-	SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-}
-
-type Scatterer interface {
-	Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error)
-}
-
-/* Internal interfaces for faster shit */
-
-type denseArgmaxer interface {
-	argmaxDenseTensor(ctx context.Context, t DenseTensor, axis int) (*Dense, error)
-}
-
-type denseArgminer interface {
-	argminDenseTensor(ctx context.Context, t DenseTensor, axis int) (*Dense, error)
-}
-
-type SoftMaxer interface {
-	LogSoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-	LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-
-	SoftMax(x Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
-	SoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
+type Normer[DT any] interface {
+	Norm(ctx context.Context, t Basic[DT], ord NormOrder, axes []int) Basic[DT]
+	Norm2(ctx context.Context, t Basic[DT]) DT
 }

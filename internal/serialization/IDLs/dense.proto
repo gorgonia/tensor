@@ -1,0 +1,26 @@
+syntax = "proto3";
+package dense;
+
+option go_package = "./pb";
+
+enum Triangle {
+     NOTTRIANGLE = 0;
+     UPPER = 1;
+     LOWER = 2;
+     SYMMETRIC = 3;
+}
+
+message AP {
+	repeated int32 shape = 1;
+	repeated int32 strides = 2;
+	uint32 o = 3;
+	Triangle t = 4;
+}
+
+message Dense {
+	AP ap = 1;
+	bytes data = 2;
+	repeated int32 transposedWith = 3;
+	uint32 memoryflag = 4;
+	string type = 5;
+}

@@ -3,27 +3,28 @@ package tensor
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
+	"github.com/chewxy/inigo/values/tensor/internal"
+	"github.com/chewxy/inigo/values/tensor/internal/errors"
 )
 
 // An AP is an access pattern. It tells the various ndarrays how to access their data through the use of strides
 // Through the AP, there are several definitions of things, most notably there are two very specific "special cases":
-//		Scalar has Dims() of 0.
-//			- (1)
-//		Scalarlikes are higher order tensors, but each with a size of 1. The Dims() are not 0.
-//			- (1, 1)
-//			- (1, 1, 1)
-//			- (1, 1, 1, 1), etc
-//		Vector has Dims() of 1, but its shape can take several forms:
-//			- (x, 1)
-//			- (1, x)
-//			- (x)
-//		Matrix has Dims() of 2. This is the most basic form. The len(shape) has to be equal to 2 as well
-//		ndarray has Dims() of n.
+//
+//	Scalar has Dims() of 0.
+//		- (1)
+//	Scalarlikes are higher order tensors, but each with a size of 1. The Dims() are not 0.
+//		- (1, 1)
+//		- (1, 1, 1)
+//		- (1, 1, 1, 1), etc
+//	Vector has Dims() of 1, but its shape can take several forms:
+//		- (x, 1)
+//		- (1, x)
+//		- (x)
+//	Matrix has Dims() of 2. This is the most basic form. The len(shape) has to be equal to 2 as well
+//	ndarray has Dims() of n.
 type AP struct {
 	shape   Shape // len(shape) is the operational definition of the dimensions
 	strides []int // strides is usually calculated from shape
-	fin     bool  // is this struct change-proof?
 
 	o DataOrder
 	Δ Triangle
@@ -31,8 +32,8 @@ type AP struct {
 
 func makeAP(size int) AP {
 	return AP{
-		shape:   Shape(BorrowInts(size)),
-		strides: BorrowInts(size),
+		shape:   Shape(make([]int, size)),
+		strides: make([]int, size),
 	}
 }
 
@@ -43,7 +44,6 @@ func MakeAP(shape Shape, strides []int, o DataOrder, Δ Triangle) AP {
 		strides: strides,
 		o:       o,
 		Δ:       Δ,
-		fin:     true,
 	}
 }
 
@@ -52,7 +52,6 @@ func MakeAP(shape Shape, strides []int, o DataOrder, Δ Triangle) AP {
 func (ap *AP) Init(shape Shape, strides []int) {
 	ap.shape = shape
 	ap.strides = strides
-	ap.fin = true
 }
 
 // SetShape is for very specific times when modifying the AP is necessary, such as reshaping and doing I/O related stuff
@@ -63,28 +62,25 @@ func (ap *AP) Init(shape Shape, strides []int) {
 //
 // - If the AP is locked, nothing will happen
 func (ap *AP) SetShape(s ...int) {
-	if !ap.fin {
-		// scalars are a special case, we don't want to remove it completely
-		if len(s) == 0 {
-			if ap.shape == nil || ap.strides == nil {
-				ap.shape = Shape{}
-			}
-			ap.shape = ap.shape[:0]
-			ap.strides = ap.strides[:0]
-			return
-		}
 
-		if ap.shape != nil {
-			ReturnInts(ap.shape)
-			ap.shape = nil
+	// scalars are a special case, we don't want to remove it completely
+	if len(s) == 0 {
+		if ap.shape == nil || ap.strides == nil {
+			ap.shape = Shape{}
 		}
-		if ap.strides != nil {
-			ReturnInts(ap.strides)
-			ap.strides = nil
-		}
-		ap.shape = Shape(s).Clone()
-		ap.strides = ap.calcStrides()
+		ap.shape = ap.shape[:0]
+		ap.strides = ap.strides[:0]
+		return
 	}
+
+	if ap.shape != nil {
+		ap.shape = nil
+	}
+	if ap.strides != nil {
+		ap.strides = nil
+	}
+	ap.shape = Shape(s).Clone()
+	ap.strides = ap.CalcStrides()
 }
 
 // Shape returns the shape of the AP
@@ -104,13 +100,14 @@ func (ap *AP) String() string { return fmt.Sprintf("%v", ap) }
 
 // Format implements fmt.Formatter
 func (ap *AP) Format(state fmt.State, c rune) {
-	fmt.Fprintf(state, "Shape: %v, Stride: %v, Lock: %t", ap.shape, ap.strides, ap.fin)
+	fmt.Fprintf(state, "Shape: %v, Stride: %v", ap.shape, ap.strides)
 }
 
 // IsVector returns whether the access pattern falls into one of three possible definitions of vectors:
-//		vanilla vector (not a row or a col)
-//		column vector
-//		row vector
+//
+//	vanilla vector (not a row or a col)
+//	column vector
+//	row vector
 func (ap *AP) IsVector() bool { return ap.shape.IsVector() }
 
 // IsVectorLike returns true if the shape is vector-like (i.e. the shape only has one dim that is a non-1).
@@ -135,7 +132,7 @@ func (ap *AP) IsMatrix() bool { return len(ap.shape) == 2 }
 
 // IsZero tell us if the ap has zero size
 func (ap *AP) IsZero() bool {
-	return len(ap.shape) == 0 && len(ap.strides) == 0 && !ap.fin && ap.o == 0 && ap.Δ == 0
+	return len(ap.shape) == 0 && len(ap.strides) == 0 && ap.o == 0 && ap.Δ == 0
 }
 
 // Zero zeros out an AP.
@@ -149,8 +146,6 @@ func (ap *AP) zero() {
 
 	// ap.shape = ap.shape[:0]
 	// ap.strides = ap.strides[:0]
-	ReturnInts([]int(ap.shape))
-	ReturnInts(ap.strides)
 	ap.zeroOnly()
 }
 
@@ -159,7 +154,6 @@ func (ap *AP) zeroOnly() {
 	ap.shape = nil
 	ap.strides = nil
 
-	ap.fin = false
 	ap.o = 0
 	ap.Δ = 0
 }
@@ -170,11 +164,11 @@ func (ap *AP) zeroWithDims(dims int) {
 	if cap(ap.shape) >= dims {
 		ap.shape = ap.shape[:dims]
 	}
-	ap.shape = BorrowInts(dims)
+	ap.shape = internal.BorrowInts(dims)
 	if cap(ap.strides) >= dims {
 		ap.strides = ap.strides[:dims]
 	}
-	ap.strides = BorrowInts(dims)
+	ap.strides = internal.BorrowInts(dims)
 }
 
 // Clone clones the *AP. Clearly. It returns AP
@@ -188,7 +182,6 @@ func (ap *AP) Clone() (retVal AP) {
 	retVal.shape = retVal.shape[:len(ap.shape)]
 	retVal.strides = retVal.strides[:len(ap.strides)]
 
-	retVal.fin = ap.fin
 	retVal.o = ap.o
 	retVal.Δ = ap.Δ
 	return
@@ -197,7 +190,7 @@ func (ap *AP) Clone() (retVal AP) {
 func (ap *AP) CloneTo(dest *AP) {
 	dest.shape = append(dest.shape[:0], ap.shape...)
 	dest.strides = append(dest.strides[:0], ap.strides...)
-	dest.fin = ap.fin
+
 	dest.o = ap.o
 	dest.Δ = ap.Δ
 }
@@ -212,17 +205,17 @@ func (ap *AP) C() bool { return ap.o.IsRowMajor() && ap.o.IsContiguous() }
 func (ap *AP) F() bool { return ap.o.IsColMajor() && ap.o.IsContiguous() }
 
 // S returns the metadata of the sliced tensor.
-func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err error) {
+func (ap *AP) S(size int, slices ...SliceRange) (newAP AP, ndStart, ndEnd int, err error) {
 	if len(slices) > len(ap.shape) {
 		// error
-		err = errors.Errorf(dimMismatch, len(ap.shape), len(slices))
+		err = errors.Errorf(errors.DimMismatch, len(ap.shape), len(slices))
 		return
 	}
 
 	ndEnd = size
-	newShape := ap.shape.Clone()   // the new shape
-	dims := ap.Dims()              // reported dimensions
-	newStrides := BorrowInts(dims) // the new strides
+	newShape := ap.shape.Clone()            // the new shape
+	dims := ap.Dims()                       // reported dimensions
+	newStrides := internal.BorrowInts(dims) // the new strides
 
 	var outerDim int
 	order := ap.o
@@ -233,7 +226,7 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 	}
 
 	for i := 0; i < dims; i++ {
-		var sl Slice
+		var sl SliceRange
 		if i <= len(slices)-1 {
 			sl = slices[i]
 		}
@@ -282,7 +275,6 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 		// scalars are a special case
 		newAP = AP{}
 		newAP.SetShape() // make it a Scalar
-		newAP.lock()
 	} else {
 
 		// drop any dimension with size 1, except the last dimension
@@ -304,10 +296,9 @@ func (ap *AP) S(size int, slices ...Slice) (newAP AP, ndStart, ndEnd int, err er
 
 // T returns the transposed metadata based on the given input
 func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
-
 	// prep axes
 	if len(axes) > 0 && len(axes) != ap.Dims() {
-		err = errors.Errorf(dimMismatch, ap.Dims(), len(axes))
+		err = errors.Errorf(errors.DimMismatch, ap.Dims(), len(axes))
 		return
 	}
 
@@ -321,25 +312,24 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 	a = axes
 
 	if ap.shape.IsScalarEquiv() {
-		return ap.Clone(), a, noopError{}
+		return ap.Clone(), a, errors.NoOp{}
 	}
 
 	// if axes is 0, 1, 2, 3... then no op
 	if monotonic, incr1 := IsMonotonicInts(axes); monotonic && incr1 && axes[0] == 0 {
-		return ap.Clone(), a, noopError{}
+		return ap.Clone(), a, errors.NoOp{}
 	}
 
 	currentShape := ap.shape
 	currentStride := ap.strides
 	shape := make(Shape, len(currentShape))
 	strides := make([]int, len(currentStride))
-
 	switch {
 	case ap.IsScalar():
 		return
 	case ap.IsVector():
 		if axes[0] == 0 {
-			return
+			return ap.Clone(), axes, errors.NoOp{}
 		}
 		strides[0], strides[1] = 1, 1
 		shape[0], shape[1] = currentShape[1], currentShape[0]
@@ -348,21 +338,17 @@ func (ap *AP) T(axes ...int) (retVal AP, a []int, err error) {
 		copy(strides, currentStride)
 		err = UnsafePermute(axes, shape, strides)
 		if err != nil {
-			err = handleNoOp(err)
+			err = internal.HandleNoOp(err)
 		}
 	}
 
 	o := MakeDataOrder(ap.o, Transposed)
 	retVal = MakeAP(shape, strides, o, ap.Δ)
-	retVal.fin = true
+
 	return
 }
 
-// locking and unlocking is used to ensure that the shape and stride doesn't change (it's not really safe though, as a direct mutation of the strides/shape would still mutate it, but at least the dimensions cannot change)
-func (ap *AP) lock()   { ap.fin = true }
-func (ap *AP) unlock() { ap.fin = false }
-
-func (ap *AP) calcStrides() []int {
+func (ap *AP) CalcStrides() []int {
 	switch {
 	case ap.o.IsRowMajor():
 		return CalcStrides(ap.shape)
@@ -372,12 +358,15 @@ func (ap *AP) calcStrides() []int {
 	panic("unreachable")
 }
 
-// setDataOrder is a method such that any tensor that embeds *AP will have the same method
-func (ap *AP) setDataOrder(o DataOrder) {
-	if !o.HasSameOrder(ap.o) {
-		ap.o = ap.o.toggleColMajor()
-	}
+// RecalcStrides computes the correct strides
+func (ap *AP) RecalcStrides() {
+	ap.strides = ap.CalcStrides()
 }
+
+func (ap *AP) SetStrides(strides []int) { ap.strides = strides }
+
+// SetDataOrder is a method such that any tensor that embeds *AP will have the same method
+func (ap *AP) SetDataOrder(o DataOrder) { ap.o = o }
 
 // TransposeIndex returns the new index given the old index
 func TransposeIndex(i int, oldShape, pattern, oldStrides, newStrides []int) int {
@@ -422,11 +411,11 @@ func BroadcastStrides(destShape, srcShape Shape, destStrides, srcStrides []int) 
 
 	if start < 0 {
 		//error
-		err = errors.Errorf(dimMismatch, dims, len(srcShape))
+		err = errors.Errorf(errors.DimMismatch, dims, len(srcShape))
 		return
 	}
 
-	retVal = BorrowInts(len(destStrides))
+	retVal = internal.BorrowInts(len(destStrides))
 	for i := dims - 1; i >= start; i-- {
 		s := srcShape[i-start]
 		switch {
@@ -445,3 +434,5 @@ func BroadcastStrides(destShape, srcShape Shape, destStrides, srcStrides []int) 
 	}
 	return
 }
+
+/* Serialization */

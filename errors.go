@@ -1,26 +1,15 @@
 package tensor
 
-import (
-	"fmt"
-	"runtime"
+type noopError struct{}
 
-	"github.com/pkg/errors"
-)
+func (e noopError) Error() string { return "NO-OP" }
+func (e noopError) NoOp()         {}
 
 // NoOpError is a useful for operations that have no op.
 type NoOpError interface {
-	NoOp() bool
+	error
+	NoOp()
 }
-
-// MathError is an error that occurs in an Array. It lists the indices for which an error has happened
-type MathError interface {
-	Indices() []int
-}
-
-type noopError struct{}
-
-func (e noopError) NoOp() bool    { return true }
-func (e noopError) Error() string { return "NoOp" }
 
 func handleNoOp(err error) error {
 	if err == nil {
@@ -30,93 +19,4 @@ func handleNoOp(err error) error {
 		return nil
 	}
 	return err
-}
-
-type errorIndices []int
-
-func (e errorIndices) Indices() []int { return []int(e) }
-func (e errorIndices) Error() string  { return fmt.Sprintf("Error in indices %v", []int(e)) }
-
-const (
-	emptyTensor       = "Tensor is uninitialized (no shape, no data)"
-	dimMismatch       = "Dimension mismatch. Expected %d, got %d"
-	atleastDims       = "Tensor has to be at least %d dimensions"
-	dtypeMismatch     = "Dtype mismatch. Expected %v. Got %v"
-	indexOOBAxis      = "Index %d is out of bounds for axis %d which has size %d"
-	invalidAxis       = "Invalid axis %d for ndarray with %d dimensions"
-	repeatedAxis      = "repeated axis %d in permutation pattern"
-	invalidSliceIndex = "Invalid slice index. Start: %d, End: %d"
-	sliceIndexOOB     = "Slice index out of bounds: Start: %d, End: %d. Length: %d"
-	broadcastError    = "Cannot broadcast together. Resulting shape will be at least (%d, 1). Repeats is (%d, 1)"
-	lenMismatch       = "Cannot compare with differing lengths: %d and %d"
-	typeMismatch      = "TypeMismatch: a %v and b %v"
-	typeclassMismatch = "Typeclass mismatch on %v"
-	shapeMismatch     = "Shape mismatch. Expected %v. Got %v"
-	sizeMismatch      = "Size Mismatch. %d and %d"
-	reuseReshapeErr   = "Failed to reshape the reuse *Dense from into %v. Size was: %d"
-	incrReshapeErr    = "Failed to reshape the incr *Dense into %v. Size was: %d"
-	retValReshapeErr  = "Failed to reshape the retVal *Dense into %v. Size was: %d"
-	div0              = "Division by 0. Index was %v"
-	div0General       = "Division by 0"
-	opFail            = "Failed to perform %v"
-	extractionFail    = "Failed to extract %v from %T"
-	unknownState      = "Unknown state reached: Safe %t, Incr %t, Reuse %t"
-	unsupportedDtype  = "Array of %v is unsupported for %v"
-	maskRequired      = "Masked array type required for %v"
-	inaccessibleData  = "Data in %p inaccessible"
-
-	// NYI errors
-
-	methodNYI = "%q not yet implemented for %v."
-	typeNYI   = "%q not yet implemented for interactions with %T."
-	typeNYI2  = "%q (%v) not yet implemented for interactions with %T."
-	prmsg     = "Please make a pull request at github.com/gorgonia/tensor if you wish to contribute a solution"
-)
-
-// nyierr is a convenience function that decorates a NYI error message with additional information.
-//
-// It assumes that `msg` is either `typeNYI` or `methodNYI`.
-func nyierr(msg string, args ...interface{}) error {
-	var fnName string = "UNKNOWN FUNCTION"
-	pc, _, _, ok := runtime.Caller(1)
-	if ok {
-		fnName = runtime.FuncForPC(pc).Name()
-	}
-
-	switch len(args) {
-	case 0:
-		// no args
-	case 1:
-		// the usual
-		switch msg {
-		case methodNYI:
-			// do nothing
-		case typeNYI:
-			// do nothing
-		case typeNYI2:
-			// this is the wrong message to use, so we revert to typeNYI.
-			msg = typeNYI
-		default:
-			// do nothing
-		}
-	case 2:
-		switch msg {
-		case methodNYI:
-		// do nothing
-		case typeNYI:
-			// we assume that args[0] is an additional descriptive string.
-			msg = typeNYI2
-		case typeNYI2:
-		// do nothing
-		default:
-			// do nothing
-		}
-	default:
-	}
-
-	// prepend fnName
-	args = append(args, fnName)
-	copy(args[1:], args[0:])
-	args[0] = fnName
-	return errors.Errorf(msg, args...)
 }

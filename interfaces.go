@@ -1,182 +1,227 @@
 package tensor
 
 import (
-	"reflect"
-
 	"gorgonia.org/dtype"
-	"gorgonia.org/tensor/internal/storage"
+	"gorgonia.org/shapes"
 )
 
-// Dtyper is any type that has a Dtype
-type Dtyper interface {
-	Dtype() dtype.Dtype
+// Memsetter is anything that can set a particular memory
+type Memsetter interface {
+	Memset(v any) error
 }
 
-// Eq is any type where you can perform an equality test
-type Eq interface {
-	Eq(interface{}) bool
+// NonStandardEngine is any kind of engine that isn't based off the standard engines provided in this package.
+type NonStandardEngine interface {
+	MemoryFlag() MemoryFlag
 }
 
-// Cloner is any type that can clone itself
-type Cloner interface {
-	Clone() interface{}
+/* Tensor Definitions. Oh boy this is gonna get wild */
+
+type Engineer interface {
+	Engine() Engine
 }
 
-// Dataer is any type that returns the data in its original form (typically a Go slice of something)
-type Dataer interface {
-	Data() interface{}
+// Desc is the minimal interface a tensor has to implement. It describes a tensor.
+type Desc interface {
+	// info
+	Dtyper
+	Shape() shapes.Shape
+	Strides() []int
+	Dims() int
+	Size() int
+
+	Info() *AP
 }
 
-// Boolable is any type has a zero and one value, and is able to set itself to either
-type Boolable interface {
+type DescWithStorage interface {
+	Desc
+	DataSizer
+
+	// Flags returns the memory flags of the underlying data array.
+	Flags() MemoryFlag
+	// DataOrder returns the data order of the underlying data array.
+	DataOrder() DataOrder
+
+	// Some basic operations that does not need knowledge of datatype
+
+	// A basic tenesor should be able to reshape itself
+	Reshape(shape ...int) error
+	// A Basic tensor should be able to zero itself out
 	Zeroer
-	Oner
+
+	// Data access related methods
+
+	RequiresIterator() bool
+	Iterator() Iterator
+	IsMaterializable() bool
+
+	// Memory and operation related methods
+
+	Memory
+	Engineer
+	IsNativelyAccessible() bool // Can Go access the memory?
+	IsManuallyManaged() bool    // Must Go manage the memory
+
+	// Construction related
+
+	AlikeAsTyper
+	DescAliker
+
+	// Restore restores any overallocated tensors back to the correct data legnth
+	Restore()
+
+	// SetDataOrder sets the data order of the given tensor.
+	SetDataOrder(o DataOrder)
 }
 
-// A Zeroer is any type that can set itself to the zeroth value. It's used to implement the arrays
+type Basic[DT any] interface {
+	DescWithStorage
+
+	RawAccessor[DT]
+	ValueSetter[DT]
+
+	// A Basic tensor should be able to clone itself
+	BasicCloner[DT]
+
+	// A Basic tensor should be able to create something like itself
+	BasicAliker[DT]
+}
+
+type Tensor[DT any, T Basic[DT]] interface {
+	Basic[DT] // Must be the same as T. There's currently no way to validate this yet
+
+	// Basic Functionalities:
+
+	// Aliker makes sure that a Tensor can create one that is like it
+	Aliker[T]
+
+	// Eq checks that a tensor is equal to another.
+	Eq[T]
+
+	// Cloner creates a clone of the given tensor.
+	Cloner[T]
+
+	// Slice slices a tensor and returns a view
+	Slice(rs ...SliceRange) (T, error)
+
+	// T performs a thunked transposition
+	T(axes ...int) (T, error)
+
+	// Transpose actually moves the data when doing the transposition
+	Transpose(axes ...int) (T, error)
+
+	// Materialize
+	Materialize() (T, error)
+
+	// Apply applies a scalar function
+	Apply(fn func(DT) (DT, error), opts ...FuncOpt) (T, error)
+
+	// Reduce reduces the dimensions of a tensor with a given function fn.
+	// You may specify the axes to reduce along with `Along`. If no axes are specified
+	// then the default reduction axis is along all axes.
+	Reduce(fn any, defaultValue DT, opts ...FuncOpt) (T, error)
+
+	// Scan
+	Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (T, error)
+}
+
+type RawAccessor[DT any] interface {
+	Data() []DT
+}
+
+type ValueGetter[DT any] interface {
+	At(...int) (DT, error)
+}
+
+type ValueSetter[DT any] interface {
+	SetAt(v DT, coord ...int) error
+	Memset(v DT) error
+	Zeroer
+}
+
+type DataSizer interface {
+	// DataSize returns the size of the underlying data. If it's overallocated it will return the size of the whole overallocated array.
+	DataSize() int
+}
+
+/*
+All tensors must implement these
+*/
+
+type Dtyper interface {
+	Dtype() dtype.Datatype
+}
+
+type Eq[T any] interface {
+	Eq(other T) bool
+}
+
+type Aliker[T any] interface {
+	Alike(opts ...ConsOpt) T
+}
+
+type AlikeAsTyper interface {
+	AlikeAsType(dt dtype.Datatype, opts ...ConsOpt) DescWithStorage
+}
+
+// BasicAliker is like Aliker, but the return value is Basic[DT].
+//
+// While this gives more flexibility, care must be taken when implementing
+// tensors that embeds another tensor.
+type BasicAliker[DT any] interface {
+	AlikeAsBasic(opts ...ConsOpt) Basic[DT]
+}
+
+// DescAliker is like Aliker, but the return value is of DescWithStorage.
+type DescAliker interface {
+	AlikeAsDescWithStorage(opts ...ConsOpt) DescWithStorage
+}
+
+type Cloner[T any] interface {
+	Clone() T
+}
+
+// BasicCloner is like Cloner, but the return value is a Basic[DT].
+//
+// Important to note that Go's type system will not check for correctness of this
+// automatically, when embedding any tensor that embeds another tensor. See the wrapped_test example in package dense.
+type BasicCloner[DT any] interface {
+	CloneAsBasic() Basic[DT]
+}
+
+type ShallowCloner[T any] interface {
+	ShallowClone() T
+}
+
+type Applyer[DT any, T Basic[DT]] interface {
+	Apply(fn func(DT) (DT, error), opts ...FuncOpt) T
+}
+
 type Zeroer interface {
 	Zero()
 }
 
-// A Oner is any type that can set itself to the equivalent of one. It's used to implement the arrays
-type Oner interface {
-	One()
-}
-
-// A MemSetter is any type that can set itself to a value.
-type MemSetter interface {
-	Memset(interface{}) error
-}
-
-// A Densor is any type that can return a *Dense
-type Densor interface {
-	Dense() *Dense
-}
-
-// ScalarRep is any Tensor that can represent a scalar
-type ScalarRep interface {
-	IsScalar() bool
-	ScalarValue() interface{}
-}
-
-// View is any Tensor that can provide a view on memory
-type View interface {
-	Tensor
-	IsView() bool
-	IsMaterializable() bool
-	Materialize() Tensor
-}
-
-// Slicer is any tensor that can slice
-type Slicer interface {
-	Slice(...Slice) (View, error)
-}
-
-// SlicerInto is any tensor that can slice into another tensor.
-// The other tensor may already have data allocated in it.
-// If that is the case then the slice will be a copy operation.
-type SlicerInto interface {
-	SliceInto(view Tensor, slices ...Slice) (retVal Tensor, err error)
-}
-
-// Reslicer is any tensor that can reslice.
-// To reslice is to reuse the container (*Dense, *CS) etc, but with new `Slice`s applied to it.
+// Value is a Tensor-like type that only supports reading but not writing data.
 //
-// e.g: A is a (3,3) matrix that has been sliced at [1:3, 1:3]. Call it B. So now B's shape is (2,2).
-// B.Reslice(S(0,2), S(0,2)) would reslice the original tensor (A) with the new slices.
-type Reslicer interface {
-	Reslice(...Slice) (View, error)
+// This allows for scalar values to be used
+type Value[DT any] interface {
+	Desc
+	RawAccessor[DT]
+	Engine() Engine
 }
 
-// DenseTensor is the interface for any Dense tensor.
-type DenseTensor interface {
-	Tensor
-	Info() *AP
+/* Variant Basic[DT] types */
 
-	IsMatrix() bool
-	IsVector() bool
-	IsRowVec() bool
-	IsColVec() bool
-
-	// headerer
-	// arrayer
-	unsafeMem
-	setAP(*AP)
-	rtype() reflect.Type
-	reshape(dims ...int) error
-
-	setDataOrder(o DataOrder)
-	isTransposed() bool
-	ostrides() []int
-	oshape() Shape
-	transposeAxes() []int
-	transposeIndex(i int, transposePat, strides []int) int
-	oldAP() *AP
-	setOldAP(ap *AP)
-	parentTensor() *Dense
-	setParentTensor(*Dense)
-	len() int
-	cap() int
-
-	// operations
-	Inner(other Tensor) (retVal interface{}, err error)
-	MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
-	MatVecMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
-	TensorMul(other Tensor, axesA, axesB []int) (retVal *Dense, err error)
-	stackDense(axis int, others ...DenseTensor) (DenseTensor, error)
+type DenseTensor[DT any] interface {
+	Basic[DT]
+	IsDenseTensor()
 }
 
-type SparseTensor interface {
-	Sparse
-	AsCSC()
-	AsCSR()
-	Indices() []int
-	Indptr() []int
-
-	// headerer
+type SparseTensor[DT any] interface {
+	Basic[DT]
+	IsSparseTensor()
 }
 
-type MaskedTensor interface {
-	DenseTensor
-	IsMasked() bool
-	SetMask([]bool)
-	Mask() []bool
-}
-
-// Kinder. Bueno.
-type Kinder interface {
-	Kind() reflect.Kind
-}
-
-// MakeAliker is any Tensor that can make more like itself.
-type MakeAliker interface {
-	MakeAike(opts ...ConsOpt) Tensor
-}
-
-type headerer interface {
-	hdr() *storage.Header
-}
-
-type arrayer interface {
-	arr() array
-	arrPtr() *array
-}
-
-type unsafeMem interface {
-	Set(i int, x interface{})
-	GetF64(i int) float64
-	GetF32(i int) float32
-	Ints() []int
-	Float64s() []float64
-	Float32s() []float32
-	Complex64s() []complex64
-	Complex128s() []complex128
-}
-
-type float64ser interface {
-	Float64s() []float64
-}
-
-type float32ser interface {
-	Float32s() []float32
+type Scalar[DT any] interface {
+	IsScalar()
 }
