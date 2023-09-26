@@ -375,7 +375,7 @@ func (t *Dense[T]) Iterator() Iterator {
 	return flatiter.New(&t.AP)
 }
 
-func (t *Dense[T]) IsMaterializable() bool { return t.transposedWith == nil && !t.f.IsView() }
+func (t *Dense[T]) IsMaterializable() bool { return t.transposedWith != nil || t.f.IsView() }
 
 func (t *Dense[T]) Materialize() (*Dense[T], error) {
 	if !t.IsMaterializable() {
