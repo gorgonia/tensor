@@ -4,12 +4,12 @@ import (
 	"testing"
 	"unsafe"
 
+	"github.com/stretchr/testify/assert"
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	gutils "gorgonia.org/tensor/internal/utils"
-	"github.com/stretchr/testify/assert"
-	"gorgonia.org/shapes"
 )
 
 type ExampleMemory[DT any] []byte
@@ -23,7 +23,10 @@ type ExampleNonStdEng[DT OrderedNum, T tensor.Basic[DT]] struct {
 }
 
 func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStdEng[DT, T] {
-	fake := []DT{DT(1), DT(2), DT(3), DT(4), DT(5), DT(6)}
+	fake := make([]DT, 64)
+	for i := range fake {
+		fake[i] = DT(i)
+	}
 	bytes := gutils.BytesFromSlice[DT](fake)
 	return &ExampleNonStdEng[DT, T]{
 		fake:      fake,
@@ -40,7 +43,21 @@ func (e ExampleNonStdEng[DT, T]) Alloc(size int64) (Memory, error) {
 func (e ExampleNonStdEng[DT, T]) Free(mem Memory, size int64) error { return nil }
 
 func (e ExampleNonStdEng[DT, T]) Memset(mem Memory, val interface{}) error {
-	return errors.Errorf("NYI")
+	var z DT
+	var ok bool
+	if z, ok = val.(DT); !ok {
+		return errors.Errorf("Expected val to be of type %T. Got %v of %T instead", z, val, val)
+	}
+	switch m := mem.(type) {
+	case *Dense[DT]:
+		for i := range m.data {
+			m.data[i] = z
+		}
+		return nil
+	default:
+		return errors.Errorf("Unable to memset memory of %T", mem)
+	}
+	panic("Unreachable")
 }
 
 func (e ExampleNonStdEng[DT, T]) Memclr(mem Memory) {
@@ -270,5 +287,67 @@ func TestDense_Memset(t *testing.T) {
 	assert.Equal(correct, T.Data())
 
 	// Natively Inaccessible
+
+	T2 := New[int](WithShape(2, 3), WithEngine(newExampleNonStdEng[int, *Dense[int]]()))
+	if err := T2.Memset(1337); err != nil {
+		t.Fatal(err)
+	}
+	correctInts := []int{1337, 1337, 1337, 1337, 1337, 1337}
+	assert.Equal(correctInts, T2.Data())
+}
+
+func TestDense_At(t *testing.T) {
+	// basic test
+	T := New[int](WithShape(2, 3))
+	if err := T.SetAt(1337, 1, 2); err != nil {
+		t.Fatalf("Cannot set at T[1,2]. Error: %v", err)
+	}
+
+	got, err := T.At(1, 2)
+	if err != nil {
+		t.Fatalf("Cannot get at T[1,2]. Error: %v", err)
+	}
+	if got != 1337 {
+		t.Fatalf("Expected 1337. Got %v", got)
+	}
+
+	// negative addresses are handled but not encouraged
+	if err := T.SetAt(1337, -1, 2); err != nil {
+		t.Fatalf("Cannot set at T[-1,-2]. Error: %v", err)
+	}
+
+	got, err = T.At(-1, 2)
+	if err != nil {
+		t.Fatalf("Cannot get at T[-1,2]. Error: %v", err)
+	}
+	if got != 1337 {
+		t.Fatalf("Expected 1337. Got %v", got)
+	}
+
+	// doing stupid things
+	if err := T.SetAt(1337, 10, 10); err == nil {
+		t.Error("Expected error when trying to set a value to coordinate [10, 10]. Got none")
+	}
+
+	if err := T.SetAt(1337, 0, 0, 2); err == nil {
+		t.Error("Expected error when trying to set a value to coordinate [0,0,2]. Got none")
+	}
+
+	if _, err := T.At(10, 10); err == nil {
+		t.Error("Expected error when trying to get a value to coordinate [10, 10]. Got none")
+	}
+
+	if _, err := T.At(0, 0, 2); err == nil {
+		t.Error("Expected error when trying to get a value to coordinate [0,0,2]. Got none")
+	}
+
+	// natively inaccessible engine
+	T = New[int](WithShape(2, 3), WithEngine(newExampleNonStdEng[int, *Dense[int]]()))
+	if err := T.SetAt(1337, 1, 2); err == nil {
+		t.Fatalf("Expected error. Got none")
+	}
+	if _, err := T.At(1, 2); err == nil {
+		t.Fatalf("Expected error. Got none")
+	}
 
 }
