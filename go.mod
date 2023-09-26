@@ -1,16 +1,14 @@
-module github.com/chewxy/inigo/values/tensor
+module gorgonia.org/tensor
 
 go 1.20
 
-replace gorgonia.org/tensor => ../../../../../gorgonia.org/tensor
+replace gorgonia.org/dtype => ../dtype
 
-replace gorgonia.org/dtype => ../../../../../gorgonia.org/dtype
+replace gorgonia.org/shapes => ../shapes
 
-replace gorgonia.org/shapes => ../../../../../gorgonia.org/shapes
+replace gorgonia.org/vecf64 => ../vecf64
 
-replace gorgonia.org/vecf64 => ../../../../../gorgonia.org/vecf64
-
-replace gorgonia.org/vecf32 => ../../../../../gorgonia.org/vecf32
+replace gorgonia.org/vecf32 => ../vecf32
 
 require (
 	github.com/chewxy/math32 v1.10.1
