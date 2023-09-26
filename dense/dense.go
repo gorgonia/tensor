@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"unsafe"
 
+	"gorgonia.org/dtype"
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/flatiter"
 	gutils "gorgonia.org/tensor/internal/utils"
-	"gorgonia.org/dtype"
-	"gorgonia.org/shapes"
 )
 
 var (
@@ -212,6 +212,9 @@ func (t *Dense[T]) Flags() MemoryFlag     { return t.f }
 /* Data Access */
 
 func (t *Dense[T]) Data() []T {
+	if t == nil {
+		return nil
+	}
 	f := t.Flags()
 	switch {
 	case t.IsScalarEquiv():
@@ -288,7 +291,7 @@ func (t *Dense[T]) Zero() {
 /* Construction related methods */
 
 // FromDense returns itself. This allows `*Dense[T]` to implement `FromDensor[Dt]“
-func (t *Dense[T]) FromDense(d *Dense[T]) *Dense[T] { return t }
+func (t *Dense[T]) FromDense(d *Dense[T]) *Dense[T] { return d }
 
 // GetDense returns itself. This allows `*Dense[T]` to implement `Densor[T]`
 func (t *Dense[T]) GetDense() *Dense[T] { return t }

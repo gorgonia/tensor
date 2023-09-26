@@ -73,6 +73,11 @@ func Ltoi(shape Shape, strides []int, coords ...int) (at int, err error) {
 			return
 		}
 
+		// normalize coord
+		if coord < 0 {
+			coord = size + coord
+		}
+
 		var stride int
 		switch {
 		case shape.IsVector() && len(strides) == 1:
