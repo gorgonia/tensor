@@ -8,13 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"gorgonia.org/tensor/internal/errors"
 	"github.com/chewxy/math32"
 	"gorgonia.org/dtype"
+	"gorgonia.org/tensor/internal/errors"
 )
 
-// taken from the Go Stdlib package math
-func tolerancef64(a, b, e float64) bool {
+func tolerance[DT float64 | float32](a, b, e DT) bool {
 	d := a - b
 	if d < 0 {
 		d = -d
@@ -30,10 +29,39 @@ func tolerancef64(a, b, e float64) bool {
 	}
 	return d < e
 }
-func closeenoughf64(a, b float64) bool { return tolerancef64(a, b, 1e-8) }
-func closef64(a, b float64) bool       { return tolerancef64(a, b, 1e-14) }
-func veryclosef64(a, b float64) bool   { return tolerancef64(a, b, 4e-16) }
-func soclosef64(a, b, e float64) bool  { return tolerancef64(a, b, e) }
+func closeenough[DT float64 | float32](a, b DT) bool {
+	var e DT
+	switch any(e).(type) {
+	case float64:
+		e = DT(1e-8)
+	case float32:
+		e = DT(1e-2)
+	}
+	return tolerance(a, b, e)
+}
+
+func closef[DT float64 | float32](a, b DT) bool {
+	var e DT
+	switch any(e).(type) {
+	case float64:
+		e = DT(1e-14)
+	case float32:
+		e = DT(1e-5) // the number gotten from the cfloat standard. Haskell's Linear package uses 1e-6 for floats
+	}
+	return tolerance(a, b, e)
+}
+
+func veryclose[DT float64 | float32](a, b DT) bool {
+	var e DT
+	switch any(e).(type) {
+	case float64:
+		e = DT(1e-16)
+	case float32:
+		e = DT(1e-6) // from wiki
+	}
+	return tolerance(a, b, e)
+}
+
 func alikef64(a, b float64) bool {
 	switch {
 	case math.IsNaN(a) && math.IsNaN(b):
@@ -44,26 +72,6 @@ func alikef64(a, b float64) bool {
 	return false
 }
 
-// taken from math32, which was taken from the Go std lib
-func tolerancef32(a, b, e float32) bool {
-	d := a - b
-	if d < 0 {
-		d = -d
-	}
-
-	// note: b is correct (expected) value, a is actual value.
-	// make error tolerance a fraction of b, not a.
-	if b != 0 {
-		e = e * b
-		if e < 0 {
-			e = -e
-		}
-	}
-	return d < e
-}
-func closef32(a, b float32) bool      { return tolerancef32(a, b, 1e-5) } // the number gotten from the cfloat standard. Haskell's Linear package uses 1e-6 for floats
-func veryclosef32(a, b float32) bool  { return tolerancef32(a, b, 1e-6) } // from wiki
-func soclosef32(a, b, e float32) bool { return tolerancef32(a, b, e) }
 func alikef32(a, b float32) bool {
 	switch {
 	case math32.IsNaN(a) && math32.IsNaN(b):
@@ -102,11 +110,11 @@ func cAlike(a, b complex128) bool {
 func allClose(a, b interface{}, approxFn ...interface{}) bool {
 	switch at := a.(type) {
 	case []float64:
-		closeness := closef64
+		closeness := closef[float64]
 		var ok bool
 		if len(approxFn) > 0 {
 			if closeness, ok = approxFn[0].(func(a, b float64) bool); !ok {
-				closeness = closef64
+				closeness = closef[float64]
 			}
 		}
 		bt := b.([]float64)
@@ -129,11 +137,11 @@ func allClose(a, b interface{}, approxFn ...interface{}) bool {
 		}
 		return true
 	case []float32:
-		closeness := closef32
+		closeness := closef[float32]
 		var ok bool
 		if len(approxFn) > 0 {
 			if closeness, ok = approxFn[0].(func(a, b float32) bool); !ok {
-				closeness = closef32
+				closeness = closef[float32]
 			}
 		}
 		bt := b.([]float32)
