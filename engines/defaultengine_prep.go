@@ -3,12 +3,12 @@ package stdeng
 import (
 	"context"
 
+	"gorgonia.org/dtype"
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	gutils "gorgonia.org/tensor/internal/utils"
-	"gorgonia.org/dtype"
-	"gorgonia.org/shapes"
 )
 
 // some constant error messages
@@ -47,7 +47,6 @@ func (e StdEng[DT, T]) HandleFuncOptsDesc(a tensor.Basic[DT], expShape shapes.Sh
 	asType := fo.AsType
 
 	var ok bool
-
 	switch {
 	case toReuse:
 		if retVal, ok = reuseAny.(DescWithStorage); !ok {
