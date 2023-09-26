@@ -1,6 +1,6 @@
 package sparse
 
-import "github.com/chewxy/inigo/values/tensor/internal"
+import "gorgonia.org/tensor/internal"
 
 type DataOrder = internal.DataOrder
 type Engine = internal.Engine

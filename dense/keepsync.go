@@ -1,6 +1,6 @@
 package dense
 
-import "github.com/chewxy/inigo/values/tensor"
+import "gorgonia.org/tensor"
 
 // Value is a Tensor-like type that only supports reading but not writing data.
 //

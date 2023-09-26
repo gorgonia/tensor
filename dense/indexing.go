@@ -1,9 +1,9 @@
 package dense
 
 import (
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	"github.com/chewxy/inigo/values/tensor/internal/specialized"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/specialized"
 )
 
 func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {

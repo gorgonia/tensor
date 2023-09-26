@@ -4,8 +4,8 @@ import (
 	"testing"
 	"testing/quick"
 
-	"github.com/chewxy/inigo/values/tensor"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"

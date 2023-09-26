@@ -3,10 +3,10 @@ package dense
 import (
 	"context"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	"github.com/chewxy/inigo/values/tensor/internal/execution"
-	"github.com/chewxy/inigo/values/tensor/internal/specialized"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/execution"
+	"gorgonia.org/tensor/internal/specialized"
 	"golang.org/x/exp/constraints"
 	"gorgonia.org/dtype"
 )

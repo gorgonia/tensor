@@ -3,7 +3,7 @@ package stdeng
 import (
 	"context"
 
-	"github.com/chewxy/inigo/values/tensor/internal"
+	"gorgonia.org/tensor/internal"
 )
 
 func (e StdEng[DT, T]) Repeat(ctx context.Context, a, retVal T, axis, size int, repeats []int) error {

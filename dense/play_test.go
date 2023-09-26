@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor/internal/axialiter"
-	"github.com/chewxy/inigo/values/tensor/internal/execution"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor/internal/axialiter"
+	"gorgonia.org/tensor/internal/execution"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"gorgonia.org/dtype"
 )
 

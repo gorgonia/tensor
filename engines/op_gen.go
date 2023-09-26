@@ -3,7 +3,7 @@
 package stdeng
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal/execution"
+	"gorgonia.org/tensor/internal/execution"
 	"golang.org/x/exp/constraints"
 )
 

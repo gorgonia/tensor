@@ -1,7 +1,7 @@
 package stdeng
 
 import (
-	"github.com/chewxy/inigo/values/tensor"
+	"gorgonia.org/tensor"
 	"golang.org/x/exp/constraints"
 )
 

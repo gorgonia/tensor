@@ -3,7 +3,7 @@ package dense_test
 import (
 	"fmt"
 
-	"github.com/chewxy/inigo/values/tensor/dense"
+	"gorgonia.org/tensor/dense"
 )
 
 type int2 struct {

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor/dense"
-	. "github.com/chewxy/inigo/values/tensor/engines"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor/dense"
+	. "gorgonia.org/tensor/engines"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 )

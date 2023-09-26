@@ -1,7 +1,7 @@
 package dense
 
 import (
-	stdeng "github.com/chewxy/inigo/values/tensor/engines"
+	stdeng "gorgonia.org/tensor/engines"
 )
 
 func defaultEngine[DT any]() Engine {

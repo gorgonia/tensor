@@ -1,7 +1,7 @@
 package tensor
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal"
+	"gorgonia.org/tensor/internal"
 	"gorgonia.org/shapes"
 )
 

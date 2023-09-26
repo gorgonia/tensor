@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	"github.com/chewxy/inigo/values/tensor/internal/flatiter"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/flatiter"
+	gutils "gorgonia.org/tensor/internal/utils"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 )

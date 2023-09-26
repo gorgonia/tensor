@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chewxy/inigo/values/tensor"
-	stdeng "github.com/chewxy/inigo/values/tensor/engines"
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	"github.com/chewxy/inigo/values/tensor/internal/execution"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor"
+	stdeng "gorgonia.org/tensor/engines"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/execution"
+	gutils "gorgonia.org/tensor/internal/utils"
 
-	"github.com/chewxy/inigo/values/tensor/internal/specialized"
+	"gorgonia.org/tensor/internal/specialized"
 )
 
 // Benchmark against a non specialized function

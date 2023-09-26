@@ -1,9 +1,9 @@
 package dense
 
 import (
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
 	"gonum.org/v1/gonum/mat"
 )
 

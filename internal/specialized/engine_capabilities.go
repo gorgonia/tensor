@@ -4,7 +4,7 @@ package specialized
 import (
 	"context"
 
-	"github.com/chewxy/inigo/values/tensor"
+	"gorgonia.org/tensor"
 )
 
 type Adder[DT any, T tensor.Tensor[DT, T]] interface {

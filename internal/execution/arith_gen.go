@@ -2,7 +2,7 @@
 
 package execution
 
-import "github.com/chewxy/inigo/values/tensor/internal/errors"
+import "gorgonia.org/tensor/internal/errors"
 
 // AddVV does c :=  a ̅+ b
 func AddVV[T Addable](a, b, c []T) {

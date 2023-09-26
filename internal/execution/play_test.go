@@ -3,7 +3,7 @@ package execution
 import (
 	"testing"
 
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 func TestFoo(t *testing.T) {

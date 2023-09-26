@@ -1,8 +1,8 @@
 package flatiter
 
 import (
-	"github.com/chewxy/inigo/values/tensor"
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
+	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 /* FLAT ITERATOR */

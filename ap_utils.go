@@ -1,8 +1,8 @@
 package tensor
 
 import (
-	"github.com/chewxy/inigo/values/tensor/internal/errors"
-	gutils "github.com/chewxy/inigo/values/tensor/internal/utils"
+	"gorgonia.org/tensor/internal/errors"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 func CalcStridesColMajor(s Shape) []int {

@@ -3,9 +3,9 @@ package dense_test
 import (
 	"context"
 
-	"github.com/chewxy/inigo/values/tensor/dense"
-	stdeng "github.com/chewxy/inigo/values/tensor/engines"
-	"github.com/chewxy/inigo/values/tensor/scalar"
+	"gorgonia.org/tensor/dense"
+	stdeng "gorgonia.org/tensor/engines"
+	"gorgonia.org/tensor/scalar"
 )
 
 type E[T dense.DenseTensor[Point, T]] struct {

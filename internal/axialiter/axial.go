@@ -1,6 +1,6 @@
 package axialiter
 
-import "github.com/chewxy/inigo/values/tensor/internal/errors"
+import "gorgonia.org/tensor/internal/errors"
 
 type infoer interface {
 	Info() *AP
