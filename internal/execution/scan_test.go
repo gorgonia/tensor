@@ -1,6 +1,10 @@
 package execution
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestScan(t *testing.T) {
 	a := []float64{1, 2, 3, 4}
@@ -32,7 +36,8 @@ func TestScanLast(t *testing.T) {
 
 }
 
-func TestScanDefault(t *testing.T) {
+func TestScan_All(t *testing.T) {
+	assert := assert.New(t)
 	// shape of (2,3,4)
 	a := []float64{
 		1, 2, 3, 4,
@@ -58,7 +63,10 @@ func TestScanDefault(t *testing.T) {
 	//	dimSize = 2
 	// 	outerStride = 12
 	//	stride = 12
-	ScanDefault(a, retVal, 2, 2, 12, 12, 12, add)
+	//	ScanDefault(a, retVal, 2, 2, 12, 12, 1, add)
+	correct := []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36}
+	ScanFirst(a, retVal, 2, 12, add)
+	assert.Equal(correct, retVal)
 	t.Logf("%v", retVal)
 
 	// axis 1
@@ -67,7 +75,14 @@ func TestScanDefault(t *testing.T) {
 	//	outerStride = 12
 	//	stride = 4
 	// 	expected = irrelevant
-	ScanDefault(a, retVal, 2, 3, 12, 4, 12, add)
+	correct = []float64{1, 2, 3, 4, 6, 8, 10, 12, 15, 18, 21, 24, 13, 14, 15, 16, 30, 32, 34, 36, 51, 54, 57, 60}
+	ScanDefault(a, retVal, 2, 3, 12, 4, 1, add)
+	assert.Equal(correct, retVal)
 	t.Logf("%v", retVal)
 
+	// axis 2
+	correct = []float64{1, 3, 6, 10, 5, 11, 18, 26, 9, 19, 30, 42, 13, 27, 42, 58, 17, 35, 54, 74, 21, 43, 66, 90}
+	ScanLast(a, retVal, 4, add)
+	assert.Equal(correct, retVal)
+	t.Logf("%v", retVal)
 }

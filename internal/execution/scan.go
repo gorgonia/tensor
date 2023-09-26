@@ -1,7 +1,5 @@
 package execution
 
-import "log"
-
 func Scan[T any](fn func(T, T) T, data []T, retVal []T) []T {
 	if len(data) == 0 {
 		return retVal
@@ -13,6 +11,16 @@ func Scan[T any](fn func(T, T) T, data []T, retVal []T) []T {
 		retVal[i+1] = fn(retVal[i], v)
 	}
 	return retVal
+}
+
+func ScanFirst[T any](data, retVal []T, size, stride int, fn func(acc T, next T) T) {
+	copy(retVal[0:stride], data[0:stride])
+	for i := 1; i < size; i += stride {
+		for j := 0; j < stride; j++ {
+			acc := retVal[(i-1)*stride+j]
+			retVal[i*stride+j] = fn(acc, data[i*stride+j])
+		}
+	}
 }
 
 func ScanLastN[T any](data, retVal []T, dimSize int, fn func(data, retVal []T)) {
@@ -27,27 +35,22 @@ func ScanLast[T any](data, retVal []T, dimSize int, fn func(acc T, next T) T) {
 	}
 }
 
+// ScanDefault scans an arbitrary axis of a given tensor with a function that has the signature func(acc, next T) T.
+// Note: despite mentioning "arbitrary axis" in the sentence prior to this, the arbitrariness is not guaranteed for first and last axes.
+// Use `ScanFirst` and `ScanLast` for those
 func ScanDefault[T any](data, retVal []T, dim0, dimSize, outerStride, stride, expected int, fn func(acc T, next T) T) {
-	for i := 0; i < dim0; i++ {
-		start := i * outerStride
-		sliced := data[start : start+outerStride]
-		slicedRetVal := retVal[start : start+outerStride]
+	for i := 0; i < dim0*outerStride; i += outerStride {
+		for j := 0; j < stride; j += expected {
+			acc := data[i+j]
+			retVal[i+j] = acc
+			// log.Printf("acc = data[%d] = %v", i+j, acc)
+			for k := stride; k < dimSize*stride; k += stride {
+				readFrom := i + j + k
 
-		//var innerStart, strideTrack int
-		//log.Printf("%v %v", slicedRetVal, sliced)
-		for j := 0; j < dimSize; j++ {
-			idx := j * stride
-
-			for k := 0; k < stride; k++ {
-				idx2 := idx + k
-				log.Printf("j %d idx %d idx2 %v", j, idx, idx2)
-				if j == 0 {
-					slicedRetVal[idx2] = sliced[idx2]
-					continue
-				}
-				idx1 := (j-1)*stride + k
-				slicedRetVal[idx2] = fn(slicedRetVal[idx1], sliced[idx2])
-
+				//log.Printf("\tdata[%d + %d + %d = %d] = %v", i, j, k, readFrom, data[readFrom])
+				acc = fn(acc, data[readFrom])
+				retVal[readFrom] = acc
+				// log.Printf("\tacc %v|%v", acc, retVal)
 			}
 		}
 	}
