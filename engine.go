@@ -116,6 +116,10 @@ type Reducer[DT any, T Tensor[DT, T]] interface {
 	PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, axes []int, retVal T, err error)
 }
 
+type Scanner[DT any, T Tensor[DT, T]] interface {
+	Scan(ctx context.Context, fn any, a T, axis int, retVal T) (err error)
+}
+
 type DotIterer[DT any, T Tensor[DT, T]] interface {
 	DotIter(ctx context.Context, reduceWithFn, elwiseFn func(DT, DT) DT, a, b, retVal T) (err error)
 }

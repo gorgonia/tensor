@@ -3,10 +3,10 @@ package dense
 import (
 	"context"
 
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/specialized"
-	"gorgonia.org/shapes"
 )
 
 func (t *Dense[DT]) Apply(fn func(DT) (DT, error), opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -71,8 +71,27 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 	return reuse, nil
 }
 
-func (t *Dense[DT]) Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (*Dense[DT], error) {
-	panic("NYI")
+func (t *Dense[DT]) Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {
+	if err = check(checkFlags(t.e, t)); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+	}
+
+	h, ok := t.e.(specialized.FuncOptHandler[DT, *Dense[DT]])
+	if !ok {
+		return nil, errors.Errorf(errors.EngineSupport, t.e, h, errors.ThisFn())
+	}
+	var fo Option
+	if retVal, fo, err = h.HandleFuncOptsSpecialized(t, t.Shape(), opts...); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
+	}
+	ctx := fo.Ctx
+
+	var e tensor.Scanner[DT, *Dense[DT]]
+	if e, ok = t.e.(tensor.Scanner[DT, *Dense[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
+	}
+	err = e.Scan(ctx, fn, t, axis, retVal)
+	return retVal, err
 }
 
 func (t *Dense[DT]) Dot(reductionFn, elwiseFn func(DT, DT) DT, other *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
