@@ -100,18 +100,24 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaul
 	}
 
 	lastAxis := a.Dims() - 1
+	if a.DataOrder().IsColMajor() {
+		// case axis == lastAxis && a.DataOrder().IsColMajor():
+		// 	should be the same as case axis ==0 && a.DataOrder().IsRowMajor().
+		// case axis ==0 && a.DataOrder().IsColMajor:
+		// 	should be the same case as axis == lastAxis && a.DataOrder.IsRowMajor()
+		return errors.Errorf(errors.NYIPR, "ColMajor", errors.ThisFn())
+	}
 
+	shp := a.Shape()
+	strides := a.Strides()
+
+	aData := a.Data()
+	retValData := retVal.Data()
 	switch {
-	case (axis == 0 && a.DataOrder().IsRowMajor()) || ((axis == lastAxis || axis == len(a.Shape())-1) && a.DataOrder().IsColMajor()):
+	case axis == 0:
 		var size, split int
-		if a.DataOrder().IsColMajor() {
-			return errors.Errorf("NYI: colmajor")
-		}
-		size = a.Shape()[0]
+		size = shp[0]
 		split = a.DataSize() / size
-
-		aData := a.Data()
-		retValData := retVal.Data()
 		copy(retValData[0:split], aData[0:split])
 
 		switch fn := fn.(type) {
@@ -132,49 +138,45 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaul
 			err = errors.Errorf("Unable to reduce with function of type %T", fn)
 		}
 
-	case (axis == lastAxis && a.DataOrder().IsRowMajor()) || (axis == 0 && a.DataOrder().IsColMajor()):
-		var dimSize int
-		if a.DataOrder().IsColMajor() {
-			return errors.Errorf("NYI: colmajor")
-		}
-		dimSize = a.Shape()[axis]
+	case axis == lastAxis:
+		dimSize := shp[axis]
 		switch fn := fn.(type) {
 		case func([]DT, DT) DT:
-			execution.ReduceLastN[DT](a.Data(), retVal.Data(), dimSize, defaultValue, fn)
+			execution.ReduceLastN[DT](aData, retValData, dimSize, defaultValue, fn)
 		case func(DT, DT) DT:
-			execution.ReduceLast[DT](a.Data(), retVal.Data(), dimSize, defaultValue, fn)
+			execution.ReduceLast[DT](aData, retValData, dimSize, defaultValue, fn)
 		case func(DT, DT) (DT, error):
-			err = execution.ReduceLastWithErr[DT](a.Data(), retVal.Data(), dimSize, defaultValue, fn)
+			err = execution.ReduceLastWithErr[DT](aData, retValData, dimSize, defaultValue, fn)
 		case tensor.ReductionModule[DT]:
 			if fn.ReduceLastN != nil {
-				execution.ReduceLastN[DT](a.Data(), retVal.Data(), dimSize, defaultValue, fn.ReduceLastN)
+				execution.ReduceLastN[DT](aData, retValData, dimSize, defaultValue, fn.ReduceLastN)
 			} else {
-				execution.ReduceLast[DT](a.Data(), retVal.Data(), dimSize, defaultValue, fn.Reduce)
+				execution.ReduceLast[DT](aData, retValData, dimSize, defaultValue, fn.Reduce)
 			}
 		default:
 			err = errors.Errorf("Unable to reduce last axis with function of type %T", fn)
 		}
 
 	default:
-		dim0 := a.Shape()[0]
-		dimSize := a.Shape()[axis]
-		outerStride := a.Strides()[0]
-		stride := a.Strides()[axis]
+		dim0 := shp[0]
+		dimSize := shp[axis]
+		outerStride := strides[0]
+		stride := strides[axis]
 		expected := retVal.Strides()[0]
 		switch fn := fn.(type) {
 		case func(DT, DT) DT:
-			execution.ReduceDefault[DT](a.Data(), retVal.Data(), dim0, dimSize, outerStride, stride, expected, fn)
+			execution.ReduceDefault[DT](aData, retValData, dim0, dimSize, outerStride, stride, expected, fn)
 		case func(DT, DT) (DT, error):
-			err = execution.ReduceDefaultWithErr[DT](a.Data(), retVal.Data(), dim0, dimSize, outerStride, stride, expected, fn)
+			err = execution.ReduceDefaultWithErr[DT](aData, retValData, dim0, dimSize, outerStride, stride, expected, fn)
 		case tensor.ReductionModule[DT]:
-			execution.ReduceDefault[DT](a.Data(), retVal.Data(), dim0, dimSize, outerStride, stride, expected, fn.Reduce)
+			execution.ReduceDefault[DT](aData, retValData, dim0, dimSize, outerStride, stride, expected, fn.Reduce)
 		default:
 			err = errors.Errorf("Unable to reduce axis %d with function of type %T", axis, fn)
 		}
 	}
 	if err == nil {
 		// reshape
-		newShape := internal.ReduceShape(a.Shape(), axis)
+		newShape := internal.ReduceShape(shp, axis)
 		err = retVal.Reshape(newShape...)
 	}
 	return
@@ -241,7 +243,7 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 	}
 	lastAxis := a.Dims() - 1
 	if a.DataOrder().IsColMajor() {
-		return errors.Errorf(errors.NYIPR, errors.ThisFn())
+		return errors.Errorf(errors.NYIPR, "ColMajor", errors.ThisFn())
 	}
 	shp := a.Shape()
 	strides := a.Strides()
@@ -280,7 +282,7 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 		expected := retVal.Strides()[0]
 		switch fn := fn.(type) {
 		case func(DT, DT) DT:
-			execution.ScanDefault(aData, retVal, dim0, dimSize, outerStride, stride, expected, fn)
+			execution.ScanDefault(aData, retValData, dim0, dimSize, outerStride, stride, expected, fn)
 		default:
 			err = errors.Errorf("Unable to scan on axis %d with function type %T", axis, fn)
 		}
