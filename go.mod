@@ -8,7 +8,7 @@ replace gorgonia.org/shapes => /home/chewxy/workspace/gorgoniaws/src/gorgonia.or
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20201229220542-30ce2eb5d4dc
-	github.com/chewxy/hm v1.0.0
+	github.com/chewxy/hm v1.0.0 // indirect
 	github.com/chewxy/math32 v1.0.8
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
@@ -25,6 +25,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xtgo/set v1.0.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
