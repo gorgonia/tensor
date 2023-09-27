@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/dense"
 	. "gorgonia.org/tensor/engines"
 	gutils "gorgonia.org/tensor/internal/utils"
-	"github.com/stretchr/testify/assert"
-	"gorgonia.org/shapes"
 )
 
 func TestStdEng_Reduce(t *testing.T) {
@@ -180,7 +180,10 @@ func TestStdEng_ReduceAlong(t *testing.T) {
 
 func ExampleStdEng_ReduceAlong_nonStdReduction() {
 	minus := func(a, b float32) float32 { return a - b }
-	a := dense.New[float32](WithShape(2, 3), WithBacking(gutils.Range[float32](0, 6)))
+	a := dense.New[float32](WithShape(2, 3), WithBacking([]float32{
+		5, 10, -2,
+		-6, -2, 9,
+	}))
 	eng := StdEng[float32, *dense.Dense[float32]]{}
 	ctx := context.Background()
 	fmt.Printf("a:\n%v\n", a)
@@ -200,6 +203,15 @@ func ExampleStdEng_ReduceAlong_nonStdReduction() {
 	}
 	fmt.Printf("After reducing along axis 0:\n%v\n\n", retVal)
 
+	// ReduceAlong:
+	fmt.Println("Using ReduceAlong along []int{1,0}:\n-----------------------------------")
+	mod := tensor.ReductionModule[float32]{Reduce: minus, IsNonCommutative: true}
+	retVal = dense.New[float32](WithShape(2, 3))
+	if err = eng.ReduceAlong(ctx, mod, 0, a, retVal, 1, 0); err != nil {
+		fmt.Printf("err: %v\n", err)
+	}
+	fmt.Printf("After ReduceAlong:\n%v\n\n=====================================\n\n", retVal)
+
 	// What would happen if we reduce it along []int{0, 1}
 	fmt.Println("What would happen if we reduce along []int{0,1}\n-----------------------------------------------")
 	retVal = dense.New[float32](WithShape(2, 3)) // overprovisioned retVal
@@ -213,38 +225,53 @@ func ExampleStdEng_ReduceAlong_nonStdReduction() {
 	}
 	fmt.Printf("After reducing along axis 1:\n%v\n\n", retVal)
 
-	// ReduceAlong:
-	fmt.Println("Using ReduceAlong along []int{1,0}:\n-----------------------------------")
-	mod := tensor.ReductionModule[float32]{Reduce: minus, IsNonCommutative: true}
+	fmt.Println("Using ReduceAlong along []int{0,1}:\n-----------------------------------")
 	retVal = dense.New[float32](WithShape(2, 3))
-	if err = eng.ReduceAlong(ctx, mod, 0, a, retVal, 1, 0); err != nil {
+	if err = eng.ReduceAlong(ctx, mod, 0, a, retVal, 0, 1); err != nil {
 		fmt.Printf("err: %v\n", err)
 	}
-	fmt.Printf("After ReduceAlong:\n%v\n", retVal)
+	fmt.Printf("After ReduceAlong:\n%v\n\n", retVal)
+	fmt.Println("Be careful to mark non-commutative functions. If `IsNonCommutative` is false:")
+	mod.IsNonCommutative = false
+	if err = eng.ReduceAlong(ctx, mod, 0, a, retVal, 0, 1); err != nil {
+		fmt.Printf("err: %v\n", err)
+	}
+	fmt.Printf("After ReduceAlong []int{0, 1} (INCORRECT):\n%v\n\n", retVal)
 
 	// Output:
 	// a:
-	// ⎡0  1  2⎤
-	// ⎣3  4  5⎦
+	// ⎡ 5  10  -2⎤
+	// ⎣-6  -2   9⎦
 	//
 	// Reduce a along []int{1, 0}
 	// --------------------------
 	// After reducing along axis 1:
-	// [ -3  -12]
+	// [-13   -1]
 	// After reducing along axis 0:
-	// 9
-	//
-	// What would happen if we reduce along []int{0,1}
-	// -----------------------------------------------
-	// After reducing along axis 0:
-	// [-3  -3  -3]
-	// After reducing along axis 1:
-	// 3
+	// -12
 	//
 	// Using ReduceAlong along []int{1,0}:
 	// -----------------------------------
 	// After ReduceAlong:
-	// 9
+	// -12
+	//
+	// =====================================
+	//
+	// What would happen if we reduce along []int{0,1}
+	// -----------------------------------------------
+	// After reducing along axis 0:
+	// [ 11   12  -11]
+	// After reducing along axis 1:
+	// 10
+	//
+	// Using ReduceAlong along []int{0,1}:
+	// -----------------------------------
+	// After ReduceAlong:
+	// 10
+	//
+	// Be careful to mark non-commutative functions. If `IsNonCommutative` is false:
+	// After ReduceAlong []int{0, 1} (INCORRECT):
+	// -14
 
 }
 
