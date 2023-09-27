@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"sort"
 
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/execution"
-	"gorgonia.org/shapes"
 )
 
 // StdEng is the standard engine that is supported by gorgonia.org/tensor
@@ -235,8 +235,57 @@ func (e StdEng[DT, T]) nonCommReduceAlong(ctx context.Context, fn tensor.Reducti
 	return nil
 }
 
-func (e StdEng[DT, T]) Scan(ctx context.Context, fn func(DT, DT) DT, a, retVal T, axis int) (err error) {
-	panic("NYI")
+func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a, retVal T, axis int) (err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return err
+	}
+	lastAxis := a.Dims() - 1
+	if a.DataOrder().IsColMajor() {
+		return errors.Errorf(errors.NYIPR, errors.ThisFn())
+	}
+	shp := a.Shape()
+	strides := a.Strides()
+	aData := a.Data()
+	retValData := retVal.Data()
+	switch {
+	case axis == 0:
+		// first axis
+
+		dimSize := shp[0]
+		stride := strides[0]
+
+		switch fn := fn.(type) {
+		case func([]DT, []DT):
+			panic("NYI - ScanFirstN is somehow not yet implemented")
+		case func(DT, DT) DT:
+			execution.ScanFirst(aData, retValData, dimSize, stride, fn)
+		default:
+			err = errors.Errorf("Unable to scan on axis %d with function of type %T", axis, fn)
+		}
+	case axis == lastAxis:
+		dimSize := shp[axis]
+		switch fn := fn.(type) {
+		case func([]DT, []DT):
+			execution.ScanLastN(aData, retValData, dimSize, fn)
+		case func(DT, DT) DT:
+			execution.ScanLast(aData, retValData, dimSize, fn)
+		default:
+			err = errors.Errorf("Unable to scan on axis %d with function type %T", axis, fn)
+		}
+	default:
+		dim0 := shp[0]
+		dimSize := shp[axis]
+		outerStride := strides[0]
+		stride := strides[axis]
+		expected := retVal.Strides()[0]
+		switch fn := fn.(type) {
+		case func(DT, DT) DT:
+			execution.ScanDefault(aData, retVal, dim0, dimSize, outerStride, stride, expected, fn)
+		default:
+			err = errors.Errorf("Unable to scan on axis %d with function type %T", axis, fn)
+		}
+	}
+	return
 }
 
 func (e StdEng[DT, T]) Map(ctx context.Context, fn any, a T, retVal T) (err error) {
