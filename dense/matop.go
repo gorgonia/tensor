@@ -53,6 +53,7 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 	if err != nil {
 		return nil, errors.Wrap(err, "PrepReduce")
 	}
+
 	if len(axes) == 1 {
 		if err = e.Reduce(ctx, fn, t, axes[0], defaultVal, reuse); err != nil {
 			return nil, err
@@ -95,24 +96,23 @@ func (t *Dense[DT]) Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (retVal
 }
 
 func (t *Dense[DT]) Dot(reductionFn, elwiseFn func(DT, DT) DT, other *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	methodName := ".Dot()"
 	if err := check(checkFlags(t.e, t), checkInnerProdDims(t, other)); err != nil {
-		return nil, errors.Wrapf(err, errors.FailedSanity, methodName)
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
 	e, ok := t.e.(tensor.DotIterer[DT, *Dense[DT]])
 	if !ok {
-		return nil, errors.Errorf(errors.EngineSupport, t.e, e, methodName)
+		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
 
 	h, ok := t.e.(specialized.FuncOptHandler[DT, *Dense[DT]])
 	if !ok {
-		return nil, errors.Errorf(errors.EngineSupport, t.e, h, methodName)
+		return nil, errors.Errorf(errors.EngineSupport, t.e, h, errors.ThisFn())
 	}
 	expShape := shapes.Shape{t.Shape()[0], other.Shape()[1]}
 	retVal, fo, err := h.HandleFuncOptsSpecialized(t, expShape, opts...)
 	if err != nil {
-		return nil, errors.Wrapf(err, errors.FailedFuncOpt, methodName)
+		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 	ctx := fo.Ctx
 	err = e.DotIter(ctx, reductionFn, elwiseFn, t, other, retVal)
