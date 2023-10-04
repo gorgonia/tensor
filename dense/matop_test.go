@@ -3,9 +3,9 @@ package dense
 import (
 	"testing"
 
-	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 func TestDense_Reduce(t *testing.T) {
@@ -120,6 +120,45 @@ func TestDense_Scan(t *testing.T) {
 		assert.Equal(expected.Data(), sum.Data())
 	})
 
+	t.Run("Scan dim 0 of 3-tensor", func(t *testing.T) {
+		a := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
+			1, 2, 3,
+			4, 5, 6,
+
+			7, 8, 9,
+			11, 12, 13}))
+		expected := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
+			1, 2, 3,
+			4, 5, 6,
+
+			8, 10, 12,
+			14, 16, 18,
+		}))
+
+		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 0)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
+
+	t.Run("Scan dim 1 of 3-tensor", func(t *testing.T) {
+		a := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
+			1, 2, 3,
+			4, 5, 6,
+
+			7, 8, 9,
+			11, 12, 13}))
+		expected := New[float32](WithShape(2, 2, 3), WithBacking([]float32{1, 2, 3, 5, 7, 9, 7, 8, 9, 17, 19, 21}))
+
+		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 1)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
 
 }
 
