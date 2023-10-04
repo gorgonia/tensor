@@ -70,6 +70,59 @@ func TestDense_Reduce(t *testing.T) {
 	})
 }
 
+func TestDense_Scan(t *testing.T) {
+	assert := assert.New(t)
+	t.Run("Basic", func(t *testing.T) {
+		a := New[int](WithBacking([]int{1, 2, 3, 4, 5}))
+		expected := New[int](WithShape(5), WithBacking([]int{1, 3, 6, 10, 15}))
+
+		sum, err := a.Scan(func(a, b int) int { return a + b }, 0)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
+
+	t.Run("Basic, noncommutative function", func(t *testing.T) {
+		a := New[int](WithBacking([]int{1, 2, 3, 4, 5}))
+		expected := New[int](WithShape(5), WithBacking([]int{1, -1, -4, -8, -13}))
+
+		sum, err := a.Scan(func(a, b int) int { return a - b }, 0)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
+
+	t.Run("Scan dim 0 of matrix", func(t *testing.T) {
+		a := New[float32](WithShape(2, 3), WithBacking([]float32{1, 2, 3, 4, 5, 6}))
+		expected := New[float32](WithShape(2, 3), WithBacking([]float32{1, 2, 3, 5, 7, 9}))
+
+		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 0)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
+
+	t.Run("Scan dim 1 of matrix", func(t *testing.T) {
+		a := New[float32](WithShape(2, 3), WithBacking([]float32{1, 2, 3, 4, 5, 6}))
+		expected := New[float32](WithShape(2, 3), WithBacking([]float32{1, 3, 6, 4, 9, 15}))
+
+		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 1)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
+
+
+}
+
 func TestDense_Dot(t *testing.T) {
 	assert := assert.New(t)
 	t.Run("Basic Sanity Check", func(t *testing.T) {
