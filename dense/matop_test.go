@@ -16,6 +16,17 @@ func TestDense_Reduce(t *testing.T) {
 
 		sum, err := a.Reduce(func(a, b int) int { return a + b }, 0)
 		if err != nil {
+			t.Fatalf("Reduce failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.ScalarValue(), sum.ScalarValue())
+	})
+
+	t.Run("Basic, noncommutative function", func(t *testing.T) {
+		a := New[int](WithBacking([]int{1, 2, 3, 4, 5}))
+		expected := New[int](WithShape(), WithBacking([]int{-13}))
+		sum, err := a.Reduce(func(a, b int) int { return a - b }, 0)
+		if err != nil {
 			t.Errorf("Reduce failed with error: %v", err)
 		}
 		assert.True(expected.Shape().Eq(sum.Shape()))

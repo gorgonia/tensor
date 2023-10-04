@@ -78,3 +78,13 @@ func Max[DT constraints.Ordered](a, b DT) DT {
 	}
 	return b
 }
+
+func MakeMonotonicReduction[DT any](f func(a DT, b DT) DT, defaultValue DT) func(xs []DT) DT {
+	return func(xs []DT) DT {
+		var retVal DT = defaultValue
+		for _, v := range xs{
+			retVal = f(retVal, v)
+		}
+		return retVal
+	}
+}
