@@ -20,6 +20,7 @@ func (m ExampleMemory[DT]) MemSize() uintptr { return uintptr(len(m)) }
 type ExampleNonStdEng[DT OrderedNum, T tensor.Basic[DT]] struct {
 	fake      []DT
 	fakeBytes []byte
+	m int64
 }
 
 func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStdEng[DT, T] {
@@ -28,16 +29,21 @@ func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStd
 		fake[i] = DT(i)
 	}
 	bytes := gutils.BytesFromSlice[DT](fake)
+	m := len(bytes)
 	return &ExampleNonStdEng[DT, T]{
-		fake:      fake,
-		fakeBytes: bytes,
+		fake:      fake[:0],
+		fakeBytes: bytes[:0],
+		m: int64(m),
 	}
 }
 
 func (e ExampleNonStdEng[DT, T]) AllocAccessible() bool { return false }
 
 func (e ExampleNonStdEng[DT, T]) Alloc(size int64) (Memory, error) {
-	return ExampleMemory[DT](e.fakeBytes), nil
+	if size >= e.m{
+		return nil, errors.Errorf("Trying to allocate more that what is allowed")
+	}
+	return ExampleMemory[DT](e.fakeBytes[:size]), nil
 }
 
 func (e ExampleNonStdEng[DT, T]) Free(mem Memory, size int64) error { return nil }
