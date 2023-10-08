@@ -257,7 +257,6 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 	switch {
 	case axis == 0:
 		// first axis
-
 		dimSize := shp[0]
 		stride := strides[0]
 
@@ -265,6 +264,7 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 		case func([]DT, []DT):
 			panic("NYI - ScanFirstN is somehow not yet implemented")
 		case func(DT, DT) DT:
+			// log.Printf("dimSize %v stride %v", dimSize, stride)
 			execution.ScanFirst(aData, retValData, dimSize, stride, fn)
 		default:
 			err = errors.Errorf("Unable to scan on axis %d with function of type %T", axis, fn)
@@ -284,9 +284,10 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 		dimSize := shp[axis]
 		outerStride := strides[0]
 		stride := strides[axis]
-		expected := retVal.Strides()[0]
+		expected := 1 //retVal.Strides()[0]
 		switch fn := fn.(type) {
 		case func(DT, DT) DT:
+			// log.Printf("didm0 %v dimSize %v, outerStrides %v stride %v, expected %v", dim0, dimSize, outerStride, stride, expected)
 			execution.ScanDefault(aData, retValData, dim0, dimSize, outerStride, stride, expected, fn)
 		default:
 			err = errors.Errorf("Unable to scan on axis %d with function type %T", axis, fn)
