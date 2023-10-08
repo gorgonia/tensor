@@ -72,6 +72,7 @@ func TestDense_Reduce(t *testing.T) {
 
 func TestDense_Scan(t *testing.T) {
 	assert := assert.New(t)
+
 	t.Run("Basic", func(t *testing.T) {
 		a := New[int](WithBacking([]int{1, 2, 3, 4, 5}))
 		expected := New[int](WithShape(5), WithBacking([]int{1, 3, 6, 10, 15}))
@@ -97,10 +98,10 @@ func TestDense_Scan(t *testing.T) {
 	})
 
 	t.Run("Scan dim 0 of matrix", func(t *testing.T) {
-		a := New[float32](WithShape(2, 3), WithBacking([]float32{1, 2, 3, 4, 5, 6}))
-		expected := New[float32](WithShape(2, 3), WithBacking([]float32{1, 2, 3, 5, 7, 9}))
+		a := New[float64](WithShape(2, 3), WithBacking([]float64{1, 2, 3, 4, 5, 6}))
+		expected := New[float64](WithShape(2, 3), WithBacking([]float64{1, 2, 3, 5, 7, 9}))
 
-		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 0)
+		sum, err := a.Scan(func(a, b float64) float64 { return a + b }, 0)
 		if err != nil {
 			t.Errorf("Scan failed with error: %v", err)
 		}
@@ -109,10 +110,10 @@ func TestDense_Scan(t *testing.T) {
 	})
 
 	t.Run("Scan dim 1 of matrix", func(t *testing.T) {
-		a := New[float32](WithShape(2, 3), WithBacking([]float32{1, 2, 3, 4, 5, 6}))
-		expected := New[float32](WithShape(2, 3), WithBacking([]float32{1, 3, 6, 4, 9, 15}))
+		a := New[float64](WithShape(2, 3), WithBacking([]float64{1, 2, 3, 4, 5, 6}))
+		expected := New[float64](WithShape(2, 3), WithBacking([]float64{1, 3, 6, 4, 9, 15}))
 
-		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 1)
+		sum, err := a.Scan(func(a, b float64) float64 { return a + b }, 1)
 		if err != nil {
 			t.Errorf("Scan failed with error: %v", err)
 		}
@@ -126,7 +127,7 @@ func TestDense_Scan(t *testing.T) {
 			4, 5, 6,
 
 			7, 8, 9,
-			11, 12, 13}))
+			10, 11, 12}))
 		expected := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
 			1, 2, 3,
 			4, 5, 6,
@@ -149,10 +150,37 @@ func TestDense_Scan(t *testing.T) {
 			4, 5, 6,
 
 			7, 8, 9,
-			11, 12, 13}))
-		expected := New[float32](WithShape(2, 2, 3), WithBacking([]float32{1, 2, 3, 5, 7, 9, 7, 8, 9, 17, 19, 21}))
+			10, 11, 12}))
+		expected := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
+			1, 2, 3,
+			5, 7, 9,
+
+			7, 8, 9,
+			17, 19, 21}))
 
 		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 1)
+		if err != nil {
+			t.Errorf("Scan failed with error: %v", err)
+		}
+		assert.True(expected.Shape().Eq(sum.Shape()))
+		assert.Equal(expected.Data(), sum.Data())
+	})
+
+	t.Run("Scan dim 2 of 3-tensor", func(t *testing.T) {
+		a := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
+			1, 2, 3,
+			4, 5, 6,
+
+			7, 8, 9,
+			11, 12, 13}))
+		expected := New[float32](WithShape(2, 2, 3), WithBacking([]float32{
+			1, 3, 6,
+			4, 9, 15,
+
+			7, 15, 24,
+			11, 23, 36}))
+
+		sum, err := a.Scan(func(a, b float32) float32 { return a + b }, 2)
 		if err != nil {
 			t.Errorf("Scan failed with error: %v", err)
 		}
