@@ -1,12 +1,34 @@
 package dense
 
 import (
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 	gutils "gorgonia.org/tensor/internal/utils"
 )
+
+func TestDense_Apply(t *testing.T) {
+	assert := assert.New(t)
+	t.Run("Basic", func(t *testing.T) {
+		a := New[float64](WithShape(3, 4, 5), WithBacking(gutils.Range[float64](1, 3*4*5+1)))
+		expected := gutils.Range[float64](1, 3*4*5+1)
+		for i := range expected {
+			expected[i] = math.Sqrt(expected[i])
+		}
+		sqrt := func(a float64) (float64, error) { return math.Sqrt(a), nil }
+		got, err := a.Apply(sqrt)
+		if err != nil {
+			t.Errorf("Basic test err'd : %v", err)
+			return
+		}
+		expectedShape := shapes.Shape{3, 4, 5}
+		assert.True(expectedShape.Eq(a.Shape()))
+		assert.Equal(expected, got.Data())
+
+	})
+}
 
 func TestDense_Reduce(t *testing.T) {
 	assert := assert.New(t)
