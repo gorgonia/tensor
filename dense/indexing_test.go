@@ -3,9 +3,9 @@ package dense
 import (
 	"testing"
 
-	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 type selByIndicesTest[DT any] struct {
@@ -38,12 +38,17 @@ func makeSelByIndicesTest[DT gutils.Rangeable]() []selByIndicesTest[DT] {
 			Correct: []DT{1, 1}, CorrectShape: shapes.Shape{2}},
 
 		{Name: "Vector, axis 1", Data: gutils.Range[DT](0, 5), Shape: shapes.Shape{5}, Indices: []int{1, 1}, Axis: 1, WillErr: true,
-			Correct: []DT{1, 1}, CorrectShape: shapes.Shape{2}},
+			Correct: nil, CorrectShape: nil},
 		{Name: "(4,2) Matrix, with (10) indices", Data: gutils.Range[DT](0, 8), Shape: shapes.Shape{4, 2}, Indices: []int{1, 1, 1, 1, 0, 2, 2, 2, 2, 0}, Axis: 0, WillErr: false,
 			Correct: []DT{2, 3, 2, 3, 2, 3, 2, 3, 0, 1, 4, 5, 4, 5, 4, 5, 4, 5, 0, 1}, CorrectShape: shapes.Shape{10, 2}},
 		{Name: "(2,1) Matrx (colvec) with (10) indices", Data: gutils.Range[DT](0, 2), Shape: shapes.Shape{2, 1}, Indices: []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, Axis: 0, WillErr: false,
 			Correct: []DT{1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, CorrectShape: shapes.Shape{10},
 		},
+
+		{Name: "ScalarEquiv, good", Data: []DT{15}, Shape: shapes.Shape{1, 1, 1}, Indices: []int{0, 0}, Axis: 1, WillErr: false,
+			Correct: []DT{15}, CorrectShape: shapes.Shape{}},
+		{Name: "ScalarEquiv, good", Data: []DT{15}, Shape: shapes.Shape{1, 1, 1}, Indices: []int{1, 0}, Axis: 1, WillErr: true,
+			Correct: nil, CorrectShape: nil},
 	}
 }
 
@@ -57,7 +62,7 @@ func TestDense_SelectByIndices(t *testing.T) {
 			continue
 		}
 		assert.Equal(tc.Correct, ret.Data())
-		assert.True(tc.CorrectShape.Eq(ret.Shape()))
+		assert.True(tc.CorrectShape.Eq(ret.Shape()), "%v. Wanted %v. Got %v", tc.Name, tc.CorrectShape, ret.Shape())
 	}
 
 	for i, tc := range makeSelByIndicesTest[float64]() {
