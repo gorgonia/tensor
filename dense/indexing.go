@@ -4,6 +4,7 @@ import (
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/specialized"
+	"context"
 )
 
 func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -40,4 +41,34 @@ func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncO
 		return nil, err
 	}
 	return retVal, nil
+}
+
+func (t *Dense[DT]) ByIndexesB(indices tensor.Basic[int], outGrad *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
+	panic("NYI")
+}
+
+
+func (t *Dense[DT]) Scatter(indices Densor[int]) (retVal *Dense[DT], err error) {
+	if err = check(checkFlags(t.Engine(), t)); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+	}
+	//TODO: support funcops
+	indicesT := indices.GetDense()
+	maxT, err := Max[int](indicesT)
+	if err != nil {
+		return nil, err
+	}
+	max := maxT.ScalarValue()
+
+	expShape := indicesT.Shape().Clone()
+	expShape[len(expShape)-1] = max + 1
+	retVal = New[DT](WithShape(expShape...), WithEngine(t.Engine()))
+
+	var sc tensor.Scatterer[DT, *Dense[DT]]
+	var ok bool
+	if sc, ok = t.e.(tensor.Scatterer[DT, *Dense[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, t.e, sc, errors.ThisFn())
+	}
+	err = sc.Scatter(context.Background(), t, indicesT, retVal)
+	return
 }

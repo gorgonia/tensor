@@ -1,8 +1,6 @@
 package dense
 
 import (
-	"context"
-
 	"golang.org/x/exp/constraints"
 	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
@@ -82,40 +80,4 @@ func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage
 		return nil, err
 	}
 	return retVal, nil
-}
-
-func Scatter[DT any](a *Dense[DT], indices Densor[int]) (retVal *Dense[DT], err error) {
-	if err = check(checkFlags(a.Engine(), a)); err != nil {
-		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
-	}
-	//TODO: support funcops
-	indicesT := indices.GetDense()
-	maxT, err := Max[int](indicesT)
-	if err != nil {
-		return nil, err
-	}
-	max := maxT.ScalarValue()
-
-	expShape := indicesT.Shape().Clone()
-	expShape[len(expShape)-1] = max + 1
-	retVal = New[DT](WithShape(expShape...), WithEngine(a.Engine()))
-
-	var sc tensor.Scatterer[DT, *Dense[DT]]
-	var ok bool
-	if sc, ok = a.e.(tensor.Scatterer[DT, *Dense[DT]]); !ok {
-		return nil, errors.Errorf(errors.EngineSupport, a.e, sc, errors.ThisFn())
-	}
-	err = sc.Scatter(context.Background(), a, indicesT, retVal)
-	return
-}
-
-func SelectByIndices[DT any](a *Dense[DT], axis int, indices tensor.Basic[int], opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	if err = check(checkFlags(a.Engine(), a)); err != nil {
-		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
-	}
-	panic("NYI")
-}
-
-func SelectByIndicesB[DT any](input *Dense[DT], axis int, outGrad *Dense[DT], indices *Dense[int], opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	panic("NYI")
 }
