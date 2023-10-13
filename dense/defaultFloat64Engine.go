@@ -99,60 +99,185 @@ func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	return
 }
 
-func (e StdFloat64Engine[T]) Norm(ctx context.Context, a tensor.Basic[float64], ord tensor.NormOrder, axes []int) (tensor.Basic[float64], error) {
-	/*
-		t, ok := a.(*Dense[float64])
-		if !ok {
-			return nil, errors.Errorf("StdFloat64Engine is unable to work on a of %T", basic)
+func (e StdFloat64Engine[T]) Norm(ctx context.Context, a tensor.Basic[float64], ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float64], err error) {
+	t, ok := a.(T)
+	if !ok {
+		return nil, errors.Errorf("StdFloat64Engine is unable to work on a of %T", a)
+	}
+
+	oneOverOrd := float64(1) / float64(ord)
+	ps := func(x float64) (float64, error) {
+		return math.Pow(x, oneOverOrd), nil
+	}
+	norm0 := func(x float64) (float64, error) {
+		if x != 0 {
+			return 1, nil
 		}
-		oneOverOrd := float64(1) / float64(ord)
-		norm0 := func(x float64) float64 {
-			if x != 0 {
-				return 1
+		return 0, nil
+	}
+	normN := func(x float64) (float64, error) {
+		return math.Pow(math.Abs(x), float64(ord)), nil
+	}
+	abs := func(x float64) (float64, error) {
+		return math.Abs(x), nil
+	}
+
+	dims := t.Dims()
+
+	// simple cases
+	if len(axes) == 0 {
+		if ord.IsUnordered() || (ord.IsFrobenius() && dims == 2) || (ord == tensor.Norm(2) && dims == 1) {
+			var ret float64
+			ret, err = e.Inner(ctx, t, t)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0")
 			}
-			return 0
-		}
-		normN := func(x float64) float64 {
-			return math.Pow(math.Abs(x), float64(ord))
+			ret = math.Sqrt(ret)
+			return New[float64](tensor.FromScalar(ret)), nil
 		}
 
-		dims := t.Dims()
+		axes = make([]int, dims)
+		for i := range axes {
+			axes[i] = i
+		}
+	}
 
-		// simple cases
-		if len(axes) == 0 {
-
-			if ord.IsUnordered() || (ord.IsFrobenius() && dims == 2) || (ord == tensor.Norm(2) && dims == 1) {
-				backup := t.Info()
-
-				ap := tensor.MakeAP(tensor.Shape{t.Size()}, []int{1}, t.DataOrder(), t.Info().Δ)
-				t.AP = ap
-				e.Inner()
-
-				if ret, err = Dot(t, t); err != nil { // returns a scalar
-					err = errors.Wrapf(err, opFail, "Norm-0")
-					return
-				}
-				if retVal, ok = ret.(*Dense); !ok {
-					return nil, errors.Errorf(opFail, "Norm-0")
-				}
-
-				switch t.t {
-				case Float64:
-					retVal.SetF64(0, math.Sqrt(retVal.GetF64(0)))
-				case Float32:
-					retVal.SetF32(0, math32.Sqrt(retVal.GetF32(0)))
-				}
-				t.AP = backup
-				return
+	switch len(axes) {
+	case 1:
+		switch {
+		case ord.IsUnordered() || ord == tensor.Norm(2):
+			ret, err := t.Apply(func(a float64) (float64, error) { return a * a, nil })
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-2: square step")
 			}
-
-			axes = make([]int, dims)
-			for i := range axes {
-				axes[i] = i
+			r := any(ret).(*Dense[float64])
+			if r, err = Sum(r, tensor.Along(axes...)); err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-2: sum step")
 			}
+			return r.Apply(func(a float64) (float64, error) { return math.Sqrt(a), nil }, tensor.UseUnsafe)
+		case ord.IsInf(1):
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
+			}
+			return Max(any(ret).(*Dense[float64]), tensor.Along(axes...))
+		case ord.IsInf(-1):
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm -∞: abs")
+			}
+			return Min(any(ret).(*Dense[float64]), tensor.Along(axes...))
+		case ord == tensor.Norm(0):
+			ret, err := t.Apply(norm0)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0: applying norm0")
+			}
+			return Sum(any(ret).(*Dense[float64]), tensor.Along(axes...))
+		case ord == tensor.Norm(1):
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0: applying abs")
+			}
+			return Sum(any(ret).(*Dense[float64]), tensor.Along(axes...))
+		default:
+			ret, err := t.Apply(normN)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0: applying normN")
+			}
+			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(axes...))
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "NormN: sum step")
+			}
+			return r.Apply(ps, tensor.UseUnsafe)
 		}
-	*/
-	panic("NYI")
+	case 2:
+		rowAxis := axes[0]
+		colAxis := axes[1]
+		// checks
+		if rowAxis < 0 {
+			return nil, errors.Errorf("Row Axis %d is < 0", rowAxis)
+		}
+		if colAxis < 0 {
+			return nil, errors.Errorf("Col Axis %d is < 0", colAxis)
+		}
+
+		if rowAxis == colAxis {
+			return nil, errors.Errorf("Duplicate axes found. Row Axis: %d, Col Axis %d", rowAxis, colAxis)
+		}
+
+		switch {
+		case ord == tensor.Norm(2):
+			// SVD Norm
+			// TODO
+			return nil, errors.Errorf("MultiSVDNorm not yet implemented")
+		case ord == tensor.Norm(-2):
+			// SVD Norm
+			// TODO
+			return nil, errors.Errorf("MultiSVDNorm not yet implemented")
+		case ord == tensor.Norm(1):
+			if colAxis > rowAxis {
+				colAxis--
+			}
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: applying abs")
+			}
+			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: sum step")
+			}
+			return Max(r, tensor.Along(colAxis))
+		case ord == tensor.Norm(-1):
+			if colAxis > rowAxis {
+				colAxis--
+			}
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: applying abs")
+			}
+			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: sum step")
+			}
+			return Min(r, tensor.Along(colAxis))
+		case ord == tensor.Norm(0):
+			return nil, errors.Errorf("Norm of order 0 undefined for matrices")
+		case ord.IsInf(1):
+			if rowAxis > colAxis {
+				rowAxis--
+			}
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
+			}
+			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: sum along row axis")
+			}
+			return Max(r, tensor.Along(colAxis), tensor.UseUnsafe)
+		case ord.IsInf(-1):
+			if rowAxis > colAxis {
+				rowAxis--
+			}
+			ret, err := t.Apply(abs)
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
+			}
+			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
+			if err != nil {
+				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: sum along row axis")
+			}
+			return Min(r, tensor.Along(colAxis), tensor.UseUnsafe)
+		case ord.IsUnordered() || ord.IsFrobenius():
+			// TODO
+		case ord.IsNuclear():
+			// TODO
+
+		}
+
+	}
+	panic("Unreachable")
+
 }
 
 func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float64]) (float64, error) {

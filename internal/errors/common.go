@@ -13,6 +13,8 @@ const (
 	DtypeError        = "Expected a tensor of %v. Got %v instead."
 	TypeError         = "Expected %T. Got %T instead"
 
+	OpFail = "%v failed."
+
 	EngineIncompatibility = "Engine %T does not work with memory flags %v and data order %v"
 	EngineSupport         = "Engine %T does not implement %T, which is needed for %s"
 
