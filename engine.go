@@ -164,7 +164,7 @@ type FancyIndexer[DT any, T Tensor[DT, T]] interface {
 	SelectByIndicesB(ctx context.Context, input, outGrade T, indices Basic[int], axis int, retVal T) (err error)
 }
 
-type Normer[DT any] interface {
-	Norm(ctx context.Context, t Basic[DT], ord NormOrder, axes []int) Basic[DT]
-	Norm2(ctx context.Context, t Basic[DT]) DT
+type Normer[DT any, T Tensor[DT, T]] interface {
+	Norm(ctx context.Context, t T, ord NormOrder, axes []int) Basic[DT]
+	Norm2(ctx context.Context, t T) DT
 }
