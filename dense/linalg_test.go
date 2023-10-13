@@ -265,68 +265,53 @@ func TestDense_Trace(t *testing.T) {
 	}
 }
 
-var innerTestsFloat64 = []struct {
-	a, b           []float64
+type innerTest[DT float64 | float32] struct {
+	a, b           []DT
 	shapeA, shapeB shapes.Shape
 
-	correct float64
+	correct DT
 	err     bool
-}{
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{3}, shapes.Shape{3}, float64(5), false},
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{3, 1}, shapes.Shape{3}, float64(5), false},
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{1, 3}, shapes.Shape{3}, float64(5), false},
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{3, 1}, shapes.Shape{3, 1}, float64(5), false},
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{1, 3}, shapes.Shape{3, 1}, float64(5), false},
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{3, 1}, shapes.Shape{1, 3}, float64(5), false},
-	{gutils.Range[float64](0, 3), gutils.Range[float64](0, 3), shapes.Shape{1, 3}, shapes.Shape{1, 3}, float64(5), false},
-
-	// // differing size
-	{gutils.Range[float64](0, 4), gutils.Range[float64](0, 3), shapes.Shape{4}, shapes.Shape{3}, 0, true},
-
-	// // A is not a matrix
-	{gutils.Range[float64](0, 4), gutils.Range[float64](0, 3), shapes.Shape{2, 2}, shapes.Shape{3}, 0, true},
 }
 
-var innerTestsFloat32 = []struct {
-	a, b           []float32
-	shapeA, shapeB shapes.Shape
+func makeInnerTests[DT float64 | float32]() []innerTest[DT] {
+	return []innerTest[DT]{
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{3}, shapes.Shape{3}, 5, false},
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{3, 1}, shapes.Shape{3}, 5, false},
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{1, 3}, shapes.Shape{3}, 5, false},
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{3, 1}, shapes.Shape{3, 1}, 5, false},
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{1, 3}, shapes.Shape{3, 1}, 5, false},
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{3, 1}, shapes.Shape{1, 3}, 5, false},
+		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{1, 3}, shapes.Shape{1, 3}, 5, false},
 
-	correct float32
-	err     bool
-}{
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{3}, shapes.Shape{3}, float32(5), false},
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{3, 1}, shapes.Shape{3}, float32(5), false},
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{1, 3}, shapes.Shape{3}, float32(5), false},
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{3, 1}, shapes.Shape{3, 1}, float32(5), false},
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{1, 3}, shapes.Shape{3, 1}, float32(5), false},
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{3, 1}, shapes.Shape{1, 3}, float32(5), false},
-	{gutils.Range[float32](0, 3), gutils.Range[float32](0, 3), shapes.Shape{1, 3}, shapes.Shape{1, 3}, float32(5), false},
+		// A and B are multidimensional. Note that `inner` doesn't really care about the shape!
+		{gutils.Range[DT](0, 24), gutils.Range[DT](0, 24), shapes.Shape{2, 3, 4}, shapes.Shape{2, 3, 4}, 4324, false},
 
-	// // differing size
-	{gutils.Range[float32](0, 4), gutils.Range[float32](0, 3), shapes.Shape{4}, shapes.Shape{3}, 0, true},
+		// // differing size
+		{gutils.Range[DT](0, 4), gutils.Range[DT](0, 3), shapes.Shape{4}, shapes.Shape{3}, 0, true},
 
-	// // A is not a matrix
-	{gutils.Range[float32](0, 4), gutils.Range[float32](0, 3), shapes.Shape{2, 2}, shapes.Shape{3}, 0, true},
+		// // A is not a matrix
+		{gutils.Range[DT](0, 4), gutils.Range[DT](0, 3), shapes.Shape{2, 2}, shapes.Shape{3}, 0, true},
+	}
 }
 
 func TestDense_Inner(t *testing.T) {
-	for i, its := range innerTestsFloat64 {
+	for i, its := range makeInnerTests[float64]() {
 		a := New[float64](WithShape(its.shapeA...), WithBacking(its.a))
 		b := New[float64](WithShape(its.shapeB...), WithBacking(its.b))
 
 		T, err := a.Inner(b)
-		if checkErr(t, its.err, err, "Inner", i) {
+		if checkErr(t, its.err, err, "Inner (float64)", i) {
 			continue
 		}
 		assert.Equal(t, its.correct, T)
 	}
 
-	for i, its := range innerTestsFloat32 {
+	for i, its := range makeInnerTests[float32]() {
 		a := New[float32](WithShape(its.shapeA...), WithBacking(its.a))
 		b := New[float32](WithShape(its.shapeB...), WithBacking(its.b))
 
 		T, err := a.Inner(b)
-		if checkErr(t, its.err, err, "Inner", i) {
+		if checkErr(t, its.err, err, "Inner (float32)", i) {
 			continue
 		}
 		assert.Equal(t, its.correct, T)

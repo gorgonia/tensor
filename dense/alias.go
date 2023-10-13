@@ -1,10 +1,10 @@
 package dense
 
 import (
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/flatiter"
-	"gorgonia.org/dtype"
 )
 
 type AP = tensor.AP
