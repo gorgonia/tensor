@@ -3,11 +3,11 @@ package dense
 import (
 	"context"
 
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/specialized"
-	"gorgonia.org/shapes"
 )
 
 func (t *Dense[DT]) Trace() (retVal DT, err error) {
@@ -39,12 +39,12 @@ func (t *Dense[DT]) Inner(u *Dense[DT]) (retVal DT, err error) {
 		return retVal, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	var bla tensor.BLA[DT, *Dense[DT]]
+	var bla tensor.InnerProder[DT, *Dense[DT]]
 	var ok bool
-	if bla, ok = t.e.(tensor.BLA[DT, *Dense[DT]]); !ok {
+	if bla, ok = t.e.(tensor.InnerProder[DT, *Dense[DT]]); !ok {
 		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
-	return bla.Inner(context.Background(), t, u), nil
+	return bla.Inner(context.Background(), t, u)
 }
 
 func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
