@@ -254,8 +254,8 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 	strides := a.Strides()
 	aData := a.Data()
 	retValData := retVal.Data()
-	switch {
-	case axis == 0:
+	switch axis {
+	case 0:
 		// first axis
 		dimSize := shp[0]
 		stride := strides[0]
@@ -269,7 +269,7 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 		default:
 			err = errors.Errorf("Unable to scan on axis %d with function of type %T", axis, fn)
 		}
-	case axis == lastAxis:
+	case lastAxis:
 		dimSize := shp[axis]
 		switch fn := fn.(type) {
 		case func([]DT, []DT):

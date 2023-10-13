@@ -9,7 +9,7 @@ import (
 	"gorgonia.org/tensor/internal/specialized"
 )
 
-func (t *Dense[DT]) Apply(fn func(DT) (DT, error), opts ...FuncOpt) (retVal *Dense[DT], err error) {
+func (t *Dense[DT]) Apply(fn any, opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	if err = check(checkFlags(t.e, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}

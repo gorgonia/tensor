@@ -114,8 +114,7 @@ type Tensor[DT any, T Basic[DT]] interface {
 	Materialize() (T, error)
 
 	// Apply applies a scalar function
-	Apply(fn func(DT) (DT, error), opts ...FuncOpt) (T, error)
-
+	Apply(fn any, opts ...FuncOpt) (T, error)
 	// Reduce reduces the dimensions of a tensor with a given function fn.
 	// You may specify the axes to reduce along with `Along`. If no axes are specified
 	// then the default reduction axis is along all axes.
