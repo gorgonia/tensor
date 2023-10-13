@@ -38,6 +38,40 @@ func Max[T constraints.Ordered](a []T, defVal T) T {
 	return retVal
 }
 
+func MonotonicMin[T constraints.Ordered](a []T) T {
+	if len(a) < 1 {
+		panic("Max of empty slice is meaningless")
+	}
+	retVal := a[0]
+	for i := range a {
+		if a[i] < retVal {
+			retVal = a[i]
+		}
+	}
+	return retVal
+}
+
+func Min0[T constraints.Ordered](a, b []T) {
+	a = a[:]
+	b = b[:len(a)]
+	for i, v := range a {
+		bv := b[i]
+		if bv < v {
+			a[i] = bv
+		}
+	}
+}
+
+func Min[T constraints.Ordered](a []T, defVal T) T {
+	retVal := defVal
+	for i := range a {
+		if a[i] < retVal {
+			retVal = a[i]
+		}
+	}
+	return retVal
+}
+
 func MonotonicSum[T Num](a []T) T {
 	var retVal T
 	if len(a) < 1 {
