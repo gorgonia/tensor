@@ -8,6 +8,7 @@ import (
 	"gorgonia.org/tensor/internal/execution"
 )
 
+// Max returns the maximum value of the elements in the tensor. To return the maximum value of along one or more particular axes, use the Along funcopt.
 func Max[DT constraints.Ordered](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	module := tensor.ReductionModule[DT]{
 		MonotonicReduction: execution.MonotonicMax[DT],
@@ -25,6 +26,25 @@ func Max[DT constraints.Ordered](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[D
 	return a.Reduce(module, z, opts...)
 }
 
+// Min returns the minimum value of the elements in the tensor. To return the minimum value of along one or more particular axes, use the Along funcopt.
+func Min[DT constraints.Ordered](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
+	module := tensor.ReductionModule[DT]{
+		MonotonicReduction: execution.MonotonicMin[DT],
+		ReduceFirstN:       execution.Min0[DT],
+		ReduceLastN:        execution.Min[DT],
+		Reduce: func(a, b DT) DT {
+			if a < b {
+				return a
+			}
+			return b
+		},
+	}
+
+	var z DT
+	return a.Reduce(module, z, opts...)
+}
+
+// Sum returns the sum of the elements in the tensor. To return the sum of along one or more particular axes, use the Along funcopt.
 func Sum[DT Num](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	module := tensor.ReductionModule[DT]{
 		MonotonicReduction: execution.MonotonicSum[DT],
@@ -37,6 +57,7 @@ func Sum[DT Num](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	return a.Reduce(module, z, opts...)
 }
 
+// Prod returns the product of the elements in the tensor. To return the product of along one or more particular axes, use the Along funcopt.
 func Prod[DT Num](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	module := tensor.ReductionModule[DT]{
 		MonotonicReduction: execution.MonotonicProd[DT],
