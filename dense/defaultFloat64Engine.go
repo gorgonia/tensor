@@ -133,7 +133,7 @@ func (e StdFloat64Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder
 
 }
 
-func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float64]) (float64, error) {
+func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t T) (float64, error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return math.NaN(), err
 	}

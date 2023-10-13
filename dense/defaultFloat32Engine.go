@@ -3,6 +3,7 @@ package dense
 import (
 	"context"
 
+	"github.com/chewxy/math32"
 	"gonum.org/v1/gonum/blas"
 	"gonum.org/v1/gonum/blas/gonum"
 	"gonum.org/v1/gonum/mat"
@@ -87,6 +88,51 @@ func (e StdFloat32Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	}
 
 	return
+}
+
+func (e StdFloat32Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float32], err error) {
+	oneOverOrd := float32(1) / float32(ord)
+	ps := func(x float32) float32 { return math32.Pow(x, oneOverOrd) }
+	norm0 := func(x float32) float32 {
+		if x != 0 {
+			return 1
+		}
+		return 0
+	}
+	normN := func(x float32) float32 { return math32.Pow(math32.Abs(x), float32(ord)) }
+
+	dims := t.Dims()
+	// simple cases
+	if len(axes) == 0 {
+		if ord.IsUnordered() || (ord.IsFrobenius() && dims == 2) || (ord == tensor.Norm(2) && dims == 1) {
+			var ret float32
+			ret, err = e.Inner(ctx, t, t)
+			if err != nil {
+				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-0")
+			}
+			ret = math32.Sqrt(ret)
+			return New[float32](tensor.FromScalar(ret)), nil
+		}
+
+		axes = make([]int, dims)
+		for i := range axes {
+			axes[i] = i
+		}
+	}
+
+	return norm[float32, T](t, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
+}
+
+func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t T) (float32, error) {
+	if err := internal.HandleCtx(ctx); err != nil {
+		return math32.NaN(), err
+	}
+
+	if t.RequiresIterator() {
+		return math32.NaN(), errors.Errorf(errors.NYIPR, errors.ThisFn(), "tensors requiring iterator")
+	}
+	retVal := e.blas.Sdot(len(t.Data()), t.Data(), 1, t.Data(), 1)
+	return math32.Sqrt(retVal), nil
 }
 
 func (e StdFloat32Engine[T]) Inner(ctx context.Context, a, b T) (retVal float32, err error) {
