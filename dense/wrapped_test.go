@@ -1,8 +1,8 @@
 package dense
 
 import (
-	"gorgonia.org/tensor"
 	"gorgonia.org/dtype"
+	"gorgonia.org/tensor"
 )
 
 var _ tensor.Tensor[float64, *Wrapped[float64]] = &Wrapped[float64]{}
@@ -13,7 +13,7 @@ type Wrapped[DT any] struct {
 	*Dense[DT]
 }
 
-func (t *Wrapped[DT]) Apply(fn func(DT) (DT, error), opts ...FuncOpt) (*Wrapped[DT], error) {
+func (t *Wrapped[DT]) Apply(fn any, opts ...FuncOpt) (*Wrapped[DT], error) {
 	panic("NYI")
 }
 

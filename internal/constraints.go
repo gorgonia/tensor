@@ -13,3 +13,8 @@ type Num interface {
 type OrderedNum interface {
 	constraints.Float | constraints.Integer
 }
+
+// Applicable is any function that may be applied
+type Applicable[DT any] interface {
+	func(DT) DT | func(DT) (DT, error)
+}

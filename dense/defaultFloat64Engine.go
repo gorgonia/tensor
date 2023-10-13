@@ -99,38 +99,25 @@ func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	return
 }
 
-func (e StdFloat64Engine[T]) Norm(ctx context.Context, a tensor.Basic[float64], ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float64], err error) {
-	t, ok := a.(T)
-	if !ok {
-		return nil, errors.Errorf("StdFloat64Engine is unable to work on a of %T", a)
-	}
-
+func (e StdFloat64Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float64], err error) {
 	oneOverOrd := float64(1) / float64(ord)
-	ps := func(x float64) (float64, error) {
-		return math.Pow(x, oneOverOrd), nil
-	}
-	norm0 := func(x float64) (float64, error) {
+	ps := func(x float64) float64 { return math.Pow(x, oneOverOrd) }
+	norm0 := func(x float64) float64 {
 		if x != 0 {
-			return 1, nil
+			return 1
 		}
-		return 0, nil
+		return 0
 	}
-	normN := func(x float64) (float64, error) {
-		return math.Pow(math.Abs(x), float64(ord)), nil
-	}
-	abs := func(x float64) (float64, error) {
-		return math.Abs(x), nil
-	}
+	normN := func(x float64) float64 { return math.Pow(math.Abs(x), float64(ord)) }
 
 	dims := t.Dims()
-
 	// simple cases
 	if len(axes) == 0 {
 		if ord.IsUnordered() || (ord.IsFrobenius() && dims == 2) || (ord == tensor.Norm(2) && dims == 1) {
 			var ret float64
 			ret, err = e.Inner(ctx, t, t)
 			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0")
+				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-0")
 			}
 			ret = math.Sqrt(ret)
 			return New[float64](tensor.FromScalar(ret)), nil
@@ -142,141 +129,7 @@ func (e StdFloat64Engine[T]) Norm(ctx context.Context, a tensor.Basic[float64], 
 		}
 	}
 
-	switch len(axes) {
-	case 1:
-		switch {
-		case ord.IsUnordered() || ord == tensor.Norm(2):
-			ret, err := t.Apply(func(a float64) (float64, error) { return a * a, nil })
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-2: square step")
-			}
-			r := any(ret).(*Dense[float64])
-			if r, err = Sum(r, tensor.Along(axes...)); err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-2: sum step")
-			}
-			return r.Apply(func(a float64) (float64, error) { return math.Sqrt(a), nil }, tensor.UseUnsafe)
-		case ord.IsInf(1):
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
-			}
-			return Max(any(ret).(*Dense[float64]), tensor.Along(axes...))
-		case ord.IsInf(-1):
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm -∞: abs")
-			}
-			return Min(any(ret).(*Dense[float64]), tensor.Along(axes...))
-		case ord == tensor.Norm(0):
-			ret, err := t.Apply(norm0)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0: applying norm0")
-			}
-			return Sum(any(ret).(*Dense[float64]), tensor.Along(axes...))
-		case ord == tensor.Norm(1):
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0: applying abs")
-			}
-			return Sum(any(ret).(*Dense[float64]), tensor.Along(axes...))
-		default:
-			ret, err := t.Apply(normN)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-0: applying normN")
-			}
-			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(axes...))
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "NormN: sum step")
-			}
-			return r.Apply(ps, tensor.UseUnsafe)
-		}
-	case 2:
-		rowAxis := axes[0]
-		colAxis := axes[1]
-		// checks
-		if rowAxis < 0 {
-			return nil, errors.Errorf("Row Axis %d is < 0", rowAxis)
-		}
-		if colAxis < 0 {
-			return nil, errors.Errorf("Col Axis %d is < 0", colAxis)
-		}
-
-		if rowAxis == colAxis {
-			return nil, errors.Errorf("Duplicate axes found. Row Axis: %d, Col Axis %d", rowAxis, colAxis)
-		}
-
-		switch {
-		case ord == tensor.Norm(2):
-			// SVD Norm
-			// TODO
-			return nil, errors.Errorf("MultiSVDNorm not yet implemented")
-		case ord == tensor.Norm(-2):
-			// SVD Norm
-			// TODO
-			return nil, errors.Errorf("MultiSVDNorm not yet implemented")
-		case ord == tensor.Norm(1):
-			if colAxis > rowAxis {
-				colAxis--
-			}
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: applying abs")
-			}
-			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: sum step")
-			}
-			return Max(r, tensor.Along(colAxis))
-		case ord == tensor.Norm(-1):
-			if colAxis > rowAxis {
-				colAxis--
-			}
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: applying abs")
-			}
-			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm-1: sum step")
-			}
-			return Min(r, tensor.Along(colAxis))
-		case ord == tensor.Norm(0):
-			return nil, errors.Errorf("Norm of order 0 undefined for matrices")
-		case ord.IsInf(1):
-			if rowAxis > colAxis {
-				rowAxis--
-			}
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
-			}
-			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: sum along row axis")
-			}
-			return Max(r, tensor.Along(colAxis), tensor.UseUnsafe)
-		case ord.IsInf(-1):
-			if rowAxis > colAxis {
-				rowAxis--
-			}
-			ret, err := t.Apply(abs)
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
-			}
-			r, err := Sum(any(ret).(*Dense[float64]), tensor.Along(rowAxis))
-			if err != nil {
-				return nil, errors.Wrapf(err, errors.OpFail, "Norm +∞: sum along row axis")
-			}
-			return Min(r, tensor.Along(colAxis), tensor.UseUnsafe)
-		case ord.IsUnordered() || ord.IsFrobenius():
-			// TODO
-		case ord.IsNuclear():
-			// TODO
-
-		}
-
-	}
-	panic("Unreachable")
+	return norm[float64, T](t, ord, axes, math.Sqrt, math.Sqrt, norm0, normN, ps)
 
 }
 
