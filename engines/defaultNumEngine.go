@@ -5,6 +5,7 @@ import (
 
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 type StdNumEngine[DT Num, T tensor.Basic[DT]] struct {
@@ -58,4 +59,26 @@ func (e StdNumEngine[DT, T]) Div(ctx context.Context, a, b, retVal T, toIncr boo
 
 func (e StdNumEngine[DT, T]) DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, divOp[DT]())
+}
+
+func (e StdNumEngine[DT, T]) Inner(ctx context.Context, a, b T) (retVal DT, err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return retVal, err
+	}
+
+	A := a.Data()
+	B := b.Data()
+	if len(A) != len(B) {
+		return retVal, errors.Errorf(errors.ShapeMismatch, a.Shape(), b.Shape())
+	}
+
+	ret := make([]DT, len(A))
+	for i, v := range A {
+		ret[i] = v * B[i]
+	}
+
+	for i := range ret {
+		retVal += ret[i]
+	}
+	return
 }

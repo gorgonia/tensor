@@ -3,14 +3,14 @@ package dense
 import (
 	"context"
 
+	"gonum.org/v1/gonum/blas"
+	"gonum.org/v1/gonum/blas/gonum"
+	"gonum.org/v1/gonum/mat"
 	"gorgonia.org/tensor"
 	stdeng "gorgonia.org/tensor/engines"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/execution"
-	"gonum.org/v1/gonum/blas"
-	"gonum.org/v1/gonum/blas/gonum"
-	"gonum.org/v1/gonum/mat"
 	"gorgonia.org/vecf32"
 )
 
@@ -89,9 +89,9 @@ func (e StdFloat32Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	return
 }
 
-func (e StdFloat32Engine[T]) Inner(ctx context.Context, a, b T) (retVal float32) {
+func (e StdFloat32Engine[T]) Inner(ctx context.Context, a, b T) (retVal float32, err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
-		return 0
+		return 0, err
 	}
 
 	A, B := a.Data(), b.Data()

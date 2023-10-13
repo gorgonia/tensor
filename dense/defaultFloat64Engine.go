@@ -99,8 +99,13 @@ func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	return
 }
 
-func (e StdFloat64Engine[T]) Norm(ctx context.Context, t tensor.Basic[float64], ord tensor.NormOrder, axes []int) (tensor.Basic[float64], error) {
-	/*	oneOverOrd := float64(1) / float64(ord)
+func (e StdFloat64Engine[T]) Norm(ctx context.Context, a tensor.Basic[float64], ord tensor.NormOrder, axes []int) (tensor.Basic[float64], error) {
+	/*
+		t, ok := a.(*Dense[float64])
+		if !ok {
+			return nil, errors.Errorf("StdFloat64Engine is unable to work on a of %T", basic)
+		}
+		oneOverOrd := float64(1) / float64(ord)
 		norm0 := func(x float64) float64 {
 			if x != 0 {
 				return 1
@@ -118,14 +123,11 @@ func (e StdFloat64Engine[T]) Norm(ctx context.Context, t tensor.Basic[float64], 
 
 			if ord.IsUnordered() || (ord.IsFrobenius() && dims == 2) || (ord == tensor.Norm(2) && dims == 1) {
 				backup := t.Info()
-				ap := makeAP(1)
-				defer ap.zero()
 
-				ap.unlock()
-				ap.SetShape(t.Size())
-				ap.lock()
-
+				ap := tensor.MakeAP(tensor.Shape{t.Size()}, []int{1}, t.DataOrder(), t.Info().Δ)
 				t.AP = ap
+				e.Inner()
+
 				if ret, err = Dot(t, t); err != nil { // returns a scalar
 					err = errors.Wrapf(err, opFail, "Norm-0")
 					return
@@ -165,9 +167,9 @@ func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float64])
 	return math.Sqrt(retVal), nil
 }
 
-func (e StdFloat64Engine[T]) Inner(ctx context.Context, a, b T) (retVal float64) {
-	if err := internal.HandleCtx(ctx); err != nil {
-		return 0
+func (e StdFloat64Engine[T]) Inner(ctx context.Context, a, b T) (retVal float64, err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return 0, err
 	}
 	A, B := a.Data(), b.Data()
 	retVal = e.blas.Ddot(len(A), A, 1, B, 1)
@@ -320,7 +322,7 @@ func (e StdFloat64Engine[T]) NPDot(ctx context.Context, a, b, retVal T, toIncr b
 	case aShp.IsVector():
 		switch {
 		case bShp.IsVector():
-			scalarRetVal = e.Inner(ctx, a, b)
+			scalarRetVal, err = e.Inner(ctx, a, b)
 			return
 		case bShp.IsMatrix():
 			// TODO

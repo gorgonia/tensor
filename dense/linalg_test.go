@@ -265,7 +265,7 @@ func TestDense_Trace(t *testing.T) {
 	}
 }
 
-type innerTest[DT float64 | float32] struct {
+type innerTest[DT float64 | float32 | int] struct {
 	a, b           []DT
 	shapeA, shapeB shapes.Shape
 
@@ -273,7 +273,7 @@ type innerTest[DT float64 | float32] struct {
 	err     bool
 }
 
-func makeInnerTests[DT float64 | float32]() []innerTest[DT] {
+func makeInnerTests[DT float64 | float32 | int]() []innerTest[DT] {
 	return []innerTest[DT]{
 		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{3}, shapes.Shape{3}, 5, false},
 		{gutils.Range[DT](0, 3), gutils.Range[DT](0, 3), shapes.Shape{3, 1}, shapes.Shape{3}, 5, false},
@@ -312,6 +312,16 @@ func TestDense_Inner(t *testing.T) {
 
 		T, err := a.Inner(b)
 		if checkErr(t, its.err, err, "Inner (float32)", i) {
+			continue
+		}
+		assert.Equal(t, its.correct, T)
+	}
+	for i, its := range makeInnerTests[int]() {
+		a := New[int](WithShape(its.shapeA...), WithBacking(its.a))
+		b := New[int](WithShape(its.shapeB...), WithBacking(its.b))
+
+		T, err := a.Inner(b)
+		if checkErr(t, its.err, err, "Inner (int)", i) {
 			continue
 		}
 		assert.Equal(t, its.correct, T)
