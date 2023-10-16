@@ -476,55 +476,122 @@ type concatTest[DT any] struct {
 
 func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 	return []concatTest[DT]{
-		/*
-			{"vector-vector", New[DT](WithShape(2), WithBacking([]DT{1, 2})), []*Dense[DT]{New[DT](WithShape(2), WithBacking([]DT{3, 4}))}, 0, shapes.Shape{4}, []DT{1, 2, 3, 4}},
-			{"vector-vector (many)",
-				New[DT](WithShape(2), WithBacking([]DT{1, 2})),
-				[]*Dense[DT]{
-					New[DT](WithShape(2), WithBacking([]DT{3, 4})),
-					New[DT](WithShape(2), WithBacking([]DT{5, 6})),
-				}, 0, shapes.Shape{6}, []DT{1, 2, 3, 4, 5, 6}},
-			{"matrix-matrix, axis 0",
-				New[DT](WithShape(2, 2), WithBacking([]DT{1, 2, 3, 4})),
-				[]*Dense[DT]{New[DT](WithShape(2, 2), WithBacking([]DT{5, 6, 7, 8}))},
-				0,
-				shapes.Shape{4, 2},
-				[]DT{1, 2, 3, 4, 5, 6, 7, 8},
-			},
-		*/
+		{"vector-vector",
+			New[DT](WithShape(2), WithBacking([]DT{1, 2})),
+			[]*Dense[DT]{New[DT](WithShape(2), WithBacking([]DT{3, 4}))},
+			0, shapes.Shape{4}, []DT{1, 2, 3, 4}},
+		{"vector-vector (many)",
+			New[DT](WithShape(2), WithBacking([]DT{1, 2})),
+			[]*Dense[DT]{
+				New[DT](WithShape(2), WithBacking([]DT{3, 4})),
+				New[DT](WithShape(2), WithBacking([]DT{5, 6})),
+			}, 0, shapes.Shape{6}, []DT{1, 2, 3, 4, 5, 6}},
+		{"matrix-matrix, axis 0",
+			New[DT](WithShape(2, 2), WithBacking([]DT{
+				1, 2,
+				3, 4})),
+			[]*Dense[DT]{New[DT](WithShape(2, 2), WithBacking([]DT{
+				5, 6,
+				7, 8}))},
+			0,
+			shapes.Shape{4, 2},
+			[]DT{
+				1, 2,
+				3, 4,
+				5, 6,
+				7, 8},
+		},
+
 		{"matrix-matrix, axis 1",
-			New[DT](WithShape(2, 2), WithBacking([]DT{1, 2, 3, 4})),
-			[]*Dense[DT]{New[DT](WithShape(2, 2), WithBacking([]DT{5, 6, 7, 8}))},
+			New[DT](WithShape(2, 2), WithBacking([]DT{
+				1, 2,
+				3, 4})),
+			[]*Dense[DT]{New[DT](WithShape(2, 2), WithBacking([]DT{
+				5, 6,
+				7, 8}))},
 			1,
 			shapes.Shape{2, 4},
-			[]DT{1, 2, 5, 6, 3, 4, 7, 8},
+			[]DT{
+				1, 2, 5, 6,
+				3, 4, 7, 8},
 		},
-		/*
-			{"3tensor-3tensor, axis 0",
-				New[DT](WithShape(2, 2, 2), WithBacking([]DT{1, 2, 3, 4, 5, 6, 7, 8})),
-				[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{9, 10, 11, 12, 13, 14, 15, 16}))},
-				0,
-				shapes.Shape{4, 2, 2},
-				[]DT{1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-					11, 12, 13, 14, 15, 16},
-			},
-			{"3tensor-3tensor, axis 1",
-				New[DT](WithShape(2, 2, 2), WithBacking([]DT{1, 2, 3, 4, 5, 6, 7, 8})),
-				[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{9, 10, 11, 12, 13, 14, 15, 16}))},
-				1,
-				shapes.Shape{2, 4, 2},
-				[]DT{1, 2, 3, 4, 9, 10, 11, 12, 5, 6,
-					7, 8, 13, 14, 15, 16},
-			},
-			{"3tensor-3tensor, axis 2",
-				New[DT](WithShape(2, 2, 2), WithBacking([]DT{1, 2, 3, 4, 5, 6, 7, 8})),
-				[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{9, 10, 11, 12, 13, 14, 15, 16}))},
-				2,
-				shapes.Shape{2, 2, 4},
-				[]DT{1, 2, 9, 10, 3, 4, 11, 12, 5, 6,
-					13, 14, 7, 8, 15, 16},
-			},
-		*/
+
+		{"3tensor-3tensor, axis 0",
+			New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+				1, 2,
+				3, 4,
+
+				5, 6,
+				7, 8})),
+			[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+				9, 10,
+				11, 12,
+
+				13, 14,
+				15, 16}))},
+			0,
+			shapes.Shape{4, 2, 2},
+			[]DT{
+				1, 2,
+				3, 4,
+
+				5, 6,
+				7, 8,
+
+				9, 10,
+				11, 12,
+
+				13, 14,
+				15, 16},
+		},
+		{"3tensor-3tensor, axis 1",
+			New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+				1, 2,
+				3, 4,
+
+				5, 6,
+				7, 8})),
+			[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+				9, 10,
+				11, 12,
+
+				13, 14,
+				15, 16}))},
+			1,
+			shapes.Shape{2, 4, 2},
+			[]DT{
+				1, 2,
+				3, 4,
+				9, 10,
+				11, 12,
+
+				5, 6,
+				7, 8,
+				13, 14,
+				15, 16},
+		},
+		{"3tensor-3tensor, axis 2",
+			New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+				1, 2,
+				3, 4,
+
+				5, 6,
+				7, 8})),
+			[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+				9, 10,
+				11, 12,
+
+				13, 14,
+				15, 16}))},
+			2,
+			shapes.Shape{2, 2, 4},
+			[]DT{
+				1, 2, 9, 10,
+				3, 4, 11, 12,
+
+				5, 6, 13, 14,
+				7, 8, 15, 16},
+		},
 	}
 }
 

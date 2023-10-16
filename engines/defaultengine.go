@@ -3,7 +3,6 @@ package stdeng
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
 	"sort"
 
@@ -393,7 +392,6 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 		if v, err = slicer.Slice(slices...); err != nil {
 			return
 		}
-		log.Printf("v %v", v.Data())
 		shp := v.Shape()
 		// keep dims after slicing
 		switch {
@@ -409,7 +407,6 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 			start = end
 			continue
 		default:
-			log.Printf("Diff case")
 			diff := retVal.Shape().Dims() - v.Shape().Dims()
 			if diff > 0 && isOuter {
 				newShape := make(shapes.Shape, v.Shape().Dims()+diff)
@@ -442,9 +439,11 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 		// 	mt.SetMask(nil)
 
 		// }
-		log.Printf("copy %v←%v | %v %v", v.Data(), x.Data(), start, end)
-		copy(v.Data(), x.Data())
-		log.Printf("after copy %v | %v", v.Data(), retVal.Data())
+
+		if err = assign[DT](v, x); err != nil {
+			return retVal, errors.Wrapf(err, errors.OpFail, "Concat - assign stage")
+		}
+
 		// // if it's a masked tensor, we copy the mask as well
 		// if Tmask != nil {
 		// 	if vmask != nil {
