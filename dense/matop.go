@@ -9,6 +9,7 @@ import (
 	"gorgonia.org/tensor/internal/specialized"
 )
 
+// Apply applies the function `fn` to all the elements of the tensor. The function `fn` must be of type `func(DT) DT` or `func(DT) (DT, error)`.
 func (t *Dense[DT]) Apply(fn any, opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	if err = check(checkFlags(t.e, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
@@ -23,7 +24,7 @@ func (t *Dense[DT]) Apply(fn any, opts ...FuncOpt) (retVal *Dense[DT], err error
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 	if fo.Incr {
-		// TODO: error
+		return retVal, errors.Errorf("Cannot apppy then increment a tensor")
 	}
 	ctx := fo.Ctx
 
@@ -172,4 +173,20 @@ func (t *Dense[DT]) Repeat(axis int, repeats ...int) (retVal *Dense[DT], err err
 	}
 	err = e.Repeat(ctx, t, retVal, newAxis, size, newRepeats)
 	return retVal, err
+}
+
+// Concat concatenates the receiver with the given tensors along the given axis.
+// The axis must be within the bounds of the shape of the receiver.
+// The shape of the tensors to be concatenated must be the same as the shape of the receiver, except for the axis of concatenation.
+func (t *Dense[DT]) Concat(axis int, tensors ...*Dense[DT]) (retVal *Dense[DT], err error) {
+	if err = check(checkFlags(t.e, t)); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+	}
+
+	e, ok := t.e.(tensor.Concater[DT, *Dense[DT]])
+	if !ok {
+		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
+	}
+
+	return e.Concat(context.Background(), t, axis, tensors...)
 }

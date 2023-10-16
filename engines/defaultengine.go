@@ -3,6 +3,7 @@ package stdeng
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 
@@ -348,7 +349,120 @@ func (e StdEng[DT, T]) DotIter(ctx context.Context, reduceWithFn, elwiseFn func(
 }
 
 func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (retVal T, err error) {
-	panic("NYI")
+	ss := make([]shapes.Shapelike, len(others))
+	for i, o := range others {
+		ss[i] = o.Shape()
+	}
+
+	newShapelike, err := a.Shape().Concat(shapes.Axis(axis), ss...)
+	if err != nil {
+		return retVal, err
+	}
+	newShape := newShapelike.(shapes.Shape)
+	aliker, ok := any(a).(tensor.Aliker[T])
+	if !ok {
+		return retVal, errors.Errorf("Unable to concat %T", a)
+	}
+	retVal = aliker.Alike(tensor.WithShape(newShape...), tensor.WithEngine(e))
+	slicer := any(retVal).(tensor.Slicer[DT, T])
+	// if masked{
+	// retVal.makeMask() // this should be handled by the tensor.Aliker
+	//}
+
+	all := make([]T, len(others)+1)
+	all[0] = a
+	copy(all[1:], others)
+
+	// TODO: OPIMIZATION
+	// When (axis == 0 && a is row major and all others is row major) || (axis == last axis of A && all tensors are colmajor)
+	// just flat copy
+	//
+
+	isOuter := axis == 0
+	isInner := axis == (a.Dims() - 1)
+
+	// special case
+	var start, end int
+	for _, x := range all {
+		xshp := x.Shape()
+		end += xshp[axis]
+		slices := make([]SliceRange, axis+1)
+		slices[axis] = shapes.S(start, end)
+
+		var v T
+		if v, err = slicer.Slice(slices...); err != nil {
+			return
+		}
+		log.Printf("v %v", v.Data())
+		shp := v.Shape()
+		// keep dims after slicing
+		switch {
+		case shp.IsVector() && xshp.IsMatrix() && axis == 0:
+			v.Reshape(shp[0], 1)
+		case xshp.IsRowVec() && axis == 0:
+			x.Reshape(xshp[1])
+		case shp.IsScalarEquiv() && xshp.IsScalarEquiv():
+			copy(v.Data(), x.Data())
+			// if mt, ok := T.(MaskedTensor); ok {
+			// 	copy(v.mask, mt.Mask())
+			// }
+			start = end
+			continue
+		default:
+			log.Printf("Diff case")
+			diff := retVal.Shape().Dims() - v.Shape().Dims()
+			if diff > 0 && isOuter {
+				newShape := make(shapes.Shape, v.Shape().Dims()+diff)
+				for i := 0; i < diff; i++ {
+					newShape[i] = 1
+				}
+				copy(newShape[diff:], v.Shape())
+				v.Reshape(newShape...)
+			} else if diff > 0 && isInner {
+				newShape := v.Shape().Clone()
+				newStrides := v.Strides()
+				for i := 0; i < diff; i++ {
+					newShape = append(newShape, 1)
+					newStrides = append(newStrides, 1)
+				}
+				v.Info().SetShape(newShape...)
+				v.Info().SetStrides(newStrides)
+			} else if xshp[axis] == 1 {
+				if err := v.Unsqueeze(axis); err != nil {
+					return retVal, errors.Wrapf(err, "Unable to keep dims after slicing a shape %v on axis %d where the size is 1", x.Shape(), axis)
+				}
+			}
+		}
+
+		// var vmask, Tmask []bool
+		// vmask = v.mask
+		// v.mask = nil
+		// if mt, ok := T.(MaskedTensor); ok && mt.IsMasked() {
+		// 	Tmask = mt.Mask()
+		// 	mt.SetMask(nil)
+
+		// }
+		log.Printf("copy %v←%v | %v %v", v.Data(), x.Data(), start, end)
+		copy(v.Data(), x.Data())
+		log.Printf("after copy %v | %v", v.Data(), retVal.Data())
+		// // if it's a masked tensor, we copy the mask as well
+		// if Tmask != nil {
+		// 	if vmask != nil {
+		// 		if cap(vmask) < len(Tmask) {
+		// 			vmask2 := make([]bool, len(Tmask))
+		// 			copy(vmask2, vmask)
+		// 			vmask = vmask2
+		// 		}
+		// 		copy(vmask, Tmask)
+		// 		v.SetMask(vmask)
+		// 	}
+		// 	// mt.SetMask(Tmask)
+		// }
+
+		start = end
+
+	}
+	return retVal, nil
 }
 
 func (e StdEng[DT, T]) Stack(ctx context.Context, a T, axis int, others ...T) (retVal T, err error) {

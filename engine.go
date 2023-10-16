@@ -168,3 +168,7 @@ type Normer[DT any, T Tensor[DT, T]] interface {
 	Norm(ctx context.Context, t T, ord NormOrder, axes []int) Basic[DT]
 	Norm2(ctx context.Context, t T) DT
 }
+
+type Concater[DT any, T Tensor[DT, T]] interface {
+	Concat(ctx context.Context, a T, axis int, others ...T) (T, error)
+}
