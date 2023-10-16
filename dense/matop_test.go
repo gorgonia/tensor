@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal"
 	gutils "gorgonia.org/tensor/internal/utils"
 )
 
@@ -462,3 +463,85 @@ func TestDense_Repeat(t *testing.T) {
 // 		assert.Equal(test.shape, D.Shape(), test.name)
 // 	}
 // }
+
+type concatTest[DT any] struct {
+	name   string
+	a      *Dense[DT]
+	others []*Dense[DT]
+	axis   int
+
+	correctShape shapes.Shape
+	correctData  []DT
+}
+
+func makeConcatTests[DT internal.Num]() []concatTest[DT] {
+	return []concatTest[DT]{
+		/*
+			{"vector-vector", New[DT](WithShape(2), WithBacking([]DT{1, 2})), []*Dense[DT]{New[DT](WithShape(2), WithBacking([]DT{3, 4}))}, 0, shapes.Shape{4}, []DT{1, 2, 3, 4}},
+			{"vector-vector (many)",
+				New[DT](WithShape(2), WithBacking([]DT{1, 2})),
+				[]*Dense[DT]{
+					New[DT](WithShape(2), WithBacking([]DT{3, 4})),
+					New[DT](WithShape(2), WithBacking([]DT{5, 6})),
+				}, 0, shapes.Shape{6}, []DT{1, 2, 3, 4, 5, 6}},
+			{"matrix-matrix, axis 0",
+				New[DT](WithShape(2, 2), WithBacking([]DT{1, 2, 3, 4})),
+				[]*Dense[DT]{New[DT](WithShape(2, 2), WithBacking([]DT{5, 6, 7, 8}))},
+				0,
+				shapes.Shape{4, 2},
+				[]DT{1, 2, 3, 4, 5, 6, 7, 8},
+			},
+		*/
+		{"matrix-matrix, axis 1",
+			New[DT](WithShape(2, 2), WithBacking([]DT{1, 2, 3, 4})),
+			[]*Dense[DT]{New[DT](WithShape(2, 2), WithBacking([]DT{5, 6, 7, 8}))},
+			1,
+			shapes.Shape{2, 4},
+			[]DT{1, 2, 5, 6, 3, 4, 7, 8},
+		},
+		/*
+			{"3tensor-3tensor, axis 0",
+				New[DT](WithShape(2, 2, 2), WithBacking([]DT{1, 2, 3, 4, 5, 6, 7, 8})),
+				[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{9, 10, 11, 12, 13, 14, 15, 16}))},
+				0,
+				shapes.Shape{4, 2, 2},
+				[]DT{1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+					11, 12, 13, 14, 15, 16},
+			},
+			{"3tensor-3tensor, axis 1",
+				New[DT](WithShape(2, 2, 2), WithBacking([]DT{1, 2, 3, 4, 5, 6, 7, 8})),
+				[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{9, 10, 11, 12, 13, 14, 15, 16}))},
+				1,
+				shapes.Shape{2, 4, 2},
+				[]DT{1, 2, 3, 4, 9, 10, 11, 12, 5, 6,
+					7, 8, 13, 14, 15, 16},
+			},
+			{"3tensor-3tensor, axis 2",
+				New[DT](WithShape(2, 2, 2), WithBacking([]DT{1, 2, 3, 4, 5, 6, 7, 8})),
+				[]*Dense[DT]{New[DT](WithShape(2, 2, 2), WithBacking([]DT{9, 10, 11, 12, 13, 14, 15, 16}))},
+				2,
+				shapes.Shape{2, 2, 4},
+				[]DT{1, 2, 9, 10, 3, 4, 11, 12, 5, 6,
+					13, 14, 7, 8, 15, 16},
+			},
+		*/
+	}
+}
+
+func TestDense_Concat(t *testing.T) {
+	assert := assert.New(t)
+	for _, tc := range makeConcatTests[float64]() {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := tc.a.Concat(tc.axis, tc.others...)
+			if err != nil {
+				t.Errorf("Error: %v", err)
+				return
+			}
+
+			assert.Equal(tc.correctShape, got.Shape(), "%v failed. Wrong resulting shape", tc.name)
+			assert.Equal(tc.correctData, got.Data(), "%v failed. Wrong resulting data", tc.name)
+
+		})
+
+	}
+}

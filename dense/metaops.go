@@ -1,9 +1,9 @@
 package dense
 
 import (
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
-	"gorgonia.org/shapes"
 )
 
 // metaops.go contains methods that perform operation on metadata of the *Dense tensor
@@ -14,6 +14,24 @@ func (t *Dense[T]) Reshape(dims ...int) error {
 	}
 	t.AP.SetShape(dims...)
 	t.fix()
+	return nil
+}
+
+// Unsqueeze adds a new axis at the specified position
+func (t *Dense[T]) Unsqueeze(axis int) error {
+	if axis < 0 || axis > t.Dims() {
+		return errors.Errorf("Cannot unsqueeze %v at axis %d", t.Shape(), axis)
+	}
+	shp := t.Shape()
+	shp = append(shp[:axis], 1)
+	copy(shp[axis+1:], shp[axis:])
+	shp[axis] = 1
+
+	strides := t.Strides()
+	strides = append(strides[:axis], 1)
+	copy(strides[axis+1:], strides[axis:])
+	t.AP.SetShape(shp...)
+	t.AP.SetStrides(strides)
 	return nil
 }
 

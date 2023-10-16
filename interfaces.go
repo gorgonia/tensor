@@ -46,6 +46,10 @@ type DescWithStorage interface {
 
 	// A basic tenesor should be able to reshape itself
 	Reshape(shape ...int) error
+
+	// A basic tensor should be able to unsqueeze itself
+	Unsqueeze(axis int) error
+
 	// A Basic tensor should be able to zero itself out
 	Zeroer
 
@@ -85,6 +89,10 @@ type Basic[DT any] interface {
 
 	// A Basic tensor should be able to create something like itself
 	BasicAliker[DT]
+}
+
+type Slicer[DT any, T Basic[DT]] interface {
+	Slice(rs ...SliceRange) (T, error)
 }
 
 type Tensor[DT any, T Basic[DT]] interface {
