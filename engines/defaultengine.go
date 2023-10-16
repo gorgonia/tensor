@@ -183,7 +183,6 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaul
 }
 
 func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT, a T, retVal T, along ...int) (err error) {
-
 	fn := mod.(tensor.ReductionModule[DT])
 	if fn.IsNonCommutative {
 		return e.nonCommReduceAlong(ctx, fn, defaultValue, a, retVal, along...)
@@ -192,7 +191,7 @@ func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT
 	monotonic, incr1 := tensor.IsMonotonicInts(along)
 	if (monotonic && incr1 && len(along) == a.Dims()) || len(along) == 0 {
 		if fn.MonotonicReduction == nil {
-			internal.MakeMonotonicReduction(fn.Reduce, defaultValue)
+			fn.MonotonicReduction = internal.MakeMonotonicReduction(fn.Reduce, defaultValue)
 		}
 		r := fn.MonotonicReduction(a.Data())
 		retVal.Data()[0] = r
