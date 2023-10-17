@@ -156,7 +156,7 @@ All tensors must implement these
 */
 
 type Dtyper interface {
-	Dtype() dtype.Datatype
+	Dtype() dtype.Dtype
 }
 
 type Eq[T any] interface {
@@ -168,7 +168,7 @@ type Aliker[T any] interface {
 }
 
 type AlikeAsTyper interface {
-	AlikeAsType(dt dtype.Datatype, opts ...ConsOpt) DescWithStorage
+	AlikeAsType(dt dtype.Dtype, opts ...ConsOpt) DescWithStorage
 }
 
 // BasicAliker is like Aliker, but the return value is Basic[DT].

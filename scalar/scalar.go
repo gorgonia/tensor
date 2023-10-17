@@ -14,8 +14,8 @@ func S[T any](a T) Scalar[T] {
 	return Scalar[T]{V: a}
 }
 
-func (s Scalar[T]) Info() *AP             { return nil }
-func (s Scalar[T]) Dtype() dtype.Datatype { return dtype.Dtype[T]{} }
+func (s Scalar[T]) Info() *AP          { return nil }
+func (s Scalar[T]) Dtype() dtype.Dtype { return dtype.Datatype[T]{} }
 
 func (s Scalar[T]) Shape() shapes.Shape { return shapes.ScalarShape() }
 
