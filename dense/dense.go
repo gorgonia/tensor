@@ -29,11 +29,11 @@ type Dense[DT any] struct {
 
 	f MemoryFlag
 	e Engine
-	t dtype.Dtype[DT]
+	t dtype.Datatype[DT]
 }
 
-// consFromDatatype is a special construction function to create a *Dense[???] where ??? is only known at runtime
-func consFromDatatype(dt dtype.Datatype, opts ...ConsOpt) (retVal DescWithStorage, err error) {
+// consFromDtype is a special construction function to create a *Dense[???] where ??? is only known at runtime
+func consFromDtype(dt dtype.Dtype, opts ...ConsOpt) (retVal DescWithStorage, err error) {
 	fn, ok := consRegistry[dt]
 	if !ok {
 		return nil, errors.Errorf("Dtype %T not supported", dt)
@@ -156,7 +156,7 @@ func makeBacking[DT any](e Engine, n int, dataorder DataOrder) []DT {
 func construct[DT any](data []DT, shape shapes.Shape, e Engine, f MemoryFlag) *Dense[DT] {
 	var ap AP
 	ap.SetShape(shape...)
-	dt := gutils.GetDtype[DT]()
+	dt := gutils.GetDatatype[DT]()
 	f |= memoryFlagFromEngine(e)
 	return &Dense[DT]{
 		AP:    ap,
@@ -169,7 +169,7 @@ func construct[DT any](data []DT, shape shapes.Shape, e Engine, f MemoryFlag) *D
 
 }
 
-func (t *Dense[DT]) copyMetadata(srcAP AP, srcEng Engine, srcFlag MemoryFlag, srcDT dtype.Dtype[DT]) {
+func (t *Dense[DT]) copyMetadata(srcAP AP, srcEng Engine, srcFlag MemoryFlag, srcDT dtype.Datatype[DT]) {
 	t.AP = srcAP
 	t.e = srcEng
 	t.f = srcFlag
@@ -204,10 +204,10 @@ func (t *Dense[T]) fix() {
 
 /* Getters for properties */
 
-func (t *Dense[T]) Info() *AP             { return &t.AP }
-func (t *Dense[T]) Dtype() dtype.Datatype { return t.t }
-func (t *Dense[T]) Engine() Engine        { return t.e }
-func (t *Dense[T]) Flags() MemoryFlag     { return t.f }
+func (t *Dense[T]) Info() *AP          { return &t.AP }
+func (t *Dense[T]) Dtype() dtype.Dtype { return t.t }
+func (t *Dense[T]) Engine() Engine     { return t.e }
+func (t *Dense[T]) Flags() MemoryFlag  { return t.f }
 
 /* Data Access */
 
@@ -311,7 +311,7 @@ func (t *Dense[T]) Alike(opts ...ConsOpt) *Dense[T] {
 	return retVal
 }
 
-func (t *Dense[T]) AlikeAsType(dt dtype.Datatype, opts ...ConsOpt) DescWithStorage {
+func (t *Dense[T]) AlikeAsType(dt dtype.Dtype, opts ...ConsOpt) DescWithStorage {
 	switch dt {
 	case dtype.Bool:
 		c := parseConsOpt[bool](opts...)

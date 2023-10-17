@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"gorgonia.org/tensor/internal/errors"
-	"gorgonia.org/tensor/internal/serialization/pb"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal/errors"
+	"gorgonia.org/tensor/internal/serialization/pb"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -199,7 +199,7 @@ func FromNpy(r io.Reader) (retVal DescWithStorage, err error) {
 	}
 
 	// TODO: check for endianness. For now we assume everything is little endian
-	var dt dtype.Datatype
+	var dt dtype.Dtype
 	if dt, err = dtype.FromNumpyDtype(string(match[1][1:])); err != nil {
 		return
 	}
@@ -238,7 +238,7 @@ func FromNpy(r io.Reader) (retVal DescWithStorage, err error) {
 
 	// now create a *Dense[??]
 
-	return consFromDatatype(dt, WithBacking(data), WithShape(shape...))
+	return consFromDtype(dt, WithBacking(data), WithShape(shape...))
 }
 
 /* PROTOBUF  ENCODING/DECODING */

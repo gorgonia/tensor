@@ -44,7 +44,7 @@ func (t *Wrapped[DT]) Alike(opts ...ConsOpt) *Wrapped[DT] {
 	return &Wrapped[DT]{t.Dense.Alike(opts...)}
 }
 
-func (t *Wrapped[DT]) AlikeAsType(dt dtype.Datatype, opts ...ConsOpt) DescWithStorage {
+func (t *Wrapped[DT]) AlikeAsType(dt dtype.Dtype, opts ...ConsOpt) DescWithStorage {
 	panic("NYI")
 }
 
