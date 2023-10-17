@@ -32,8 +32,9 @@ type Dense[DT any] struct {
 	t dtype.Datatype[DT]
 }
 
-// consFromDtype is a special construction function to create a *Dense[???] where ??? is only known at runtime
-func consFromDtype(dt dtype.Dtype, opts ...ConsOpt) (retVal DescWithStorage, err error) {
+// NewOf creates a new DescWithStorage of a given Dtype.
+// It is a special construction function to create a *Dense[???] where ??? is only known at runtime
+func NewOf(dt dtype.Dtype, opts ...ConsOpt) (retVal DescWithStorage, err error) {
 	fn, ok := consRegistry[dt]
 	if !ok {
 		return nil, errors.Errorf("Dtype %T not supported", dt)
@@ -208,6 +209,11 @@ func (t *Dense[T]) Info() *AP          { return &t.AP }
 func (t *Dense[T]) Dtype() dtype.Dtype { return t.t }
 func (t *Dense[T]) Engine() Engine     { return t.e }
 func (t *Dense[T]) Flags() MemoryFlag  { return t.f }
+
+/* Setters - mainly to satisfy interfaces */
+
+// SetEngine is a method used by Gorgonia's expression graph
+func (t *Dense[T]) SetEngine(e Engine) { t.e = e }
 
 /* Data Access */
 

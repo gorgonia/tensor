@@ -238,7 +238,7 @@ func FromNpy(r io.Reader) (retVal DescWithStorage, err error) {
 
 	// now create a *Dense[??]
 
-	return consFromDtype(dt, WithBacking(data), WithShape(shape...))
+	return NewOf(dt, WithBacking(data), WithShape(shape...))
 }
 
 /* PROTOBUF  ENCODING/DECODING */
