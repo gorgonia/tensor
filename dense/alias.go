@@ -68,6 +68,6 @@ func WithIncr(a any) FuncOpt { return tensor.WithIncr(a) }
 
 func Along(axes ...int) FuncOpt { return tensor.Along(axes...) }
 
-func As(dt dtype.Datatype) FuncOpt { return tensor.As(dt) }
+func As(dt dtype.Dtype) FuncOpt { return tensor.As(dt) }
 
 /* utils */

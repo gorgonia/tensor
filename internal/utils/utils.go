@@ -30,4 +30,4 @@ func SliceFromBytes[T any](data []byte) []T {
 	return *(*[]T)(unsafe.Pointer(&hdr))
 }
 
-func GetDtype[T any]() dtype.Dtype[T] { return dtype.Dtype[T]{} }
+func GetDatatype[T any]() dtype.Datatype[T] { return dtype.Datatype[T]{} }

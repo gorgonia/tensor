@@ -232,14 +232,14 @@ func qcErrCheck(t *testing.T, name string, a, b any, we bool, err error) (e erro
 	return nil, false
 }
 
-func qcIsFloat(dt dtype.Datatype) bool {
+func qcIsFloat(dt dtype.Dtype) bool {
 	if err := dtype.TypeClassCheck(dt, dtype.FloatComplex); err == nil {
 		return true
 	}
 	return false
 }
 
-func qcEqCheck(t *testing.T, dt dtype.Datatype, willFailEq bool, correct, got interface{}) bool {
+func qcEqCheck(t *testing.T, dt dtype.Dtype, willFailEq bool, correct, got interface{}) bool {
 	isFloatTypes := qcIsFloat(dt)
 	if !willFailEq && (isFloatTypes && !allClose(correct, got) || (!isFloatTypes && !reflect.DeepEqual(correct, got))) {
 		t.Errorf("q.Dtype: %v", dt)

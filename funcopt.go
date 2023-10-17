@@ -13,7 +13,7 @@ type Option struct {
 	Reuse  any
 	Incr   bool
 	Unsafe bool
-	AsType dtype.Datatype
+	AsType dtype.Dtype
 	Along  []int // only used for axial operations
 }
 
@@ -29,9 +29,9 @@ func ParseFuncOpts(opts ...FuncOpt) Option {
 	return retVal
 }
 
-func UseUnsafe(o *Option)          { o.Unsafe = true }
-func UseSafe(o *Option)            { o.Unsafe = false }
-func WithReuse(reuse any) FuncOpt  { return func(o *Option) { o.Reuse = reuse } }
-func WithIncr(incr any) FuncOpt    { return func(o *Option) { o.Reuse = incr; o.Incr = true } }
-func Along(axes ...int) FuncOpt    { return func(o *Option) { o.Along = axes } }
-func As(dt dtype.Datatype) FuncOpt { return func(o *Option) { o.AsType = dt } }
+func UseUnsafe(o *Option)         { o.Unsafe = true }
+func UseSafe(o *Option)           { o.Unsafe = false }
+func WithReuse(reuse any) FuncOpt { return func(o *Option) { o.Reuse = reuse } }
+func WithIncr(incr any) FuncOpt   { return func(o *Option) { o.Reuse = incr; o.Incr = true } }
+func Along(axes ...int) FuncOpt   { return func(o *Option) { o.Along = axes } }
+func As(dt dtype.Dtype) FuncOpt   { return func(o *Option) { o.AsType = dt } }

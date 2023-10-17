@@ -27,7 +27,7 @@ func checkArrayShape(a tensor.DataSizer, expShape shapes.Shape) error {
 	return nil
 }
 
-func checkDtype(expDtype dtype.Datatype, got dtype.Datatype) error {
+func checkDtype(expDtype dtype.Dtype, got dtype.Dtype) error {
 	if expDtype == nil {
 		return nil
 	}
