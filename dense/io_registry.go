@@ -9,7 +9,7 @@ import (
 type ConsFunc func(opts ...ConsOpt) (DescWithStorage, error)
 
 var consRegistryLock sync.Mutex
-var consRegistry = map[dtype.Datatype]ConsFunc{
+var consRegistry = map[dtype.Dtype]ConsFunc{
 	dtype.Bool:       func(opts ...ConsOpt) (DescWithStorage, error) { return New[bool](opts...), nil },
 	dtype.Int:        func(opts ...ConsOpt) (DescWithStorage, error) { return New[int](opts...), nil },
 	dtype.Int8:       func(opts ...ConsOpt) (DescWithStorage, error) { return New[int8](opts...), nil },
@@ -28,7 +28,7 @@ var consRegistry = map[dtype.Datatype]ConsFunc{
 	dtype.String:     func(opts ...ConsOpt) (DescWithStorage, error) { return New[string](opts...), nil },
 }
 
-func RegisterDtype(dt dtype.Datatype, fn ConsFunc) {
+func RegisterDtype(dt dtype.Dtype, fn ConsFunc) {
 	consRegistryLock.Lock()
 	defer consRegistryLock.Unlock()
 
