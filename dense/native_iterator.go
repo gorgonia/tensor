@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/pkg/errors"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 func checkNativeIterable[DT any](t *Dense[DT], dims int) error {
@@ -22,6 +22,7 @@ func checkNativeIterable[DT any](t *Dense[DT], dims int) error {
 	return nil
 }
 
+// Vector returns a natively iterable vector.
 func Vector[DT any](t *Dense[DT]) (retVal []DT, err error) {
 	if err = checkNativeIterable(t, 1); err != nil {
 		return nil, err
