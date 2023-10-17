@@ -497,3 +497,39 @@ func TestDense_Concat(t *testing.T) {
 
 	}
 }
+
+func ExampleStdEng_Concat() {
+	a := dense.New[float32](WithShape(2, 3), WithBacking([]float32{
+		13, 1, -2,
+		-15, -2, 9,
+	}))
+	b := dense.New[float32](WithShape(2, 3), WithBacking([]float32{
+		1, 2, 3,
+		4, 5, 6,
+	}))
+	e := StdEng[float32, *dense.Dense[float32]]{}
+
+	ctx := context.Background()
+	fmt.Printf("a:\n%v\nb:\n%v\n", a, b)
+
+	c, err := e.Concat(ctx, a, 1, b, b, b)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	fmt.Printf("concat a to [b,b,b] on axis 1:\n%#v\n", c)
+
+	// Output:
+	// a:
+	// ⎡ 13    1   -2⎤
+	// ⎣-15   -2    9⎦
+	//
+	// b:
+	// ⎡1  2  3⎤
+	// ⎣4  5  6⎦
+	//
+	// concat a to [b,b,b] on axis 1:
+	// ⎡ 13    1   -2    1    2    3    1    2    3    1    2    3⎤
+	// ⎣-15   -2    9    4    5    6    4    5    6    4    5    6⎦
+
+}
