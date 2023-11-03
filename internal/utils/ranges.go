@@ -1,18 +1,13 @@
 package gutils
 
 import (
+	"gorgonia.org/tensor/internal"
 	"math/rand"
 	"time"
-
-	"golang.org/x/exp/constraints"
 )
 
-type Rangeable interface {
-	constraints.Float | constraints.Integer
-}
-
 // Range creates a slice of values of the given DT
-func Range[DT Rangeable](start, end int) []DT {
+func Range[DT internal.Rangeable](start, end int) []DT {
 	size := end - start
 	incr := true
 	if start > end {
@@ -35,7 +30,7 @@ func Range[DT Rangeable](start, end int) []DT {
 }
 
 // Random creates a slice of random values of the given DT
-func Random[DT Rangeable](size int) []DT {
+func Random[DT internal.Rangeable](size int) []DT {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	retVal := make([]DT, size)
 	for i := range retVal {

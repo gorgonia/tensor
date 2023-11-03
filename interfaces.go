@@ -231,4 +231,5 @@ type SparseTensor[DT any] interface {
 
 type Scalar[DT any] interface {
 	IsScalar()
+	ScalarValue() DT
 }
