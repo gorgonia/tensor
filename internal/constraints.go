@@ -10,6 +10,10 @@ type Num interface {
 	constraints.Float | constraints.Integer | constraints.Complex
 }
 
+type Rangeable interface {
+	constraints.Float | constraints.Integer
+}
+
 type OrderedNum interface {
 	constraints.Float | constraints.Integer
 }

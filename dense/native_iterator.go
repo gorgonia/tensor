@@ -22,6 +22,20 @@ func checkNativeIterable[DT any](t *Dense[DT], dims int) error {
 	return nil
 }
 
+func checkNativeSelectable[DT any](t *Dense[DT], axis int) error {
+	if !t.IsNativelyAccessible() {
+		return errors.New("Cannot select on non-natively accessible data")
+	}
+	if axis >= t.Shape().Dims() && !(t.IsScalar() && axis == 0) {
+		return errors.Errorf("Cannot select on axis %d. Shape is %v", axis, t.Shape())
+	}
+	if t.F() || t.RequiresIterator() {
+		return errors.Errorf("Not yet implemented: native select for colmajor or unpacked matrices")
+	}
+
+	return nil
+}
+
 // Vector returns a natively iterable vector.
 func Vector[DT any](t *Dense[DT]) (retVal []DT, err error) {
 	if err = checkNativeIterable(t, 1); err != nil {
@@ -117,4 +131,8 @@ func Tensor4[DT any](t *Dense[DT]) (retVal [][][][]DT, err error) {
 	}
 	return
 
+}
+
+func Select[DT any](t *Dense[DT], axis int) (retVal [][]DT, err error) {
+	panic("NYI")
 }
