@@ -74,6 +74,15 @@ func (s Scalar[DT]) Unsqueeze(_ int) error { return errors.NoOp{} }
 
 func (s Scalar[DT]) Zero() {}
 
+// required by dual value
+
+func (s Scalar[DT]) Clone() Scalar[DT] { return Scalar[DT]{V: s.V} }
+
+// BAD... but required by dual value
+
+func (s Scalar[DT]) SetAt(v DT, coord ...int) error { return errors.New("Cannot set scalar values") }
+func (s Scalar[DT]) Memset(v DT) error              { return errors.New("Cannot memset scalar") }
+
 /*
 func (s Scalar[DT]) RequiresIterator() bool { return false }
 func (s Scalar[DT]) Iterator() Iterator     { return nil }
@@ -88,7 +97,5 @@ func (s Scalar[DT]) Uintptr() uintptr {panic("NYI")}
 
 // BAD
 
-func (s Scalar[DT]) SetAt(v T, coord ...int) error {return errors.New("Cannot set scalar values" )}
-func (s Scalar[DT]) Memset(v T) error {return errors.New("Cannot memset scalar")}
-func (s Scalar[DT]) Zero() {}
+
 */

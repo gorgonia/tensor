@@ -33,6 +33,7 @@ type Desc interface {
 	Info() *AP
 }
 
+// DescWithstorage is a minimal interface of a tensor that actually contains data.
 type DescWithStorage interface {
 	Desc
 	DataSizer
