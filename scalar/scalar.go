@@ -74,6 +74,12 @@ func (s Scalar[DT]) Unsqueeze(_ int) error { return errors.NoOp{} }
 
 func (s Scalar[DT]) Zero() {}
 
+// required by Basic[DT]
+
+func (s Scalar[DT]) AlikeAsBasic(opts ...tensor.ConsOpt) tensor.Basic[DT] { return s }
+
+func (s Scalar[DT]) CloneAsBasic() tensor.Basic[DT] { return s }
+
 // required by dual value
 
 func (s Scalar[DT]) Clone() Scalar[DT] { return Scalar[DT]{V: s.V} }
