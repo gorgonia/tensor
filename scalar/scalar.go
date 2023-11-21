@@ -1,6 +1,7 @@
 package scalar
 
 import (
+	"fmt"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
@@ -73,6 +74,11 @@ func (s Scalar[DT]) SetDataOrder(ord DataOrder) {}
 func (s Scalar[DT]) Unsqueeze(_ int) error { return errors.NoOp{} }
 
 func (s Scalar[DT]) Zero() {}
+
+func (s Scalar[DT]) Format(f fmt.State, c rune) {
+	// TODO: proper handling
+	fmt.Fprintf(f, "%v", s.V)
+}
 
 // required by Basic[DT]
 
