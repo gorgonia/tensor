@@ -143,6 +143,7 @@ type ValueGetter[DT any] interface {
 
 type ValueSetter[DT any] interface {
 	SetAt(v DT, coord ...int) error
+
 	Memset(v DT) error
 	Zeroer
 }
