@@ -11,6 +11,7 @@ import (
 // some constraints
 var (
 	_ DescWithStorage = S[int](1337)
+	//_ tensor.Tensor[int, Scalar[int]] = S[int](1337)
 )
 
 type Scalar[DT any] struct {
