@@ -45,7 +45,7 @@ type DescWithStorage interface {
 
 	// Some basic operations that does not need knowledge of datatype
 
-	// A basic tenesor should be able to reshape itself
+	// A basic tensor should be able to reshape itself
 	Reshape(shape ...int) error
 
 	// A basic tensor should be able to unsqueeze itself
@@ -92,14 +92,13 @@ type Basic[DT any] interface {
 	BasicAliker[DT]
 }
 
-type Slicer[DT any, T Basic[DT]] interface {
+type Slicer[T any] interface {
 	Slice(rs ...SliceRange) (T, error)
 }
 
-type Tensor[DT any, T Basic[DT]] interface {
-	Basic[DT] // Must be the same as T. There's currently no way to validate this yet
-
-	// Basic Functionalities:
+// Operable represents any tensor-like structure that can perform tensor-like operations without having to know about the datatype contained within.
+type Operable[T any] interface {
+	DescWithStorage
 
 	// Aliker makes sure that a Tensor can create one that is like it
 	Aliker[T]
@@ -113,17 +112,25 @@ type Tensor[DT any, T Basic[DT]] interface {
 	// Slice slices a tensor and returns a view
 	Slice(rs ...SliceRange) (T, error)
 
-	// T performs a thunked transposition
+	// T performs a thunked transposition.
 	T(axes ...int) (T, error)
 
-	// Transpose actually moves the data when doing the transposition
-	Transpose(axes ...int) (T, error)
-
-	// Materialize
+	// Materialize turns a view into T.
 	Materialize() (T, error)
+
+	// Repeat repeats the *Dense tensor along the given axis the given number of times.
+	Repeat(axis int, repeats ...int) (T, error)
+}
+
+type Tensor[DT any, T Basic[DT]] interface {
+	Basic[DT] // Must be the same as T. There's currently no way to validate this yet
+
+	// Tensors have a tensor-like structure
+	Operable[T]
 
 	// Apply applies a scalar function
 	Apply(fn any, opts ...FuncOpt) (T, error)
+
 	// Reduce reduces the dimensions of a tensor with a given function fn.
 	// You may specify the axes to reduce along with `Along`. If no axes are specified
 	// then the default reduction axis is along all axes.
@@ -131,6 +138,9 @@ type Tensor[DT any, T Basic[DT]] interface {
 
 	// Scan
 	Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (T, error)
+
+	// Dot
+	Dot(reductionFn, elwiseFn func(DT, DT) DT, other T, opts ...FuncOpt) (T, error)
 }
 
 type RawAccessor[DT any] interface {

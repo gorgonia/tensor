@@ -3,11 +3,11 @@ package stdeng
 import (
 	"context"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/execution"
-	"gorgonia.org/dtype"
 )
 
 // var _ Comparer[int, *Dense[int]] = StdOrderedNumEngine[int, *Dense[int]]{}
