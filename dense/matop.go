@@ -159,6 +159,12 @@ func (t *Dense[DT]) Transpose(axes ...int) (retVal *Dense[DT], err error) {
 	return u, nil
 }
 
+// Repeat repeats the *Dense tensor along the given axis the given number of times.
+// If the axis is -1, it repeats all axes.
+// If the axis is 0, it repeats the rows.
+// If the axis is 1, it repeats the columns.
+// Axis must be within the bounds of the shape of the tensor.
+// Repeats must be positive integers.
 func (t *Dense[DT]) Repeat(axis int, repeats ...int) (retVal *Dense[DT], err error) {
 	if err = check(checkFlags(t.e, t), checkRepeatValidAxis(axis, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())

@@ -362,7 +362,7 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 		return retVal, errors.Errorf("Unable to concat %T", a)
 	}
 	retVal = aliker.Alike(tensor.WithShape(newShape...), tensor.WithEngine(e))
-	slicer := any(retVal).(tensor.Slicer[DT, T])
+	slicer := any(retVal).(tensor.Slicer[T])
 	// if masked{
 	// retVal.makeMask() // this should be handled by the tensor.Aliker
 	//}
