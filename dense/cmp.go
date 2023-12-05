@@ -1,10 +1,10 @@
 package dense
 
 import (
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/specialized"
-	"gorgonia.org/dtype"
 )
 
 func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {

@@ -17,6 +17,9 @@ type StdNumEngine[DT Num, T tensor.Basic[DT]] struct {
 // BasicEng turns an engine that has methods that take a specialized T into one that takes tensor.Basic[DT] as inputs.
 func (e StdNumEngine[DT, T]) BasicEng() Engine { return StdNumEngine[DT, tensor.Basic[DT]]{} }
 
+// Workhorse returns itself
+func (e StdNumEngine[DT, T]) Workhorse() Engine { return e }
+
 func (e StdNumEngine[DT, T]) SliceEq(a, b []DT) bool {
 	if internal.SliceEqMeta(a, b) {
 		return true

@@ -1,10 +1,11 @@
 package dense
 
 import (
+	"context"
+
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/specialized"
-	"context"
 )
 
 func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -46,7 +47,6 @@ func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncO
 func (t *Dense[DT]) ByIndexesB(indices tensor.Basic[int], outGrad *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	panic("NYI")
 }
-
 
 func (t *Dense[DT]) Scatter(indices Densor[int]) (retVal *Dense[DT], err error) {
 	if err = check(checkFlags(t.Engine(), t)); err != nil {

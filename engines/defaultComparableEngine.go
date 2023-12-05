@@ -17,9 +17,10 @@ type ComparableEng[DT comparable, T tensor.Basic[DT]] struct {
 type compComparableEng[DT comparable, T tensor.Basic[DT]] struct{}
 
 // BasicEng turns an engine that has methods that take a specialized T into one that takes tensor.Basic[DT] as inputs.
-func (e ComparableEng[DT, T]) BasicEng() Engine {
-	return ComparableEng[DT, tensor.Basic[DT]]{}
-}
+func (e ComparableEng[DT, T]) BasicEng() Engine { return ComparableEng[DT, tensor.Basic[DT]]{} }
+
+// Workhorse returns itself
+func (e ComparableEng[DT, T]) Workhorse() Engine { return e }
 
 func (e ComparableEng[DT, T]) SliceEq(a, b []DT) bool {
 	if internal.SliceEqMeta(a, b) {

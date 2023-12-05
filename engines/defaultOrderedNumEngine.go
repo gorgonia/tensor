@@ -3,11 +3,11 @@ package stdeng
 import (
 	"context"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/execution"
-	"gorgonia.org/dtype"
 )
 
 // var _ Comparer[int, *Dense[int]] = StdOrderedNumEngine[int, *Dense[int]]{}
@@ -20,6 +20,9 @@ type StdOrderedNumEngine[DT OrderedNum, T tensor.Basic[DT]] struct {
 func (e StdOrderedNumEngine[DT, T]) BasicEng() Engine {
 	return StdOrderedNumEngine[DT, tensor.Basic[DT]]{}
 }
+
+// Workhorse returns itself
+func (e StdOrderedNumEngine[DT, T]) Workhorse() Engine { return e }
 
 func (e StdOrderedNumEngine[DT, T]) cmpOp(ctx context.Context, a, b T, retVal tensor.Basic[DT], op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
