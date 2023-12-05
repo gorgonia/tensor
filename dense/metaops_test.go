@@ -3,10 +3,10 @@ package dense
 import (
 	"testing"
 
-	"gorgonia.org/tensor/internal"
-	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 var denseSliceTests = []struct {

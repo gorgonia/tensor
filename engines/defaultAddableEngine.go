@@ -16,7 +16,8 @@ type AddableEng[DT Addable, T tensor.Basic[DT]] struct {
 // compAddableEng is a compositional AddableEngine, which can be used to compose together things. It doesn't implement Engine.
 type compAddableEng[DT Addable, T tensor.Basic[DT]] struct{}
 
-func (e AddableEng[DT, T]) BasicEng() Engine { return AddableEng[DT, tensor.Basic[DT]]{} }
+func (e AddableEng[DT, T]) BasicEng() Engine  { return AddableEng[DT, tensor.Basic[DT]]{} }
+func (e AddableEng[DT, T]) Workhorse() Engine { return e }
 
 func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toIncr bool, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {

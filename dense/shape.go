@@ -2,7 +2,6 @@ package dense
 
 import "gorgonia.org/shapes"
 
-
 // if dims = 2 and axis -1 it returns the last dimension. In this case 1
 func resolveAxis(axis int, dims int) int {
 	res := axis % dims

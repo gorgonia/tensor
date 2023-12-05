@@ -3,10 +3,10 @@ package dense
 import (
 	"fmt"
 
+	"golang.org/x/exp/constraints"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/scalar"
-	"golang.org/x/exp/constraints"
 )
 
 type noopError interface {
@@ -24,7 +24,7 @@ func memoryFlagFromEngine(e Engine) (retVal MemoryFlag) {
 func getEngine[DT any](vs ...Value[DT]) Engine {
 	for _, v := range vs {
 		if v.Engine() != nil {
-			return v.Engine()
+			return v.Engine().Workhorse()
 		}
 	}
 	panic("Unreachable")

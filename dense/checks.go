@@ -1,8 +1,8 @@
 package dense
 
 import (
-	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal/errors"
 )
 
 type checkfunc func() error

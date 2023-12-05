@@ -31,6 +31,8 @@ func (e StdFloat64Engine[T]) BasicEng() Engine {
 	return stdeng.StdOrderedNumEngine[float64, tensor.Basic[float64]]{}
 }
 
+func (e StdFloat64Engine[T]) Workhorse() Engine { return e }
+
 func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return

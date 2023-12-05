@@ -23,6 +23,7 @@ type StdFloat32Engine[T tensor.Tensor[float32, T]] struct {
 func (e StdFloat32Engine[T]) BasicEng() Engine {
 	return stdeng.StdOrderedNumEngine[float32, tensor.Basic[float32]]{}
 }
+func (e StdFloat32Engine[T]) Workhorse() Engine { return e }
 
 func (e StdFloat32Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error) {
 	if err := internal.HandleCtx(ctx); err != nil {

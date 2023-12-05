@@ -79,25 +79,21 @@ func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT],
 }
 
 func (t *Dense[DT]) MatMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	if err = check(checkFlags(t.e, t, u), checkDims(2, t, u), checkInnerProdDims(t, u)); err != nil {
+	e := t.e.Workhorse()
+	if err = check(checkFlags(e, t, u), checkDims(2, t, u), checkInnerProdDims(t, u)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
-	var ok bool
-	if prepper, ok = t.e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
-		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
-	}
-
-	var fo Option
 	expShape := elimInnermostOutermost(t.Shape(), u.Shape())
-	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, expShape, opts...); err != nil {
+	retVal, fo, err := handleFuncOpts[DT, *Dense[DT]](e, t, expShape, opts...)
+	if err != nil {
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 
 	var bla tensor.BLA[DT, *Dense[DT]]
-	if bla, ok = t.e.(tensor.BLA[DT, *Dense[DT]]); !ok {
-		return nil, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
+	var ok bool
+	if bla, ok = e.(tensor.BLA[DT, *Dense[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, bla, errors.ThisFn())
 	}
 	var incr []DT
 	if fo.Incr {
