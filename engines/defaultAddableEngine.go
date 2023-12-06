@@ -13,13 +13,13 @@ type AddableEng[DT Addable, T tensor.Basic[DT]] struct {
 	compAddableEng[DT, T]
 }
 
-// Workhorse returns the engine that will actually do all the work (in this case, itself).
-func (e AddableEng[DT, T]) Workhorse() Engine { return e }
-
 // compAddableEng is a compositional AddableEngine, which can be used to compose together things. It doesn't implement Engine.
 type compAddableEng[DT Addable, T tensor.Basic[DT]] struct{}
 
-func (e AddableEng[DT, T]) BasicEng() Engine  { return AddableEng[DT, tensor.Basic[DT]]{} }
+// BasicEng returns an engine that handles the Basic version of T.
+func (e AddableEng[DT, T]) BasicEng() Engine { return AddableEng[DT, tensor.Basic[DT]]{} }
+
+// Workhorse returns the engine that will actually do all the work (in this case, itself).
 func (e AddableEng[DT, T]) Workhorse() Engine { return e }
 
 func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toIncr bool, op Op[DT]) (err error) {
