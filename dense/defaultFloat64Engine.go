@@ -27,6 +27,9 @@ type StdFloat64Engine[T tensor.Tensor[float64, T]] struct {
 	blas gonum.Implementation // the default BLAS implementation uses gonum's native implementation
 }
 
+// Workhorse returns the engine that will actually do all the work (in this case, itself).
+func (e StdFloat64Engine[T]) Workhorse() Engine { return e }
+
 func (e StdFloat64Engine[T]) BasicEng() Engine {
 	return stdeng.StdOrderedNumEngine[float64, tensor.Basic[float64]]{}
 }

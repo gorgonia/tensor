@@ -25,7 +25,8 @@ func (e Gen) WorksWith(flags MemoryFlag, order DataOrder) bool {
 	return flags.IsNativelyAccessible()
 }
 
-func (e Gen) BasicEng() Engine { return e }
+func (e Gen) Workhorse() Engine { return e }
+func (e Gen) BasicEng() Engine  { return e }
 
 // Inst instantiates a generic Engine in to a specific type .
 func Inst[DT any, T tensor.Basic[DT]](gen Gen) Engine {
