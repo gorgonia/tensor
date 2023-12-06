@@ -24,6 +24,9 @@ func (e StdOrderedNumEngine[DT, T]) BasicEng() Engine {
 	return StdOrderedNumEngine[DT, tensor.Basic[DT]]{}
 }
 
+// Workhorse returns itself
+func (e StdOrderedNumEngine[DT, T]) Workhorse() Engine { return e }
+
 func (e StdOrderedNumEngine[DT, T]) cmpOp(ctx context.Context, a, b T, retVal tensor.Basic[DT], op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err

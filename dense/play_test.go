@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/axialiter"
 	"gorgonia.org/tensor/internal/execution"
 	gutils "gorgonia.org/tensor/internal/utils"
-	"gorgonia.org/dtype"
 )
 
 func TestNewDenseOfDifferentType(t *testing.T) {
