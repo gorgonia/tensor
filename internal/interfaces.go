@@ -30,7 +30,6 @@ type Engine interface {
 
 	Workhorse() Engine
 	BasicEng() Engine
-	Workhorse() Engine
 }
 
 type Iterator interface {
