@@ -28,6 +28,7 @@ type Engine interface {
 	Accessible(mem Memory) (Memory, error)           // Accessible returns Go-accesible memory pointers, or errors, if it cannot be done
 	WorksWith(flag MemoryFlag, order DataOrder) bool // WorksWith returns true if the memory flag and  data order can be directly worked with
 
+	Workhorse() Engine
 	BasicEng() Engine
 }
 

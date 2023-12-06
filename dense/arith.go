@@ -31,6 +31,27 @@ func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, ret
 	return
 }
 
+func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {
+	e = getEngine[DT](t)
+	if err = check(checkFlags(e, t)); err != nil {
+		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
+	}
+
+	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
+	var ok bool
+	if prepper, ok = e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+		return nil, nil, nil, false, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
+	}
+	var fo Option
+	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, t.Shape(), opts...); err != nil {
+		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	}
+
+	toIncr = fo.Incr
+	ctx = fo.Ctx
+	return
+}
+
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithPrep(u, opts...)
 	if err != nil {
@@ -43,6 +64,23 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	}
 
 	if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
+		return nil, err
+	}
+	return retVal, nil
+}
+
+func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
+	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	adder, ok := e.(tensor.Adder[DT, *Dense[DT]])
+	if !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, adder, errors.ThisFn())
+	}
+
+	if err = adder.AddScalar(ctx, t, s, retVal, scalarOnLeft, toIncr); err != nil {
 		return nil, err
 	}
 	return retVal, nil

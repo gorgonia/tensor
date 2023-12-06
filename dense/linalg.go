@@ -15,7 +15,7 @@ func (t *Dense[DT]) Trace() (retVal DT, err error) {
 		return retVal, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	if tracer, ok := t.e.(tensor.Tracer[DT, *Dense[DT]]); ok {
+	if tracer, ok := t.e.Workhorse().(tensor.Tracer[DT, *Dense[DT]]); ok {
 		return tracer.Trace(context.Background(), t)
 	}
 	return retVal, errors.Errorf("Engine %T does not support Trace", t.e)
@@ -26,7 +26,7 @@ func (t *Dense[DT]) SVD(uv, full bool) (s, u, v *Dense[DT], err error) {
 		return s, u, v, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	svder, ok := t.e.(tensor.SVDer[DT, *Dense[DT]])
+	svder, ok := t.e.Workhorse().(tensor.SVDer[DT, *Dense[DT]])
 	if !ok {
 		return nil, nil, nil, errors.Errorf(errors.EngineSupport, t.e, svder, errors.ThisFn())
 	}
@@ -41,7 +41,7 @@ func (t *Dense[DT]) Inner(u *Dense[DT]) (retVal DT, err error) {
 
 	var bla tensor.InnerProder[DT, *Dense[DT]]
 	var ok bool
-	if bla, ok = t.e.(tensor.InnerProder[DT, *Dense[DT]]); !ok {
+	if bla, ok = t.e.Workhorse().(tensor.InnerProder[DT, *Dense[DT]]); !ok {
 		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	return bla.Inner(context.Background(), t, u)
@@ -53,7 +53,7 @@ func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT],
 	}
 	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
 	var ok bool
-	if prepper, ok = t.e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+	if prepper, ok = t.e.Workhorse().(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
 	expShape := elimInnermostOutermost(t.Shape(), u.Shape())
@@ -63,7 +63,7 @@ func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT],
 	}
 
 	var bla tensor.BLA[DT, *Dense[DT]]
-	if bla, ok = t.e.(tensor.BLA[DT, *Dense[DT]]); !ok {
+	if bla, ok = t.e.Workhorse().(tensor.BLA[DT, *Dense[DT]]); !ok {
 		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	var incr []DT
@@ -85,7 +85,7 @@ func (t *Dense[DT]) MatMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], er
 
 	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
 	var ok bool
-	if prepper, ok = t.e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+	if prepper, ok = t.e.Workhorse().(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
 
@@ -96,7 +96,7 @@ func (t *Dense[DT]) MatMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], er
 	}
 
 	var bla tensor.BLA[DT, *Dense[DT]]
-	if bla, ok = t.e.(tensor.BLA[DT, *Dense[DT]]); !ok {
+	if bla, ok = t.e.Workhorse().(tensor.BLA[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	var incr []DT
@@ -116,7 +116,7 @@ func (t *Dense[DT]) Outer(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err
 	}
 	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
 	var ok bool
-	if prepper, ok = t.e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+	if prepper, ok = t.e.Workhorse().(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
 	var fo Option
@@ -125,7 +125,7 @@ func (t *Dense[DT]) Outer(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err
 	}
 
 	var bla tensor.BLA[DT, *Dense[DT]]
-	if bla, ok = t.e.(tensor.BLA[DT, *Dense[DT]]); !ok {
+	if bla, ok = t.e.Workhorse().(tensor.BLA[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	var incr []DT
@@ -145,7 +145,7 @@ func (t *Dense[DT]) Norm(ord tensor.NormOrder, opts ...FuncOpt) (retVal *Dense[D
 		fo := ParseFuncOpts(opts...)
 		axes := fo.Along
 		ctx := fo.Ctx
-		normEng, ok := t.e.(tensor.Normer[DT])
+		normEng, ok := t.e.Workhorse().(tensor.Normer[DT])
 		if !ok {
 			return nil, errors.Errorf(errors.EngineSupport, t.e, errors.ThisFn())
 		}

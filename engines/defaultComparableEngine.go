@@ -13,6 +13,9 @@ type ComparableEng[DT comparable, T tensor.Basic[DT]] struct {
 	compComparableEng[DT, T]
 }
 
+// Workhorse returns the engine that will actually do all the work (in this case, itself).
+func (e ComparableEng[DT, T]) Workhorse() Engine { return e }
+
 // compComparableEng is a compositional ComparableEng. It doesn't fully implement Engine, but rather exists to give ComparableEngine its comparable capabilities
 type compComparableEng[DT comparable, T tensor.Basic[DT]] struct{}
 

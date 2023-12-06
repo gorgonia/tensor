@@ -13,6 +13,9 @@ type AddableEng[DT Addable, T tensor.Basic[DT]] struct {
 	compAddableEng[DT, T]
 }
 
+// Workhorse returns the engine that will actually do all the work (in this case, itself).
+func (e AddableEng[DT, T]) Workhorse() Engine { return e }
+
 // compAddableEng is a compositional AddableEngine, which can be used to compose together things. It doesn't implement Engine.
 type compAddableEng[DT Addable, T tensor.Basic[DT]] struct{}
 
