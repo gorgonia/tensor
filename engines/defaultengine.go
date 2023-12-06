@@ -38,6 +38,9 @@ func (e StdEng[DT, T]) Workhorse() Engine { return e }
 // BasicEng turns an engine that has methods that take a specialized T into one that takes tensor.Basic[DT] as inputs.
 func (e StdEng[DT, T]) BasicEng() Engine { return StdEng[DT, tensor.Basic[DT]]{} }
 
+// Workhorse returns itself
+func (e StdEng[DT, T]) Workhorse() Engine { return e }
+
 // SliceEq compares if two slices are the same. The datatype must implement an `Eq` method.
 func (e StdEng[DT, T]) SliceEq(a, b []DT) bool {
 	if internal.SliceEqMeta(a, b) {

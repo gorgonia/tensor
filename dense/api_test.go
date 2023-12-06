@@ -4,11 +4,11 @@ import (
 	"testing"
 	"testing/quick"
 
-	"gorgonia.org/tensor"
-	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 func TestDense_Add(t *testing.T) {

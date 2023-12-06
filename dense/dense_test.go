@@ -20,7 +20,7 @@ func (m ExampleMemory[DT]) MemSize() uintptr { return uintptr(len(m)) }
 type ExampleNonStdEng[DT OrderedNum, T tensor.Basic[DT]] struct {
 	fake      []DT
 	fakeBytes []byte
-	m int64
+	m         int64
 }
 
 func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStdEng[DT, T] {
@@ -33,14 +33,14 @@ func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStd
 	return &ExampleNonStdEng[DT, T]{
 		fake:      fake[:0],
 		fakeBytes: bytes[:0],
-		m: int64(m),
+		m:         int64(m),
 	}
 }
 
 func (e ExampleNonStdEng[DT, T]) AllocAccessible() bool { return false }
 
 func (e ExampleNonStdEng[DT, T]) Alloc(size int64) (Memory, error) {
-	if size >= e.m{
+	if size >= e.m {
 		return nil, errors.Errorf("Trying to allocate more that what is allowed")
 	}
 	return ExampleMemory[DT](e.fakeBytes[:size]), nil

@@ -3,8 +3,8 @@ package dense
 import (
 	"testing"
 
-	gutils "gorgonia.org/tensor/internal/utils"
 	"github.com/stretchr/testify/assert"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 func TestVector(t *testing.T) {
