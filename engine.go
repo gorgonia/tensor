@@ -141,12 +141,12 @@ type Scatterer[DT any, T Tensor[DT, T]] interface {
 }
 
 // InnerProder are any engines that support the computation of  inner products.
-type InnerProder[DT any, T Tensor[DT, T]] interface {
+type InnerProder[DT any, T Basic[DT]] interface {
 	Inner(ctx context.Context, a, b T) (DT, error)
 }
 
 // BLA are any engines that can support basic linear algebra
-type BLA[DT any, T Tensor[DT, T]] interface {
+type BLA[DT any, T Basic[DT]] interface {
 	InnerProder[DT, T]
 	FMA(ctx context.Context, a, x, retVal T) error
 	MatVecMul(ctx context.Context, a, b, retVal T, incr []DT) error

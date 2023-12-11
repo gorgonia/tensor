@@ -32,7 +32,7 @@ type DenseTensor[DT any, T tensor.Tensor[DT, T]] interface {
 	SetDataOrder(o DataOrder)
 }
 
-type FromDenser[DT any, T tensor.Tensor[DT, T]] interface { //
+type FromDenser[DT any, T tensor.Basic[DT]] interface { //
 	FromDense(d *Dense[DT]) T
 }
 
