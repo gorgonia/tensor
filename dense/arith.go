@@ -2,10 +2,10 @@ package dense
 
 import (
 	"context"
+	"log"
 
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
-	"gorgonia.org/tensor/internal/specialized"
 )
 
 // arith.go contains all the arithmetic methods for `*Dense[DT]`
@@ -16,14 +16,10 @@ func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, ret
 		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 
-	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
-	var ok bool
-	if prepper, ok = e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
-		return nil, nil, nil, false, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
-	}
 	var fo Option
-	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, t.Shape(), opts...); err != nil {
-		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, t.Shape(), opts...)
+	if err != nil {
+		return nil, nil, nil, false, err
 	}
 
 	toIncr = fo.Incr
@@ -36,15 +32,10 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 	if err = check(checkFlags(e, t)); err != nil {
 		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
-
-	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
-	var ok bool
-	if prepper, ok = e.(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
-		return nil, nil, nil, false, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
-	}
 	var fo Option
-	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, t.Shape(), opts...); err != nil {
-		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, t.Shape(), opts...)
+	if err != nil {
+		return nil, nil, nil, false, err
 	}
 
 	toIncr = fo.Incr
@@ -72,6 +63,7 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {
+		log.Printf("HEREEE %v", err)
 		return nil, err
 	}
 
@@ -81,6 +73,7 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	}
 
 	if err = adder.AddScalar(ctx, t, s, retVal, scalarOnLeft, toIncr); err != nil {
+		log.Printf("HERE %v", err)
 		return nil, err
 	}
 	return retVal, nil

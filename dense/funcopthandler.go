@@ -7,7 +7,6 @@ import (
 )
 
 func handleFuncOpts[DT any, T tensor.Tensor[DT, T]](e Engine, t T, expShape shapes.Shape, opts ...FuncOpt) (retVal T, fo Option, err error) {
-
 	switch e := e.(type) {
 	case tensor.SpecializedFuncOptHandler[DT, T]:
 		return e.HandleFuncOptsSpecialized(t, expShape, opts...)
@@ -21,6 +20,7 @@ func handleFuncOpts[DT any, T tensor.Tensor[DT, T]](e Engine, t T, expShape shap
 		if retVal, ok = ret.(T); !ok {
 			return retVal, fo, errors.Errorf("Expected retVal type to be %T", retVal)
 		}
+		return
 	case tensor.DescFuncOptHandler[DT]:
 		var ret tensor.DescWithStorage
 		ret, fo, err = e.HandleFuncOptsDesc(t, expShape, opts...)
@@ -31,6 +31,7 @@ func handleFuncOpts[DT any, T tensor.Tensor[DT, T]](e Engine, t T, expShape shap
 		if retVal, ok = ret.(T); !ok {
 			return retVal, fo, errors.Errorf("Expected retVal type to be %T", retVal)
 		}
+		return
 	}
 	return retVal, fo, errors.Errorf(errors.EngineSupport, e, e, errors.ThisFn())
 }

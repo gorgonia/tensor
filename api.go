@@ -67,6 +67,7 @@ func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err erro
 
 func Add[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
 	e := getEngine(a, b).BasicEng()
+	log.Printf("type of engine %T", e)
 
 	var adder Adder[DT, Basic[DT]]
 	var ok bool
