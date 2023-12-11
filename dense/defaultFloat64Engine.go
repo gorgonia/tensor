@@ -22,7 +22,8 @@ var (
 	_ tensor.Scatterer[float64, *Dense[float64]]   = StdFloat64Engine[*Dense[float64]]{}
 )
 
-type StdFloat64Engine[T tensor.Tensor[float64, T]] struct {
+// type StdFloat64Engine[T tensor.Tensor[float64, T]] struct {
+type StdFloat64Engine[T tensor.Basic[float64]] struct {
 	stdeng.StdOrderedNumEngine[float64, T]
 	blas gonum.Implementation // the default BLAS implementation uses gonum's native implementation
 }
@@ -31,7 +32,7 @@ type StdFloat64Engine[T tensor.Tensor[float64, T]] struct {
 func (e StdFloat64Engine[T]) Workhorse() Engine { return e }
 
 func (e StdFloat64Engine[T]) BasicEng() Engine {
-	return stdeng.StdOrderedNumEngine[float64, tensor.Basic[float64]]{}
+	return StdFloat64Engine[tensor.Basic[float64]]{}
 }
 
 func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error) {
@@ -131,8 +132,13 @@ func (e StdFloat64Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder
 			axes[i] = i
 		}
 	}
+	gd, ok := any(t).(Densor[float64])
+	if !ok {
+		return nil, errors.Errorf("Cannot get *Dense[float64] out of t")
+	}
+	d := gd.GetDense()
 
-	return norm[float64, T](t, ord, axes, math.Sqrt, math.Sqrt, norm0, normN, ps)
+	return norm[float64, *Dense[float64]](d, ord, axes, math.Sqrt, math.Sqrt, norm0, normN, ps)
 
 }
 
