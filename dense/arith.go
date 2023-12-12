@@ -2,7 +2,6 @@ package dense
 
 import (
 	"context"
-	"log"
 
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
@@ -63,7 +62,6 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {
-		log.Printf("HEREEE %v", err)
 		return nil, err
 	}
 
@@ -73,7 +71,6 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	}
 
 	if err = adder.AddScalar(ctx, t, s, retVal, scalarOnLeft, toIncr); err != nil {
-		log.Printf("HERE %v", err)
 		return nil, err
 	}
 	return retVal, nil
