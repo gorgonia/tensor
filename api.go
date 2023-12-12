@@ -47,14 +47,13 @@ func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err erro
 	var bla BLA[DT, Basic[DT]]
 	var ok bool
 	if bla, ok = e.(BLA[DT, Basic[DT]]); !ok {
-		log.Printf("engine %T does not suport %T", e, bla)
 		return nil, errors.Errorf(errors.EngineSupport, e, bla, errors.ThisFn())
 	}
 	// make retVal
 	var fo Option
 	expShape := elimInnermostOutermost(a.Shape(), b.Shape())
 	if retVal, fo, err = handleFuncOpt[DT](e, a, expShape, opts...); err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 	var incr []DT
 	if fo.Incr {
