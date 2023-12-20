@@ -75,7 +75,7 @@ func fromConstructor[DT any](c *Constructor) *Dense[DT] {
 		// Shape provided, but data is not. Create data based on engine
 		shape = c.Shape
 		elements := c.Shape.TotalSize()
-		data = makeBacking[DT](c.Engine, elements, dataorder)
+		data = makeBacking[DT](c.Engine, elements, dataorder, c.InitFn)
 	case c.Shape != nil && c.Data != nil:
 		// Shape provided, and data provided. Check if data is memory
 		shape = c.Shape
@@ -140,7 +140,12 @@ func handleData[DT any](e Engine, d any, do DataOrder) (data []DT) {
 	return
 }
 
-func makeBacking[DT any](e Engine, n int, dataorder DataOrder) []DT {
+func makeBacking[DT any](e Engine, n int, dataorder DataOrder, initFn any) []DT {
+	fn := func(x []DT) []DT { return x }
+	if initFn != nil {
+		fn = initFn.(func([]DT) []DT)
+	}
+
 	if e.WorksWith(internal.NativelyInaccessible|internal.ManuallyManaged, dataorder) {
 		// then allocate memory
 		sz := internal.CalcMemSize[DT](n)
@@ -148,10 +153,10 @@ func makeBacking[DT any](e Engine, n int, dataorder DataOrder) []DT {
 		if err != nil {
 			panic(err)
 		}
-		return internal.SliceFromMemory[DT](mem)
+		return fn(internal.SliceFromMemory[DT](mem))
 
 	}
-	return make([]DT, n)
+	return fn(make([]DT, n))
 }
 
 func construct[DT any](data []DT, shape shapes.Shape, e Engine, f MemoryFlag) *Dense[DT] {
@@ -308,7 +313,7 @@ func (t *Dense[T]) Alike(opts ...ConsOpt) *Dense[T] {
 	if len(opts) != 0 {
 		return New[T](opts...)
 	}
-	data := makeBacking[T](t.e, len(t.data), t.AP.DataOrder())
+	data := makeBacking[T](t.e, len(t.data), t.AP.DataOrder(), nil)
 	retVal := &Dense[T]{
 		data:  data,
 		bytes: gutils.BytesFromSlice(data),

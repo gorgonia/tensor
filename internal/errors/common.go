@@ -9,6 +9,7 @@ const (
 	RepeatedAxis      = "Repeated axis %d in permutation pattern."
 	ShapeMismatch     = "Shape mismatch. Expected %v. Got %v."
 	ShapeMismatch2    = "Innermost dimension of %v does not match outermost dimension of %v."
+	SizeMismatch      = "Array Size Mismatch. Expected %d. Got %d"
 	ArrayMismatch     = "Cannot reuse %v. Length of array: %d. Expected length of at least %d."
 	DtypeError        = "Expected a tensor of %v. Got %v instead."
 	TypeError         = "Expected %T. Got %T instead"

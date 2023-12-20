@@ -13,6 +13,7 @@ type Constructor struct {
 	Engine    Engine
 	IsScalar  bool
 	AsFortran bool
+	InitFn    any
 }
 
 type ConsOpt func(*Constructor)
@@ -28,6 +29,15 @@ func WithBacking(backing any) ConsOpt {
 			panic(fmt.Sprintf("WithBacking cannot be called as there is already backing data of %T", c.Data))
 		}
 		c.Data = backing
+	}
+}
+
+func WithInit(fn any) ConsOpt {
+	return func(c *Constructor) {
+		if c.InitFn != nil {
+			panic(fmt.Sprintf("WithInit cannto be called when there's already an initfn in it"))
+		}
+		c.InitFn = fn
 	}
 }
 
