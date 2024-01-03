@@ -9,12 +9,14 @@ import (
 type FuncOpt func(options *Option)
 
 type Option struct {
-	Ctx    context.Context
-	Reuse  any
-	Incr   bool
-	Unsafe bool
-	AsType dtype.Dtype
-	Along  []int // only used for axial operations
+	Ctx       context.Context
+	Reuse     any
+	Incr      bool
+	Unsafe    bool
+	Broadcast bool // broadcast option
+	AsType    dtype.Dtype
+	Along     []int // only used for axial operations
+
 }
 
 func (o Option) Safe() bool { return !o.Unsafe }
@@ -35,3 +37,4 @@ func WithReuse(reuse any) FuncOpt { return func(o *Option) { o.Reuse = reuse } }
 func WithIncr(incr any) FuncOpt   { return func(o *Option) { o.Reuse = incr; o.Incr = true } }
 func Along(axes ...int) FuncOpt   { return func(o *Option) { o.Along = axes } }
 func As(dt dtype.Dtype) FuncOpt   { return func(o *Option) { o.AsType = dt } }
+func AutoBroadcast(o *Option)     { o.Broadcast = true }

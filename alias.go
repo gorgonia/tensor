@@ -20,6 +20,13 @@ type Engine = internal.Engine
 type Iterator = internal.Iterator
 
 const (
+	NativelyInaccessible MemoryFlag = internal.NativelyInaccessible
+	ManuallyManaged                 = internal.ManuallyManaged
+	IsOverallocated                 = internal.IsOverallocated
+	IsView                          = internal.IsView
+)
+
+const (
 	ColMajor      DataOrder = internal.ColMajor
 	NonContiguous           = internal.NonContiguous
 	Transposed              = internal.Transposed
@@ -28,8 +35,6 @@ const (
 type SliceRange = shapes.Slice
 
 type Num = internal.Num
-
-const NativelyInaccessible = internal.NativelyInaccessible
 
 // Range creates a slice of values of the given DT
 func Range[DT internal.Rangeable](start, end int) []DT {
@@ -53,3 +58,7 @@ func Range[DT internal.Rangeable](start, end int) []DT {
 	}
 	return retVal
 }
+
+// MakeMemoryFlag makes a memory flag
+// TODO use golinkname
+func MakeMemoryFlag(fs ...MemoryFlag) (retVal MemoryFlag) { return internal.MakeMemoryFlag(fs...) }
