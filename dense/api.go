@@ -131,8 +131,8 @@ func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage
 	asBool := fo.AsType == dtype.Bool
 	ctx := fo.Ctx
 
-	var cmper tensor.Comparer[DT, *Dense[DT]]
-	if cmper, ok = e.(tensor.Comparer[DT, *Dense[DT]]); !ok {
+	var cmper tensor.Ord[DT, *Dense[DT]]
+	if cmper, ok = e.(tensor.Ord[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if err = cmper.Lt(ctx, a, b, retVal, !asBool); err != nil {

@@ -37,6 +37,8 @@ func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStd
 	}
 }
 
+func (e ExampleNonStdEng[DT, T]) Workhorse() Engine { return e }
+
 func (e ExampleNonStdEng[DT, T]) AllocAccessible() bool { return false }
 
 func (e ExampleNonStdEng[DT, T]) Alloc(size int64) (Memory, error) {

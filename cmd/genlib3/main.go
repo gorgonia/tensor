@@ -37,6 +37,7 @@ func init() {
 	}
 	tensorLoc = path.Join("src/gorgonia.org/tensor/internal/execution")
 	//execLoc = path.Join("src/gorgonia.org/tensor/internal/execution")
+	denseLoc = "../../dense"
 	execLoc = "../../internal/execution"
 	stdengLoc = "../../engines"
 }
@@ -82,6 +83,16 @@ func genOrderedNumEngMethods(w io.Writer) {
 	}
 }
 
+func genDenseArithPrepMethods(w io.Writer) {
+	fmt.Fprintf(w, basicArithPrep)
+}
+
+func genDenseArithMethods(w io.Writer) {
+	for _, op := range arithOps {
+		denseArithOp.Execute(w, op)
+	}
+}
+
 func genExecution() {
 	//	genExecutionCmp()
 
@@ -98,7 +109,8 @@ func writePkgName(f io.Writer, pkg string) {
 		fmt.Fprintf(f, "// %s\n\npackage tensor\n\n", genmsg)
 	case execLoc:
 		fmt.Fprintf(f, "// %s\n\npackage execution\n\n", genmsg)
-
+	case denseLoc:
+		fmt.Fprintf(f, "// %s\n\n package dense\n\n", genmsg)
 	default:
 		fmt.Fprintf(f, "// %s\n\npackage unknown\n\n", genmsg)
 	}
@@ -150,6 +162,8 @@ func main() {
 	pipeline(stdengLoc, "defaultComparableEngine_gen.go", genComparableEngMethods)
 	pipeline(stdengLoc, "defaultOrderedEngine_gen.go", genOrderedEngMethods)
 	pipeline(stdengLoc, "defaultOrderedNumEngine_gen.go", genOrderedNumEngMethods)
+
+	pipeline(denseLoc, "arith.go", genDenseArithPrepMethods, genDenseArithMethods)
 	genStdEng()
 	genDenseMethods()
 }

@@ -3,9 +3,9 @@
 package execution
 
 import (
+	"golang.org/x/exp/constraints"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
-	"golang.org/x/exp/constraints"
 )
 
 // LtVV performs c := a ̅< b where c is of the same type as the inputs.

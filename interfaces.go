@@ -40,6 +40,7 @@ type DescWithStorage interface {
 
 	// Flags returns the memory flags of the underlying data array.
 	Flags() MemoryFlag
+
 	// DataOrder returns the data order of the underlying data array.
 	DataOrder() DataOrder
 

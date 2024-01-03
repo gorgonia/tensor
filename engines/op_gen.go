@@ -3,8 +3,8 @@
 package stdeng
 
 import (
-	"gorgonia.org/tensor/internal/execution"
 	"golang.org/x/exp/constraints"
+	"gorgonia.org/tensor/internal/execution"
 )
 
 // ltOp creates a `CmpBinOp` for values of the `constraints.Ordered` datatype.

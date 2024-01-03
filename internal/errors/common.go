@@ -13,6 +13,7 @@ const (
 	ArrayMismatch     = "Cannot reuse %v. Length of array: %d. Expected length of at least %d."
 	DtypeError        = "Expected a tensor of %v. Got %v instead."
 	TypeError         = "Expected %T. Got %T instead"
+	BroadcastError    = "Cannot broadcast %v with %v. %d-th dimension does not match or is not a 1."
 
 	OpFail = "%v failed."
 
