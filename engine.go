@@ -73,12 +73,6 @@ type Arither[DT any, T Tensor[DT, T]] interface {
 }
 
 type Comparer[DT any, T Tensor[DT, T]] interface {
-	Lt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-
-	Lte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-
 	ElEq(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 
@@ -86,8 +80,17 @@ type Comparer[DT any, T Tensor[DT, T]] interface {
 	NeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 }
 
-type FullComparer[DT any, T Tensor[DT, T]] interface {
+type Ord[DT any, T Tensor[DT, T]] interface {
 	Comparer[DT, T]
+	Lt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+
+	Lte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
+	LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+}
+
+type FullOrd[DT any, T Tensor[DT, T]] interface {
+	Ord[DT, T]
 
 	Gt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	GtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
