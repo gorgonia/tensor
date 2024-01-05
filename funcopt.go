@@ -6,6 +6,7 @@ import (
 	"gorgonia.org/dtype"
 )
 
+// FuncOpt is an option that modifies the operation of a given function.
 type FuncOpt func(options *Option)
 
 type Option struct {
@@ -13,7 +14,7 @@ type Option struct {
 	Reuse     any
 	Incr      bool
 	Unsafe    bool
-	Broadcast bool // broadcast option
+	Broadcast bool
 	AsType    dtype.Dtype
 	Along     []int // only used for axial operations
 
