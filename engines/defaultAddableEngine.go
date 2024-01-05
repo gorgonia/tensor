@@ -67,11 +67,18 @@ func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, e
 		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Broadcasting operation for tensors that require use of iterators")
 	}
 
+	if a.DataOrder().IsColMajor() || b.DataOrder().IsColMajor() {
+		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Col Major tensors")
+	}
+
+	expStridesA := tensor.CalcStrides(expShapeA)
+	expStridesB := tensor.CalcStrides(expShapeB)
+
 	switch {
 	case toIncr:
-		op.VVBCIncr(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), a.Strides(), b.Strides())
+		op.VVBCIncr(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), expStridesA, expStridesB)
 	default:
-		op.VVBC(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), a.Strides(), b.Strides())
+		op.VVBC(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), expStridesA, expStridesB)
 	}
 	return nil
 }
