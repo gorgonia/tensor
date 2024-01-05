@@ -49,7 +49,7 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 
 const denseArithOpRaw = `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) {
-	e, newShapeU, newShapeT, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +61,15 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, {{.Name|lower}}er, errors.ThisFn())
 	}
-	_ = toBroadcast
-	_ = newShapeU
-	_ = newShapeT
 
-	if err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr); err != nil {
-		return nil, err
+	switch {
+	case toBroadcast:
+		err = {{.Name|lower}}er.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+	default:
+		err = {{.Name|lower}}er.Add(ctx, t, u, retVal, toIncr)
+
 	}
-	return retVal, nil
+	return retVal, err
 }
 
 func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {

@@ -54,7 +54,7 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 }
 
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeU, newShapeT, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +66,15 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, adder, errors.ThisFn())
 	}
-	_ = toBroadcast
-	_ = newShapeU
-	_ = newShapeT
 
-	if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
-		return nil, err
+	switch {
+	case toBroadcast:
+		err = adder.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+	default:
+		err = adder.Add(ctx, t, u, retVal, toIncr)
+
 	}
-	return retVal, nil
+	return retVal, err
 }
 
 func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
@@ -94,7 +95,7 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 }
 
 func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeU, newShapeT, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,14 +107,15 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, suber, errors.ThisFn())
 	}
-	_ = toBroadcast
-	_ = newShapeU
-	_ = newShapeT
 
-	if err = suber.Sub(ctx, t, u, retVal, toIncr); err != nil {
-		return nil, err
+	switch {
+	case toBroadcast:
+		err = suber.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+	default:
+		err = suber.Add(ctx, t, u, retVal, toIncr)
+
 	}
-	return retVal, nil
+	return retVal, err
 }
 
 func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
@@ -134,7 +136,7 @@ func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 }
 
 func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeU, newShapeT, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,14 +148,15 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, muler, errors.ThisFn())
 	}
-	_ = toBroadcast
-	_ = newShapeU
-	_ = newShapeT
 
-	if err = muler.Mul(ctx, t, u, retVal, toIncr); err != nil {
-		return nil, err
+	switch {
+	case toBroadcast:
+		err = muler.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+	default:
+		err = muler.Add(ctx, t, u, retVal, toIncr)
+
 	}
-	return retVal, nil
+	return retVal, err
 }
 
 func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
@@ -174,7 +177,7 @@ func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 }
 
 func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeU, newShapeT, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -186,14 +189,15 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, diver, errors.ThisFn())
 	}
-	_ = toBroadcast
-	_ = newShapeU
-	_ = newShapeT
 
-	if err = diver.Div(ctx, t, u, retVal, toIncr); err != nil {
-		return nil, err
+	switch {
+	case toBroadcast:
+		err = diver.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+	default:
+		err = diver.Add(ctx, t, u, retVal, toIncr)
+
 	}
-	return retVal, nil
+	return retVal, err
 }
 
 func (t *Dense[DT]) DivScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {

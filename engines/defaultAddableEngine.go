@@ -30,7 +30,7 @@ func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toI
 	var ait, bit, iit Iterator
 	var useIter bool
 	if ait, bit, iit, useIter, _, err = PrepDataVV[DT, DT](a, b, retVal); err != nil {
-		return errors.Wrap(err, "Unable to prepare iterators for Add")
+		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(1))
 	}
 
 	if useIter {
@@ -53,7 +53,33 @@ func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toI
 	}
 }
 
+func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool, op Op[DT]) (err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return
+	}
+
+	var useIter bool
+	if _, _, _, useIter, _, err = PrepDataVV[DT, DT](a, b, retVal); err != nil {
+		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(1))
+	}
+
+	if useIter {
+		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Broadcasting operation for tensors that require use of iterators")
+	}
+
+	switch {
+	case toIncr:
+		op.VVBCIncr(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), a.Strides(), b.Strides())
+	default:
+		op.VVBC(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), a.Strides(), b.Strides())
+	}
+	return nil
+}
+
 func (e compAddableEng[DT, T]) StdBinOpScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool, op Op[DT]) (err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return
+	}
 	var ait, iit Iterator
 	var useIter bool
 	prep := prepDataVS[DT, DT]
@@ -99,7 +125,7 @@ func (e compAddableEng[DT, T]) AddScalar(ctx context.Context, t T, s DT, retVal 
 }
 
 func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error) {
-	return errors.New(errors.NYIPR)
+	return e.StdBinOpBC(ctx, a, b, retVal, expShapeA, expShapeB, toIncr, addOp[DT]())
 }
 
 func (e compAddableEng[DT, T]) Trace(ctx context.Context, t T) (retVal DT, err error) {
