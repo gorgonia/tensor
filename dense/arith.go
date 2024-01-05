@@ -110,9 +110,9 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = suber.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = suber.SubBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
 	default:
-		err = suber.Add(ctx, t, u, retVal, toIncr)
+		err = suber.Sub(ctx, t, u, retVal, toIncr)
 
 	}
 	return retVal, err
@@ -151,9 +151,9 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = muler.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = muler.MulBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
 	default:
-		err = muler.Add(ctx, t, u, retVal, toIncr)
+		err = muler.Mul(ctx, t, u, retVal, toIncr)
 
 	}
 	return retVal, err
@@ -192,9 +192,9 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = diver.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = diver.DivBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
 	default:
-		err = diver.Add(ctx, t, u, retVal, toIncr)
+		err = diver.Div(ctx, t, u, retVal, toIncr)
 
 	}
 	return retVal, err

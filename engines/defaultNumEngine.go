@@ -3,6 +3,7 @@ package stdeng
 import (
 	"context"
 
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
@@ -48,6 +49,10 @@ func (e StdNumEngine[DT, T]) SubScalar(ctx context.Context, t T, s DT, retVal T,
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, subOp[DT]())
 }
 
+func (e StdNumEngine[DT, T]) SubBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error) {
+	return e.StdBinOpBC(ctx, a, b, retVal, expShapeA, expShapeB, toIncr, subOp[DT]())
+}
+
 func (e StdNumEngine[DT, T]) Mul(ctx context.Context, a, b, retVal T, toIncr bool) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, toIncr, mulOp[DT]())
 }
@@ -56,12 +61,20 @@ func (e StdNumEngine[DT, T]) MulScalar(ctx context.Context, t T, s DT, retVal T,
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, mulOp[DT]())
 }
 
+func (e StdNumEngine[DT, T]) MulBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error) {
+	return e.StdBinOpBC(ctx, a, b, retVal, expShapeA, expShapeB, toIncr, mulOp[DT]())
+}
+
 func (e StdNumEngine[DT, T]) Div(ctx context.Context, a, b, retVal T, toIncr bool) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, toIncr, divOp[DT]())
 }
 
 func (e StdNumEngine[DT, T]) DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, divOp[DT]())
+}
+
+func (e StdNumEngine[DT, T]) DivBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error) {
+	return e.StdBinOpBC(ctx, a, b, retVal, expShapeA, expShapeB, toIncr, divOp[DT]())
 }
 
 func (e StdNumEngine[DT, T]) Inner(ctx context.Context, a, b T) (retVal DT, err error) {

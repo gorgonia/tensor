@@ -59,12 +59,15 @@ type BasicArither[DT any, T Tensor[DT, T]] interface {
 
 	Sub(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	SubScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+	SubBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
 
 	Mul(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	MulScalar(ctx context.Context, a T, b DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+	MulBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
 
 	Div(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+	DivBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
 }
 
 type Arither[DT any, T Tensor[DT, T]] interface {

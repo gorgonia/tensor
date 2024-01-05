@@ -64,9 +64,9 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 
 	switch {
 	case toBroadcast:
-		err = {{.Name|lower}}er.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = {{.Name|lower}}er.{{.Name}}Broadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
 	default:
-		err = {{.Name|lower}}er.Add(ctx, t, u, retVal, toIncr)
+		err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr)
 
 	}
 	return retVal, err
