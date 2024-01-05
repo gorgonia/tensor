@@ -16,3 +16,13 @@ func elimInnermostOutermost(a, b shapes.Shape) shapes.Shape {
 	a2 := a.Clone()
 	return append(a2[:len(a)-1], b[1:]...)
 }
+
+func largestShape(shps ...shapes.Shape) shapes.Shape {
+	var maxShape shapes.Shape
+	for _, s := range shps {
+		if s.TotalSize() > maxShape.TotalSize() {
+			maxShape = s
+		}
+	}
+	return maxShape
+}

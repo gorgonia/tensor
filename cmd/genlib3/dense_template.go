@@ -2,20 +2,30 @@ package main
 
 import "text/template"
 
-const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {
+const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newShapeT, newShapeU shapes.Shape, retVal *Dense[DT], fo Option, err error) {
 	e = getEngine[DT](t, u)
-	if err = check(checkFlags(e, t, u), checkEqShape(t.Shape(), u.Shape())); err != nil {
-		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
+	if err = check(checkFlags(e, t, u)); err != nil {
+		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
+	tShp := t.Shape()
+	uShp := u.Shape()
+	expShape := largestShape(tShp, uShp)
 
-	var fo Option
-	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, t.Shape(), opts...)
+	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, expShape, opts...)
 	if err != nil {
-		return nil, nil, nil, false, err
+		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 
-	toIncr = fo.Incr
-	ctx = fo.Ctx
+	newShapeT = tShp
+	newShapeU = uShp
+	if fo.Broadcast {
+		// create autobroadcast shape
+		newShapeT, newShapeU = tensor.CalcBroadcastShapes(newShapeT, newShapeU)
+		if err = tensor.CheckBroadcastable(newShapeT, newShapeU); err != nil {
+			return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
+		}
+	}
+
 	return
 }
 
@@ -39,15 +49,21 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 
 const denseArithOpRaw = `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) {
-	e, retVal, ctx, toIncr, err := t.basicArithPrep(u, opts...)
+	e, newShapeU, newShapeT, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
+	ctx := fo.Ctx
+	toIncr := fo.Incr
+	toBroadcast := fo.Broadcast
 
 	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT, *Dense[DT]])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, {{.Name|lower}}er, errors.ThisFn())
 	}
+	_ = toBroadcast
+	_ = newShapeU
+	_ = newShapeT
 
 	if err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr); err != nil {
 		return nil, err
