@@ -32,11 +32,8 @@ func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, new
 		if err = tensor.CheckBroadcastable(newShapeT, newShapeU); err != nil {
 			return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 		}
-	} else {
-		if err := checkEqShape(tShp, uShp)(); err != nil {
-			return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-		}
 	}
+
 	return
 }
 

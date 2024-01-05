@@ -13,6 +13,30 @@ func {{.Name}}VV[T {{.TypeClass}}](a, b, c []T) {
 	}
 }
 
+// {{.Name}}BC does :=  a ̅{{.Symbol}} b, using the appropriate indexing that follows a broadcast operation.
+func {{.Name}}BC[T {{.TypeClass}}](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] {{.Symbol}} b[idxB]
+	}
+}
+
 // {{.Name}}VS does c := vec ̅{{.Symbol}} scalar. The scalar value is broadcasted across the vector for the operation
 func {{.Name}}VS[T {{.TypeClass}}](vec []T, s T, retVal []T) {
 	vec = vec[:len(vec)]
@@ -31,7 +55,7 @@ func {{.Name}}SV[T {{.TypeClass}}]( s T, vec []T, retVal []T) {
 	}
 }
 
-// {{.Name}}VVIncr does c += a ̅{{.Symbol}} b
+// {{.Name}}VVIncr does c += a ̅{{.Symbol}} b.
 func {{.Name}}VVIncr[T {{.TypeClass}}](a, b, incr []T) {
 	a = a[:len(a)]
 	b = b[:len(a)]
@@ -41,6 +65,31 @@ func {{.Name}}VVIncr[T {{.TypeClass}}](a, b, incr []T) {
 		incr[i] += a[i] {{.Symbol}} b[i]
 	}
 }
+
+// {{.Name}}BCIncr does c += a ̅{{.Symbol}} b, except it's broadcasted.
+func {{.Name}}BCIncr[T {{.TypeClass}}](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] += a[idxA] {{.Symbol}} b[idxB]
+	}
+}
+
 
 // {{.Name}}VVIter does c := a ̅{{.Symbol}} b, where a, b, and c requires the use of an iterator.
 func {{.Name}}VVIter[T {{.TypeClass}}](a, b, c []T, ait, bit, cit Iterator) (err error) {
@@ -284,6 +333,34 @@ func {{.Name}}VV[T {{.TypeClass}}](a, b, c []T) {
 	}
 }
 
+// {{.Name}}BC performs c := a ̅{{.Symbol}} b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func {{.Name}}BC[T {{.TypeClass}}](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		if a[i] {{.Symbol}} b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
 // {{.Name}}VVIter performs c := a  ̅{{.Symbol}} b, where a, b, and c requires the use of an iterator.
 func {{.Name}}VVIter[T {{.TypeClass}}](a, b, c []T, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -341,6 +418,7 @@ func {{.Name}}VS[T {{.TypeClass}}](a []T, b T, c []T) {
 		}
 	}
 }
+
 
 // {{.Name}}VSIter performs c := vec ̅{{.Symbol}} scalar where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
 func {{.Name}}VSIter[T {{.TypeClass}}](a []T, b T, c []T, ait, cit Iterator) (err error) {
@@ -437,6 +515,30 @@ func {{.Name}}VVBool[T {{.TypeClass}}](a, b []T, c []bool) {
 
 	for i := range a {
 		c[i] = a[i] {{.Symbol}} b[i]
+	}
+}
+
+// {{.Name}}BCBool performs c := a ̅{{.Symbol}} b, using the appropriate indexing that follows a broadcast operation.
+func {{.Name}}BCBool[T {{.TypeClass}}](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] {{.Symbol}} b[idxB]
 	}
 }
 

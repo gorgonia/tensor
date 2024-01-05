@@ -1,12 +1,15 @@
 package stdeng
 
 import (
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal/execution"
 )
 
 type vvFunc[DTa, DTb, DTc any] func(a []DTa, b []DTb, c []DTc)
 
 type vvIterFunc[DTa, DTb, DTc any] func(a []DTa, b []DTb, c []DTc, ait, bit, cit Iterator) error
+
+type bcFunc[DTa, DTb, DTc any] func(a []DTa, b []DTb, c []DTc, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int)
 
 type vsFunc[DTa, DTb, DTc any] func(a []DTa, b DTb, c []DTc)
 
@@ -19,6 +22,7 @@ type svIterFunc[DTa, DTb, DTc any] func(a DTa, b []DTb, c []DTc, bit, cit Iterat
 // Op represents an operation. It's basically a tuple of functions
 type Op[DT any] struct {
 	VV, VVIncr         vvFunc[DT, DT, DT]
+	VVBC, VVBCIncr     bcFunc[DT, DT, DT]
 	VVIter, VVIncrIter vvIterFunc[DT, DT, DT]
 
 	VS, VSIncr         vsFunc[DT, DT, DT]
@@ -30,6 +34,7 @@ type Op[DT any] struct {
 
 type CmpBinOp[DT any] struct {
 	VV     vvFunc[DT, DT, bool]
+	VVBC   bcFunc[DT, DT, bool]
 	VVIter vvIterFunc[DT, DT, bool]
 
 	VS     vsFunc[DT, DT, bool]
@@ -41,8 +46,12 @@ type CmpBinOp[DT any] struct {
 
 func addOp[DT Addable]() Op[DT] {
 	return Op[DT]{
-		VV:         execution.AddVV[DT],
-		VVIncr:     execution.AddVVIncr[DT],
+		VV:     execution.AddVV[DT],
+		VVIncr: execution.AddVVIncr[DT],
+
+		VVBC:     execution.AddBC[DT],
+		VVBCIncr: execution.AddBCIncr[DT],
+
 		VVIter:     execution.AddVVIter[DT],
 		VVIncrIter: execution.AddVVIncrIter[DT],
 
@@ -60,8 +69,12 @@ func addOp[DT Addable]() Op[DT] {
 
 func subOp[DT Num]() Op[DT] {
 	return Op[DT]{
-		VV:         execution.SubVV[DT],
-		VVIncr:     execution.SubVVIncr[DT],
+		VV:     execution.SubVV[DT],
+		VVIncr: execution.SubVVIncr[DT],
+
+		VVBC:     execution.SubBC[DT],
+		VVBCIncr: execution.SubBCIncr[DT],
+
 		VVIter:     execution.SubVVIter[DT],
 		VVIncrIter: execution.SubVVIncrIter[DT],
 
@@ -79,8 +92,12 @@ func subOp[DT Num]() Op[DT] {
 
 func mulOp[DT Num]() Op[DT] {
 	return Op[DT]{
-		VV:         execution.MulVV[DT],
-		VVIncr:     execution.MulVVIncr[DT],
+		VV:     execution.MulVV[DT],
+		VVIncr: execution.MulVVIncr[DT],
+
+		VVBC:     execution.MulBC[DT],
+		VVBCIncr: execution.MulBCIncr[DT],
+
 		VVIter:     execution.MulVVIter[DT],
 		VVIncrIter: execution.MulVVIncrIter[DT],
 
@@ -98,8 +115,12 @@ func mulOp[DT Num]() Op[DT] {
 
 func divOp[DT Num]() Op[DT] {
 	return Op[DT]{
-		VV:         execution.DivVV[DT],
-		VVIncr:     execution.DivVVIncr[DT],
+		VV:     execution.DivVV[DT],
+		VVIncr: execution.DivVVIncr[DT],
+
+		VVBC:     execution.DivBC[DT],
+		VVBCIncr: execution.DivBCIncr[DT],
+
 		VVIter:     execution.DivVVIter[DT],
 		VVIncrIter: execution.DivVVIncrIter[DT],
 
