@@ -99,35 +99,6 @@ func (e compAddableEng[DT, T]) AddScalar(ctx context.Context, t T, s DT, retVal 
 }
 
 func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error) {
-	out := retVal.Data()
-	// Create indices and iterate over the output shape
-	for i := range out {
-		aIndex := 0
-		bIndex := 0
-
-		for j := range outShape {
-			aDim := 1
-			bDim := 1
-			if j < len(aShape) {
-				aDim = aShape[j]
-			}
-			if j < len(bShape) {
-				bDim = bShape[j]
-			}
-
-			dimIndex := (i / prod(outShape[j+1:])) % outShape[j]
-
-			if aDim != 1 {
-				aIndex += (dimIndex % aDim) * aStrides[j]
-			}
-
-			if bDim != 1 {
-				bIndex += (dimIndex % bDim) * bStrides[j]
-			}
-		}
-
-		out[i] = fn(a[aIndex:aIndex+1], b[bIndex:bIndex+1])[0]
-	}
 	return errors.New(errors.NYIPR)
 }
 

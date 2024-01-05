@@ -2,7 +2,10 @@
 
 package execution
 
-import "gorgonia.org/tensor/internal/errors"
+import (
+	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal/errors"
+)
 
 // AddVV does c :=  a ̅+ b
 func AddVV[T Addable](a, b, c []T) {
@@ -12,6 +15,30 @@ func AddVV[T Addable](a, b, c []T) {
 
 	for i := range a {
 		c[i] = a[i] + b[i]
+	}
+}
+
+// AddBC does :=  a ̅+ b, using the appropriate indexing that follows a broadcast operation.
+func AddBC[T Addable](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] + b[idxB]
 	}
 }
 
@@ -33,7 +60,7 @@ func AddSV[T Addable](s T, vec []T, retVal []T) {
 	}
 }
 
-// AddVVIncr does c += a ̅+ b
+// AddVVIncr does c += a ̅+ b.
 func AddVVIncr[T Addable](a, b, incr []T) {
 	a = a[:]
 	b = b[:len(a)]
@@ -41,6 +68,30 @@ func AddVVIncr[T Addable](a, b, incr []T) {
 
 	for i := range a {
 		incr[i] += a[i] + b[i]
+	}
+}
+
+// AddBCIncr does c += a ̅+ b, except it's broadcasted.
+func AddBCIncr[T Addable](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] += a[idxA] + b[idxB]
 	}
 }
 
@@ -278,6 +329,30 @@ func SubVV[T Num](a, b, c []T) {
 	}
 }
 
+// SubBC does :=  a ̅- b, using the appropriate indexing that follows a broadcast operation.
+func SubBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] - b[idxB]
+	}
+}
+
 // SubVS does c := vec ̅- scalar. The scalar value is broadcasted across the vector for the operation
 func SubVS[T Num](vec []T, s T, retVal []T) {
 	vec = vec[:]
@@ -296,7 +371,7 @@ func SubSV[T Num](s T, vec []T, retVal []T) {
 	}
 }
 
-// SubVVIncr does c += a ̅- b
+// SubVVIncr does c += a ̅- b.
 func SubVVIncr[T Num](a, b, incr []T) {
 	a = a[:]
 	b = b[:len(a)]
@@ -304,6 +379,30 @@ func SubVVIncr[T Num](a, b, incr []T) {
 
 	for i := range a {
 		incr[i] += a[i] - b[i]
+	}
+}
+
+// SubBCIncr does c += a ̅- b, except it's broadcasted.
+func SubBCIncr[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] += a[idxA] - b[idxB]
 	}
 }
 
@@ -541,6 +640,30 @@ func MulVV[T Num](a, b, c []T) {
 	}
 }
 
+// MulBC does :=  a ̅* b, using the appropriate indexing that follows a broadcast operation.
+func MulBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] * b[idxB]
+	}
+}
+
 // MulVS does c := vec ̅* scalar. The scalar value is broadcasted across the vector for the operation
 func MulVS[T Num](vec []T, s T, retVal []T) {
 	vec = vec[:]
@@ -559,7 +682,7 @@ func MulSV[T Num](s T, vec []T, retVal []T) {
 	}
 }
 
-// MulVVIncr does c += a ̅* b
+// MulVVIncr does c += a ̅* b.
 func MulVVIncr[T Num](a, b, incr []T) {
 	a = a[:]
 	b = b[:len(a)]
@@ -567,6 +690,30 @@ func MulVVIncr[T Num](a, b, incr []T) {
 
 	for i := range a {
 		incr[i] += a[i] * b[i]
+	}
+}
+
+// MulBCIncr does c += a ̅* b, except it's broadcasted.
+func MulBCIncr[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] += a[idxA] * b[idxB]
 	}
 }
 
@@ -804,6 +951,30 @@ func DivVV[T Num](a, b, c []T) {
 	}
 }
 
+// DivBC does :=  a ̅/ b, using the appropriate indexing that follows a broadcast operation.
+func DivBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] / b[idxB]
+	}
+}
+
 // DivVS does c := vec ̅/ scalar. The scalar value is broadcasted across the vector for the operation
 func DivVS[T Num](vec []T, s T, retVal []T) {
 	vec = vec[:]
@@ -822,7 +993,7 @@ func DivSV[T Num](s T, vec []T, retVal []T) {
 	}
 }
 
-// DivVVIncr does c += a ̅/ b
+// DivVVIncr does c += a ̅/ b.
 func DivVVIncr[T Num](a, b, incr []T) {
 	a = a[:]
 	b = b[:len(a)]
@@ -830,6 +1001,30 @@ func DivVVIncr[T Num](a, b, incr []T) {
 
 	for i := range a {
 		incr[i] += a[i] / b[i]
+	}
+}
+
+// DivBCIncr does c += a ̅/ b, except it's broadcasted.
+func DivBCIncr[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] += a[idxA] / b[idxB]
 	}
 }
 

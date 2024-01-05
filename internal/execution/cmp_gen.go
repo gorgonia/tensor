@@ -4,6 +4,7 @@ package execution
 
 import (
 	"golang.org/x/exp/constraints"
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 )
@@ -15,6 +16,34 @@ func LtVV[T OrderedNum](a, b, c []T) {
 	c = c[:len(a)]
 
 	for i := range a {
+		if a[i] < b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
+// LtBC performs c := a ̅< b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func LtBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
 		if a[i] < b[i] {
 			c[i] = T(1)
 		} else {
@@ -182,6 +211,34 @@ func LteVV[T OrderedNum](a, b, c []T) {
 	}
 }
 
+// LteBC performs c := a ̅<= b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func LteBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		if a[i] <= b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
 // LteVVIter performs c := a  ̅<= b, where a, b, and c requires the use of an iterator.
 func LteVVIter[T OrderedNum](a, b, c []T, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -333,6 +390,34 @@ func GtVV[T OrderedNum](a, b, c []T) {
 	c = c[:len(a)]
 
 	for i := range a {
+		if a[i] > b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
+// GtBC performs c := a ̅> b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func GtBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
 		if a[i] > b[i] {
 			c[i] = T(1)
 		} else {
@@ -500,6 +585,34 @@ func GteVV[T OrderedNum](a, b, c []T) {
 	}
 }
 
+// GteBC performs c := a ̅>= b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func GteBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		if a[i] >= b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
 // GteVVIter performs c := a  ̅>= b, where a, b, and c requires the use of an iterator.
 func GteVVIter[T OrderedNum](a, b, c []T, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -651,6 +764,34 @@ func ElEqVV[T Num](a, b, c []T) {
 	c = c[:len(a)]
 
 	for i := range a {
+		if a[i] == b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
+// ElEqBC performs c := a ̅== b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func ElEqBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
 		if a[i] == b[i] {
 			c[i] = T(1)
 		} else {
@@ -818,6 +959,34 @@ func NeVV[T Num](a, b, c []T) {
 	}
 }
 
+// NeBC performs c := a ̅!= b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func NeBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		if a[i] != b[i] {
+			c[i] = T(1)
+		} else {
+			c[i] = T(0)
+		}
+	}
+}
+
 // NeVVIter performs c := a  ̅!= b, where a, b, and c requires the use of an iterator.
 func NeVVIter[T Num](a, b, c []T, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -973,6 +1142,30 @@ func LtVVBool[T constraints.Ordered](a, b []T, c []bool) {
 	}
 }
 
+// LtBCBool performs c := a ̅< b, using the appropriate indexing that follows a broadcast operation.
+func LtBCBool[T constraints.Ordered](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] < b[idxB]
+	}
+}
+
 // LtVVIterBool performs c := a  ̅< b, where a, b, and c requires the use of an iterator.
 func LtVVIterBool[T constraints.Ordered](a, b []T, c []bool, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -1105,6 +1298,30 @@ func LteVVBool[T constraints.Ordered](a, b []T, c []bool) {
 
 	for i := range a {
 		c[i] = a[i] <= b[i]
+	}
+}
+
+// LteBCBool performs c := a ̅<= b, using the appropriate indexing that follows a broadcast operation.
+func LteBCBool[T constraints.Ordered](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] <= b[idxB]
 	}
 }
 
@@ -1243,6 +1460,30 @@ func GtVVBool[T constraints.Ordered](a, b []T, c []bool) {
 	}
 }
 
+// GtBCBool performs c := a ̅> b, using the appropriate indexing that follows a broadcast operation.
+func GtBCBool[T constraints.Ordered](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] > b[idxB]
+	}
+}
+
 // GtVVIterBool performs c := a  ̅> b, where a, b, and c requires the use of an iterator.
 func GtVVIterBool[T constraints.Ordered](a, b []T, c []bool, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -1375,6 +1616,30 @@ func GteVVBool[T constraints.Ordered](a, b []T, c []bool) {
 
 	for i := range a {
 		c[i] = a[i] >= b[i]
+	}
+}
+
+// GteBCBool performs c := a ̅>= b, using the appropriate indexing that follows a broadcast operation.
+func GteBCBool[T constraints.Ordered](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] >= b[idxB]
 	}
 }
 
@@ -1513,6 +1778,30 @@ func ElEqVVBool[T comparable](a, b []T, c []bool) {
 	}
 }
 
+// ElEqBCBool performs c := a ̅== b, using the appropriate indexing that follows a broadcast operation.
+func ElEqBCBool[T comparable](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] == b[idxB]
+	}
+}
+
 // ElEqVVIterBool performs c := a  ̅== b, where a, b, and c requires the use of an iterator.
 func ElEqVVIterBool[T comparable](a, b []T, c []bool, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
@@ -1645,6 +1934,30 @@ func NeVVBool[T comparable](a, b []T, c []bool) {
 
 	for i := range a {
 		c[i] = a[i] != b[i]
+	}
+}
+
+// NeBCBool performs c := a ̅!= b, using the appropriate indexing that follows a broadcast operation.
+func NeBCBool[T comparable](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+	for i := range c {
+		var idxA, idxB int
+		for j := range cShp {
+			aDim, bDim := 1, 1
+			if j < aShp.Dims() {
+				aDim = aShp[j]
+			}
+			if j < bShp.Dims() {
+				bDim = bShp[j]
+			}
+			idxDim := (i / cShp[j+1:].TotalSize()) % cShp[j]
+			if aDim != 1 {
+				idxA += (idxDim % aDim) * aStrides[j]
+			}
+			if bDim != 1 {
+				idxB += (idxDim % bDim) * bStrides[j]
+			}
+		}
+		c[i] = a[idxA] != b[idxB]
 	}
 }
 
