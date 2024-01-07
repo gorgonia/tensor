@@ -48,7 +48,7 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 
 `
 
-const denseArithOpRaw = `
+const denseArithOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`." + `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
@@ -73,6 +73,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 	return retVal, err
 }
 
+// {{.Name}}Scalar performs ` + "`t {{.Symbol}} s`. If `scalarOnLeft` is true, then it performs `s {{.Symbol}} t`." + `
 func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {
