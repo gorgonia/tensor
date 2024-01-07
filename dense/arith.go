@@ -52,6 +52,7 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 	return
 }
 
+// Add performs `t + u`.
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
@@ -76,6 +77,7 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	return retVal, err
 }
 
+// AddScalar performs `t + s`. If `scalarOnLeft` is true, then it performs `s + t`.
 func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {
@@ -93,6 +95,7 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	return retVal, nil
 }
 
+// Sub performs `t - u`.
 func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
@@ -117,6 +120,7 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	return retVal, err
 }
 
+// SubScalar performs `t - s`. If `scalarOnLeft` is true, then it performs `s - t`.
 func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {
@@ -134,6 +138,7 @@ func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	return retVal, nil
 }
 
+// Mul performs `t * u`.
 func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
@@ -158,6 +163,7 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	return retVal, err
 }
 
+// MulScalar performs `t * s`. If `scalarOnLeft` is true, then it performs `s * t`.
 func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {
@@ -175,6 +181,7 @@ func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	return retVal, nil
 }
 
+// Div performs `t / u`.
 func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
@@ -199,6 +206,7 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	return retVal, err
 }
 
+// DivScalar performs `t / s`. If `scalarOnLeft` is true, then it performs `s / t`.
 func (t *Dense[DT]) DivScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
 	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
 	if err != nil {

@@ -59,6 +59,26 @@ func (e compComparableEng[DT, T]) CmpOp(ctx context.Context, a, b T, retVal tens
 	return nil
 }
 
+func (e compComparableEng[DT, T]) CmpOpBC(ctx context.Context, a, b T, retVal tensor.Basic[bool], expAPA, expAPB *tensor.AP, op CmpBinOp[DT]) (err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return err
+	}
+	var useIter bool
+	if _, _, _, useIter, _, err = PrepDataVV[DT](a, b, retVal); err != nil {
+		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(2))
+	}
+	if useIter {
+		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Broadcasting operation for tensors that require use of iterators")
+	}
+	expShapeA := expAPA.Shape()
+	expShapeB := expAPB.Shape()
+	expStridesA := expAPA.Strides()
+	expStridesB := expAPB.Strides()
+
+	op.VVBC(a.Data(), b.Data(), retVal.Data(), expShapeA, expShapeB, retVal.Shape(), expStridesA, expStridesB)
+	return nil
+}
+
 func (e compComparableEng[DT, T]) CmpOpScalar(ctx context.Context, a T, b DT, retVal tensor.Basic[bool], scalarOnLeft bool, op CmpBinOp[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err

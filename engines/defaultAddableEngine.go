@@ -29,7 +29,7 @@ func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toI
 	var ait, bit, iit Iterator
 	var useIter bool
 	if ait, bit, iit, useIter, _, err = PrepDataVV[DT, DT](a, b, retVal); err != nil {
-		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(1))
+		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn())
 	}
 
 	if useIter {
@@ -59,7 +59,7 @@ func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, e
 
 	var useIter bool
 	if _, _, _, useIter, _, err = PrepDataVV[DT, DT](a, b, retVal); err != nil {
-		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(1))
+		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(2))
 	}
 
 	if useIter {

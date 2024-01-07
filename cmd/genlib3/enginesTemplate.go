@@ -6,6 +6,7 @@ const enginesCmpBinOpRaw = `// {{.Name | lower}}Op creates a ` + "`CmpBinOp`" + 
 func {{.Name | lower}}Op[DT {{.TypeClass}}]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV: execution.{{.Name | title}}VVBool[DT],
+		VVBC: execution.{{.Name | title}}BCBool[DT],
 		VVIter: execution.{{.Name | title}}VVIterBool[DT],
 
 		VS: execution.{{.Name | title}}VSBool[DT],
@@ -21,6 +22,7 @@ const enginesOrderedNumOpRaw = `// {{.Name | lower}}OpOrderedNum creates the ops
 func {{.Name | lower}}OpOrderedNum[DT {{.TypeClass}}]() (Op[DT], CmpBinOp[DT]){
 	return Op[DT]{
 		VV: execution.{{.Name | title}}VV[DT],
+		VVBV: execution.{{.Name | title}}BC[DT],
 		VVIter: execution.{{.Name | title}}VVIter[DT],
 
 		VS: execution.{{.Name | title}}VS[DT],
