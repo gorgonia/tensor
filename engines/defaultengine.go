@@ -116,8 +116,8 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaul
 
 	aData := a.Data()
 	retValData := retVal.Data()
-	switch {
-	case axis == 0:
+	switch axis {
+	case 0:
 		var size, split int
 		size = shp[0]
 		split = a.DataSize() / size
@@ -141,7 +141,7 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaul
 			err = errors.Errorf("Unable to reduce with function of type %T", fn)
 		}
 
-	case axis == lastAxis:
+	case lastAxis:
 		dimSize := shp[axis]
 		switch fn := fn.(type) {
 		case func([]DT, DT) DT:
