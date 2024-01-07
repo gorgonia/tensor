@@ -3,7 +3,6 @@ package stdeng
 import (
 	"context"
 
-	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
@@ -53,7 +52,7 @@ func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toI
 	}
 }
 
-func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool, op Op[DT]) (err error) {
+func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return
 	}
@@ -67,12 +66,10 @@ func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, e
 		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Broadcasting operation for tensors that require use of iterators")
 	}
 
-	if a.DataOrder().IsColMajor() || b.DataOrder().IsColMajor() {
-		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Col Major tensors")
-	}
-
-	expStridesA := tensor.CalcStrides(expShapeA)
-	expStridesB := tensor.CalcStrides(expShapeB)
+	expShapeA := expAPA.Shape()
+	expShapeB := expAPB.Shape()
+	expStridesA := expAPA.Strides()
+	expStridesB := expAPB.Strides()
 
 	switch {
 	case toIncr:
@@ -131,8 +128,8 @@ func (e compAddableEng[DT, T]) AddScalar(ctx context.Context, t T, s DT, retVal 
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, addOp[DT]())
 }
 
-func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error) {
-	return e.StdBinOpBC(ctx, a, b, retVal, expShapeA, expShapeB, toIncr, addOp[DT]())
+func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
+	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, addOp[DT]())
 }
 
 func (e compAddableEng[DT, T]) Trace(ctx context.Context, t T) (retVal DT, err error) {

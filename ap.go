@@ -3,11 +3,12 @@ package tensor
 import (
 	"fmt"
 
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 )
 
-// An AP is an access pattern. It tells the various ndarrays how to access their data through the use of strides
+// An AP is an access pattern. It tells the various ndarrays how to access data through the use of strides
 // Through the AP, there are several definitions of things, most notably there are two very specific "special cases":
 //
 //	Scalar has Dims() of 0.
@@ -193,6 +194,15 @@ func (ap *AP) CloneTo(dest *AP) {
 
 	dest.o = ap.o
 	dest.Δ = ap.Δ
+}
+
+func (ap *AP) cloneWithNewShape(shape shapes.Shape) *AP {
+	return &AP{
+		shape:   shape,
+		strides: ap.strides,
+		o:       ap.o,
+		Δ:       ap.Δ,
+	}
 }
 
 // DataOrder returns the data order of the AP.

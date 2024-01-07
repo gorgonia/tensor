@@ -29,27 +29,33 @@ func CheckBroadcastable(aShp, bShp shapes.Shape) (err error) {
 }
 
 // CalcBroadcastShapes creates new shape for both A and B operands, on the assumption that autobroadcasting is used.
-func CalcBroadcastShapes(aShp, bShp shapes.Shape) (newShapeA, newShapeB shapes.Shape) {
+func CalcBroadcastShapes(a, b *AP) (newA, newB *AP) {
+	aShp := a.Shape()
+	bShp := b.Shape()
+
 	aDim := aShp.Dims()
 	bDim := bShp.Dims()
 
 	// "clever" handling of different dims
 	maxDim := internal.Max(aDim, bDim)
-	newShapeA = aShp
+	newA = a
 	if aDim != maxDim {
-		newShapeA = make(shapes.Shape, maxDim)
-		copy(newShapeA[maxDim-aDim:], aShp)
+		newA = a.cloneWithNewShape(make(shapes.Shape, maxDim))
+		copy(newA.shape[maxDim-aDim:], aShp)
 		for i := 0; i < maxDim-aDim; i++ {
-			newShapeA[i] = 1
+			newA.shape[i] = 1
 		}
+		newA.RecalcStrides()
 	}
-	newShapeB = bShp
+	newB = b
 	if bDim != maxDim {
-		newShapeB = make(shapes.Shape, maxDim)
-		copy(newShapeB[maxDim-bDim:], bShp)
+		newB = b.cloneWithNewShape(make(shapes.Shape, maxDim))
+		copy(newB.shape[maxDim-bDim:], bShp)
 		for i := 0; i < maxDim-bDim; i++ {
-			newShapeB[i] = 1
+			newB.shape[i] = 1
 		}
+		newB.RecalcStrides()
 	}
+
 	return
 }

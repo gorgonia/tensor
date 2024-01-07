@@ -5,12 +5,11 @@ package dense
 import (
 	"context"
 
-	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 )
 
-func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newShapeT, newShapeU shapes.Shape, retVal *Dense[DT], fo Option, err error) {
+func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
 	e = getEngine[DT](t, u)
 	if err = check(checkFlags(e, t, u)); err != nil {
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
@@ -24,12 +23,12 @@ func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, new
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 
-	newShapeT = tShp
-	newShapeU = uShp
+	newAPT = t.Info()
+	newAPU = u.Info()
 	if fo.Broadcast {
 		// create autobroadcast shape
-		newShapeT, newShapeU = tensor.CalcBroadcastShapes(newShapeT, newShapeU)
-		if err = tensor.CheckBroadcastable(newShapeT, newShapeU); err != nil {
+		newAPT, newAPU = tensor.CalcBroadcastShapes(t.Info(), u.Info())
+		if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
 			return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 		}
 	}
@@ -54,7 +53,7 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 }
 
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = adder.AddBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
 		err = adder.Add(ctx, t, u, retVal, toIncr)
 
@@ -95,7 +94,7 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 }
 
 func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +109,7 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = suber.SubBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = suber.SubBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
 		err = suber.Sub(ctx, t, u, retVal, toIncr)
 
@@ -136,7 +135,7 @@ func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 }
 
 func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +150,7 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = muler.MulBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = muler.MulBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
 		err = muler.Mul(ctx, t, u, retVal, toIncr)
 
@@ -177,7 +176,7 @@ func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 }
 
 func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +191,7 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-		err = diver.DivBroadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = diver.DivBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
 		err = diver.Div(ctx, t, u, retVal, toIncr)
 

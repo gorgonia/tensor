@@ -2,8 +2,6 @@ package tensor
 
 import (
 	"context"
-
-	"gorgonia.org/shapes"
 )
 
 /* Data Agnostic Execution Engine Methods */
@@ -51,7 +49,7 @@ type FuncOptHandler[DT any] interface {
 type Adder[DT any, T Basic[DT]] interface {
 	Add(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	AddScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	AddBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
+	AddBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
 type BasicArither[DT any, T Tensor[DT, T]] interface {
@@ -59,15 +57,15 @@ type BasicArither[DT any, T Tensor[DT, T]] interface {
 
 	Sub(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	SubScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	SubBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
+	SubBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 
 	Mul(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	MulScalar(ctx context.Context, a T, b DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	MulBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
+	MulBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 
 	Div(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	DivBroadcastable(ctx context.Context, a, b, retVal T, expShapeA, expShapeB shapes.Shape, toIncr bool) (err error)
+	DivBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
 type Arither[DT any, T Tensor[DT, T]] interface {
