@@ -12,11 +12,6 @@ type Transposer[DT any, T Tensor[DT, T]] interface {
 }
 
 /*
-// Concater is any enegine that can concatenate multiple Tensors together
-type Concater[T any] interface {
-	Concat(ctx context.Context, t Tensor[T], axis int, others ...Tensor) (Tensor, error)
-}
-
 // Stacker is any engine that can stack multiple Tenosrs along an axis
 type Stacker interface {
 	Stack(ctx context.Context, t Tensor, axis int, others ...Tensor) (Tensor, error)
