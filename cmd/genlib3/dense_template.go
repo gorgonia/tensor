@@ -2,7 +2,7 @@ package main
 
 import "text/template"
 
-const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newShapeT, newShapeU shapes.Shape, retVal *Dense[DT], fo Option, err error) {
+const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
 	e = getEngine[DT](t, u)
 	if err = check(checkFlags(e, t, u)); err != nil {
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
@@ -16,18 +16,19 @@ const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ..
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 
-	newShapeT = tShp
-	newShapeU = uShp
+	newAPT = t.Info()
+	newAPU = u.Info()
 	if fo.Broadcast {
 		// create autobroadcast shape
-		newShapeT, newShapeU = tensor.CalcBroadcastShapes(newShapeT, newShapeU)
-		if err = tensor.CheckBroadcastable(newShapeT, newShapeU); err != nil {
+		newAPT, newAPU = tensor.CalcBroadcastShapes(t.Info(), u.Info())
+		if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
 			return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 		}
 	}
 
 	return
 }
+
 
 func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {
 	e = getEngine[DT](t)
@@ -49,7 +50,7 @@ func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVa
 
 const denseArithOpRaw = `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) {
-	e, newShapeT, newShapeU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 
 	switch {
 	case toBroadcast:
-		err = {{.Name|lower}}er.{{.Name}}Broadcastable(ctx, t, u, retVal, newShapeT, newShapeU, toIncr)
+		err = {{.Name|lower}}er.{{.Name}}Broadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
 		err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr)
 
