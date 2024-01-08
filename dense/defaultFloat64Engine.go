@@ -20,6 +20,7 @@ var (
 	_ tensor.Reducer[float64, *Dense[float64]]     = StdFloat64Engine[*Dense[float64]]{}
 	_ tensor.Argmethoder[float64, *Dense[float64]] = StdFloat64Engine[*Dense[float64]]{}
 	_ tensor.Scatterer[float64, *Dense[float64]]   = StdFloat64Engine[*Dense[float64]]{}
+	_ tensor.Ord[float64, *Dense[float64]]         = StdFloat64Engine[*Dense[float64]]{}
 )
 
 // type StdFloat64Engine[T tensor.Tensor[float64, T]] struct {

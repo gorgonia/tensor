@@ -11,6 +11,7 @@ import (
 func ltOp[DT constraints.Ordered]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV:     execution.LtVVBool[DT],
+		VVBC:   execution.LtBCBool[DT],
 		VVIter: execution.LtVVIterBool[DT],
 
 		VS:     execution.LtVSBool[DT],
@@ -25,6 +26,7 @@ func ltOp[DT constraints.Ordered]() CmpBinOp[DT] {
 func lteOp[DT constraints.Ordered]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV:     execution.LteVVBool[DT],
+		VVBC:   execution.LteBCBool[DT],
 		VVIter: execution.LteVVIterBool[DT],
 
 		VS:     execution.LteVSBool[DT],
@@ -39,6 +41,7 @@ func lteOp[DT constraints.Ordered]() CmpBinOp[DT] {
 func gtOp[DT constraints.Ordered]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV:     execution.GtVVBool[DT],
+		VVBC:   execution.GtBCBool[DT],
 		VVIter: execution.GtVVIterBool[DT],
 
 		VS:     execution.GtVSBool[DT],
@@ -53,6 +56,7 @@ func gtOp[DT constraints.Ordered]() CmpBinOp[DT] {
 func gteOp[DT constraints.Ordered]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV:     execution.GteVVBool[DT],
+		VVBC:   execution.GteBCBool[DT],
 		VVIter: execution.GteVVIterBool[DT],
 
 		VS:     execution.GteVSBool[DT],
@@ -67,6 +71,7 @@ func gteOp[DT constraints.Ordered]() CmpBinOp[DT] {
 func eleqOp[DT comparable]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV:     execution.ElEqVVBool[DT],
+		VVBC:   execution.ElEqBCBool[DT],
 		VVIter: execution.ElEqVVIterBool[DT],
 
 		VS:     execution.ElEqVSBool[DT],
@@ -81,6 +86,7 @@ func eleqOp[DT comparable]() CmpBinOp[DT] {
 func neOp[DT comparable]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
 		VV:     execution.NeVVBool[DT],
+		VVBC:   execution.NeBCBool[DT],
 		VVIter: execution.NeVVIterBool[DT],
 
 		VS:     execution.NeVSBool[DT],
@@ -95,6 +101,7 @@ func neOp[DT comparable]() CmpBinOp[DT] {
 func ltOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
 		VV:     execution.LtVV[DT],
+		VVBC:   execution.LtBC[DT],
 		VVIter: execution.LtVVIter[DT],
 
 		VS:     execution.LtVS[DT],
@@ -109,6 +116,7 @@ func ltOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 func lteOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
 		VV:     execution.LteVV[DT],
+		VVBC:   execution.LteBC[DT],
 		VVIter: execution.LteVVIter[DT],
 
 		VS:     execution.LteVS[DT],
@@ -123,6 +131,7 @@ func lteOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 func gtOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
 		VV:     execution.GtVV[DT],
+		VVBC:   execution.GtBC[DT],
 		VVIter: execution.GtVVIter[DT],
 
 		VS:     execution.GtVS[DT],
@@ -137,6 +146,7 @@ func gtOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 func gteOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
 		VV:     execution.GteVV[DT],
+		VVBC:   execution.GteBC[DT],
 		VVIter: execution.GteVVIter[DT],
 
 		VS:     execution.GteVS[DT],
@@ -151,6 +161,7 @@ func gteOpOrderedNum[DT OrderedNum]() (Op[DT], CmpBinOp[DT]) {
 func eleqOpOrderedNum[DT Num]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
 		VV:     execution.ElEqVV[DT],
+		VVBC:   execution.ElEqBC[DT],
 		VVIter: execution.ElEqVVIter[DT],
 
 		VS:     execution.ElEqVS[DT],
@@ -165,6 +176,7 @@ func eleqOpOrderedNum[DT Num]() (Op[DT], CmpBinOp[DT]) {
 func neOpOrderedNum[DT Num]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
 		VV:     execution.NeVV[DT],
+		VVBC:   execution.NeBC[DT],
 		VVIter: execution.NeVVIter[DT],
 
 		VS:     execution.NeVS[DT],

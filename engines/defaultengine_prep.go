@@ -2,7 +2,6 @@ package stdeng
 
 import (
 	"context"
-
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"

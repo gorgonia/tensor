@@ -30,6 +30,16 @@ func (e compComparableEng[DT, T]) ElEqScalar(ctx context.Context, a T, b DT, ret
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
 }
 
+// ElEqBroadcastable performs `a == b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e compComparableEng[DT, T]) ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := eleqOp[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, op)
+}
+
 // Ne performs `a != b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
 func (e compComparableEng[DT, T]) Ne(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
 	op := neOp[DT]()
@@ -49,4 +59,14 @@ func (e compComparableEng[DT, T]) NeScalar(ctx context.Context, a T, b DT, retVa
 		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
 	}
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
+}
+
+// NeBroadcastable performs `a != b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e compComparableEng[DT, T]) NeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := neOp[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, op)
 }
