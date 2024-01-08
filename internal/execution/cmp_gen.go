@@ -44,7 +44,7 @@ func LtBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bS
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] < b[i] {
+		if a[idxA] < b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)
@@ -231,7 +231,7 @@ func LteBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, b
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] <= b[i] {
+		if a[idxA] <= b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)
@@ -418,7 +418,7 @@ func GtBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bS
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] > b[i] {
+		if a[idxA] > b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)
@@ -605,7 +605,7 @@ func GteBC[T OrderedNum](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, b
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] >= b[i] {
+		if a[idxA] >= b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)
@@ -792,7 +792,7 @@ func ElEqBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStride
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] == b[i] {
+		if a[idxA] == b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)
@@ -979,7 +979,7 @@ func NeBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides 
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] != b[i] {
+		if a[idxA] != b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)

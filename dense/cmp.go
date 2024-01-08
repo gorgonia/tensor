@@ -39,11 +39,9 @@ func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 
-	newAPT := t.Info()
-	newAPU := u.Info()
 	if fo.Broadcast {
 		// create Autobroadcast shape
-		newAPT, newAPU = tensor.CalcBroadcastShapes(t.Info(), u.Info())
+		newAPT, newAPU := tensor.CalcBroadcastShapes(t.Info(), u.Info())
 		if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
 			return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 		}

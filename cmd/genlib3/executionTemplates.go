@@ -353,7 +353,7 @@ func {{.Name}}BC[T {{.TypeClass}}](a, b, c []T, aShp, bShp, cShp shapes.Shape, a
 				idxB += (idxDim % bDim) * bStrides[j]
 			}
 		}
-		if a[i] {{.Symbol}} b[i] {
+		if a[idxA] {{.Symbol}} b[idxB] {
 			c[i] = T(1)
 		} else {
 			c[i] = T(0)
