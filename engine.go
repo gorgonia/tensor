@@ -76,18 +76,22 @@ type Arither[DT any, T Tensor[DT, T]] interface {
 type Comparer[DT any, T Tensor[DT, T]] interface {
 	ElEq(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
 	Ne(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error)
 	NeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	NeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
 type Ord[DT any, T Tensor[DT, T]] interface {
 	Comparer[DT, T]
 	Lt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	LtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
 	Lte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
 type FullOrd[DT any, T Tensor[DT, T]] interface {

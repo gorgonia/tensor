@@ -92,6 +92,43 @@ func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*
 }
 `
 
+const denseCmpOpraw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
+func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
+	e := getEngine[DT](t, u)
+	if err = check(checkFlags(e, t, u), checkEqShape(t.Shape(), u.Shape())); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+	}
+
+	var prepper tensor.DescFuncOptHandler[DT]
+	var ok bool
+	if prepper, ok = e.(tensor.DescFuncOptHandler[DT]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn())
+	}
+
+	var fo Option
+	if retVal, fo, err = prepper.HandleFuncOptsDesc(t, t.Shape(), opts...); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
+	}
+	if fo.Incr {
+		return nil, errors.Errorf("Unable to Incr for Lt")
+	}
+
+	asBool := fo.AsType == dtype.Bool
+	ctx := fo.Ctx
+
+	var cmper tensor.{{.Interface}}[DT, *Dense[DT]]
+	if cmper, ok = e.(tensor.{{.Interface}}[DT, *Dense[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
+	}
+	if err = cmper.{{.Name}}(ctx, t, u, retVal, !asBool); err != nil {
+		return nil, err
+	}
+	return retVal, nil
+}
+
+
+`
+
 var (
 	denseArithOp *template.Template
 )

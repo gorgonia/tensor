@@ -30,6 +30,16 @@ func (e OrderedEng[DT, T]) LtScalar(ctx context.Context, a T, b DT, retVal DescW
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
 }
 
+// LtBroadcastable performs `a < b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e OrderedEng[DT, T]) LtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := ltOp[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, op)
+}
+
 // Lte performs `a <= b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
 func (e OrderedEng[DT, T]) Lte(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
 	op := lteOp[DT]()
@@ -49,6 +59,16 @@ func (e OrderedEng[DT, T]) LteScalar(ctx context.Context, a T, b DT, retVal Desc
 		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
 	}
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
+}
+
+// LteBroadcastable performs `a <= b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e OrderedEng[DT, T]) LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := lteOp[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, op)
 }
 
 // Gt performs `a > b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
@@ -72,6 +92,16 @@ func (e OrderedEng[DT, T]) GtScalar(ctx context.Context, a T, b DT, retVal DescW
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
 }
 
+// GtBroadcastable performs `a > b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e OrderedEng[DT, T]) GtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := gtOp[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, op)
+}
+
 // Gte performs `a >= b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
 func (e OrderedEng[DT, T]) Gte(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
 	op := gteOp[DT]()
@@ -91,4 +121,14 @@ func (e OrderedEng[DT, T]) GteScalar(ctx context.Context, a T, b DT, retVal Desc
 		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
 	}
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
+}
+
+// GteBroadcastable performs `a >= b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e OrderedEng[DT, T]) GteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := gteOp[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, op)
 }

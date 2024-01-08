@@ -70,6 +70,23 @@ func (e StdOrderedNumEngine[DT, T]) cmpOpScalar(ctx context.Context, a T, b DT, 
 	return nil
 }
 
+func (e StdOrderedNumEngine[DT, T]) cmpOpBC(ctx context.Context, a, b T, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, op Op[DT]) (err error) {
+	if err = internal.HandleCtx(ctx); err != nil {
+		return err
+	}
+
+	var useIter bool
+	if _, _, _, useIter, _, err = PrepDataVV[DT](a, b, retVal); err != nil {
+		return errors.Wrapf(err, "Unable to prepare iterators for %v", errors.ThisFn(2))
+	}
+	if useIter {
+		return errors.Errorf(errors.NYIPR, errors.ThisFn(1), "Broadcasting operation for tensors that require use of iterators")
+	}
+
+	op.VVBC(a.Data(), b.Data(), retVal.Data(), expAPA.Shape(), expAPB.Shape(), retVal.Shape(), expAPA.Strides(), expAPB.Strides())
+	return nil
+}
+
 /* ARG CMP */
 
 // flatFn is a function that performs argmax/min on a slice.

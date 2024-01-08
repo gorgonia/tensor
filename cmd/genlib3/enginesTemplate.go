@@ -22,7 +22,7 @@ const enginesOrderedNumOpRaw = `// {{.Name | lower}}OpOrderedNum creates the ops
 func {{.Name | lower}}OpOrderedNum[DT {{.TypeClass}}]() (Op[DT], CmpBinOp[DT]){
 	return Op[DT]{
 		VV: execution.{{.Name | title}}VV[DT],
-		VVBV: execution.{{.Name | title}}BC[DT],
+		VVBC: execution.{{.Name | title}}BC[DT],
 		VVIter: execution.{{.Name | title}}VVIter[DT],
 
 		VS: execution.{{.Name | title}}VS[DT],
@@ -54,6 +54,16 @@ func (e compComparableEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT
 	}
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
 }
+
+// {{.Name}}Broadcastable performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If` + "`asSameDT == true`" + `, an error will be returned.
+func (e compComparableEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := {{.Name | lower}}Op[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]),expAPA, expAPB, op)
+}
 `
 
 const orderedEngMethodsRaw = `// {{.Name}} performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. If` + "`asSameDT == true`" + `, an error will be returned.
@@ -76,6 +86,17 @@ func (e OrderedEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT, retVa
 	}
 	return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, op)
 }
+
+
+// {{.Name}}Broadcastable performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If` + "`asSameDT == true`" + `, an error will be returned.
+func (e OrderedEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op := {{.Name | lower}}Op[DT]()
+	if asSameDT {
+		var v DT
+		return errors.Errorf("Unable to perform %v for data type %T", errors.ThisFn(), v)
+	}
+	return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]),expAPA, expAPB, op)
+}
 `
 
 const orderedNumEngMethodsRaw = `// {{.Name}} performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value.
@@ -95,6 +116,16 @@ func (e StdOrderedNumEngine[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b 
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
 	}
 	return e.cmpOpScalar(ctx, a, b, retVal.(tensor.Basic[DT]), scalarOnLeft, op)
+}
+
+
+// {{.Name}}Broadcastable performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If` + "`asSameDT == true`" + `, an error will be returned.
+func (e StdOrderedNumEngine[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op, cmpOp := {{.Name | lower}}OpOrderedNum[DT]()
+	if !asSameDT {
+		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp )
+	}
+	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
 `
 
