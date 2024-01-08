@@ -99,9 +99,11 @@ type FullOrd[DT any, T Tensor[DT, T]] interface {
 
 	Gt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	GtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	GtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
 	Gte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	GteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	GteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
 type MinMaxer[DT any, T Tensor[DT, T]] interface {

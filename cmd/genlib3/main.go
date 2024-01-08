@@ -93,6 +93,12 @@ func genDenseArithMethods(w io.Writer) {
 	}
 }
 
+func genDenseCmpMethods(w io.Writer) {
+	for _, op := range cmpOpsNum {
+		denseCmpOp.Execute(w, op)
+	}
+}
+
 func genExecution() {
 	//	genExecutionCmp()
 
@@ -164,6 +170,7 @@ func main() {
 	pipeline(stdengLoc, "defaultOrderedNumEngine_gen.go", genOrderedNumEngMethods)
 
 	pipeline(denseLoc, "arith.go", genDenseArithPrepMethods, genDenseArithMethods)
+	pipeline(denseLoc, "cmp.go", genDenseCmpMethods)
 	genStdEng()
 	genDenseMethods()
 }
