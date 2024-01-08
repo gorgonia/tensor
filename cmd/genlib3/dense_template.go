@@ -92,12 +92,15 @@ func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*
 }
 `
 
-const denseCmpOpraw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
+const denseCmpOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
 	e := getEngine[DT](t, u)
-	if err = check(checkFlags(e, t, u), checkEqShape(t.Shape(), u.Shape())); err != nil {
+	if err = check(checkFlags(e, t, u)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
+	tShp := t.Shape()
+	uShp := u.Shape()
+	expShape := largestShape(tShp, uShp)
 
 	var prepper tensor.DescFuncOptHandler[DT]
 	var ok bool
@@ -106,7 +109,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 	}
 
 	var fo Option
-	if retVal, fo, err = prepper.HandleFuncOptsDesc(t, t.Shape(), opts...); err != nil {
+	if retVal, fo, err = prepper.HandleFuncOptsDesc(t, expShape, opts...); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 	if fo.Incr {
@@ -120,19 +123,31 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 	if cmper, ok = e.(tensor.{{.Interface}}[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
+
+	if fo.Broadcast {
+		// create Autobroadcast shape
+		newAPT, newAPU := tensor.CalcBroadcastShapes(t.Info(), u.Info())
+		if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
+			return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+		}
+
+		err = cmper.{{.Name}}Broadcastable(ctx, t, u, retVal, !asBool, newAPT, newAPU)
+		return
+	}
+
 	if err = cmper.{{.Name}}(ctx, t, u, retVal, !asBool); err != nil {
 		return nil, err
 	}
 	return retVal, nil
 }
-
-
 `
 
 var (
 	denseArithOp *template.Template
+	denseCmpOp   *template.Template
 )
 
 func init() {
 	denseArithOp = template.Must(template.New("denseArithOp").Funcs(funcs).Parse(denseArithOpRaw))
+	denseCmpOp = template.Must(template.New("denseCmpOp").Funcs(funcs).Parse(denseCmpOpRaw))
 }
