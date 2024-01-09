@@ -1,6 +1,8 @@
 package dense
 
-import "gorgonia.org/shapes"
+import (
+	"gorgonia.org/shapes"
+)
 
 // if dims = 2 and axis -1 it returns the last dimension. In this case 1
 func resolveAxis(axis int, dims int) int {
@@ -20,7 +22,7 @@ func elimInnermostOutermost(a, b shapes.Shape) shapes.Shape {
 func largestShape(shps ...shapes.Shape) shapes.Shape {
 	var maxShape shapes.Shape
 	for _, s := range shps {
-		if s.TotalSize() > maxShape.TotalSize() {
+		if s.TotalSize() >= maxShape.TotalSize() && s.Dims() > maxShape.Dims() {
 			maxShape = s
 		}
 	}
