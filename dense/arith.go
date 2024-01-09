@@ -25,12 +25,18 @@ func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, new
 
 	newAPT = t.Info()
 	newAPU = u.Info()
-	if fo.Broadcast {
-		// create autobroadcast shape
-		newAPT, newAPU = tensor.CalcBroadcastShapes(t.Info(), u.Info())
-		if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
-			return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-		}
+
+	// fast path
+	if !fo.Broadcast || tShp.TotalSize() == uShp.TotalSize() {
+		// no broadcasting necessary
+		fo.Broadcast = false
+		return
+	}
+
+	// create autobroadcast shape
+	newAPT, newAPU = tensor.CalcBroadcastShapes(newAPT, newAPU)
+	if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
+		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 
 	return

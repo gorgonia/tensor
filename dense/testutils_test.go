@@ -230,6 +230,35 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 
 	d := New[DT](WithShape(shape...), WithBacking(backing))
 	args[0] = reflect.ValueOf(d)
+
+	if len(args) == 2 {
+		// second argument is for broadcasting
+
+		shp2 := shape.Clone()
+
+		// < 50% chance of getting a shape that is bigger
+		x := rnd.Intn(10)
+		switch x {
+		case 1, 2:
+			shp2 = append(shp2, 0)
+			copy(shp2[1:], shp2[0:])
+			shp2[0] = 1
+		case 3, 4:
+			shp2 = append(shp2, 1)
+		case 5, 6:
+			shp2 = shp2[1:]
+		default:
+			for i := range shp2 {
+				x := rnd.Intn(10)
+				if x <= 3 {
+					shp2[i] = 1
+				}
+			}
+		}
+
+		b := New[DT](WithShape(shp2...))
+		args[1] = reflect.ValueOf(b)
+	}
 }
 
 func qcErrCheck(t *testing.T, name string, a, b any, we bool, err error) (e error, retEarly bool) {
