@@ -10,6 +10,8 @@ import (
 
 	"github.com/chewxy/math32"
 	"gorgonia.org/dtype"
+	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 )
 
@@ -82,7 +84,7 @@ func alikef32(a, b float32) bool {
 	return false
 }
 
-// taken from math/cmplx test
+// taken from math/cmplx testxo
 func cTolerance(a, b complex128, e float64) bool {
 	d := cmplx.Abs(a - b)
 	if b != 0 {
@@ -212,6 +214,22 @@ const quickchecks = 1000
 
 func newRand() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+// qcDense generates a valid *Dense[DT].
+func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
+	// get random shape
+	var shape shapes.Shape
+	for i := 0; i < rnd.Intn(4)+1; i++ {
+		shape = append(shape, rnd.Intn(5)+1)
+	}
+	backing := make([]DT, shape.TotalSize())
+	for i := range backing {
+		backing[i] = DT(rnd.Float64())
+	}
+
+	d := New[DT](WithShape(shape...), WithBacking(backing))
+	args[0] = reflect.ValueOf(d)
 }
 
 func qcErrCheck(t *testing.T, name string, a, b any, we bool, err error) (e error, retEarly bool) {
