@@ -82,6 +82,31 @@ func genAddIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 	}
 }
 
+func genAddIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		correct := a.Clone()
+		incr := a.Clone()
+		incr.Zero()
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Add(b, tensor.WithIncr(incr))
+		if err, retEarly := qcErrCheck(t, "Add (Incr)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		return assert.Same(ret, incr) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+			assert.Equal(correct.Data(), ret.Data())
+
+	}
+}
+
 func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, gen func(*testing.T, *assert.Assertions) any) {
 	t.Helper()
 	conf := &quick.Config{
@@ -100,6 +125,7 @@ func TestDense_Add(t *testing.T) {
 	qcHelper[float64](t, assert, genAddIden[float64])
 	qcHelper[float64](t, assert, genAddIdenUnsafe[float64])
 	qcHelper[float64](t, assert, genAddIdenReuse[float64])
+	qcHelper[float64](t, assert, genAddIdenIncr[float64])
 }
 
 func TestDense_Add_manual(t *testing.T) {
