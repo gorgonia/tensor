@@ -6,9 +6,11 @@ import (
 	"math/rand"
 	"reflect"
 	"testing"
+	"testing/quick"
 	"time"
 
 	"github.com/chewxy/math32"
+	"github.com/stretchr/testify/assert"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
@@ -249,6 +251,19 @@ const quickchecks = 1000
 
 func newRand() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, gen func(*testing.T, *assert.Assertions) any) {
+	t.Helper()
+	conf := &quick.Config{
+		Rand:     newRand(),
+		MaxCount: quickchecks,
+		Values:   qcDense[DT],
+	}
+
+	if err := quick.Check(gen(t, assert), conf); err != nil {
+		t.Errorf("%v failed: %v", errors.ThisFn(), err)
+	}
 }
 
 // qcDense generates a valid *Dense[DT].
