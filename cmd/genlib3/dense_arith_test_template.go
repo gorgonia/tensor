@@ -202,10 +202,53 @@ func gen{{.Name}}IdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.A
 
 }
 
+func gen{{.Name}}ScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = {{.Identity}}
+		correct := a.Clone()
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft)
+		if err, retEarly := qcErrCheck(t, "{{.Name}}Scalar", a, s, we, err); retEarly {
+			return err == nil
+		}
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+			assert.Equal(correct.Data(), ret.Data())
+	}
+}
+
+func gen{{.Name}}ScalarIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = {{.Identity}}
+		correct := a.Clone()
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			return true // we know this will return an error for the standard builtin engines. Return early
+		}
+		incr := a.Clone()
+		incr.Zero()
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft, WithIncr(incr))
+		if err, retEarly := qcErrCheck(t, "{{.Name}}Scalar (Incr) ", a, s, we, err); retEarly {
+			return err == nil
+		}
+		return assert.Same(incr, ret)&&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+			assert.Equal(correct.Data(), ret.Data())
+	}
+}
 `
 
-const invTestsRaw = `
-func gen{{.Name}}Inv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+const invTestsRaw = `func gen{{.Name}}Inv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
 	return func(a *Dense[DT]) bool {
 		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		if err := b.Memset(1); err != nil {
@@ -272,7 +315,7 @@ func gen{{.Name}}InvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.A
 
 		correct := a.Clone()
 		reuse := b.Clone()
-		if err := reuse.Memset(1); err != nil{
+		if err := reuse.Memset(2); err != nil{
 			t.Errorf("Failed to memset: %v", err) // b will always be an accessible engine
 			return false
 		}
@@ -290,6 +333,37 @@ func gen{{.Name}}InvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		}
 		ret, err = ret.{{.Inverse}}(b, tensor.UseUnsafe)
 		return assert.Same(ret, reuse) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+			assert.Equal(correct.Data(), ret.Data())
+
+	}
+}
+
+func gen{{.Name}}InvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
+		if err := b.Memset(1); err != nil {
+			t.Errorf("Failed to memset: %v", err) // b will always be an accessible engine
+			return false
+		}
+
+		correct := a.Clone()
+		incr := b.Clone()
+		incr.Zero()
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.{{.Name}}(b, tensor.WithIncr(incr))
+		if err, retEarly := qcErrCheck(t, "{{.Name}} (Incr)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		ret, err = ret.{{.Inverse}}(b, tensor.UseUnsafe)
+		return assert.Same(ret, incr) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.Equal(correct.Data(), ret.Data())
 
@@ -334,6 +408,62 @@ func gen{{.Name}}InvBroadcast[DT internal.OrderedNum](t *testing.T, assert *asse
 
 	}
 }
+
+func gen{{.Name}}ScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = 1
+		{{if eq .Name "Div"}}
+		a.AddScalar(1,true, tensor.UseUnsafe)
+		{{end}}
+		correct := a.Clone()
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft)
+		if err, retEarly := qcErrCheck(t, "{{.Name}}Scalar", a, s, we, err); retEarly {
+			return err == nil
+		}
+		ret, err = ret.{{.Inverse}}Scalar(s, scalarOnLeft, tensor.UseUnsafe)
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+			assert.Equal(correct.Data(), ret.Data())
+
+	}
+}
+
+func gen{{.Name}}ScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = 1
+		correct := a.Clone()
+		{{if eq .Name "Div"}}
+		a.AddScalar(1,true, tensor.UseUnsafe)
+		{{end}}
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		we = we || !ok
+
+		incr := a.Clone()
+		incr.Zero()
+
+		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft, WithIncr(incr))
+		if err, retEarly := qcErrCheck(t, "{{.Name}}Scalar (Incr)", a, s, we, err); retEarly {
+			return err == nil
+		}
+		ret, err = ret.{{.Inverse}}Scalar(s, scalarOnLeft, tensor.UseUnsafe)
+		return assert.Same(incr, ret)&&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+			assert.Equal(correct.Data(), ret.Data())
+
+	}
+}
 `
 
 const denseArithMethodTestRaw = `func TestDense_{{.Name}}(t *testing.T) {
@@ -356,11 +486,32 @@ const denseArithMethodTestRaw = `func TestDense_{{.Name}}(t *testing.T) {
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}Inv[{{$dt}}])
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}InvUnsafe[{{$dt}}])
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}InvReuse[{{$dt}}])
+	qcHelper[{{$dt}}](t, assert, gen{{$N}}InvIncr[{{$dt}}])
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}InvBroadcast[{{$dt}}])
 	{{end}}
 {{end}}
-
 }
+
+func TestDense_{{.Name}}Scalar(t *testing.T) {
+	assert := assert.New(t)
+	{{$N := .Name}}
+
+{{if ne .Identity "" -}}
+	{{- range $id, $dt := .Datatypes -}}
+	qcHelper[{{$dt}}](t, assert, gen{{$N}}ScalarIden[{{$dt}}])
+	qcHelper[{{$dt}}](t, assert, gen{{$N}}ScalarIdenIncr[{{$dt}}])
+	{{ end -}}
+{{end}}
+
+
+{{if ne .Inverse "" -}}
+	{{- range $id, $dt := .Datatypes -}}
+	qcHelper[{{$dt}}](t, assert, gen{{$N}}ScalarInv[{{$dt}}])
+	qcHelper[{{$dt}}](t, assert, gen{{$N}}ScalarInvIncr[{{$dt}}])
+	{{end}}
+{{end}}
+}
+
 
 `
 
