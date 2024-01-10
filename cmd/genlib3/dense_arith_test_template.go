@@ -151,6 +151,57 @@ func gen{{.Name}}IdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *ass
 			assert.Equal(correct.Data(), ret.Data())
 	}
 }
+
+func gen{{.Name}}IdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset({{.Identity}}); err != nil {
+				t.Errorf("Memset {{.Identity}} failed: %v", err)
+				return false
+			}
+			ret, err := sliced.{{.Name}}(b)
+			if err != nil {
+				t.Errorf("{{.Name}} failed: %v", err)
+				return false
+			}
+			if ok :=  assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.Equal(correct.Data(), ret.Data()); !ok{
+				return false
+			}
+		}
+
+		return true
+	}
+
+}
+
 `
 
 const invTestsRaw = `
@@ -294,6 +345,7 @@ const denseArithMethodTestRaw = `func TestDense_{{.Name}}(t *testing.T) {
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}IdenUnsafe[{{$dt}}])
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}IdenReuse[{{$dt}}])
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}IdenIncr[{{$dt}}])
+	qcHelper[{{$dt}}](t, assert, gen{{$N}}IdenIter[{{$dt}}])
 	qcHelper[{{$dt}}](t, assert, gen{{$N}}IdenBroadcast[{{$dt}}])
 	{{ end -}}
 {{end}}

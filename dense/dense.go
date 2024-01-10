@@ -1,6 +1,7 @@
 package dense
 
 import (
+	"context"
 	"fmt"
 	"unsafe"
 
@@ -392,7 +393,12 @@ func (t *Dense[T]) Materialize() (*Dense[T], error) {
 	if !t.IsMaterializable() {
 		return t, nil
 	}
-	panic("NYI")
+	retVal := New[T](WithShape(t.Shape().Clone()...), WithEngine(t.e))
+	if copier, ok := t.e.(tensor.Copier[T, *Dense[T]]); ok {
+		err := copier.Copy(context.Background(), retVal, t)
+		return retVal, err
+	}
+	return nil, errors.Errorf("Cannot materialize tensor. Engine does not support Copier")
 }
 
 func (t *Dense[T]) IsNativelyAccessible() bool {

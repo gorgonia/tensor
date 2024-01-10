@@ -97,6 +97,21 @@ func (e StdEng[DT, T]) Transpose(ctx context.Context, t T, expStrides []int) err
 	return nil
 }
 
+func (e StdEng[DT, T]) Copy(ctx context.Context, dst, src T) error {
+	if err := internal.HandleCtx(ctx); err != nil {
+		return err
+	}
+	dit, sit, useIter, err := PrepDataUnary[DT](dst, src) // src is not actually a reuse, but eh.
+	if err != nil {
+		return err
+	}
+	if useIter {
+		return execution.CopyIter(dst.Data(), src.Data(), dit, sit)
+	}
+	copy(dst.Data(), src.Data())
+	return nil
+}
+
 func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaultValue DT, retVal T) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err

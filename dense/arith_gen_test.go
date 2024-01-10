@@ -159,6 +159,63 @@ func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 			assert.Equal(correct.Data(), ret.Data())
 	}
 }
+
+func genAddIdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		var allSlicesOK []bool
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(0); err != nil {
+				t.Errorf("Memset 0 failed: %v", err)
+				return false
+			}
+			ret, err := sliced.Add(b)
+			if err != nil {
+				t.Errorf("Add failed: %v", err)
+				return false
+			}
+			ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.Equal(correct.Data(), ret.Data())
+			allSlicesOK = append(allSlicesOK, ok)
+		}
+		for _, ok := range allSlicesOK {
+			if !ok {
+				return false
+			}
+
+		}
+		return true
+	}
+
+}
+
 func TestDense_Add(t *testing.T) {
 	assert := assert.New(t)
 
@@ -166,61 +223,73 @@ func TestDense_Add(t *testing.T) {
 	qcHelper[uint](t, assert, genAddIdenUnsafe[uint])
 	qcHelper[uint](t, assert, genAddIdenReuse[uint])
 	qcHelper[uint](t, assert, genAddIdenIncr[uint])
+	qcHelper[uint](t, assert, genAddIdenIter[uint])
 	qcHelper[uint](t, assert, genAddIdenBroadcast[uint])
 	qcHelper[uint8](t, assert, genAddIden[uint8])
 	qcHelper[uint8](t, assert, genAddIdenUnsafe[uint8])
 	qcHelper[uint8](t, assert, genAddIdenReuse[uint8])
 	qcHelper[uint8](t, assert, genAddIdenIncr[uint8])
+	qcHelper[uint8](t, assert, genAddIdenIter[uint8])
 	qcHelper[uint8](t, assert, genAddIdenBroadcast[uint8])
 	qcHelper[uint16](t, assert, genAddIden[uint16])
 	qcHelper[uint16](t, assert, genAddIdenUnsafe[uint16])
 	qcHelper[uint16](t, assert, genAddIdenReuse[uint16])
 	qcHelper[uint16](t, assert, genAddIdenIncr[uint16])
+	qcHelper[uint16](t, assert, genAddIdenIter[uint16])
 	qcHelper[uint16](t, assert, genAddIdenBroadcast[uint16])
 	qcHelper[uint32](t, assert, genAddIden[uint32])
 	qcHelper[uint32](t, assert, genAddIdenUnsafe[uint32])
 	qcHelper[uint32](t, assert, genAddIdenReuse[uint32])
 	qcHelper[uint32](t, assert, genAddIdenIncr[uint32])
+	qcHelper[uint32](t, assert, genAddIdenIter[uint32])
 	qcHelper[uint32](t, assert, genAddIdenBroadcast[uint32])
 	qcHelper[uint64](t, assert, genAddIden[uint64])
 	qcHelper[uint64](t, assert, genAddIdenUnsafe[uint64])
 	qcHelper[uint64](t, assert, genAddIdenReuse[uint64])
 	qcHelper[uint64](t, assert, genAddIdenIncr[uint64])
+	qcHelper[uint64](t, assert, genAddIdenIter[uint64])
 	qcHelper[uint64](t, assert, genAddIdenBroadcast[uint64])
 	qcHelper[int](t, assert, genAddIden[int])
 	qcHelper[int](t, assert, genAddIdenUnsafe[int])
 	qcHelper[int](t, assert, genAddIdenReuse[int])
 	qcHelper[int](t, assert, genAddIdenIncr[int])
+	qcHelper[int](t, assert, genAddIdenIter[int])
 	qcHelper[int](t, assert, genAddIdenBroadcast[int])
 	qcHelper[int8](t, assert, genAddIden[int8])
 	qcHelper[int8](t, assert, genAddIdenUnsafe[int8])
 	qcHelper[int8](t, assert, genAddIdenReuse[int8])
 	qcHelper[int8](t, assert, genAddIdenIncr[int8])
+	qcHelper[int8](t, assert, genAddIdenIter[int8])
 	qcHelper[int8](t, assert, genAddIdenBroadcast[int8])
 	qcHelper[int16](t, assert, genAddIden[int16])
 	qcHelper[int16](t, assert, genAddIdenUnsafe[int16])
 	qcHelper[int16](t, assert, genAddIdenReuse[int16])
 	qcHelper[int16](t, assert, genAddIdenIncr[int16])
+	qcHelper[int16](t, assert, genAddIdenIter[int16])
 	qcHelper[int16](t, assert, genAddIdenBroadcast[int16])
 	qcHelper[int32](t, assert, genAddIden[int32])
 	qcHelper[int32](t, assert, genAddIdenUnsafe[int32])
 	qcHelper[int32](t, assert, genAddIdenReuse[int32])
 	qcHelper[int32](t, assert, genAddIdenIncr[int32])
+	qcHelper[int32](t, assert, genAddIdenIter[int32])
 	qcHelper[int32](t, assert, genAddIdenBroadcast[int32])
 	qcHelper[int64](t, assert, genAddIden[int64])
 	qcHelper[int64](t, assert, genAddIdenUnsafe[int64])
 	qcHelper[int64](t, assert, genAddIdenReuse[int64])
 	qcHelper[int64](t, assert, genAddIdenIncr[int64])
+	qcHelper[int64](t, assert, genAddIdenIter[int64])
 	qcHelper[int64](t, assert, genAddIdenBroadcast[int64])
 	qcHelper[float32](t, assert, genAddIden[float32])
 	qcHelper[float32](t, assert, genAddIdenUnsafe[float32])
 	qcHelper[float32](t, assert, genAddIdenReuse[float32])
 	qcHelper[float32](t, assert, genAddIdenIncr[float32])
+	qcHelper[float32](t, assert, genAddIdenIter[float32])
 	qcHelper[float32](t, assert, genAddIdenBroadcast[float32])
 	qcHelper[float64](t, assert, genAddIden[float64])
 	qcHelper[float64](t, assert, genAddIdenUnsafe[float64])
 	qcHelper[float64](t, assert, genAddIdenReuse[float64])
 	qcHelper[float64](t, assert, genAddIdenIncr[float64])
+	qcHelper[float64](t, assert, genAddIdenIter[float64])
 	qcHelper[float64](t, assert, genAddIdenBroadcast[float64])
 
 }
@@ -557,6 +626,63 @@ func genMulIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 			assert.Equal(correct.Data(), ret.Data())
 	}
 }
+
+func genMulIdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		var allSlicesOK []bool
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(1); err != nil {
+				t.Errorf("Memset 1 failed: %v", err)
+				return false
+			}
+			ret, err := sliced.Mul(b)
+			if err != nil {
+				t.Errorf("Mul failed: %v", err)
+				return false
+			}
+			ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.Equal(correct.Data(), ret.Data())
+			allSlicesOK = append(allSlicesOK, ok)
+		}
+		for _, ok := range allSlicesOK {
+			if !ok {
+				return false
+			}
+
+		}
+		return true
+	}
+
+}
+
 func TestDense_Mul(t *testing.T) {
 	assert := assert.New(t)
 
@@ -564,61 +690,73 @@ func TestDense_Mul(t *testing.T) {
 	qcHelper[uint](t, assert, genMulIdenUnsafe[uint])
 	qcHelper[uint](t, assert, genMulIdenReuse[uint])
 	qcHelper[uint](t, assert, genMulIdenIncr[uint])
+	qcHelper[uint](t, assert, genMulIdenIter[uint])
 	qcHelper[uint](t, assert, genMulIdenBroadcast[uint])
 	qcHelper[uint8](t, assert, genMulIden[uint8])
 	qcHelper[uint8](t, assert, genMulIdenUnsafe[uint8])
 	qcHelper[uint8](t, assert, genMulIdenReuse[uint8])
 	qcHelper[uint8](t, assert, genMulIdenIncr[uint8])
+	qcHelper[uint8](t, assert, genMulIdenIter[uint8])
 	qcHelper[uint8](t, assert, genMulIdenBroadcast[uint8])
 	qcHelper[uint16](t, assert, genMulIden[uint16])
 	qcHelper[uint16](t, assert, genMulIdenUnsafe[uint16])
 	qcHelper[uint16](t, assert, genMulIdenReuse[uint16])
 	qcHelper[uint16](t, assert, genMulIdenIncr[uint16])
+	qcHelper[uint16](t, assert, genMulIdenIter[uint16])
 	qcHelper[uint16](t, assert, genMulIdenBroadcast[uint16])
 	qcHelper[uint32](t, assert, genMulIden[uint32])
 	qcHelper[uint32](t, assert, genMulIdenUnsafe[uint32])
 	qcHelper[uint32](t, assert, genMulIdenReuse[uint32])
 	qcHelper[uint32](t, assert, genMulIdenIncr[uint32])
+	qcHelper[uint32](t, assert, genMulIdenIter[uint32])
 	qcHelper[uint32](t, assert, genMulIdenBroadcast[uint32])
 	qcHelper[uint64](t, assert, genMulIden[uint64])
 	qcHelper[uint64](t, assert, genMulIdenUnsafe[uint64])
 	qcHelper[uint64](t, assert, genMulIdenReuse[uint64])
 	qcHelper[uint64](t, assert, genMulIdenIncr[uint64])
+	qcHelper[uint64](t, assert, genMulIdenIter[uint64])
 	qcHelper[uint64](t, assert, genMulIdenBroadcast[uint64])
 	qcHelper[int](t, assert, genMulIden[int])
 	qcHelper[int](t, assert, genMulIdenUnsafe[int])
 	qcHelper[int](t, assert, genMulIdenReuse[int])
 	qcHelper[int](t, assert, genMulIdenIncr[int])
+	qcHelper[int](t, assert, genMulIdenIter[int])
 	qcHelper[int](t, assert, genMulIdenBroadcast[int])
 	qcHelper[int8](t, assert, genMulIden[int8])
 	qcHelper[int8](t, assert, genMulIdenUnsafe[int8])
 	qcHelper[int8](t, assert, genMulIdenReuse[int8])
 	qcHelper[int8](t, assert, genMulIdenIncr[int8])
+	qcHelper[int8](t, assert, genMulIdenIter[int8])
 	qcHelper[int8](t, assert, genMulIdenBroadcast[int8])
 	qcHelper[int16](t, assert, genMulIden[int16])
 	qcHelper[int16](t, assert, genMulIdenUnsafe[int16])
 	qcHelper[int16](t, assert, genMulIdenReuse[int16])
 	qcHelper[int16](t, assert, genMulIdenIncr[int16])
+	qcHelper[int16](t, assert, genMulIdenIter[int16])
 	qcHelper[int16](t, assert, genMulIdenBroadcast[int16])
 	qcHelper[int32](t, assert, genMulIden[int32])
 	qcHelper[int32](t, assert, genMulIdenUnsafe[int32])
 	qcHelper[int32](t, assert, genMulIdenReuse[int32])
 	qcHelper[int32](t, assert, genMulIdenIncr[int32])
+	qcHelper[int32](t, assert, genMulIdenIter[int32])
 	qcHelper[int32](t, assert, genMulIdenBroadcast[int32])
 	qcHelper[int64](t, assert, genMulIden[int64])
 	qcHelper[int64](t, assert, genMulIdenUnsafe[int64])
 	qcHelper[int64](t, assert, genMulIdenReuse[int64])
 	qcHelper[int64](t, assert, genMulIdenIncr[int64])
+	qcHelper[int64](t, assert, genMulIdenIter[int64])
 	qcHelper[int64](t, assert, genMulIdenBroadcast[int64])
 	qcHelper[float32](t, assert, genMulIden[float32])
 	qcHelper[float32](t, assert, genMulIdenUnsafe[float32])
 	qcHelper[float32](t, assert, genMulIdenReuse[float32])
 	qcHelper[float32](t, assert, genMulIdenIncr[float32])
+	qcHelper[float32](t, assert, genMulIdenIter[float32])
 	qcHelper[float32](t, assert, genMulIdenBroadcast[float32])
 	qcHelper[float64](t, assert, genMulIden[float64])
 	qcHelper[float64](t, assert, genMulIdenUnsafe[float64])
 	qcHelper[float64](t, assert, genMulIdenReuse[float64])
 	qcHelper[float64](t, assert, genMulIdenIncr[float64])
+	qcHelper[float64](t, assert, genMulIdenIter[float64])
 	qcHelper[float64](t, assert, genMulIdenBroadcast[float64])
 
 }

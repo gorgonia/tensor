@@ -19,6 +19,8 @@ func defaultEngine[DT any]() Engine {
 		e = stdeng.StdOrderedNumEngine[int32, *Dense[int32]]{}
 	case int64:
 		e = stdeng.StdOrderedNumEngine[int64, *Dense[int64]]{}
+	case uint:
+		e = stdeng.StdOrderedNumEngine[uint, *Dense[uint]]{}
 	case uint8:
 		e = stdeng.StdOrderedNumEngine[uint8, *Dense[uint8]]{}
 	case uint16:

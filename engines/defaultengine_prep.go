@@ -373,7 +373,7 @@ func PrepDataVV[DTin, DTout any](a, b tensor.Basic[DTin], reuse tensor.Basic[DTo
 }
 
 func PrepDataUnary[DT any](a, reuse tensor.Basic[DT]) (ait, rit Iterator, useIter bool, err error) {
-	useIter = a.RequiresIterator() || reuse.RequiresIterator()
+	useIter = a.RequiresIterator() || reuse.RequiresIterator() || !a.DataOrder().HasSameOrder(reuse.DataOrder())
 	if useIter {
 		ait = a.Iterator()
 		rit = reuse.Iterator()
@@ -382,7 +382,7 @@ func PrepDataUnary[DT any](a, reuse tensor.Basic[DT]) (ait, rit Iterator, useIte
 }
 
 func prepDataVS[DTin, DTout any](a tensor.Basic[DTin], b DTin, reuse tensor.Basic[DTout]) (ait, iit Iterator, useIter, swap bool, err error) {
-	useIter = a.RequiresIterator()
+	useIter = a.RequiresIterator() || !a.DataOrder().HasSameOrder(reuse.DataOrder())
 	if useIter {
 		ait = a.Iterator()
 		iit = reuse.Iterator()
@@ -391,7 +391,7 @@ func prepDataVS[DTin, DTout any](a tensor.Basic[DTin], b DTin, reuse tensor.Basi
 }
 
 func prepDataSV[DTin, DTout any](a DTin, b tensor.Basic[DTin], reuse tensor.Basic[DTout]) (bit, iit Iterator, useIter, swap bool, err error) {
-	useIter = b.RequiresIterator()
+	useIter = b.RequiresIterator() || !b.DataOrder().HasSameOrder(reuse.DataOrder())
 	if useIter {
 		bit = b.Iterator()
 		iit = reuse.Iterator()

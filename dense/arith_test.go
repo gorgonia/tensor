@@ -23,23 +23,6 @@ func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, g
 	}
 }
 
-// func TestDense_Add(t *testing.T) {
-// 	assert := assert.New(t)
-// 	qcHelper[float64](t, assert, genAddIden[float64])
-// 	qcHelper[float64](t, assert, genAddIdenUnsafe[float64])
-// 	qcHelper[float64](t, assert, genAddIdenReuse[float64])
-// 	qcHelper[float64](t, assert, genAddIdenIncr[float64])
-// 	qcHelper[float64](t, assert, genAddIdenBroadcast[float64])
-// }
-
-// func TestDense_Sub(t *testing.T) {
-// 	assert := assert.New(t)
-// 	qcHelper[float64](t, assert, genSubInv[float64])
-// 	qcHelper[float64](t, assert, genSubInvUnsafe[float64])
-// 	qcHelper[float64](t, assert, genSubInvReuse[float64])
-// 	qcHelper[float64](t, assert, genSubInvBroadcast[float64])
-// }
-
 func TestDense_Add_manual(t *testing.T) {
 	assert := assert.New(t)
 
