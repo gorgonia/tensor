@@ -2,26 +2,10 @@ package dense
 
 import (
 	"testing"
-	"testing/quick"
 
 	"github.com/stretchr/testify/assert"
 	"gorgonia.org/tensor"
-	"gorgonia.org/tensor/internal"
-	"gorgonia.org/tensor/internal/errors"
 )
-
-func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, gen func(*testing.T, *assert.Assertions) any) {
-	t.Helper()
-	conf := &quick.Config{
-		Rand:     newRand(),
-		MaxCount: quickchecks,
-		Values:   qcDense[DT],
-	}
-
-	if err := quick.Check(gen(t, assert), conf); err != nil {
-		t.Errorf("%v failed: %v", errors.ThisFn(), err)
-	}
-}
 
 func TestDense_Add_manual(t *testing.T) {
 	assert := assert.New(t)
