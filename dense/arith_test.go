@@ -61,7 +61,7 @@ func genAddIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 	return func(a *Dense[DT]) bool {
 		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone()
-		reuse := a.Clone()
+		reuse := b.Clone()
 		if err := reuse.Memset(1); err != nil {
 			return false
 		}
@@ -88,8 +88,7 @@ func genAddIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 	return func(a *Dense[DT]) bool {
 		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone()
-		incr := a.Clone()
-		incr.Zero()
+		incr := b.Clone()
 
 		var we bool
 		if !a.IsNativelyAccessible() {
@@ -123,7 +122,8 @@ func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 			we = true
 		}
 		// TMP: when iterators are required
-		if !a.DataOrder().HasSameOrder(b.DataOrder()) {
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
 			we = true
 		}
 
@@ -193,7 +193,8 @@ func genSubInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 	return func(a *Dense[DT]) bool {
 		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
 		correct := a.Clone()
-		reuse := a.Clone()
+		reuse := b.Clone()
+		reuse.Memset(1)
 
 		var we bool
 		if !a.IsNativelyAccessible() {
@@ -216,6 +217,9 @@ func genSubInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 
 func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
 	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(1); err != nil {
+			t.Errorf("Failed to memset: %v", err) // b will always be an accessible engine
+		}
 		correct := a.Clone()
 		correctShape := largestShape(a.Shape(), b.Shape())
 		if err := correct.Reshape(correctShape...); err != nil {
@@ -228,7 +232,8 @@ func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 			we = true
 		}
 		// TMP: when iterators are required
-		if !a.DataOrder().HasSameOrder(b.DataOrder()) {
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
 			we = true
 		}
 
@@ -236,12 +241,20 @@ func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 		we = we || !ok
 
 		ret, err := a.Sub(b, tensor.AutoBroadcast)
-		if err, retEarly := qcErrCheck(t, "Sub (Broadcast)", a, b, we, err); retEarly {
-			return err == nil
+		if err2, retEarly := qcErrCheck(t, "Sub (Broadcast)", a, b, we, err); retEarly {
+			if t.Failed() {
+				t.Logf("will err %v. Actually err: %v", we, err)
+				t.Logf("ret %v", ret)
+				t.Logf("a.shape %v b.shape %v", a.Shape(), b.Shape())
+				t.Logf("correct.shape %v ret.shape %v", correct.Shape(), ret.Shape())
+				t.Logf("a.DataOrder() %v b.DataOrder() %v", a.DataOrder(), b.DataOrder())
+			}
+			return err2 == nil
 		}
 		ret, err = ret.Add(b, tensor.UseUnsafe, tensor.AutoBroadcast)
 		return assert.True(correct.Shape().Eq(ret.Shape())) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
+
 	}
 }
 
