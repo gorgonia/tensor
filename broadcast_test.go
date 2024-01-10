@@ -40,15 +40,19 @@ func TestCheckBroadcastShape(t *testing.T) {
 func TestCalcBroadcastShapes(t *testing.T) {
 	for _, tc := range checkBCShapeCases {
 		t.Run(tc.name, func(t *testing.T) {
-			newShapeA, newShapeB := CalcBroadcastShapes(tc.a, tc.b)
-			if !newShapeA.Eq(tc.newShapeA) {
-				t.Errorf("Expected %v. Got %v", tc.newShapeA, newShapeA)
+			apA := &AP{shape: tc.a}
+			apB := &AP{shape: tc.b}
+			apA.RecalcStrides()
+			apB.RecalcStrides()
+			newAPA, newAPB := CalcBroadcastShapes(apA, apB)
+			if !newAPA.Shape().Eq(tc.newShapeA) {
+				t.Errorf("Expected %v. Got %v", tc.newShapeA, newAPA.Shape())
 			}
 
-			if !newShapeB.Eq(tc.newShapeB) {
-				t.Errorf("Expected %v. Got %v", tc.newShapeB, newShapeB)
+			if !newAPB.Shape().Eq(tc.newShapeB) {
+				t.Errorf("Expected %v. Got %v", tc.newShapeB, newAPB.Shape())
 			}
-			if err := internal.HandleNoOp(CheckBroadcastable(newShapeA, newShapeB)); err != nil {
+			if err := internal.HandleNoOp(CheckBroadcastable(newAPA.Shape(), newAPB.Shape())); err != nil {
 				t.Errorf("%v failed. Error: %v", tc.name, err)
 				return
 			}
