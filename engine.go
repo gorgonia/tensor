@@ -11,6 +11,10 @@ type Transposer[DT any, T Tensor[DT, T]] interface {
 	Transpose(ctx context.Context, t T, expStrides []int) error
 }
 
+type Copier[DT any, T Tensor[DT, T]] interface {
+	Copy(ctx context.Context, dst, src T) error
+}
+
 /*
 // Stacker is any engine that can stack multiple Tenosrs along an axis
 type Stacker interface {
