@@ -11,6 +11,7 @@ import (
 	"github.com/chewxy/math32"
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 )
@@ -229,11 +230,27 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 	}
 
 	d := New[DT](WithShape(shape...), WithBacking(backing))
+
+	// funny engines/memory access patterns
+	x := rnd.Intn(10)
+	switch x {
+	case 1:
+		// colmajor
+		d.AP.SetDataOrder(tensor.ColMajor)
+	case 2:
+		// not accessible
+		d.f |= tensor.NativelyInaccessible
+	case 3:
+	// transposed
+	case 4:
+	// requires iterator
+	default:
+		// nothing
+	}
 	args[0] = reflect.ValueOf(d)
 
 	if len(args) == 2 {
 		// second argument is for broadcasting
-
 		shp2 := shape.Clone()
 
 		// < 50% chance of getting a shape that is bigger
