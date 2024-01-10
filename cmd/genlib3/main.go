@@ -113,7 +113,11 @@ func genDenseArithMethodTests(w io.Writer) {
 			writeTest = true
 		}
 		if writeTest {
-			x := opDT{op, OrderedNum}
+			datatypes := OrderedNum
+			if op.Name == "Div" {
+				datatypes = Floats
+			}
+			x := opDT{op, datatypes}
 			denseArithMethodTest.Execute(w, x)
 		}
 

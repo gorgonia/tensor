@@ -14,3 +14,5 @@ var OrderedNum = []string{
 	"float32",
 	"float64",
 }
+
+var Floats = []string{"float32", "float64"}
