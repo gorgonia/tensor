@@ -23,6 +23,10 @@ func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, g
 	}
 }
 
+// func TestDense_Div(t *testing.T){
+// 	d:=tensor.New[int](WithShape(2,2),WithBacking([]int{1,2,3,4})
+// }
+
 func TestDense_Add_manual(t *testing.T) {
 	assert := assert.New(t)
 

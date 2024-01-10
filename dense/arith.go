@@ -4,9 +4,9 @@ package dense
 
 import (
 	"context"
+
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
-	"log"
 )
 
 func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
@@ -156,7 +156,6 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	muler, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
 	if !ok {
-		log.Printf("BasicArither? e %v %T", e, e)
 		return nil, errors.Errorf(errors.EngineSupport, e, muler, errors.ThisFn())
 	}
 

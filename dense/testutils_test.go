@@ -226,7 +226,7 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 	}
 	backing := make([]DT, shape.TotalSize())
 	for i := range backing {
-		backing[i] = DT(rnd.Float64())
+		backing[i] = DT(-1000 + rnd.Float64()*2000)
 	}
 
 	d := New[DT](WithShape(shape...), WithBacking(backing))
@@ -249,7 +249,8 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 	}
 	args[0] = reflect.ValueOf(d)
 
-	if len(args) == 2 {
+	switch len(args) {
+	case 2:
 		// second argument is for broadcasting
 		shp2 := shape.Clone()
 
@@ -275,7 +276,18 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 
 		b := New[DT](WithShape(shp2...))
 		args[1] = reflect.ValueOf(b)
+	case 3:
+		// 3 is reserved for testing scalar methods.
+		s := DT(-1000 + rnd.Float64()*2000)
+		args[1] = reflect.ValueOf(s)
+		var scalarOnLeft bool
+		if rnd.Intn(2) == 1 {
+			scalarOnLeft = true
+		}
+		args[2] = reflect.ValueOf(scalarOnLeft)
+
 	}
+
 }
 
 func qcErrCheck(t *testing.T, name string, a, b any, we bool, err error) (e error, retEarly bool) {
