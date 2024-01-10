@@ -60,11 +60,11 @@ func svdtestsThin[DT float64 | float32]() []svdThinTest[DT] {
 }
 
 var svdtestsFull = []shapes.Shape{
-	//{5, 5},
-	//{5, 3},
-	//{3, 5},
+	{5, 5},
+	{5, 3},
+	{3, 5},
 	//{150, 150},
-	{200, 150},
+	//{200, 150},
 	//{150, 200},
 }
 

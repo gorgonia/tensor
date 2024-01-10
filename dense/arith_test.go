@@ -10,254 +10,6 @@ import (
 	"gorgonia.org/tensor/internal/errors"
 )
 
-/* Quickcheck tests for Add */
-
-func genAddIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Add(b)
-		if err, retEarly := qcErrCheck(t, "Add", a, b, we, err); retEarly {
-			return err == nil
-		}
-		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genAddIdenUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Add(b, tensor.UseUnsafe)
-		if err, retEarly := qcErrCheck(t, "Add (Unsafe)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		return assert.Same(ret, a) &&
-			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genAddIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-		reuse := b.Clone()
-		if err := reuse.Memset(1); err != nil {
-			return false
-		}
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Add(b, tensor.WithReuse(reuse))
-		if err, retEarly := qcErrCheck(t, "Add (Reuse)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		return assert.Same(ret, reuse) &&
-			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genAddIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-		incr := b.Clone()
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Add(b, tensor.WithIncr(incr))
-		if err, retEarly := qcErrCheck(t, "Add (Incr)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		return assert.Same(ret, incr) &&
-			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a, b *Dense[DT]) bool {
-		correct := a.Clone()
-		correctShape := largestShape(a.Shape(), b.Shape())
-		if err := correct.Reshape(correctShape...); err != nil {
-			t.Errorf("While reshaping, err: %v", err)
-			return false
-		}
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		// TMP: when iterators are required
-		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
-			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
-			we = true
-		}
-
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Add(b, tensor.AutoBroadcast)
-		if err, retEarly := qcErrCheck(t, "Add (Broadcast)", a, b, we, err); retEarly {
-			t.Logf("a.shape %v b.shape %v", a.Shape(), b.Shape())
-			return err == nil
-		}
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
-			assert.Equal(correct.Data(), ret.Data())
-	}
-}
-
-/* Quickcheck tests for Sub */
-
-func genSubInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Sub(b)
-		if err, retEarly := qcErrCheck(t, "Sub", a, b, we, err); retEarly {
-			return err == nil
-		}
-		ret, err = ret.Add(b, tensor.UseUnsafe)
-		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genSubInvUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Sub(b, tensor.UseUnsafe)
-		if err, retEarly := qcErrCheck(t, "Sub (Unsafe)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		ret, err = ret.Add(b, tensor.UseUnsafe)
-		return assert.Same(a, ret) &&
-			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genSubInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a *Dense[DT]) bool {
-		b := New[DT](WithShape(a.Shape().Clone()...), WithEngine(a.Engine()))
-		correct := a.Clone()
-		reuse := b.Clone()
-		reuse.Memset(1)
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Sub(b, tensor.WithReuse(reuse))
-		if err, retEarly := qcErrCheck(t, "Sub (Reuse)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		ret, err = ret.Add(b, tensor.UseUnsafe)
-		return assert.Same(ret, reuse) &&
-			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
-
-	}
-}
-
-func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a, b *Dense[DT]) bool {
-		if err := b.Memset(1); err != nil {
-			t.Errorf("Failed to memset: %v", err) // b will always be an accessible engine
-		}
-		correct := a.Clone()
-		correctShape := largestShape(a.Shape(), b.Shape())
-		if err := correct.Reshape(correctShape...); err != nil {
-			t.Errorf("While reshaping, err: %v", err)
-			return false
-		}
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-		// TMP: when iterators are required
-		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
-			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
-			we = true
-		}
-
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Sub(b, tensor.AutoBroadcast)
-		if err2, retEarly := qcErrCheck(t, "Sub (Broadcast)", a, b, we, err); retEarly {
-			if t.Failed() {
-				t.Logf("will err %v. Actually err: %v", we, err)
-				t.Logf("ret %v", ret)
-				t.Logf("a.shape %v b.shape %v", a.Shape(), b.Shape())
-				t.Logf("correct.shape %v ret.shape %v", correct.Shape(), ret.Shape())
-				t.Logf("a.DataOrder() %v b.DataOrder() %v", a.DataOrder(), b.DataOrder())
-			}
-			return err2 == nil
-		}
-		ret, err = ret.Add(b, tensor.UseUnsafe, tensor.AutoBroadcast)
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
-			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
-
-	}
-}
-
 func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, gen func(*testing.T, *assert.Assertions) any) {
 	t.Helper()
 	conf := &quick.Config{
@@ -271,22 +23,22 @@ func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, g
 	}
 }
 
-func TestDense_Add(t *testing.T) {
-	assert := assert.New(t)
-	qcHelper[float64](t, assert, genAddIden[float64])
-	qcHelper[float64](t, assert, genAddIdenUnsafe[float64])
-	qcHelper[float64](t, assert, genAddIdenReuse[float64])
-	qcHelper[float64](t, assert, genAddIdenIncr[float64])
-	qcHelper[float64](t, assert, genAddIdenBroadcast[float64])
-}
+// func TestDense_Add(t *testing.T) {
+// 	assert := assert.New(t)
+// 	qcHelper[float64](t, assert, genAddIden[float64])
+// 	qcHelper[float64](t, assert, genAddIdenUnsafe[float64])
+// 	qcHelper[float64](t, assert, genAddIdenReuse[float64])
+// 	qcHelper[float64](t, assert, genAddIdenIncr[float64])
+// 	qcHelper[float64](t, assert, genAddIdenBroadcast[float64])
+// }
 
-func TestDense_Sub(t *testing.T) {
-	assert := assert.New(t)
-	qcHelper[float64](t, assert, genSubInv[float64])
-	qcHelper[float64](t, assert, genSubInvUnsafe[float64])
-	qcHelper[float64](t, assert, genSubInvReuse[float64])
-	qcHelper[float64](t, assert, genSubInvBroadcast[float64])
-}
+// func TestDense_Sub(t *testing.T) {
+// 	assert := assert.New(t)
+// 	qcHelper[float64](t, assert, genSubInv[float64])
+// 	qcHelper[float64](t, assert, genSubInvUnsafe[float64])
+// 	qcHelper[float64](t, assert, genSubInvReuse[float64])
+// 	qcHelper[float64](t, assert, genSubInvBroadcast[float64])
+// }
 
 func TestDense_Add_manual(t *testing.T) {
 	assert := assert.New(t)

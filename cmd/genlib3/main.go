@@ -36,7 +36,6 @@ func init() {
 		}
 	}
 	tensorLoc = path.Join("src/gorgonia.org/tensor/internal/execution")
-	//execLoc = path.Join("src/gorgonia.org/tensor/internal/execution")
 	denseLoc = "../../dense"
 	execLoc = "../../internal/execution"
 	stdengLoc = "../../engines"
@@ -98,10 +97,27 @@ func genDenseCmpMethods(w io.Writer) {
 		denseCmpOp.Execute(w, op)
 	}
 }
+func genDenseArithMethodTests(w io.Writer) {
+	type opDT struct {
+		BinOp
+		Datatypes []string
+	}
+	for _, op := range arithOps {
+		var writeTest bool
+		if op.Identity != "" {
+			idenTests.Execute(w, op)
+			writeTest = true
+		}
+		if op.Inverse != "" {
+			invTests.Execute(w, op)
+			writeTest = true
+		}
+		if writeTest {
+			x := opDT{op, OrderedNum}
+			denseArithMethodTest.Execute(w, x)
+		}
 
-func genExecution() {
-	//	genExecutionCmp()
-
+	}
 }
 
 func genStdEng()       {}
@@ -171,6 +187,7 @@ func main() {
 
 	pipeline(denseLoc, "arith.go", genDenseArithPrepMethods, genDenseArithMethods)
 	pipeline(denseLoc, "cmp.go", genDenseCmpMethods)
+	pipeline(denseLoc, "arith_gen_test.go", genDenseArithMethodTests)
 	genStdEng()
 	genDenseMethods()
 }
