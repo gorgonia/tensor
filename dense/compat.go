@@ -7,6 +7,7 @@ import (
 	"gorgonia.org/tensor/internal/errors"
 )
 
+// ToMat64 converts a *Dense[DT] to a gonum.Mat. It allows `UseUnsafe` as an option if `DT` is `float64`. For all other `DT`s the options are ignored.
 func ToMat64[DT OrderedNum, T tensor.Basic[DT]](t T, opts ...FuncOpt) (retVal *mat.Dense, err error) {
 	// checks:
 	if !t.IsNativelyAccessible() {
@@ -61,6 +62,7 @@ func ToMat64[DT OrderedNum, T tensor.Basic[DT]](t T, opts ...FuncOpt) (retVal *m
 	return
 }
 
+// FromMat64 converts a value of gonum's mat.Dense into a *Dense[DT]. It accepts `tensor.UseUnsafe` as a func opt if `DT` is a float64. If `DT` isn't `float64`, the unsafe option is ignored and a copied version of the backing array is used.
 func FromMat64[DT OrderedNum](m *mat.Dense, opts ...FuncOpt) *Dense[DT] {
 	r, c := m.Dims()
 	fo := ParseFuncOpts(opts...)
