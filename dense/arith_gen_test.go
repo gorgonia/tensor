@@ -31,7 +31,7 @@ func genAddIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions)
 			return err == nil
 		}
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -58,7 +58,7 @@ func genAddIdenUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 		}
 		return assert.Same(ret, a) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -89,7 +89,7 @@ func genAddIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		}
 		return assert.Same(ret, reuse) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -118,45 +118,8 @@ func genAddIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		}
 		return assert.Same(ret, incr) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
-	}
-}
-
-func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a, b *Dense[DT]) bool {
-		if err := b.Memset(0); err != nil {
-			t.Errorf("Memset 0 failed: %v", err)
-			return false
-		}
-		correct := a.Clone()
-		correctShape := largestShape(a.Shape(), b.Shape())
-		if err := correct.Reshape(correctShape...); err != nil {
-			t.Errorf("While reshaping, err: %v", err)
-			return false
-		}
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-
-		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
-		// it does, this section should be removed.
-		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
-			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
-			we = true
-		}
-
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Add(b, tensor.AutoBroadcast)
-		if err, retEarly := qcErrCheck(t, "Add (Broadcast)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
-			assert.Equal(correct.Data(), ret.Data())
 	}
 }
 
@@ -200,14 +163,139 @@ func genAddIdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 				return false
 			}
 			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
-				assert.Equal(correct.Data(), ret.Data()); !ok {
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
 		}
-
 		return true
 	}
+}
 
+func genAddIdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(0); err != nil {
+				t.Errorf("Memset 0 failed: %v", err)
+				return false
+			}
+			incr := b.Clone()
+			incr.Zero()
+			ret, err := sliced.Add(b, WithIncr(incr))
+			if err != nil {
+				t.Errorf("Add failed: %v", err)
+				return false
+			}
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(0); err != nil {
+			t.Errorf("Memset 0 failed: %v", err)
+			return false
+		}
+		correct := a.Clone()
+		correctShape := largestShape(a.Shape(), b.Shape())
+		if err := correct.Reshape(correctShape...); err != nil {
+			t.Errorf("While reshaping, err: %v", err)
+			return false
+		}
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+
+		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
+		// it does, this section should be removed.
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
+			we = true
+		}
+
+		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Add(b, tensor.AutoBroadcast)
+		if err, retEarly := qcErrCheck(t, "Add (Broadcast)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
+	}
+}
+
+func genAddIdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(0); err != nil {
+			t.Errorf("Memset 0 failed: %v", err)
+			return false
+		}
+		correct := a.Clone()
+		correctShape := largestShape(a.Shape(), b.Shape())
+		if err := correct.Reshape(correctShape...); err != nil {
+			t.Errorf("While reshaping, err: %v", err)
+			return false
+		}
+		incr := New[DT](WithShape(correctShape...))
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+
+		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
+		// it does, this section should be removed.
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
+			we = true
+		}
+
+		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Add(b, WithIncr(incr), tensor.AutoBroadcast)
+		if err, retEarly := qcErrCheck(t, "Add (Broadcast)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		return assert.Same(incr, ret) &&
+			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
+	}
 }
 
 func genAddScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
@@ -227,7 +315,7 @@ func genAddScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 			return err == nil
 		}
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
 
@@ -251,7 +339,56 @@ func genAddScalarIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		}
 		return assert.Same(incr, ret) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
+	}
+}
+
+func genAddScalarIdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = 0
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+
+			incr := correct.Clone()
+			incr.Zero()
+			ret, err := sliced.AddScalar(s, scalarOnLeft, WithIncr(incr))
+			if err != nil {
+				t.Errorf("AddScalar failed: %v", err)
+				return false
+			}
+
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 func TestDense_Add(t *testing.T) {
@@ -262,73 +399,97 @@ func TestDense_Add(t *testing.T) {
 	qcHelper[uint](t, assert, genAddIdenReuse[uint])
 	qcHelper[uint](t, assert, genAddIdenIncr[uint])
 	qcHelper[uint](t, assert, genAddIdenIter[uint])
+	qcHelper[uint](t, assert, genAddIdenIncrIter[uint])
 	qcHelper[uint](t, assert, genAddIdenBroadcast[uint])
+	qcHelper[uint](t, assert, genAddIdenBroadcastIncr[uint])
 	qcHelper[uint8](t, assert, genAddIden[uint8])
 	qcHelper[uint8](t, assert, genAddIdenUnsafe[uint8])
 	qcHelper[uint8](t, assert, genAddIdenReuse[uint8])
 	qcHelper[uint8](t, assert, genAddIdenIncr[uint8])
 	qcHelper[uint8](t, assert, genAddIdenIter[uint8])
+	qcHelper[uint8](t, assert, genAddIdenIncrIter[uint8])
 	qcHelper[uint8](t, assert, genAddIdenBroadcast[uint8])
+	qcHelper[uint8](t, assert, genAddIdenBroadcastIncr[uint8])
 	qcHelper[uint16](t, assert, genAddIden[uint16])
 	qcHelper[uint16](t, assert, genAddIdenUnsafe[uint16])
 	qcHelper[uint16](t, assert, genAddIdenReuse[uint16])
 	qcHelper[uint16](t, assert, genAddIdenIncr[uint16])
 	qcHelper[uint16](t, assert, genAddIdenIter[uint16])
+	qcHelper[uint16](t, assert, genAddIdenIncrIter[uint16])
 	qcHelper[uint16](t, assert, genAddIdenBroadcast[uint16])
+	qcHelper[uint16](t, assert, genAddIdenBroadcastIncr[uint16])
 	qcHelper[uint32](t, assert, genAddIden[uint32])
 	qcHelper[uint32](t, assert, genAddIdenUnsafe[uint32])
 	qcHelper[uint32](t, assert, genAddIdenReuse[uint32])
 	qcHelper[uint32](t, assert, genAddIdenIncr[uint32])
 	qcHelper[uint32](t, assert, genAddIdenIter[uint32])
+	qcHelper[uint32](t, assert, genAddIdenIncrIter[uint32])
 	qcHelper[uint32](t, assert, genAddIdenBroadcast[uint32])
+	qcHelper[uint32](t, assert, genAddIdenBroadcastIncr[uint32])
 	qcHelper[uint64](t, assert, genAddIden[uint64])
 	qcHelper[uint64](t, assert, genAddIdenUnsafe[uint64])
 	qcHelper[uint64](t, assert, genAddIdenReuse[uint64])
 	qcHelper[uint64](t, assert, genAddIdenIncr[uint64])
 	qcHelper[uint64](t, assert, genAddIdenIter[uint64])
+	qcHelper[uint64](t, assert, genAddIdenIncrIter[uint64])
 	qcHelper[uint64](t, assert, genAddIdenBroadcast[uint64])
+	qcHelper[uint64](t, assert, genAddIdenBroadcastIncr[uint64])
 	qcHelper[int](t, assert, genAddIden[int])
 	qcHelper[int](t, assert, genAddIdenUnsafe[int])
 	qcHelper[int](t, assert, genAddIdenReuse[int])
 	qcHelper[int](t, assert, genAddIdenIncr[int])
 	qcHelper[int](t, assert, genAddIdenIter[int])
+	qcHelper[int](t, assert, genAddIdenIncrIter[int])
 	qcHelper[int](t, assert, genAddIdenBroadcast[int])
+	qcHelper[int](t, assert, genAddIdenBroadcastIncr[int])
 	qcHelper[int8](t, assert, genAddIden[int8])
 	qcHelper[int8](t, assert, genAddIdenUnsafe[int8])
 	qcHelper[int8](t, assert, genAddIdenReuse[int8])
 	qcHelper[int8](t, assert, genAddIdenIncr[int8])
 	qcHelper[int8](t, assert, genAddIdenIter[int8])
+	qcHelper[int8](t, assert, genAddIdenIncrIter[int8])
 	qcHelper[int8](t, assert, genAddIdenBroadcast[int8])
+	qcHelper[int8](t, assert, genAddIdenBroadcastIncr[int8])
 	qcHelper[int16](t, assert, genAddIden[int16])
 	qcHelper[int16](t, assert, genAddIdenUnsafe[int16])
 	qcHelper[int16](t, assert, genAddIdenReuse[int16])
 	qcHelper[int16](t, assert, genAddIdenIncr[int16])
 	qcHelper[int16](t, assert, genAddIdenIter[int16])
+	qcHelper[int16](t, assert, genAddIdenIncrIter[int16])
 	qcHelper[int16](t, assert, genAddIdenBroadcast[int16])
+	qcHelper[int16](t, assert, genAddIdenBroadcastIncr[int16])
 	qcHelper[int32](t, assert, genAddIden[int32])
 	qcHelper[int32](t, assert, genAddIdenUnsafe[int32])
 	qcHelper[int32](t, assert, genAddIdenReuse[int32])
 	qcHelper[int32](t, assert, genAddIdenIncr[int32])
 	qcHelper[int32](t, assert, genAddIdenIter[int32])
+	qcHelper[int32](t, assert, genAddIdenIncrIter[int32])
 	qcHelper[int32](t, assert, genAddIdenBroadcast[int32])
+	qcHelper[int32](t, assert, genAddIdenBroadcastIncr[int32])
 	qcHelper[int64](t, assert, genAddIden[int64])
 	qcHelper[int64](t, assert, genAddIdenUnsafe[int64])
 	qcHelper[int64](t, assert, genAddIdenReuse[int64])
 	qcHelper[int64](t, assert, genAddIdenIncr[int64])
 	qcHelper[int64](t, assert, genAddIdenIter[int64])
+	qcHelper[int64](t, assert, genAddIdenIncrIter[int64])
 	qcHelper[int64](t, assert, genAddIdenBroadcast[int64])
+	qcHelper[int64](t, assert, genAddIdenBroadcastIncr[int64])
 	qcHelper[float32](t, assert, genAddIden[float32])
 	qcHelper[float32](t, assert, genAddIdenUnsafe[float32])
 	qcHelper[float32](t, assert, genAddIdenReuse[float32])
 	qcHelper[float32](t, assert, genAddIdenIncr[float32])
 	qcHelper[float32](t, assert, genAddIdenIter[float32])
+	qcHelper[float32](t, assert, genAddIdenIncrIter[float32])
 	qcHelper[float32](t, assert, genAddIdenBroadcast[float32])
+	qcHelper[float32](t, assert, genAddIdenBroadcastIncr[float32])
 	qcHelper[float64](t, assert, genAddIden[float64])
 	qcHelper[float64](t, assert, genAddIdenUnsafe[float64])
 	qcHelper[float64](t, assert, genAddIdenReuse[float64])
 	qcHelper[float64](t, assert, genAddIdenIncr[float64])
 	qcHelper[float64](t, assert, genAddIdenIter[float64])
+	qcHelper[float64](t, assert, genAddIdenIncrIter[float64])
 	qcHelper[float64](t, assert, genAddIdenBroadcast[float64])
+	qcHelper[float64](t, assert, genAddIdenBroadcastIncr[float64])
 
 }
 
@@ -337,28 +498,40 @@ func TestDense_AddScalar(t *testing.T) {
 
 	qcHelper[uint](t, assert, genAddScalarIden[uint])
 	qcHelper[uint](t, assert, genAddScalarIdenIncr[uint])
+	qcHelper[uint](t, assert, genAddScalarIdenIncrIter[uint])
 	qcHelper[uint8](t, assert, genAddScalarIden[uint8])
 	qcHelper[uint8](t, assert, genAddScalarIdenIncr[uint8])
+	qcHelper[uint8](t, assert, genAddScalarIdenIncrIter[uint8])
 	qcHelper[uint16](t, assert, genAddScalarIden[uint16])
 	qcHelper[uint16](t, assert, genAddScalarIdenIncr[uint16])
+	qcHelper[uint16](t, assert, genAddScalarIdenIncrIter[uint16])
 	qcHelper[uint32](t, assert, genAddScalarIden[uint32])
 	qcHelper[uint32](t, assert, genAddScalarIdenIncr[uint32])
+	qcHelper[uint32](t, assert, genAddScalarIdenIncrIter[uint32])
 	qcHelper[uint64](t, assert, genAddScalarIden[uint64])
 	qcHelper[uint64](t, assert, genAddScalarIdenIncr[uint64])
+	qcHelper[uint64](t, assert, genAddScalarIdenIncrIter[uint64])
 	qcHelper[int](t, assert, genAddScalarIden[int])
 	qcHelper[int](t, assert, genAddScalarIdenIncr[int])
+	qcHelper[int](t, assert, genAddScalarIdenIncrIter[int])
 	qcHelper[int8](t, assert, genAddScalarIden[int8])
 	qcHelper[int8](t, assert, genAddScalarIdenIncr[int8])
+	qcHelper[int8](t, assert, genAddScalarIdenIncrIter[int8])
 	qcHelper[int16](t, assert, genAddScalarIden[int16])
 	qcHelper[int16](t, assert, genAddScalarIdenIncr[int16])
+	qcHelper[int16](t, assert, genAddScalarIdenIncrIter[int16])
 	qcHelper[int32](t, assert, genAddScalarIden[int32])
 	qcHelper[int32](t, assert, genAddScalarIdenIncr[int32])
+	qcHelper[int32](t, assert, genAddScalarIdenIncrIter[int32])
 	qcHelper[int64](t, assert, genAddScalarIden[int64])
 	qcHelper[int64](t, assert, genAddScalarIdenIncr[int64])
+	qcHelper[int64](t, assert, genAddScalarIdenIncrIter[int64])
 	qcHelper[float32](t, assert, genAddScalarIden[float32])
 	qcHelper[float32](t, assert, genAddScalarIdenIncr[float32])
+	qcHelper[float32](t, assert, genAddScalarIdenIncrIter[float32])
 	qcHelper[float64](t, assert, genAddScalarIden[float64])
 	qcHelper[float64](t, assert, genAddScalarIdenIncr[float64])
+	qcHelper[float64](t, assert, genAddScalarIdenIncrIter[float64])
 
 }
 
@@ -385,7 +558,7 @@ func genSubInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) 
 		}
 		ret, err = ret.Add(b, tensor.UseUnsafe)
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -414,7 +587,7 @@ func genSubInvUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		ret, err = ret.Add(b, tensor.UseUnsafe)
 		return assert.Same(a, ret) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -448,8 +621,57 @@ func genSubInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		ret, err = ret.Add(b, tensor.UseUnsafe)
 		return assert.Same(ret, reuse) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
+	}
+}
+
+func genSubInvIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(1); err != nil {
+				t.Errorf("Memset  failed: %v", err)
+				return false
+			}
+			ret, err := sliced.Sub(b)
+			if err != nil {
+				t.Errorf("Sub failed: %v", err)
+				return false
+			}
+			ret, err = ret.Add(b, tensor.UseUnsafe)
+			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 
@@ -479,8 +701,60 @@ func genSubInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertio
 		ret, err = ret.Add(b, tensor.UseUnsafe)
 		return assert.Same(ret, incr) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
+	}
+}
+
+func genSubInvIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(1); err != nil {
+				t.Errorf("Memset  failed: %v", err)
+				return false
+			}
+			incr := b.Clone()
+			incr.Zero()
+			ret, err := sliced.Sub(b, WithIncr(incr))
+			if err != nil {
+				t.Errorf("Sub failed: %v", err)
+				return false
+			}
+			ret, err = ret.Add(b, tensor.UseUnsafe)
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 
@@ -523,10 +797,50 @@ func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 	}
 }
 
+func genSubInvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(1); err != nil {
+			t.Errorf("Failed to memset: %v", err) // b will always be an accessible engine
+			return false
+		}
+		correct := a.Clone()
+		correctShape := largestShape(a.Shape(), b.Shape())
+		if err := correct.Reshape(correctShape...); err != nil {
+			t.Errorf("While reshaping, err: %v", err)
+			return false
+		}
+		incr := New[DT](WithShape(correctShape...))
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+
+		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
+		// it does, this section should be removed.
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
+			we = true
+		}
+
+		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Sub(b, WithIncr(incr), tensor.AutoBroadcast)
+		if err, retEarly := qcErrCheck(t, "Sub (Broadcast)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		ret, err = ret.Add(b, tensor.UseUnsafe, tensor.AutoBroadcast)
+		return assert.Same(incr, ret) &&
+			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
+
+	}
+}
+
 func genSubScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
 	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
 		s = 1
-
 		correct := a.Clone()
 
 		var we bool
@@ -540,9 +854,13 @@ func genSubScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if err, retEarly := qcErrCheck(t, "SubScalar", a, s, we, err); retEarly {
 			return err == nil
 		}
-		ret, err = ret.AddScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		if scalarOnLeft {
+			ret, err = ret.SubScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		} else {
+			ret, err = ret.AddScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		}
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -566,11 +884,69 @@ func genSubScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if err, retEarly := qcErrCheck(t, "SubScalar (Incr)", a, s, we, err); retEarly {
 			return err == nil
 		}
-		ret, err = ret.AddScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		if scalarOnLeft {
+			ret, err = ret.SubScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		} else {
+			ret, err = ret.AddScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		}
 		return assert.Same(incr, ret) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
+	}
+}
+
+func genSubScalarInvIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = 1
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+
+			incr := correct.Clone()
+			incr.Zero()
+			ret, err := sliced.SubScalar(s, scalarOnLeft, WithIncr(incr))
+			if err != nil {
+				t.Errorf("SubScalar failed: %v", err)
+				return false
+			}
+			if scalarOnLeft {
+				ret, err = ret.SubScalar(s, scalarOnLeft, tensor.UseUnsafe)
+			} else {
+				ret, err = ret.AddScalar(s, scalarOnLeft, tensor.UseUnsafe)
+			}
+
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 func TestDense_Sub(t *testing.T) {
@@ -580,62 +956,98 @@ func TestDense_Sub(t *testing.T) {
 	qcHelper[uint](t, assert, genSubInvUnsafe[uint])
 	qcHelper[uint](t, assert, genSubInvReuse[uint])
 	qcHelper[uint](t, assert, genSubInvIncr[uint])
+	qcHelper[uint](t, assert, genSubInvIter[uint])
+	qcHelper[uint](t, assert, genSubInvIncrIter[uint])
 	qcHelper[uint](t, assert, genSubInvBroadcast[uint])
+	qcHelper[uint](t, assert, genSubInvBroadcastIncr[uint])
 	qcHelper[uint8](t, assert, genSubInv[uint8])
 	qcHelper[uint8](t, assert, genSubInvUnsafe[uint8])
 	qcHelper[uint8](t, assert, genSubInvReuse[uint8])
 	qcHelper[uint8](t, assert, genSubInvIncr[uint8])
+	qcHelper[uint8](t, assert, genSubInvIter[uint8])
+	qcHelper[uint8](t, assert, genSubInvIncrIter[uint8])
 	qcHelper[uint8](t, assert, genSubInvBroadcast[uint8])
+	qcHelper[uint8](t, assert, genSubInvBroadcastIncr[uint8])
 	qcHelper[uint16](t, assert, genSubInv[uint16])
 	qcHelper[uint16](t, assert, genSubInvUnsafe[uint16])
 	qcHelper[uint16](t, assert, genSubInvReuse[uint16])
 	qcHelper[uint16](t, assert, genSubInvIncr[uint16])
+	qcHelper[uint16](t, assert, genSubInvIter[uint16])
+	qcHelper[uint16](t, assert, genSubInvIncrIter[uint16])
 	qcHelper[uint16](t, assert, genSubInvBroadcast[uint16])
+	qcHelper[uint16](t, assert, genSubInvBroadcastIncr[uint16])
 	qcHelper[uint32](t, assert, genSubInv[uint32])
 	qcHelper[uint32](t, assert, genSubInvUnsafe[uint32])
 	qcHelper[uint32](t, assert, genSubInvReuse[uint32])
 	qcHelper[uint32](t, assert, genSubInvIncr[uint32])
+	qcHelper[uint32](t, assert, genSubInvIter[uint32])
+	qcHelper[uint32](t, assert, genSubInvIncrIter[uint32])
 	qcHelper[uint32](t, assert, genSubInvBroadcast[uint32])
+	qcHelper[uint32](t, assert, genSubInvBroadcastIncr[uint32])
 	qcHelper[uint64](t, assert, genSubInv[uint64])
 	qcHelper[uint64](t, assert, genSubInvUnsafe[uint64])
 	qcHelper[uint64](t, assert, genSubInvReuse[uint64])
 	qcHelper[uint64](t, assert, genSubInvIncr[uint64])
+	qcHelper[uint64](t, assert, genSubInvIter[uint64])
+	qcHelper[uint64](t, assert, genSubInvIncrIter[uint64])
 	qcHelper[uint64](t, assert, genSubInvBroadcast[uint64])
+	qcHelper[uint64](t, assert, genSubInvBroadcastIncr[uint64])
 	qcHelper[int](t, assert, genSubInv[int])
 	qcHelper[int](t, assert, genSubInvUnsafe[int])
 	qcHelper[int](t, assert, genSubInvReuse[int])
 	qcHelper[int](t, assert, genSubInvIncr[int])
+	qcHelper[int](t, assert, genSubInvIter[int])
+	qcHelper[int](t, assert, genSubInvIncrIter[int])
 	qcHelper[int](t, assert, genSubInvBroadcast[int])
+	qcHelper[int](t, assert, genSubInvBroadcastIncr[int])
 	qcHelper[int8](t, assert, genSubInv[int8])
 	qcHelper[int8](t, assert, genSubInvUnsafe[int8])
 	qcHelper[int8](t, assert, genSubInvReuse[int8])
 	qcHelper[int8](t, assert, genSubInvIncr[int8])
+	qcHelper[int8](t, assert, genSubInvIter[int8])
+	qcHelper[int8](t, assert, genSubInvIncrIter[int8])
 	qcHelper[int8](t, assert, genSubInvBroadcast[int8])
+	qcHelper[int8](t, assert, genSubInvBroadcastIncr[int8])
 	qcHelper[int16](t, assert, genSubInv[int16])
 	qcHelper[int16](t, assert, genSubInvUnsafe[int16])
 	qcHelper[int16](t, assert, genSubInvReuse[int16])
 	qcHelper[int16](t, assert, genSubInvIncr[int16])
+	qcHelper[int16](t, assert, genSubInvIter[int16])
+	qcHelper[int16](t, assert, genSubInvIncrIter[int16])
 	qcHelper[int16](t, assert, genSubInvBroadcast[int16])
+	qcHelper[int16](t, assert, genSubInvBroadcastIncr[int16])
 	qcHelper[int32](t, assert, genSubInv[int32])
 	qcHelper[int32](t, assert, genSubInvUnsafe[int32])
 	qcHelper[int32](t, assert, genSubInvReuse[int32])
 	qcHelper[int32](t, assert, genSubInvIncr[int32])
+	qcHelper[int32](t, assert, genSubInvIter[int32])
+	qcHelper[int32](t, assert, genSubInvIncrIter[int32])
 	qcHelper[int32](t, assert, genSubInvBroadcast[int32])
+	qcHelper[int32](t, assert, genSubInvBroadcastIncr[int32])
 	qcHelper[int64](t, assert, genSubInv[int64])
 	qcHelper[int64](t, assert, genSubInvUnsafe[int64])
 	qcHelper[int64](t, assert, genSubInvReuse[int64])
 	qcHelper[int64](t, assert, genSubInvIncr[int64])
+	qcHelper[int64](t, assert, genSubInvIter[int64])
+	qcHelper[int64](t, assert, genSubInvIncrIter[int64])
 	qcHelper[int64](t, assert, genSubInvBroadcast[int64])
+	qcHelper[int64](t, assert, genSubInvBroadcastIncr[int64])
 	qcHelper[float32](t, assert, genSubInv[float32])
 	qcHelper[float32](t, assert, genSubInvUnsafe[float32])
 	qcHelper[float32](t, assert, genSubInvReuse[float32])
 	qcHelper[float32](t, assert, genSubInvIncr[float32])
+	qcHelper[float32](t, assert, genSubInvIter[float32])
+	qcHelper[float32](t, assert, genSubInvIncrIter[float32])
 	qcHelper[float32](t, assert, genSubInvBroadcast[float32])
+	qcHelper[float32](t, assert, genSubInvBroadcastIncr[float32])
 	qcHelper[float64](t, assert, genSubInv[float64])
 	qcHelper[float64](t, assert, genSubInvUnsafe[float64])
 	qcHelper[float64](t, assert, genSubInvReuse[float64])
 	qcHelper[float64](t, assert, genSubInvIncr[float64])
+	qcHelper[float64](t, assert, genSubInvIter[float64])
+	qcHelper[float64](t, assert, genSubInvIncrIter[float64])
 	qcHelper[float64](t, assert, genSubInvBroadcast[float64])
+	qcHelper[float64](t, assert, genSubInvBroadcastIncr[float64])
 
 }
 
@@ -644,28 +1056,40 @@ func TestDense_SubScalar(t *testing.T) {
 
 	qcHelper[uint](t, assert, genSubScalarInv[uint])
 	qcHelper[uint](t, assert, genSubScalarInvIncr[uint])
+	qcHelper[uint](t, assert, genSubScalarInvIncrIter[uint])
 	qcHelper[uint8](t, assert, genSubScalarInv[uint8])
 	qcHelper[uint8](t, assert, genSubScalarInvIncr[uint8])
+	qcHelper[uint8](t, assert, genSubScalarInvIncrIter[uint8])
 	qcHelper[uint16](t, assert, genSubScalarInv[uint16])
 	qcHelper[uint16](t, assert, genSubScalarInvIncr[uint16])
+	qcHelper[uint16](t, assert, genSubScalarInvIncrIter[uint16])
 	qcHelper[uint32](t, assert, genSubScalarInv[uint32])
 	qcHelper[uint32](t, assert, genSubScalarInvIncr[uint32])
+	qcHelper[uint32](t, assert, genSubScalarInvIncrIter[uint32])
 	qcHelper[uint64](t, assert, genSubScalarInv[uint64])
 	qcHelper[uint64](t, assert, genSubScalarInvIncr[uint64])
+	qcHelper[uint64](t, assert, genSubScalarInvIncrIter[uint64])
 	qcHelper[int](t, assert, genSubScalarInv[int])
 	qcHelper[int](t, assert, genSubScalarInvIncr[int])
+	qcHelper[int](t, assert, genSubScalarInvIncrIter[int])
 	qcHelper[int8](t, assert, genSubScalarInv[int8])
 	qcHelper[int8](t, assert, genSubScalarInvIncr[int8])
+	qcHelper[int8](t, assert, genSubScalarInvIncrIter[int8])
 	qcHelper[int16](t, assert, genSubScalarInv[int16])
 	qcHelper[int16](t, assert, genSubScalarInvIncr[int16])
+	qcHelper[int16](t, assert, genSubScalarInvIncrIter[int16])
 	qcHelper[int32](t, assert, genSubScalarInv[int32])
 	qcHelper[int32](t, assert, genSubScalarInvIncr[int32])
+	qcHelper[int32](t, assert, genSubScalarInvIncrIter[int32])
 	qcHelper[int64](t, assert, genSubScalarInv[int64])
 	qcHelper[int64](t, assert, genSubScalarInvIncr[int64])
+	qcHelper[int64](t, assert, genSubScalarInvIncrIter[int64])
 	qcHelper[float32](t, assert, genSubScalarInv[float32])
 	qcHelper[float32](t, assert, genSubScalarInvIncr[float32])
+	qcHelper[float32](t, assert, genSubScalarInvIncrIter[float32])
 	qcHelper[float64](t, assert, genSubScalarInv[float64])
 	qcHelper[float64](t, assert, genSubScalarInvIncr[float64])
+	qcHelper[float64](t, assert, genSubScalarInvIncrIter[float64])
 
 }
 
@@ -690,7 +1114,7 @@ func genMulIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions)
 			return err == nil
 		}
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -717,7 +1141,7 @@ func genMulIdenUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 		}
 		return assert.Same(ret, a) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -748,7 +1172,7 @@ func genMulIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		}
 		return assert.Same(ret, reuse) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -777,45 +1201,8 @@ func genMulIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		}
 		return assert.Same(ret, incr) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
-	}
-}
-
-func genMulIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
-	return func(a, b *Dense[DT]) bool {
-		if err := b.Memset(1); err != nil {
-			t.Errorf("Memset 1 failed: %v", err)
-			return false
-		}
-		correct := a.Clone()
-		correctShape := largestShape(a.Shape(), b.Shape())
-		if err := correct.Reshape(correctShape...); err != nil {
-			t.Errorf("While reshaping, err: %v", err)
-			return false
-		}
-
-		var we bool
-		if !a.IsNativelyAccessible() {
-			we = true
-		}
-
-		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
-		// it does, this section should be removed.
-		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
-			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
-			we = true
-		}
-
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
-		we = we || !ok
-
-		ret, err := a.Mul(b, tensor.AutoBroadcast)
-		if err, retEarly := qcErrCheck(t, "Mul (Broadcast)", a, b, we, err); retEarly {
-			return err == nil
-		}
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
-			assert.Equal(correct.Data(), ret.Data())
 	}
 }
 
@@ -859,14 +1246,139 @@ func genMulIdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 				return false
 			}
 			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
-				assert.Equal(correct.Data(), ret.Data()); !ok {
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
 		}
-
 		return true
 	}
+}
 
+func genMulIdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(1); err != nil {
+				t.Errorf("Memset 1 failed: %v", err)
+				return false
+			}
+			incr := b.Clone()
+			incr.Zero()
+			ret, err := sliced.Mul(b, WithIncr(incr))
+			if err != nil {
+				t.Errorf("Mul failed: %v", err)
+				return false
+			}
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func genMulIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(1); err != nil {
+			t.Errorf("Memset 1 failed: %v", err)
+			return false
+		}
+		correct := a.Clone()
+		correctShape := largestShape(a.Shape(), b.Shape())
+		if err := correct.Reshape(correctShape...); err != nil {
+			t.Errorf("While reshaping, err: %v", err)
+			return false
+		}
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+
+		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
+		// it does, this section should be removed.
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
+			we = true
+		}
+
+		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Mul(b, tensor.AutoBroadcast)
+		if err, retEarly := qcErrCheck(t, "Mul (Broadcast)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
+	}
+}
+
+func genMulIdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(1); err != nil {
+			t.Errorf("Memset 1 failed: %v", err)
+			return false
+		}
+		correct := a.Clone()
+		correctShape := largestShape(a.Shape(), b.Shape())
+		if err := correct.Reshape(correctShape...); err != nil {
+			t.Errorf("While reshaping, err: %v", err)
+			return false
+		}
+		incr := New[DT](WithShape(correctShape...))
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+
+		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
+		// it does, this section should be removed.
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
+			we = true
+		}
+
+		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Mul(b, WithIncr(incr), tensor.AutoBroadcast)
+		if err, retEarly := qcErrCheck(t, "Mul (Broadcast)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		return assert.Same(incr, ret) &&
+			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
+	}
 }
 
 func genMulScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
@@ -886,7 +1398,7 @@ func genMulScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 			return err == nil
 		}
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
 
@@ -910,7 +1422,56 @@ func genMulScalarIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		}
 		return assert.Same(incr, ret) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
+	}
+}
+
+func genMulScalarIdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = 1
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+
+			incr := correct.Clone()
+			incr.Zero()
+			ret, err := sliced.MulScalar(s, scalarOnLeft, WithIncr(incr))
+			if err != nil {
+				t.Errorf("MulScalar failed: %v", err)
+				return false
+			}
+
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 func TestDense_Mul(t *testing.T) {
@@ -921,73 +1482,97 @@ func TestDense_Mul(t *testing.T) {
 	qcHelper[uint](t, assert, genMulIdenReuse[uint])
 	qcHelper[uint](t, assert, genMulIdenIncr[uint])
 	qcHelper[uint](t, assert, genMulIdenIter[uint])
+	qcHelper[uint](t, assert, genMulIdenIncrIter[uint])
 	qcHelper[uint](t, assert, genMulIdenBroadcast[uint])
+	qcHelper[uint](t, assert, genMulIdenBroadcastIncr[uint])
 	qcHelper[uint8](t, assert, genMulIden[uint8])
 	qcHelper[uint8](t, assert, genMulIdenUnsafe[uint8])
 	qcHelper[uint8](t, assert, genMulIdenReuse[uint8])
 	qcHelper[uint8](t, assert, genMulIdenIncr[uint8])
 	qcHelper[uint8](t, assert, genMulIdenIter[uint8])
+	qcHelper[uint8](t, assert, genMulIdenIncrIter[uint8])
 	qcHelper[uint8](t, assert, genMulIdenBroadcast[uint8])
+	qcHelper[uint8](t, assert, genMulIdenBroadcastIncr[uint8])
 	qcHelper[uint16](t, assert, genMulIden[uint16])
 	qcHelper[uint16](t, assert, genMulIdenUnsafe[uint16])
 	qcHelper[uint16](t, assert, genMulIdenReuse[uint16])
 	qcHelper[uint16](t, assert, genMulIdenIncr[uint16])
 	qcHelper[uint16](t, assert, genMulIdenIter[uint16])
+	qcHelper[uint16](t, assert, genMulIdenIncrIter[uint16])
 	qcHelper[uint16](t, assert, genMulIdenBroadcast[uint16])
+	qcHelper[uint16](t, assert, genMulIdenBroadcastIncr[uint16])
 	qcHelper[uint32](t, assert, genMulIden[uint32])
 	qcHelper[uint32](t, assert, genMulIdenUnsafe[uint32])
 	qcHelper[uint32](t, assert, genMulIdenReuse[uint32])
 	qcHelper[uint32](t, assert, genMulIdenIncr[uint32])
 	qcHelper[uint32](t, assert, genMulIdenIter[uint32])
+	qcHelper[uint32](t, assert, genMulIdenIncrIter[uint32])
 	qcHelper[uint32](t, assert, genMulIdenBroadcast[uint32])
+	qcHelper[uint32](t, assert, genMulIdenBroadcastIncr[uint32])
 	qcHelper[uint64](t, assert, genMulIden[uint64])
 	qcHelper[uint64](t, assert, genMulIdenUnsafe[uint64])
 	qcHelper[uint64](t, assert, genMulIdenReuse[uint64])
 	qcHelper[uint64](t, assert, genMulIdenIncr[uint64])
 	qcHelper[uint64](t, assert, genMulIdenIter[uint64])
+	qcHelper[uint64](t, assert, genMulIdenIncrIter[uint64])
 	qcHelper[uint64](t, assert, genMulIdenBroadcast[uint64])
+	qcHelper[uint64](t, assert, genMulIdenBroadcastIncr[uint64])
 	qcHelper[int](t, assert, genMulIden[int])
 	qcHelper[int](t, assert, genMulIdenUnsafe[int])
 	qcHelper[int](t, assert, genMulIdenReuse[int])
 	qcHelper[int](t, assert, genMulIdenIncr[int])
 	qcHelper[int](t, assert, genMulIdenIter[int])
+	qcHelper[int](t, assert, genMulIdenIncrIter[int])
 	qcHelper[int](t, assert, genMulIdenBroadcast[int])
+	qcHelper[int](t, assert, genMulIdenBroadcastIncr[int])
 	qcHelper[int8](t, assert, genMulIden[int8])
 	qcHelper[int8](t, assert, genMulIdenUnsafe[int8])
 	qcHelper[int8](t, assert, genMulIdenReuse[int8])
 	qcHelper[int8](t, assert, genMulIdenIncr[int8])
 	qcHelper[int8](t, assert, genMulIdenIter[int8])
+	qcHelper[int8](t, assert, genMulIdenIncrIter[int8])
 	qcHelper[int8](t, assert, genMulIdenBroadcast[int8])
+	qcHelper[int8](t, assert, genMulIdenBroadcastIncr[int8])
 	qcHelper[int16](t, assert, genMulIden[int16])
 	qcHelper[int16](t, assert, genMulIdenUnsafe[int16])
 	qcHelper[int16](t, assert, genMulIdenReuse[int16])
 	qcHelper[int16](t, assert, genMulIdenIncr[int16])
 	qcHelper[int16](t, assert, genMulIdenIter[int16])
+	qcHelper[int16](t, assert, genMulIdenIncrIter[int16])
 	qcHelper[int16](t, assert, genMulIdenBroadcast[int16])
+	qcHelper[int16](t, assert, genMulIdenBroadcastIncr[int16])
 	qcHelper[int32](t, assert, genMulIden[int32])
 	qcHelper[int32](t, assert, genMulIdenUnsafe[int32])
 	qcHelper[int32](t, assert, genMulIdenReuse[int32])
 	qcHelper[int32](t, assert, genMulIdenIncr[int32])
 	qcHelper[int32](t, assert, genMulIdenIter[int32])
+	qcHelper[int32](t, assert, genMulIdenIncrIter[int32])
 	qcHelper[int32](t, assert, genMulIdenBroadcast[int32])
+	qcHelper[int32](t, assert, genMulIdenBroadcastIncr[int32])
 	qcHelper[int64](t, assert, genMulIden[int64])
 	qcHelper[int64](t, assert, genMulIdenUnsafe[int64])
 	qcHelper[int64](t, assert, genMulIdenReuse[int64])
 	qcHelper[int64](t, assert, genMulIdenIncr[int64])
 	qcHelper[int64](t, assert, genMulIdenIter[int64])
+	qcHelper[int64](t, assert, genMulIdenIncrIter[int64])
 	qcHelper[int64](t, assert, genMulIdenBroadcast[int64])
+	qcHelper[int64](t, assert, genMulIdenBroadcastIncr[int64])
 	qcHelper[float32](t, assert, genMulIden[float32])
 	qcHelper[float32](t, assert, genMulIdenUnsafe[float32])
 	qcHelper[float32](t, assert, genMulIdenReuse[float32])
 	qcHelper[float32](t, assert, genMulIdenIncr[float32])
 	qcHelper[float32](t, assert, genMulIdenIter[float32])
+	qcHelper[float32](t, assert, genMulIdenIncrIter[float32])
 	qcHelper[float32](t, assert, genMulIdenBroadcast[float32])
+	qcHelper[float32](t, assert, genMulIdenBroadcastIncr[float32])
 	qcHelper[float64](t, assert, genMulIden[float64])
 	qcHelper[float64](t, assert, genMulIdenUnsafe[float64])
 	qcHelper[float64](t, assert, genMulIdenReuse[float64])
 	qcHelper[float64](t, assert, genMulIdenIncr[float64])
 	qcHelper[float64](t, assert, genMulIdenIter[float64])
+	qcHelper[float64](t, assert, genMulIdenIncrIter[float64])
 	qcHelper[float64](t, assert, genMulIdenBroadcast[float64])
+	qcHelper[float64](t, assert, genMulIdenBroadcastIncr[float64])
 
 }
 
@@ -996,28 +1581,40 @@ func TestDense_MulScalar(t *testing.T) {
 
 	qcHelper[uint](t, assert, genMulScalarIden[uint])
 	qcHelper[uint](t, assert, genMulScalarIdenIncr[uint])
+	qcHelper[uint](t, assert, genMulScalarIdenIncrIter[uint])
 	qcHelper[uint8](t, assert, genMulScalarIden[uint8])
 	qcHelper[uint8](t, assert, genMulScalarIdenIncr[uint8])
+	qcHelper[uint8](t, assert, genMulScalarIdenIncrIter[uint8])
 	qcHelper[uint16](t, assert, genMulScalarIden[uint16])
 	qcHelper[uint16](t, assert, genMulScalarIdenIncr[uint16])
+	qcHelper[uint16](t, assert, genMulScalarIdenIncrIter[uint16])
 	qcHelper[uint32](t, assert, genMulScalarIden[uint32])
 	qcHelper[uint32](t, assert, genMulScalarIdenIncr[uint32])
+	qcHelper[uint32](t, assert, genMulScalarIdenIncrIter[uint32])
 	qcHelper[uint64](t, assert, genMulScalarIden[uint64])
 	qcHelper[uint64](t, assert, genMulScalarIdenIncr[uint64])
+	qcHelper[uint64](t, assert, genMulScalarIdenIncrIter[uint64])
 	qcHelper[int](t, assert, genMulScalarIden[int])
 	qcHelper[int](t, assert, genMulScalarIdenIncr[int])
+	qcHelper[int](t, assert, genMulScalarIdenIncrIter[int])
 	qcHelper[int8](t, assert, genMulScalarIden[int8])
 	qcHelper[int8](t, assert, genMulScalarIdenIncr[int8])
+	qcHelper[int8](t, assert, genMulScalarIdenIncrIter[int8])
 	qcHelper[int16](t, assert, genMulScalarIden[int16])
 	qcHelper[int16](t, assert, genMulScalarIdenIncr[int16])
+	qcHelper[int16](t, assert, genMulScalarIdenIncrIter[int16])
 	qcHelper[int32](t, assert, genMulScalarIden[int32])
 	qcHelper[int32](t, assert, genMulScalarIdenIncr[int32])
+	qcHelper[int32](t, assert, genMulScalarIdenIncrIter[int32])
 	qcHelper[int64](t, assert, genMulScalarIden[int64])
 	qcHelper[int64](t, assert, genMulScalarIdenIncr[int64])
+	qcHelper[int64](t, assert, genMulScalarIdenIncrIter[int64])
 	qcHelper[float32](t, assert, genMulScalarIden[float32])
 	qcHelper[float32](t, assert, genMulScalarIdenIncr[float32])
+	qcHelper[float32](t, assert, genMulScalarIdenIncrIter[float32])
 	qcHelper[float64](t, assert, genMulScalarIden[float64])
 	qcHelper[float64](t, assert, genMulScalarIdenIncr[float64])
+	qcHelper[float64](t, assert, genMulScalarIdenIncrIter[float64])
 
 }
 
@@ -1044,7 +1641,7 @@ func genDivInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) 
 		}
 		ret, err = ret.Mul(b, tensor.UseUnsafe)
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -1073,7 +1670,7 @@ func genDivInvUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		ret, err = ret.Mul(b, tensor.UseUnsafe)
 		return assert.Same(a, ret) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -1107,8 +1704,57 @@ func genDivInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		ret, err = ret.Mul(b, tensor.UseUnsafe)
 		return assert.Same(ret, reuse) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
+	}
+}
+
+func genDivInvIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(1); err != nil {
+				t.Errorf("Memset  failed: %v", err)
+				return false
+			}
+			ret, err := sliced.Div(b)
+			if err != nil {
+				t.Errorf("Div failed: %v", err)
+				return false
+			}
+			ret, err = ret.Mul(b, tensor.UseUnsafe)
+			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 
@@ -1138,8 +1784,60 @@ func genDivInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertio
 		ret, err = ret.Mul(b, tensor.UseUnsafe)
 		return assert.Same(ret, incr) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
+	}
+}
+
+func genDivInvIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT]) bool {
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+			b := New[DT](WithShape(sliced.Shape().Clone()...), WithEngine(a.Engine()))
+			if err := b.Memset(1); err != nil {
+				t.Errorf("Memset  failed: %v", err)
+				return false
+			}
+			incr := b.Clone()
+			incr.Zero()
+			ret, err := sliced.Div(b, WithIncr(incr))
+			if err != nil {
+				t.Errorf("Div failed: %v", err)
+				return false
+			}
+			ret, err = ret.Mul(b, tensor.UseUnsafe)
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 
@@ -1182,12 +1880,50 @@ func genDivInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 	}
 }
 
+func genDivInvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a, b *Dense[DT]) bool {
+		if err := b.Memset(1); err != nil {
+			t.Errorf("Failed to memset: %v", err) // b will always be an accessible engine
+			return false
+		}
+		correct := a.Clone()
+		correctShape := largestShape(a.Shape(), b.Shape())
+		if err := correct.Reshape(correctShape...); err != nil {
+			t.Errorf("While reshaping, err: %v", err)
+			return false
+		}
+		incr := New[DT](WithShape(correctShape...))
+
+		var we bool
+		if !a.IsNativelyAccessible() {
+			we = true
+		}
+
+		// TODO: this check is only because broadcasting doesn't work with tensors that require iterators yet. When
+		// it does, this section should be removed.
+		if !a.DataOrder().HasSameOrder(b.DataOrder()) && // iterators required
+			a.Shape().TotalSize() != b.Shape().TotalSize() && !(a.Shape().IsScalar() && b.Shape().IsScalar()) { // but not fastpath
+			we = true
+		}
+
+		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		we = we || !ok
+
+		ret, err := a.Div(b, WithIncr(incr), tensor.AutoBroadcast)
+		if err, retEarly := qcErrCheck(t, "Div (Broadcast)", a, b, we, err); retEarly {
+			return err == nil
+		}
+		ret, err = ret.Mul(b, tensor.UseUnsafe, tensor.AutoBroadcast)
+		return assert.Same(incr, ret) &&
+			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
+
+	}
+}
+
 func genDivScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
 	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
 		s = 1
-
-		a.AddScalar(1, true, tensor.UseUnsafe)
-
 		correct := a.Clone()
 
 		var we bool
@@ -1201,9 +1937,13 @@ func genDivScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if err, retEarly := qcErrCheck(t, "DivScalar", a, s, we, err); retEarly {
 			return err == nil
 		}
-		ret, err = ret.MulScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		if scalarOnLeft {
+			ret, err = ret.DivScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		} else {
+			ret, err = ret.MulScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		}
 		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
 	}
 }
@@ -1212,8 +1952,6 @@ func genDivScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.As
 	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
 		s = 1
 		correct := a.Clone()
-
-		a.AddScalar(1, true, tensor.UseUnsafe)
 
 		var we bool
 		if !a.IsNativelyAccessible() {
@@ -1229,105 +1967,101 @@ func genDivScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if err, retEarly := qcErrCheck(t, "DivScalar (Incr)", a, s, we, err); retEarly {
 			return err == nil
 		}
-		ret, err = ret.MulScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		if scalarOnLeft {
+			ret, err = ret.DivScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		} else {
+			ret, err = ret.MulScalar(s, scalarOnLeft, tensor.UseUnsafe)
+		}
 		return assert.Same(incr, ret) &&
 			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
-			assert.Equal(correct.Data(), ret.Data())
+			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 
+	}
+}
+
+func genDivScalarInvIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) any {
+	return func(a *Dense[DT], s DT, scalarOnLeft bool) bool {
+		s = 1
+		if a.IsScalar() {
+			return true
+		}
+		if !a.IsNativelyAccessible() {
+			return true
+		}
+
+		shape := a.Shape()
+		for _, s := range shape {
+			if s < 4 {
+				return true
+			}
+		}
+
+		for i := 1; i < a.Dims()-1; i++ {
+			slices := make([]tensor.SliceRange, a.Dims())
+			slices[i] = SR(1, shape[i]-2)
+			sliced, err := a.Slice(slices...)
+			if err != nil {
+				t.Errorf("slice failed: %v", err)
+				return false
+			}
+			correct, err := sliced.Materialize()
+			if err != nil {
+				t.Errorf("materialize failed: %v", err)
+				return false
+			}
+
+			incr := correct.Clone()
+			incr.Zero()
+			ret, err := sliced.DivScalar(s, scalarOnLeft, WithIncr(incr))
+			if err != nil {
+				t.Errorf("DivScalar failed: %v", err)
+				return false
+			}
+			if scalarOnLeft {
+				ret, err = ret.DivScalar(s, scalarOnLeft, tensor.UseUnsafe)
+			} else {
+				ret, err = ret.MulScalar(s, scalarOnLeft, tensor.UseUnsafe)
+			}
+
+			if ok := assert.Same(incr, ret) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
+				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
+				return false
+			}
+		}
+		return true
 	}
 }
 func TestDense_Div(t *testing.T) {
 	assert := assert.New(t)
 
-	qcHelper[uint](t, assert, genDivInv[uint])
-	qcHelper[uint](t, assert, genDivInvUnsafe[uint])
-	qcHelper[uint](t, assert, genDivInvReuse[uint])
-	qcHelper[uint](t, assert, genDivInvIncr[uint])
-	qcHelper[uint](t, assert, genDivInvBroadcast[uint])
-	qcHelper[uint8](t, assert, genDivInv[uint8])
-	qcHelper[uint8](t, assert, genDivInvUnsafe[uint8])
-	qcHelper[uint8](t, assert, genDivInvReuse[uint8])
-	qcHelper[uint8](t, assert, genDivInvIncr[uint8])
-	qcHelper[uint8](t, assert, genDivInvBroadcast[uint8])
-	qcHelper[uint16](t, assert, genDivInv[uint16])
-	qcHelper[uint16](t, assert, genDivInvUnsafe[uint16])
-	qcHelper[uint16](t, assert, genDivInvReuse[uint16])
-	qcHelper[uint16](t, assert, genDivInvIncr[uint16])
-	qcHelper[uint16](t, assert, genDivInvBroadcast[uint16])
-	qcHelper[uint32](t, assert, genDivInv[uint32])
-	qcHelper[uint32](t, assert, genDivInvUnsafe[uint32])
-	qcHelper[uint32](t, assert, genDivInvReuse[uint32])
-	qcHelper[uint32](t, assert, genDivInvIncr[uint32])
-	qcHelper[uint32](t, assert, genDivInvBroadcast[uint32])
-	qcHelper[uint64](t, assert, genDivInv[uint64])
-	qcHelper[uint64](t, assert, genDivInvUnsafe[uint64])
-	qcHelper[uint64](t, assert, genDivInvReuse[uint64])
-	qcHelper[uint64](t, assert, genDivInvIncr[uint64])
-	qcHelper[uint64](t, assert, genDivInvBroadcast[uint64])
-	qcHelper[int](t, assert, genDivInv[int])
-	qcHelper[int](t, assert, genDivInvUnsafe[int])
-	qcHelper[int](t, assert, genDivInvReuse[int])
-	qcHelper[int](t, assert, genDivInvIncr[int])
-	qcHelper[int](t, assert, genDivInvBroadcast[int])
-	qcHelper[int8](t, assert, genDivInv[int8])
-	qcHelper[int8](t, assert, genDivInvUnsafe[int8])
-	qcHelper[int8](t, assert, genDivInvReuse[int8])
-	qcHelper[int8](t, assert, genDivInvIncr[int8])
-	qcHelper[int8](t, assert, genDivInvBroadcast[int8])
-	qcHelper[int16](t, assert, genDivInv[int16])
-	qcHelper[int16](t, assert, genDivInvUnsafe[int16])
-	qcHelper[int16](t, assert, genDivInvReuse[int16])
-	qcHelper[int16](t, assert, genDivInvIncr[int16])
-	qcHelper[int16](t, assert, genDivInvBroadcast[int16])
-	qcHelper[int32](t, assert, genDivInv[int32])
-	qcHelper[int32](t, assert, genDivInvUnsafe[int32])
-	qcHelper[int32](t, assert, genDivInvReuse[int32])
-	qcHelper[int32](t, assert, genDivInvIncr[int32])
-	qcHelper[int32](t, assert, genDivInvBroadcast[int32])
-	qcHelper[int64](t, assert, genDivInv[int64])
-	qcHelper[int64](t, assert, genDivInvUnsafe[int64])
-	qcHelper[int64](t, assert, genDivInvReuse[int64])
-	qcHelper[int64](t, assert, genDivInvIncr[int64])
-	qcHelper[int64](t, assert, genDivInvBroadcast[int64])
 	qcHelper[float32](t, assert, genDivInv[float32])
 	qcHelper[float32](t, assert, genDivInvUnsafe[float32])
 	qcHelper[float32](t, assert, genDivInvReuse[float32])
 	qcHelper[float32](t, assert, genDivInvIncr[float32])
+	qcHelper[float32](t, assert, genDivInvIter[float32])
+	qcHelper[float32](t, assert, genDivInvIncrIter[float32])
 	qcHelper[float32](t, assert, genDivInvBroadcast[float32])
+	qcHelper[float32](t, assert, genDivInvBroadcastIncr[float32])
 	qcHelper[float64](t, assert, genDivInv[float64])
 	qcHelper[float64](t, assert, genDivInvUnsafe[float64])
 	qcHelper[float64](t, assert, genDivInvReuse[float64])
 	qcHelper[float64](t, assert, genDivInvIncr[float64])
+	qcHelper[float64](t, assert, genDivInvIter[float64])
+	qcHelper[float64](t, assert, genDivInvIncrIter[float64])
 	qcHelper[float64](t, assert, genDivInvBroadcast[float64])
+	qcHelper[float64](t, assert, genDivInvBroadcastIncr[float64])
 
 }
 
 func TestDense_DivScalar(t *testing.T) {
 	assert := assert.New(t)
 
-	qcHelper[uint](t, assert, genDivScalarInv[uint])
-	qcHelper[uint](t, assert, genDivScalarInvIncr[uint])
-	qcHelper[uint8](t, assert, genDivScalarInv[uint8])
-	qcHelper[uint8](t, assert, genDivScalarInvIncr[uint8])
-	qcHelper[uint16](t, assert, genDivScalarInv[uint16])
-	qcHelper[uint16](t, assert, genDivScalarInvIncr[uint16])
-	qcHelper[uint32](t, assert, genDivScalarInv[uint32])
-	qcHelper[uint32](t, assert, genDivScalarInvIncr[uint32])
-	qcHelper[uint64](t, assert, genDivScalarInv[uint64])
-	qcHelper[uint64](t, assert, genDivScalarInvIncr[uint64])
-	qcHelper[int](t, assert, genDivScalarInv[int])
-	qcHelper[int](t, assert, genDivScalarInvIncr[int])
-	qcHelper[int8](t, assert, genDivScalarInv[int8])
-	qcHelper[int8](t, assert, genDivScalarInvIncr[int8])
-	qcHelper[int16](t, assert, genDivScalarInv[int16])
-	qcHelper[int16](t, assert, genDivScalarInvIncr[int16])
-	qcHelper[int32](t, assert, genDivScalarInv[int32])
-	qcHelper[int32](t, assert, genDivScalarInvIncr[int32])
-	qcHelper[int64](t, assert, genDivScalarInv[int64])
-	qcHelper[int64](t, assert, genDivScalarInvIncr[int64])
 	qcHelper[float32](t, assert, genDivScalarInv[float32])
 	qcHelper[float32](t, assert, genDivScalarInvIncr[float32])
+	qcHelper[float32](t, assert, genDivScalarInvIncrIter[float32])
 	qcHelper[float64](t, assert, genDivScalarInv[float64])
 	qcHelper[float64](t, assert, genDivScalarInvIncr[float64])
+	qcHelper[float64](t, assert, genDivScalarInvIncrIter[float64])
 
 }

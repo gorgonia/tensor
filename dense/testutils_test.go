@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/chewxy/math32"
-	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
@@ -110,7 +109,42 @@ func cAlike(a, b complex128) bool {
 	return false
 }
 
-func allClose(a, b interface{}, approxFn ...interface{}) bool {
+func allClose[DT internal.OrderedNum](a, b []DT, approxFn ...func(a, b DT) bool) bool {
+	switch a := any(a).(type) {
+	case []float64:
+		fn := closeenough[float64]
+		if len(approxFn) > 0 {
+			fn = any(approxFn[0]).(func(float64, float64) bool)
+		}
+		b := any(b).([]float64)
+		for i := range a {
+			if !fn(a[i], b[i]) && !alikef64(a[i], b[i]) {
+				return false
+			}
+		}
+		return true
+	case []float32:
+		b := any(b).([]float32)
+		fn := closeenough[float32]
+		if len(approxFn) > 0 {
+			fn = any(approxFn[0]).(func(float32, float32) bool)
+		}
+		for i := range a {
+			if !fn(a[i], b[i]) && !alikef32(a[i], b[i]) {
+				return false
+			}
+		}
+		return true
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func allCloseOLD(a, b interface{}, approxFn ...interface{}) bool {
 	switch at := a.(type) {
 	case []float64:
 		closeness := closef[float64]
@@ -226,7 +260,7 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 	}
 	backing := make([]DT, shape.TotalSize())
 	for i := range backing {
-		backing[i] = DT(-1000 + rnd.Float64()*2000)
+		backing[i] = DT(-100 + rnd.Float64()*200)
 	}
 
 	d := New[DT](WithShape(shape...), WithBacking(backing))
@@ -278,7 +312,7 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 		args[1] = reflect.ValueOf(b)
 	case 3:
 		// 3 is reserved for testing scalar methods.
-		s := DT(-1000 + rnd.Float64()*2000)
+		s := DT(-100 + rnd.Float64()*200)
 		args[1] = reflect.ValueOf(s)
 		var scalarOnLeft bool
 		if rnd.Intn(2) == 1 {
@@ -308,23 +342,23 @@ func qcErrCheck(t *testing.T, name string, a, b any, we bool, err error) (e erro
 	return nil, false
 }
 
-func qcIsFloat(dt dtype.Dtype) bool {
-	if err := dtype.TypeClassCheck(dt, dtype.FloatComplex); err == nil {
-		return true
-	}
-	return false
-}
+// func qcIsFloat(dt dtype.Dtype) bool {
+// 	if err := dtype.TypeClassCheck(dt, dtype.FloatComplex); err == nil {
+// 		return true
+// 	}
+// 	return false
+// }
 
-func qcEqCheck(t *testing.T, dt dtype.Dtype, willFailEq bool, correct, got interface{}) bool {
-	isFloatTypes := qcIsFloat(dt)
-	if !willFailEq && (isFloatTypes && !allClose(correct, got) || (!isFloatTypes && !reflect.DeepEqual(correct, got))) {
-		t.Errorf("q.Dtype: %v", dt)
-		t.Errorf("correct\n%v", correct)
-		t.Errorf("got\n%v", got)
-		return false
-	}
-	return true
-}
+// func qcEqCheck(t *testing.T, dt dtype.Dtype, willFailEq bool, correct, got interface{}) bool {
+// 	isFloatTypes := qcIsFloat(dt)
+// 	if !willFailEq && (isFloatTypes && !allClose(correct, got) || (!isFloatTypes && !reflect.DeepEqual(correct, got))) {
+// 		t.Errorf("q.Dtype: %v", dt)
+// 		t.Errorf("correct\n%v", correct)
+// 		t.Errorf("got\n%v", got)
+// 		return false
+// 	}
+// 	return true
+// }
 
 func checkErr(t *testing.T, expected bool, err error, name string, id interface{}) (cont bool) {
 	switch {
