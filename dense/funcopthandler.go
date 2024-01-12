@@ -1,10 +1,20 @@
 package dense
 
 import (
+	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 )
+
+// defaultCmpFuncOpt handles the FuncOpts of a comparison function. It adds a `As(dtype.Bool)` in the head of the func opts as by default
+// comparison operations return bools.
+func defaultCmpFuncOpt(opts []FuncOpt) []FuncOpt {
+	opts = append(opts, nil)
+	copy(opts[1:], opts[0:])
+	opts[0] = As(dtype.Bool) // default
+	return opts
+}
 
 func handleFuncOpts[DT any, T tensor.Tensor[DT, T]](e Engine, t T, expShape shapes.Shape, opts ...FuncOpt) (retVal T, fo Option, err error) {
 	switch e := e.(type) {
