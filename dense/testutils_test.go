@@ -268,40 +268,13 @@ func qcHelper[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions, g
 
 // qcDense generates a valid *Dense[DT].
 func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
-	// get random shape
-	var shape shapes.Shape
-	for i := 0; i < rnd.Intn(4)+1; i++ {
-		shape = append(shape, rnd.Intn(5)+1)
-	}
-	backing := make([]DT, shape.TotalSize())
-	for i := range backing {
-		backing[i] = DT(-100 + rnd.Float64()*200)
-	}
-
-	d := New[DT](WithShape(shape...), WithBacking(backing))
-
-	// funny engines/memory access patterns
-	x := rnd.Intn(10)
-	switch x {
-	case 1:
-		// colmajor
-		d.AP.SetDataOrder(tensor.ColMajor)
-	case 2:
-		// not accessible
-		d.f |= tensor.NativelyInaccessible
-	case 3:
-	// transposed
-	case 4:
-	// requires iterator
-	default:
-		// nothing
-	}
+	d := qcRandDense[DT](rnd)
 	args[0] = reflect.ValueOf(d)
 
 	switch len(args) {
 	case 2:
 		// second argument is for broadcasting
-		shp2 := shape.Clone()
+		shp2 := d.Shape().Clone()
 
 		// < 50% chance of getting a shape that is bigger
 		x := rnd.Intn(10)
@@ -334,9 +307,60 @@ func qcDense[DT internal.OrderedNum](args []reflect.Value, rnd *rand.Rand) {
 			scalarOnLeft = true
 		}
 		args[2] = reflect.ValueOf(scalarOnLeft)
+	case 4:
+		// 4 is for generating 3 *Dense[DT]s
+		sameShape := rnd.Intn(2) == 0
+		args[3] = reflect.ValueOf(sameShape)
 
+		var b, c *Dense[DT]
+		if sameShape {
+			b = qcRandDense[DT](rnd, d.Shape().Clone())
+			c = qcRandDense[DT](rnd, d.Shape().Clone())
+		} else {
+			b = qcRandDense[DT](rnd)
+			c = qcRandDense[DT](rnd)
+		}
+		args[1] = reflect.ValueOf(b)
+		args[2] = reflect.ValueOf(c)
+	}
+}
+
+// qcRandDense generates a random *Dense[DT]. If shape is not provided then a random shape will be generated
+func qcRandDense[DT internal.OrderedNum](rnd *rand.Rand, optShape ...shapes.Shape) *Dense[DT] {
+	// get random shape
+
+	var shape shapes.Shape
+	if len(optShape) == 1 {
+		shape = optShape[0]
+	} else {
+		for i := 0; i < rnd.Intn(4)+1; i++ {
+			shape = append(shape, rnd.Intn(5)+1)
+		}
+	}
+	backing := make([]DT, shape.TotalSize())
+	for i := range backing {
+		backing[i] = DT(-100 + rnd.Float64()*200)
 	}
 
+	d := New[DT](WithShape(shape...), WithBacking(backing))
+
+	// funny engines/memory access patterns
+	x := rnd.Intn(10)
+	switch x {
+	case 1:
+		// colmajor
+		d.AP.SetDataOrder(tensor.ColMajor)
+	case 2:
+		// not accessible
+		d.f |= tensor.NativelyInaccessible
+	case 3:
+	// transposed
+	case 4:
+	// requires iterator
+	default:
+		// nothing
+	}
+	return d
 }
 
 func qcErrCheck(t *testing.T, name string, a, b any, we bool, err error) (e error, retEarly bool) {

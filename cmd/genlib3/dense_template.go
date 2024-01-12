@@ -98,11 +98,10 @@ func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*
 }
 `
 
-const denseCmpOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
-func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e := getEngine[DT](t, u)
+const basicCmpPrep = `func (t *Dense[DT]) basicCmpPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal DescWithStorage, fo Option, err error) {
+	e = getEngine[DT](t, u)
 	if err = check(checkFlags(e, t, u)); err != nil {
-		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 	tShp := t.Shape()
 	uShp := u.Shape()
@@ -111,37 +110,60 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 	var prepper tensor.DescFuncOptHandler[DT]
 	var ok bool
 	if prepper, ok = e.(tensor.DescFuncOptHandler[DT]); !ok {
-		return nil, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn())
+		return nil, nil, nil, nil, fo, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
 	}
 
-	var fo Option
+	opts = defaultCmpFuncOpt(opts)
 	if retVal, fo, err = prepper.HandleFuncOptsDesc(t, expShape, opts...); err != nil {
-		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
+		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	}
+
+	newAPT = t.Info()
+	newAPU = u.Info()
+
+	// fast path
+	if !fo.Broadcast || tShp.TotalSize() == uShp.TotalSize() {
+		// no broadcasting necessary
+		fo.Broadcast = false
+		return
+	}
+
+	newAPT, newAPU = tensor.CalcBroadcastShapes(newAPT, newAPU)
+	if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
+		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
+	}
+	return
+}
+`
+
+const denseCmpOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
+func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
+	var e Engine
+	var newAPT, newAPU *tensor.AP
+	var fo Option
+	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+		return nil, err
+	}
+	asSame := fo.AsType == t.Dtype()
+	ctx := fo.Ctx
+
+	var cmper tensor.{{.Interface}}[DT, *Dense[DT]]
+	var ok bool
+	if cmper, ok = e.(tensor.{{.Interface}}[DT, *Dense[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
 		return nil, errors.Errorf("Unable to Incr for Lt")
 	}
 
-	asBool := fo.AsType == dtype.Bool
-	ctx := fo.Ctx
-
-	var cmper tensor.{{.Interface}}[DT, *Dense[DT]]
-	if cmper, ok = e.(tensor.{{.Interface}}[DT, *Dense[DT]]); !ok {
-		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
-	}
-
 	if fo.Broadcast {
-		// create Autobroadcast shape
-		newAPT, newAPU := tensor.CalcBroadcastShapes(t.Info(), u.Info())
-		if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
-			return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
-		}
-
-		err = cmper.{{.Name}}Broadcastable(ctx, t, u, retVal, !asBool, newAPT, newAPU)
+		err = cmper.{{.Name}}Broadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 		return
 	}
-
-	if err = cmper.{{.Name}}(ctx, t, u, retVal, !asBool); err != nil {
+	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		return nil, err
+	}
+	if err = cmper.{{.Name}}(ctx, t, u, retVal, asSame); err != nil {
 		return nil, err
 	}
 	return retVal, nil
