@@ -247,6 +247,18 @@ func allCloseOLD(a, b interface{}, approxFn ...interface{}) bool {
 	}
 }
 
+// boolNum3Eq checks that 3 num slices whose values are numerical representation of boolean values are equal
+func boolNums3Eq[DT internal.OrderedNum](a, b, c []DT) bool {
+	for i, x := range a {
+		y := b[i]
+		z := c[i]
+		if x == 1 && y == 1 && z != 1 {
+			return false
+		}
+	}
+	return true
+}
+
 const quickchecks = 1000
 
 func newRand() *rand.Rand {

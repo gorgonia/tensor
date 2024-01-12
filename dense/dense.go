@@ -325,6 +325,8 @@ func (t *Dense[T]) Alike(opts ...ConsOpt) *Dense[T] {
 
 func (t *Dense[T]) AlikeAsType(dt dtype.Dtype, opts ...ConsOpt) DescWithStorage {
 	switch dt {
+	case t.Dtype():
+		return t.Alike(opts...)
 	case dtype.Bool:
 		c := parseConsOpt[bool](opts...)
 		return fromConstructor[bool](c)
@@ -334,7 +336,7 @@ func (t *Dense[T]) AlikeAsType(dt dtype.Dtype, opts ...ConsOpt) DescWithStorage 
 		c := parseConsOpt[int](opts...)
 		return fromConstructor[int](c)
 	default:
-		panic("NYI: put a pull request")
+		panic(fmt.Sprintf("NYI: put a pull request, dt : %v", dt))
 	}
 
 	return nil

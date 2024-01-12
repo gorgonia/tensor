@@ -102,10 +102,7 @@ func genDenseCmpMethods(w io.Writer) {
 	}
 }
 func genDenseArithMethodTests(w io.Writer) {
-	type opDT struct {
-		BinOp
-		Datatypes []string
-	}
+
 	for _, op := range arithOps {
 		var writeTest bool
 		if op.Identity != "" {
@@ -125,6 +122,13 @@ func genDenseArithMethodTests(w io.Writer) {
 			denseArithMethodTest.Execute(w, x)
 		}
 
+	}
+}
+func genDenseCmpMethodTests(w io.Writer) {
+	for _, op := range cmpOpsNum {
+		transTests.Execute(w, op)
+		x := opDT{op, OrderedNum}
+		denseCmpMethodTest.Execute(w, x)
 	}
 }
 
@@ -196,6 +200,7 @@ func main() {
 	pipeline(denseLoc, "arith.go", genDenseArithPrepMethods, genDenseArithMethods)
 	pipeline(denseLoc, "cmp.go", genDenseCmpPrepMethods, genDenseCmpMethods)
 	pipeline(denseLoc, "arith_gen_test.go", genDenseArithMethodTests)
+	pipeline(denseLoc, "cmp_gen_test.go", genDenseCmpMethodTests)
 	genStdEng()
 	genDenseMethods()
 }

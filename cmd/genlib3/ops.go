@@ -40,3 +40,8 @@ var cmpOpsNum = []BinOp{
 	{"ElEq", "==", "Num", false, "Comparer", "", ""},
 	{"Ne", "!=", "Num", false, "Comparer", "", ""},
 }
+
+type opDT struct {
+	BinOp
+	Datatypes []string
+}
