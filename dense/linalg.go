@@ -116,7 +116,8 @@ func (t *Dense[DT]) Outer(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
 	var fo Option
-	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, t.Shape(), opts...); err != nil {
+	expShape := shapes.Shape{t.Shape().TotalSize(), u.Shape().TotalSize()}
+	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, expShape, opts...); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 

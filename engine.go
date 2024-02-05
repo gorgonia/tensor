@@ -50,7 +50,8 @@ type Adder[DT any, T Basic[DT]] interface {
 	AddScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
 	AddBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 }
-type BasicArither[DT any, T Tensor[DT, T]] interface {
+
+type BasicArither[DT any, T Basic[DT]] interface {
 	Adder[DT, T]
 
 	Sub(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
@@ -76,7 +77,7 @@ type Arither[DT any, T Tensor[DT, T]] interface {
 	PowScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
 }
 
-type Comparer[DT any, T Tensor[DT, T]] interface {
+type Comparer[DT any, T Basic[DT]] interface {
 	ElEq(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 	ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
@@ -86,7 +87,7 @@ type Comparer[DT any, T Tensor[DT, T]] interface {
 	NeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
-type Ord[DT any, T Tensor[DT, T]] interface {
+type Ord[DT any, T Basic[DT]] interface {
 	Comparer[DT, T]
 	Lt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
 	LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
@@ -97,7 +98,7 @@ type Ord[DT any, T Tensor[DT, T]] interface {
 	LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
-type FullOrd[DT any, T Tensor[DT, T]] interface {
+type FullOrd[DT any, T Basic[DT]] interface {
 	Ord[DT, T]
 
 	Gt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)

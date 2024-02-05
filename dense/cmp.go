@@ -46,198 +46,186 @@ func (t *Dense[DT]) basicCmpPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAP
 
 // Lt performs `t < u`
 func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.Ord[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.Ord[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.Ord[DT, *Dense[DT]])
+	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
 		return nil, errors.Errorf("Unable to Incr for Lt")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.LtBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.Lt(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
+		err = cmper.Lt(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
 
 // Lte performs `t <= u`
 func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.Ord[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.Ord[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.Ord[DT, *Dense[DT]])
+	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Lt")
+		return nil, errors.Errorf("Unable to Incr for Lte")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.LteBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.Lte(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
+		err = cmper.Lte(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
 
 // Gt performs `t > u`
 func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.FullOrd[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.FullOrd[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.FullOrd[DT, *Dense[DT]])
+	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Lt")
+		return nil, errors.Errorf("Unable to Incr for Gt")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.GtBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.Gt(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
+		err = cmper.Gt(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
 
 // Gte performs `t >= u`
 func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.FullOrd[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.FullOrd[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.FullOrd[DT, *Dense[DT]])
+	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Lt")
+		return nil, errors.Errorf("Unable to Incr for Gte")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.GteBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.Gte(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
+		err = cmper.Gte(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
 
 // ElEq performs `t == u`
 func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.Comparer[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.Comparer[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.Comparer[DT, *Dense[DT]])
+	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Lt")
+		return nil, errors.Errorf("Unable to Incr for ElEq")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.ElEqBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.ElEq(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
+		err = cmper.ElEq(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
 
 // Ne performs `t != u`
 func (t *Dense[DT]) Ne(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.Comparer[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.Comparer[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.Comparer[DT, *Dense[DT]])
+	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Lt")
+		return nil, errors.Errorf("Unable to Incr for Ne")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.NeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.Ne(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
+		err = cmper.Ne(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
