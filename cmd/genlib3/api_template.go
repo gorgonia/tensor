@@ -21,7 +21,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
 	case toBroadcast:
 		err = {{.Interface|lower}}.{{.Name}}Broadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape()); err != nil{
+		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil{
 			return nil, err
 		}
 		err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, toIncr)
@@ -54,7 +54,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) 
 	case toBroadcast:
 		err = {{.Interface|lower}}.{{.Name}}Broadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape()); err != nil{
+		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil{
 			return nil, err
 		}
 		err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, asSame)

@@ -35,7 +35,7 @@ func (t *Dense[DT]) SVD(uv, full bool) (s, u, v *Dense[DT], err error) {
 }
 
 func (t *Dense[DT]) Inner(u *Dense[DT]) (retVal DT, err error) {
-	if err = check(checkFlags(t.e, t, u), checkSameishShape(t.Shape(), u.Shape())); err != nil {
+	if err = check(checkFlags(t.e, t, u), checkCompatibleShape(t.Shape(), u.Shape())); err != nil {
 		return retVal, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 

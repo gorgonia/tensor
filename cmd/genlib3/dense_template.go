@@ -73,7 +73,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 	case toBroadcast:
 		err = {{.Name|lower}}er.{{.Name}}Broadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil{
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return retVal, err
 		}
 		err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr)
@@ -161,7 +161,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 	case toBroadcast:
 		err = cmper.{{.Name}}Broadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil{
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return retVal, err
 		}
 		err = cmper.{{.Name}}(ctx, t, u, retVal, asSame)
