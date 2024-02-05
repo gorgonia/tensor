@@ -35,7 +35,7 @@ func init() {
 			log.Fatal("You need to define a $GOPATH")
 		}
 	}
-	tensorLoc = path.Join("src/gorgonia.org/tensor/internal/execution")
+	tensorLoc = "../../"
 	denseLoc = "../../dense"
 	execLoc = "../../internal/execution"
 	stdengLoc = "../../engines"
@@ -56,7 +56,7 @@ func genExecutionCmp(w io.Writer) {
 	}
 }
 
-func genEnginesOps(w io.Writer) {
+func genEngineOps(w io.Writer) {
 	for _, op := range cmpOps {
 		enginesCmpBinOp.Execute(w, op)
 	}
@@ -138,6 +138,18 @@ func genFloatEngineUnOpMethods(w io.Writer) {
 	}
 }
 
+func genAPIArithOps(w io.Writer) {
+	for _, op := range arithOps {
+		apiArithOp.Execute(w, op)
+	}
+}
+
+func genAPICmpOps(w io.Writer) {
+	for _, op := range cmpOps {
+		apiCmpOp.Execute(w, op)
+	}
+}
+
 func genStdEng()       {}
 func genDenseMethods() {}
 
@@ -207,7 +219,7 @@ func pipeline(pkg, filename string, fns ...func(io.Writer)) {
 func main() {
 	pipeline(execLoc, "arith_gen.go", genExecutionArith)
 	pipeline(execLoc, "cmp_gen.go", genExecutionCmp)
-	pipeline(stdengLoc, "op_gen.go", genEnginesOps)
+	pipeline(stdengLoc, "op_gen.go", genEngineOps)
 	pipeline(stdengLoc, "defaultComparableEngine_gen.go", genComparableEngMethods)
 	pipeline(stdengLoc, "defaultOrderedEngine_gen.go", genOrderedEngMethods)
 	pipeline(stdengLoc, "defaultOrderedNumEngine_gen.go", genOrderedNumEngMethods)
@@ -217,6 +229,8 @@ func main() {
 	pipeline(denseLoc, "arith_gen_test.go", genDenseArithMethodTests)
 	pipeline(denseLoc, "cmp_gen_test.go", genDenseCmpMethodTests)
 	pipeline(floatengLoc, "defaultFloatEngines_gen.go", genFloatEngineUnOpMethods)
+
+	pipeline(tensorLoc, "api_gen.go", genAPIArithOps, genAPICmpOps)
 	genStdEng()
 	genDenseMethods()
 }

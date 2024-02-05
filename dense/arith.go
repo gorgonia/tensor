@@ -77,6 +77,9 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	case toBroadcast:
 		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
 		err = adder.Add(ctx, t, u, retVal, toIncr)
 
 	}
@@ -120,6 +123,9 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	case toBroadcast:
 		err = suber.SubBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
 		err = suber.Sub(ctx, t, u, retVal, toIncr)
 
 	}
@@ -163,6 +169,9 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	case toBroadcast:
 		err = muler.MulBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
 		err = muler.Mul(ctx, t, u, retVal, toIncr)
 
 	}
@@ -206,6 +215,9 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	case toBroadcast:
 		err = diver.DivBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+			return retVal, err
+		}
 		err = diver.Div(ctx, t, u, retVal, toIncr)
 
 	}

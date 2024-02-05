@@ -73,6 +73,9 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 	case toBroadcast:
 		err = {{.Name|lower}}er.{{.Name}}Broadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil{
+			return retVal, err
+		}
 		err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr)
 
 	}
@@ -138,33 +141,31 @@ const basicCmpPrep = `func (t *Dense[DT]) basicCmpPrep(u *Dense[DT], opts ...Fun
 
 const denseCmpOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	var e Engine
-	var newAPT, newAPU *tensor.AP
-	var fo Option
-	if e, newAPT, newAPU, retVal, fo, err = t.basicCmpPrep(u, opts...); err != nil {
+	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+ 	if err != nil {
 		return nil, err
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
+	toBroadcast := fo.Broadcast
 
-	var cmper tensor.{{.Interface}}[DT, *Dense[DT]]
-	var ok bool
-	if cmper, ok = e.(tensor.{{.Interface}}[DT, *Dense[DT]]); !ok {
+	cmper, ok := e.(tensor.{{.Interface}}[DT, *Dense[DT]]);
+ 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Lt")
+		return nil, errors.Errorf("Unable to Incr for {{.Name}}")
 	}
 
-	if fo.Broadcast {
+	switch {
+	case toBroadcast:
 		err = cmper.{{.Name}}Broadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
-		return
-	}
-	if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
-		return nil, err
-	}
-	if err = cmper.{{.Name}}(ctx, t, u, retVal, asSame); err != nil {
-		return nil, err
+	default:
+		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil{
+			return retVal, err
+		}
+		err = cmper.{{.Name}}(ctx, t, u, retVal, asSame)
+
 	}
 	return retVal, nil
 }
