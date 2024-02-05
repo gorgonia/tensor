@@ -36,7 +36,8 @@ func defaultCmpFuncOpt(opts []FuncOpt) []FuncOpt {
 	return opts
 }
 
-func prepArith[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal Basic[DT], fo Option, err error) {
+// PrepBinOpCis is a function that preps two basic tensors for a elementwise binary operation that returns the a tensor of the same datatype as its inputs.
+func PrepBinOpCis[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal Basic[DT], fo Option, err error) {
 	e = getEngine(a, b)
 	aShp := a.Shape()
 	bShp := b.Shape()
@@ -70,7 +71,8 @@ func prepArith[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAP
 
 }
 
-func prepCmp[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal DescWithStorage, fo Option, err error) {
+// PrepBinOpTrans is a function that preps two basic tensors for a comparison based binary operation.
+func PrepBinOpTrans[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal DescWithStorage, fo Option, err error) {
 	e = getEngine(a, b)
 	aShp := a.Shape()
 	bShp := b.Shape()

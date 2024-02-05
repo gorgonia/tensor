@@ -6,7 +6,7 @@ import "gorgonia.org/tensor/internal/errors"
 
 // Add performs `t + u`.
 func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := prepArith[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Sub performs `t - u`.
 func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := prepArith[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Mul performs `t * u`.
 func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := prepArith[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Div performs `t / u`.
 func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := prepArith[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Lt performs `t < u`.
 func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err := prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 // Lte performs `t <= u`.
 func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err := prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 // Gt performs `t > u`.
 func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err := prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 // Gte performs `t >= u`.
 func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err := prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 // ElEq performs `t == u`.
 func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err := prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 // Ne performs `t != u`.
 func Ne[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err := prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}

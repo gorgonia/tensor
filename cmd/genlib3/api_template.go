@@ -4,7 +4,7 @@ import "text/template"
 
 const apiArithOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`." + `
 func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err :=  prepArith[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err :=  PrepBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
 
 const apiCmpOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`." + `
 func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) {
-	e, newAPT, newAPU, retVal, fo, err :=  prepCmp[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err :=  PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
