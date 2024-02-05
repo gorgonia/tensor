@@ -56,7 +56,7 @@ func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err erro
 	var incr []DT
 	if fo.Incr {
 		incr = make([]DT, len(retVal.Data()))
-		copy(incr, retVal.Data())
+		copy(incr, retVal.Data()) // may panic if engine is a non-local engine (e.g. CUDA).
 	}
 	err = bla.MatMul(fo.Ctx, a, b, retVal, incr)
 	return retVal, err
@@ -91,65 +91,21 @@ func Add[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) 
 	}
 
 	return retVal, err
+}
 
-	// TODO checks
-
-	/*
-		switch a := a.(type) {
-		case DenseTensor[DT]:
-			switch b := b.(type) {
-			case DenseTensor[DT]:
-				e := getEngine(a, b)
-				if e == nil {
-					return nil, errors.Errorf("No engines found")
-				}
-				e = e.BasicEng()
-				foh, ok := e.(FuncOptHandler[DT])
-				if !ok {
-					return nil, errors.Errorf("Engine %T cannot handle func opts", e)
-				}
-				var fo Option
-				if retVal, fo, err = foh.HandleFuncOpts(a, a.Shape(), opts...); err != nil {
-					return nil, err
-				}
-
-				adder, ok := e.(Adder[DT, Basic[DT]])
-				if !ok {
-					// error
-				}
-				ctx := fo.Ctx
-				toIncr := fo.Incr
-				err = adder.Add(ctx, a, b, retVal, toIncr)
-				return retVal, err
-				// use dense.Add()
-			case SparseTensor[DT]:
-				// engine.Add(a.data(), b.data(), ait, bit)
-			case Scalar[DT]:
-				// a.Engine().AddScalar(a, b.V)
-			default:
-			}
-		case SparseTensor[DT]:
-			switch b := b.(type) {
-			case DenseTensor[DT]:
-				_ = a
-				_ = b
-			case SparseTensor[DT]:
-			case Scalar[DT]:
-			default:
-			}
-
-		case Scalar[DT]:
-			switch b := b.(type) {
-			case DenseTensor[DT]:
-				_ = a
-				_ = b
-			case SparseTensor[DT]:
-			case Scalar[DT]:
-			default:
-			}
-		default:
-			return nil, errors.Errorf("Unhandled tensor type %T", a)
-		}
-		panic("Unreachable")
-	*/
+func Abs[DT Num](a Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
+	e := getEngine(a).BasicEng()
+	var abser Abser[DT, Basic[DT]]
+	var ok bool
+	if abser, ok = e.(Abser[DT, Basic[DT]]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, abser, errors.ThisFn())
+	}
+	var fo Option
+	if retVal, fo, err = handleFuncOpt[DT](e, a, a.Shape(), opts...); err != nil {
+		return nil, err
+	}
+	if err = abser.Abs(fo.Ctx, a, retVal); err != nil {
+		return nil, err
+	}
+	return retVal, err
 }

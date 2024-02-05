@@ -7,7 +7,7 @@ import (
 )
 
 // Range creates a slice of values of the given DT
-func Range[DT internal.Rangeable](start, end int) []DT {
+func Range[DT internal.OrderedNum](start, end int) []DT {
 	size := end - start
 	incr := true
 	if start > end {
@@ -30,7 +30,7 @@ func Range[DT internal.Rangeable](start, end int) []DT {
 }
 
 // Random creates a slice of random values of the given DT
-func Random[DT internal.Rangeable](size int) []DT {
+func Random[DT internal.OrderedNum](size int) []DT {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	retVal := make([]DT, size)
 	for i := range retVal {

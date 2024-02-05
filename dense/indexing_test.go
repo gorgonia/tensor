@@ -21,7 +21,7 @@ type selByIndicesTest[DT any] struct {
 	CorrectShape shapes.Shape
 }
 
-func makeSelByIndicesTest[DT internal.Rangeable]() []selByIndicesTest[DT] {
+func makeSelByIndicesTest[DT internal.OrderedNum]() []selByIndicesTest[DT] {
 	return []selByIndicesTest[DT]{
 		{Name: "Basic", Data: gutils.Range[DT](0, 4), Shape: shapes.Shape{2, 2}, Indices: []int{0, 1}, Axis: 0, WillErr: false,
 			Correct: []DT{0, 1, 2, 3}, CorrectShape: shapes.Shape{2, 2},

@@ -10,8 +10,8 @@ type Num interface {
 	constraints.Float | constraints.Integer | constraints.Complex
 }
 
-type Rangeable interface {
-	constraints.Float | constraints.Integer
+type Floats interface {
+	constraints.Float // FUTURE: add float16, q8, etc
 }
 
 type OrderedNum interface {

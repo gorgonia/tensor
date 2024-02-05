@@ -50,7 +50,6 @@ type Adder[DT any, T Basic[DT]] interface {
 	AddScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
 	AddBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 }
-
 type BasicArither[DT any, T Tensor[DT, T]] interface {
 	Adder[DT, T]
 
@@ -185,4 +184,65 @@ type Normer[DT any, T Tensor[DT, T]] interface {
 
 type Concater[DT any, T Tensor[DT, T]] interface {
 	Concat(ctx context.Context, a T, axis int, others ...T) (T, error)
+}
+
+/*
+Unary Operations
+
+Note: typically these unary operations would have been supported by means of .Apply()
+but .Apply() cannot work for CUDA related stuff, so these unary operation interfaces
+are added for the usual deep learning related engines.
+*/
+
+type Abser[DT Num, T Basic[DT]] interface {
+	Abs(ctx context.Context, a, retVal T) error
+}
+
+type Signer[DT Num, T Basic[DT]] interface {
+	Sign(ctx context.Context, a, retVal T) error
+}
+
+type Ceiler[DT Floats, T Basic[DT]] interface {
+	Ceil(ctx context.Context, a, retVal T) error
+}
+
+type Floorer[DT Floats, T Basic[DT]] interface {
+	Floor(ctx context.Context, a, retVal T) error
+}
+
+type Neger[DT Num, T Basic[DT]] interface {
+	Neg(ctx context.Context, a, retVal T) error
+}
+
+type ExpLoger[DT Floats, T Basic[DT]] interface {
+	Exp(ctx context.Context, a, retVal T) error
+	Log(ctx context.Context, a, retVal T) error
+	Log2(ctx context.Context, a, retVal T) error
+	Log10(ctx context.Context, a, retVal T) error
+	Log1p(ctx context.Context, a, retVal T) error
+	Expm1(ctx context.Context, a, retVal T) error
+}
+
+type Inver[DT Num, T Basic[DT]] interface {
+	Inv(ctx context.Context, a, retVal T) error
+}
+
+type InverSqrter[DT Floats, T Basic[DT]] interface {
+	InvSqrt(ctx context.Context, a, retVal T) error
+}
+
+type Squarer[DT Num, T Basic[DT]] interface {
+	Square(ctx context.Context, a, retVal T) error
+}
+
+type Sqrter[DT Floats, T Basic[DT]] interface {
+	Sqrt(ctx context.Context, a, retVal T) error
+}
+
+type Cuber[DT Num, T Basic[DT]] interface {
+	Cube(ctx context.Context, a, retVal T) error
+}
+
+type Tanher[DT Floats, T Basic[DT]] interface {
+	Tanh(ctx context.Context, a, retVal T) error
 }
