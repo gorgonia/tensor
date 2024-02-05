@@ -16,9 +16,10 @@ func getEngine(ts ...Engineer) Engine {
 	return nil
 }
 
-func checkEqShape(expected shapes.Shape, others ...shapes.Shape) error {
+func checkCompatibleShape(expected shapes.Shape, others ...shapes.Shape) error {
+	expLen := expected.TotalSize()
 	for _, s := range others {
-		if !expected.Eq(s) {
+		if s.TotalSize() != expLen {
 			return errors.Errorf(errors.ShapeMismatch, expected, s)
 		}
 	}

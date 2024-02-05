@@ -29,7 +29,7 @@ func checkEqShape(expected shapes.Shape, others ...shapes.Shape) checkfunc {
 	}
 }
 
-func checkSameishShape(expected shapes.Shape, others ...shapes.Shape) checkfunc {
+func checkCompatibleShape(expected shapes.Shape, others ...shapes.Shape) checkfunc {
 	return func() error {
 		expLen := expected.TotalSize()
 		for _, s := range others {

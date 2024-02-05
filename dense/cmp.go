@@ -66,7 +66,7 @@ func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	case toBroadcast:
 		err = cmper.LtBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
 		err = cmper.Lt(ctx, t, u, retVal, asSame)
@@ -97,7 +97,7 @@ func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 	case toBroadcast:
 		err = cmper.LteBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
 		err = cmper.Lte(ctx, t, u, retVal, asSame)
@@ -128,7 +128,7 @@ func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	case toBroadcast:
 		err = cmper.GtBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
 		err = cmper.Gt(ctx, t, u, retVal, asSame)
@@ -159,7 +159,7 @@ func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 	case toBroadcast:
 		err = cmper.GteBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
 		err = cmper.Gte(ctx, t, u, retVal, asSame)
@@ -190,7 +190,7 @@ func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 	case toBroadcast:
 		err = cmper.ElEqBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
 		err = cmper.ElEq(ctx, t, u, retVal, asSame)
@@ -221,7 +221,7 @@ func (t *Dense[DT]) Ne(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	case toBroadcast:
 		err = cmper.NeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkEqShape(t.Shape(), u.Shape())(); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
 		err = cmper.Ne(ctx, t, u, retVal, asSame)
