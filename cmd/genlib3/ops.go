@@ -45,3 +45,57 @@ type opDT struct {
 	BinOp
 	Datatypes []string
 }
+
+type UnOp struct {
+	Name      string
+	TypeClass string
+	Interface string
+	PkgFunc   string
+	Body      string
+}
+
+var unops = []UnOp{
+	{"Abs", "Num", "Abser", "Abs", ""},
+	{"Sign", "Num", "Signer", "", `if x < 0 { return -1 }; return 1`},
+	{"Ceil", "Floats", "Ceiler", "Ceil", ""},
+	{"Floor", "Floats", "Floorer", "Floor", ""},
+	{"Neg", "Num", "Neger", "", "return -x"},
+	{"Inv", "Num", "Inver", "", "return 1/x"},
+	{"InvSqrt", "Floats", "InvSqrter", "", "return 1/{{.MathPkg}}.Sqrt(x)"},
+	{"Exp", "Floats", "ExpLoger", "Exp", ""},
+	{"Log", "Floats", "ExpLoger", "Log", ""},
+	{"Log2", "Floats", "ExpLoger", "Log2", ""},
+	{"Log10", "Floats", "ExpLoger", "Log10", ""},
+	{"Log1p", "Floats", "ExpLoger", "Log1p", ""},
+	{"Expm1", "Floats", "ExpLoger", "Expm1", ""},
+	{"Square", "Num", "Squarer", "", "return x*x"},
+	{"Sqrt", "Floats", "Squarer", "Sqrt", ""},
+	{"Cube", "Num", "Cuber", "", "return x*x*x"},
+	{"Tanh", "Floats", "Tanher", "Tanh", ""},
+}
+
+type FloatEng struct {
+	Type       string
+	EngineName string
+	MathPkg    string
+}
+
+var floatEngs = []FloatEng{
+	{"float64", "StdFloat64Engine", "math"},
+	{"float32", "StdFloat32Engine", "math32"},
+}
+
+type FloatEngUnOp struct {
+	UnOp
+	FloatEng
+}
+
+var floatengUnOps []FloatEngUnOp
+
+func init() {
+	for _, e := range floatEngs {
+		for _, o := range unops {
+			floatengUnOps = append(floatengUnOps, FloatEngUnOp{o, e})
+		}
+	}
+}

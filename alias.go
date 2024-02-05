@@ -34,10 +34,14 @@ const (
 
 type SliceRange = shapes.Slice
 
+// Num is a constraint that includes all numeric types.
 type Num = internal.Num
 
+// Floats is a constraint to all floating point types.
+type Floats = internal.Floats
+
 // Range creates a slice of values of the given DT
-func Range[DT internal.Rangeable](start, end int) []DT {
+func Range[DT internal.OrderedNum](start, end int) []DT {
 	size := end - start
 	incr := true
 	if start > end {

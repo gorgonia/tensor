@@ -6,6 +6,7 @@ import (
 )
 
 var funcs = template.FuncMap{
-	"title": strings.Title,
-	"lower": strings.ToLower,
+	"title":   strings.Title,
+	"lower":   strings.ToLower,
+	"replace": strings.ReplaceAll,
 }
