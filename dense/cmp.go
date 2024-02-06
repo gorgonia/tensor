@@ -166,8 +166,8 @@ func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 	return retVal, nil
 }
 
-// Ne performs `t != u`
-func (t *Dense[DT]) Ne(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
+// ElNe performs `t != u`
+func (t *Dense[DT]) ElNe(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
 	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
 	if err != nil {
 		return nil, err
@@ -181,17 +181,17 @@ func (t *Dense[DT]) Ne(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to Incr for Ne")
+		return nil, errors.Errorf("Unable to Incr for ElNe")
 	}
 
 	switch {
 	case toBroadcast:
-		err = cmper.NeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
+		err = cmper.ElNeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.Ne(ctx, t, u, retVal, asSame)
+		err = cmper.ElNe(ctx, t, u, retVal, asSame)
 
 	}
 	return retVal, nil
