@@ -20,7 +20,7 @@ var arithOps = []BinOp{
 
 var comparableOps = []BinOp{
 	{"ElEq", "==", "comparable", false, "Comparer", "", ""},
-	{"Ne", "!=", "comparable", false, "Comparer", "", ""},
+	{"ElNe", "!=", "comparable", false, "Comparer", "", ""},
 }
 
 var orderedOps = []BinOp{
@@ -38,7 +38,7 @@ var cmpOpsNum = []BinOp{
 	{"Gt", ">", "OrderedNum", false, "FullOrd", "", ""},
 	{"Gte", ">=", "OrderedNum", false, "FullOrd", "", ""},
 	{"ElEq", "==", "Num", false, "Comparer", "", ""},
-	{"Ne", "!=", "Num", false, "Comparer", "", ""},
+	{"ElNe", "!=", "Num", false, "Comparer", "", ""},
 }
 
 type opDT struct {

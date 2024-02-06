@@ -82,18 +82,18 @@ func eleqOp[DT comparable]() CmpBinOp[DT] {
 	}
 }
 
-// neOp creates a `CmpBinOp` for values of the `comparable` datatype.
-func neOp[DT comparable]() CmpBinOp[DT] {
+// elneOp creates a `CmpBinOp` for values of the `comparable` datatype.
+func elneOp[DT comparable]() CmpBinOp[DT] {
 	return CmpBinOp[DT]{
-		VV:     execution.NeVVBool[DT],
-		VVBC:   execution.NeBCBool[DT],
-		VVIter: execution.NeVVIterBool[DT],
+		VV:     execution.ElNeVVBool[DT],
+		VVBC:   execution.ElNeBCBool[DT],
+		VVIter: execution.ElNeVVIterBool[DT],
 
-		VS:     execution.NeVSBool[DT],
-		VSIter: execution.NeVSIterBool[DT],
+		VS:     execution.ElNeVSBool[DT],
+		VSIter: execution.ElNeVSIterBool[DT],
 
-		SV:     execution.NeSVBool[DT],
-		SVIter: execution.NeSVIterBool[DT],
+		SV:     execution.ElNeSVBool[DT],
+		SVIter: execution.ElNeSVIterBool[DT],
 	}
 }
 
@@ -172,17 +172,17 @@ func eleqOpOrderedNum[DT Num]() (Op[DT], CmpBinOp[DT]) {
 	}, eleqOp[DT]()
 }
 
-// neOpOrderedNum creates the ops necessary for an OrderedNum engine.
-func neOpOrderedNum[DT Num]() (Op[DT], CmpBinOp[DT]) {
+// elneOpOrderedNum creates the ops necessary for an OrderedNum engine.
+func elneOpOrderedNum[DT Num]() (Op[DT], CmpBinOp[DT]) {
 	return Op[DT]{
-		VV:     execution.NeVV[DT],
-		VVBC:   execution.NeBC[DT],
-		VVIter: execution.NeVVIter[DT],
+		VV:     execution.ElNeVV[DT],
+		VVBC:   execution.ElNeBC[DT],
+		VVIter: execution.ElNeVVIter[DT],
 
-		VS:     execution.NeVS[DT],
-		VSIter: execution.NeVSIter[DT],
+		VS:     execution.ElNeVS[DT],
+		VSIter: execution.ElNeVSIter[DT],
 
-		SV:     execution.NeSV[DT],
-		SVIter: execution.NeSVIter[DT],
-	}, neOp[DT]()
+		SV:     execution.ElNeSV[DT],
+		SVIter: execution.ElNeSVIter[DT],
+	}, elneOp[DT]()
 }

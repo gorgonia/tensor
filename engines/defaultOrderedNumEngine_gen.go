@@ -148,28 +148,28 @@ func (e StdOrderedNumEngine[DT, T]) ElEqBroadcastable(ctx context.Context, a, b 
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
 
-// Ne performs `a != b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) Ne(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
-	op, cmpOp := neOpOrderedNum[DT]()
+// ElNe performs `a != b`, with a bool tensor as the return value.
+func (e StdOrderedNumEngine[DT, T]) ElNe(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
 	}
 	return e.cmpOp(ctx, a, b, retVal.(tensor.Basic[DT]), op)
 }
 
-// NeScalar performs `vec != scalar` or `scalar != vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
+// ElNeScalar performs `vec != scalar` or `scalar != vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) NeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
-	op, cmpOp := neOpOrderedNum[DT]()
+func (e StdOrderedNumEngine[DT, T]) ElNeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
 	}
 	return e.cmpOpScalar(ctx, a, b, retVal.(tensor.Basic[DT]), scalarOnLeft, op)
 }
 
-// NeBroadcastable performs `a != b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) NeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
-	op, cmpOp := neOpOrderedNum[DT]()
+// ElNeBroadcastable performs `a != b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
+func (e StdOrderedNumEngine[DT, T]) ElNeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
 		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}

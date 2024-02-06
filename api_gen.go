@@ -271,8 +271,8 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	return retVal, err
 }
 
-// Ne performs `t != u`.
-func Ne[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
+// ElNe performs `t != u`.
+func ElNe[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	e, newAPT, newAPU, retVal, fo, err := PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
@@ -287,16 +287,16 @@ func Ne[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		return nil, errors.Errorf(errors.EngineSupport, e, comparer, errors.ThisFn())
 	}
 	if fo.Incr {
-		return nil, errors.Errorf("Unable to perform Incr for Ne")
+		return nil, errors.Errorf("Unable to perform Incr for ElNe")
 	}
 	switch {
 	case toBroadcast:
-		err = comparer.NeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
+		err = comparer.ElNeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = comparer.Ne(ctx, t, u, retVal, asSame)
+		err = comparer.ElNe(ctx, t, u, retVal, asSame)
 
 	}
 	return retVal, err

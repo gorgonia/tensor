@@ -450,26 +450,26 @@ func TestDense_ElEq(t *testing.T) {
 	qcHelper[float64](t, nil, genElEqTrans[float64])
 	qcHelper[float64](t, nil, genElEqTransCisDT[float64])
 }
-func genNeTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
+func genElNeTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
 		_, ok1 := a.Engine().(tensor.Comparer[DT, *Dense[DT]])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
-		ab, err := a.Ne(b)
-		if err2, retEarly := qcErrCheck(t, "Ne - a∙b", a, b, weAB, err); retEarly {
+		ab, err := a.ElNe(b)
+		if err2, retEarly := qcErrCheck(t, "ElNe - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
 		_, ok2 := b.Engine().(tensor.Comparer[DT, *Dense[DT]])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
-		bc, err := b.Ne(c)
-		if err, retEarly := qcErrCheck(t, "Ne - b∙c", b, c, weBC, err); retEarly {
+		bc, err := b.ElNe(c)
+		if err, retEarly := qcErrCheck(t, "ElNe - b∙c", b, c, weBC, err); retEarly {
 			return err == nil
 		}
 
-		ac, err := a.Ne(c)
+		ac, err := a.ElNe(c)
 		weAC := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(c.Shape())
-		if err, retEarly := qcErrCheck(t, "Ne - a∙c", a, c, weAC, err); retEarly {
+		if err, retEarly := qcErrCheck(t, "ElNe - a∙c", a, c, weAC, err); retEarly {
 			return err == nil
 		}
 
@@ -485,26 +485,26 @@ func genNeTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any 
 	}
 }
 
-func genNeTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
+func genElNeTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
 		_, ok1 := a.Engine().(tensor.Comparer[DT, *Dense[DT]])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
-		ab, err := a.Ne(b, As(a.Dtype()))
-		if err2, retEarly := qcErrCheck(t, "Ne - a∙b", a, b, weAB, err); retEarly {
+		ab, err := a.ElNe(b, As(a.Dtype()))
+		if err2, retEarly := qcErrCheck(t, "ElNe - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
 		_, ok2 := b.Engine().(tensor.Comparer[DT, *Dense[DT]])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
-		bc, err := b.Ne(c, As(b.Dtype()))
-		if err, retEarly := qcErrCheck(t, "Ne - b∙c", b, c, weBC, err); retEarly {
+		bc, err := b.ElNe(c, As(b.Dtype()))
+		if err, retEarly := qcErrCheck(t, "ElNe - b∙c", b, c, weBC, err); retEarly {
 			return err == nil
 		}
 
-		ac, err := a.Ne(c, As(a.Dtype()))
+		ac, err := a.ElNe(c, As(a.Dtype()))
 		weAC := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(c.Shape())
-		if err, retEarly := qcErrCheck(t, "Ne - a∙c", a, c, weAC, err); retEarly {
+		if err, retEarly := qcErrCheck(t, "ElNe - a∙c", a, c, weAC, err); retEarly {
 			return err == nil
 		}
 
@@ -512,29 +512,29 @@ func genNeTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions)
 	}
 }
 
-func TestDense_Ne(t *testing.T) {
-	qcHelper[uint](t, nil, genNeTrans[uint])
-	qcHelper[uint](t, nil, genNeTransCisDT[uint])
-	qcHelper[uint8](t, nil, genNeTrans[uint8])
-	qcHelper[uint8](t, nil, genNeTransCisDT[uint8])
-	qcHelper[uint16](t, nil, genNeTrans[uint16])
-	qcHelper[uint16](t, nil, genNeTransCisDT[uint16])
-	qcHelper[uint32](t, nil, genNeTrans[uint32])
-	qcHelper[uint32](t, nil, genNeTransCisDT[uint32])
-	qcHelper[uint64](t, nil, genNeTrans[uint64])
-	qcHelper[uint64](t, nil, genNeTransCisDT[uint64])
-	qcHelper[int](t, nil, genNeTrans[int])
-	qcHelper[int](t, nil, genNeTransCisDT[int])
-	qcHelper[int8](t, nil, genNeTrans[int8])
-	qcHelper[int8](t, nil, genNeTransCisDT[int8])
-	qcHelper[int16](t, nil, genNeTrans[int16])
-	qcHelper[int16](t, nil, genNeTransCisDT[int16])
-	qcHelper[int32](t, nil, genNeTrans[int32])
-	qcHelper[int32](t, nil, genNeTransCisDT[int32])
-	qcHelper[int64](t, nil, genNeTrans[int64])
-	qcHelper[int64](t, nil, genNeTransCisDT[int64])
-	qcHelper[float32](t, nil, genNeTrans[float32])
-	qcHelper[float32](t, nil, genNeTransCisDT[float32])
-	qcHelper[float64](t, nil, genNeTrans[float64])
-	qcHelper[float64](t, nil, genNeTransCisDT[float64])
+func TestDense_ElNe(t *testing.T) {
+	qcHelper[uint](t, nil, genElNeTrans[uint])
+	qcHelper[uint](t, nil, genElNeTransCisDT[uint])
+	qcHelper[uint8](t, nil, genElNeTrans[uint8])
+	qcHelper[uint8](t, nil, genElNeTransCisDT[uint8])
+	qcHelper[uint16](t, nil, genElNeTrans[uint16])
+	qcHelper[uint16](t, nil, genElNeTransCisDT[uint16])
+	qcHelper[uint32](t, nil, genElNeTrans[uint32])
+	qcHelper[uint32](t, nil, genElNeTransCisDT[uint32])
+	qcHelper[uint64](t, nil, genElNeTrans[uint64])
+	qcHelper[uint64](t, nil, genElNeTransCisDT[uint64])
+	qcHelper[int](t, nil, genElNeTrans[int])
+	qcHelper[int](t, nil, genElNeTransCisDT[int])
+	qcHelper[int8](t, nil, genElNeTrans[int8])
+	qcHelper[int8](t, nil, genElNeTransCisDT[int8])
+	qcHelper[int16](t, nil, genElNeTrans[int16])
+	qcHelper[int16](t, nil, genElNeTransCisDT[int16])
+	qcHelper[int32](t, nil, genElNeTrans[int32])
+	qcHelper[int32](t, nil, genElNeTransCisDT[int32])
+	qcHelper[int64](t, nil, genElNeTrans[int64])
+	qcHelper[int64](t, nil, genElNeTransCisDT[int64])
+	qcHelper[float32](t, nil, genElNeTrans[float32])
+	qcHelper[float32](t, nil, genElNeTransCisDT[float32])
+	qcHelper[float64](t, nil, genElNeTrans[float64])
+	qcHelper[float64](t, nil, genElNeTransCisDT[float64])
 }

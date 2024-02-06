@@ -944,8 +944,8 @@ loop:
 
 }
 
-// NeVV performs c := a ̅!= b where c is of the same type as the inputs.
-func NeVV[T Num](a, b, c []T) {
+// ElNeVV performs c := a ̅!= b where c is of the same type as the inputs.
+func ElNeVV[T Num](a, b, c []T) {
 	a = a[:]
 	b = b[:len(a)]
 	c = c[:len(a)]
@@ -959,8 +959,8 @@ func NeVV[T Num](a, b, c []T) {
 	}
 }
 
-// NeBC performs c := a ̅!= b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
-func NeBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+// ElNeBC performs c := a ̅!= b where c is of the same type as the inputs, using the appropriate indexing that follows a broadcast operation.
+func ElNeBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
 	for i := range c {
 		var idxA, idxB int
 		for j := range cShp {
@@ -987,8 +987,8 @@ func NeBC[T Num](a, b, c []T, aShp, bShp, cShp shapes.Shape, aStrides, bStrides 
 	}
 }
 
-// NeVVIter performs c := a  ̅!= b, where a, b, and c requires the use of an iterator.
-func NeVVIter[T Num](a, b, c []T, ait, bit, cit Iterator) (err error) {
+// ElNeVVIter performs c := a  ̅!= b, where a, b, and c requires the use of an iterator.
+func ElNeVVIter[T Num](a, b, c []T, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
 	var validi, validj, validk bool
 	var cisa, cisb bool
@@ -1031,8 +1031,8 @@ loop:
 	return
 }
 
-// NeVS performs c := vec ̅!= scalar where c is of the same datatype as its inputs. The scalar value is broadcasted for the operation.
-func NeVS[T Num](a []T, b T, c []T) {
+// ElNeVS performs c := vec ̅!= scalar where c is of the same datatype as its inputs. The scalar value is broadcasted for the operation.
+func ElNeVS[T Num](a []T, b T, c []T) {
 	a = a[:]
 	c = c[:len(a)]
 
@@ -1045,8 +1045,8 @@ func NeVS[T Num](a []T, b T, c []T) {
 	}
 }
 
-// NeVSIter performs c := vec ̅!= scalar where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
-func NeVSIter[T Num](a []T, b T, c []T, ait, cit Iterator) (err error) {
+// ElNeVSIter performs c := vec ̅!= scalar where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
+func ElNeVSIter[T Num](a []T, b T, c []T, ait, cit Iterator) (err error) {
 	var i, j int
 	var validi, validj bool
 	var retIsVec bool
@@ -1081,8 +1081,8 @@ loop:
 
 }
 
-// NeSV performs c := scalar ̅!= vec where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
-func NeSV[T Num](a T, b []T, c []T) {
+// ElNeSV performs c := scalar ̅!= vec where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
+func ElNeSV[T Num](a T, b []T, c []T) {
 	b = b[:]
 	c = c[:len(b)]
 
@@ -1095,8 +1095,8 @@ func NeSV[T Num](a T, b []T, c []T) {
 	}
 }
 
-// NeSVIter performs c := scalar ̅!= vec where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
-func NeSVIter[T Num](a T, b []T, C []T, bit, cit Iterator) (err error) {
+// ElNeSVIter performs c := scalar ̅!= vec where c is of the same datatype as the inputs. The scalar value is broadcasted for the operation.
+func ElNeSVIter[T Num](a T, b []T, C []T, bit, cit Iterator) (err error) {
 	var i, j int
 	var validi, validj bool
 	var retIsVec bool
@@ -1926,8 +1926,8 @@ loop:
 
 }
 
-// NeVVBool performs c := a ̅!= b.
-func NeVVBool[T comparable](a, b []T, c []bool) {
+// ElNeVVBool performs c := a ̅!= b.
+func ElNeVVBool[T comparable](a, b []T, c []bool) {
 	a = a[:]
 	b = b[:len(a)]
 	c = c[:len(a)]
@@ -1937,8 +1937,8 @@ func NeVVBool[T comparable](a, b []T, c []bool) {
 	}
 }
 
-// NeBCBool performs c := a ̅!= b, using the appropriate indexing that follows a broadcast operation.
-func NeBCBool[T comparable](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
+// ElNeBCBool performs c := a ̅!= b, using the appropriate indexing that follows a broadcast operation.
+func ElNeBCBool[T comparable](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, aStrides, bStrides []int) {
 	for i := range c {
 		var idxA, idxB int
 		for j := range cShp {
@@ -1961,8 +1961,8 @@ func NeBCBool[T comparable](a, b []T, c []bool, aShp, bShp, cShp shapes.Shape, a
 	}
 }
 
-// NeVVIterBool performs c := a  ̅!= b, where a, b, and c requires the use of an iterator.
-func NeVVIterBool[T comparable](a, b []T, c []bool, ait, bit, cit Iterator) (err error) {
+// ElNeVVIterBool performs c := a  ̅!= b, where a, b, and c requires the use of an iterator.
+func ElNeVVIterBool[T comparable](a, b []T, c []bool, ait, bit, cit Iterator) (err error) {
 	var i, j, k int
 	var validi, validj, validk bool
 	var cisa, cisb bool
@@ -2001,8 +2001,8 @@ loop:
 	return
 }
 
-// NeVSBool performs c := vec ̅!= scalar. The scalar value is broadcasted for the operation.
-func NeVSBool[T comparable](a []T, b T, c []bool) {
+// ElNeVSBool performs c := vec ̅!= scalar. The scalar value is broadcasted for the operation.
+func ElNeVSBool[T comparable](a []T, b T, c []bool) {
 	a = a[:]
 	c = c[:len(a)]
 
@@ -2011,8 +2011,8 @@ func NeVSBool[T comparable](a []T, b T, c []bool) {
 	}
 }
 
-// NeVSIterBool performs c := vec ̅!= scalar. The scalar value is broadcasted for the operation.
-func NeVSIterBool[T comparable](a []T, b T, c []bool, ait, cit Iterator) (err error) {
+// ElNeVSIterBool performs c := vec ̅!= scalar. The scalar value is broadcasted for the operation.
+func ElNeVSIterBool[T comparable](a []T, b T, c []bool, ait, cit Iterator) (err error) {
 	var i, j int
 	var validi, validj bool
 	var retIsVec bool
@@ -2043,8 +2043,8 @@ loop:
 
 }
 
-// NeSVBool performs c := scalar ̅!= vec. The scalar value is broadcasted for the operation.
-func NeSVBool[T comparable](a T, b []T, c []bool) {
+// ElNeSVBool performs c := scalar ̅!= vec. The scalar value is broadcasted for the operation.
+func ElNeSVBool[T comparable](a T, b []T, c []bool) {
 	b = b[:]
 	c = c[:len(b)]
 
@@ -2053,8 +2053,8 @@ func NeSVBool[T comparable](a T, b []T, c []bool) {
 	}
 }
 
-// NeSVIterBool performs c := scalar ̅!= vec. The scalar value is broadcasted for the operation.
-func NeSVIterBool[T comparable](a T, b []T, c []bool, bit, cit Iterator) (err error) {
+// ElNeSVIterBool performs c := scalar ̅!= vec. The scalar value is broadcasted for the operation.
+func ElNeSVIterBool[T comparable](a T, b []T, c []bool, bit, cit Iterator) (err error) {
 	var i, j int
 	var validi, validj bool
 	var retIsVec bool

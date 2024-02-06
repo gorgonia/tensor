@@ -67,14 +67,16 @@ type BasicArither[DT any, T Basic[DT]] interface {
 	DivBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
-type Arither[DT any, T Tensor[DT, T]] interface {
+type Arither[DT any, T Basic[DT]] interface {
 	BasicArither[DT, T]
 
 	Mod(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	ModScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+	ModBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 
 	Pow(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
 	PowScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
+	PowBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
 type Comparer[DT any, T Basic[DT]] interface {
@@ -82,9 +84,9 @@ type Comparer[DT any, T Basic[DT]] interface {
 	ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
 	ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
-	Ne(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error)
-	NeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	NeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+	ElNe(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error)
+	ElNeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	ElNeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
 type Ord[DT any, T Basic[DT]] interface {
