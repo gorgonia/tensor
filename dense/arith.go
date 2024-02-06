@@ -10,36 +10,7 @@ import (
 )
 
 func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
-	e = getEngine[DT](t, u)
-	if err = check(checkFlags(e, t, u)); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-	tShp := t.Shape()
-	uShp := u.Shape()
-	expShape := largestShape(tShp, uShp)
-
-	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, expShape, opts...)
-	if err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-
-	newAPT = t.Info()
-	newAPU = u.Info()
-
-	// fast path
-	if !fo.Broadcast || tShp.TotalSize() == uShp.TotalSize() {
-		// no broadcasting necessary
-		fo.Broadcast = false
-		return
-	}
-
-	// create autobroadcast shape
-	newAPT, newAPU = tensor.CalcBroadcastShapes(newAPT, newAPU)
-	if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-
-	return
+	return tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 }
 
 func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {

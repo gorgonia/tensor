@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"context"
+
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal/errors"
 )

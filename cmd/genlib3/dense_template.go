@@ -3,36 +3,7 @@ package main
 import "text/template"
 
 const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
-	e = getEngine[DT](t, u)
-	if err = check(checkFlags(e, t, u)); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-	tShp := t.Shape()
-	uShp := u.Shape()
-	expShape := largestShape(tShp, uShp)
-
-	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, expShape, opts...)
-	if err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-
-	newAPT = t.Info()
-	newAPU = u.Info()
-
-	// fast path
-	if !fo.Broadcast || tShp.TotalSize() == uShp.TotalSize() {
-		// no broadcasting necessary
-		fo.Broadcast = false
-		return
-	}
-
-	// create autobroadcast shape
-	newAPT, newAPU = tensor.CalcBroadcastShapes(newAPT, newAPU)
-	if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-
-	return
+	return tensor.PrepBinOpCis[DT,*Dense[DT]](t, u, opts...)
 }
 
 
@@ -102,40 +73,7 @@ func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*
 `
 
 const basicCmpPrep = `func (t *Dense[DT]) basicCmpPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal DescWithStorage, fo Option, err error) {
-	e = getEngine[DT](t, u)
-	if err = check(checkFlags(e, t, u)); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-	tShp := t.Shape()
-	uShp := u.Shape()
-	expShape := largestShape(tShp, uShp)
-
-	var prepper tensor.DescFuncOptHandler[DT]
-	var ok bool
-	if prepper, ok = e.(tensor.DescFuncOptHandler[DT]); !ok {
-		return nil, nil, nil, nil, fo, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
-	}
-
-	opts = defaultCmpFuncOpt(opts)
-	if retVal, fo, err = prepper.HandleFuncOptsDesc(t, expShape, opts...); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
-	}
-
-	newAPT = t.Info()
-	newAPU = u.Info()
-
-	// fast path
-	if !fo.Broadcast || tShp.TotalSize() == uShp.TotalSize() {
-		// no broadcasting necessary
-		fo.Broadcast = false
-		return
-	}
-
-	newAPT, newAPU = tensor.CalcBroadcastShapes(newAPT, newAPU)
-	if err = tensor.CheckBroadcastable(newAPT.Shape(), newAPU.Shape()); err != nil {
-		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-	return
+	return tensor.PrepBinOpTrans[DT](t, u, opts...)
 }
 `
 

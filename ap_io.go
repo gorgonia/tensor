@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 
-	"gorgonia.org/tensor/internal/serialization/pb"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal/serialization/pb"
 )
 
 func (ap AP) GobEncode() (p []byte, err error) {
