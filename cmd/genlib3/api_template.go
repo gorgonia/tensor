@@ -4,7 +4,7 @@ import "text/template"
 
 const apiArithOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`." + `
 func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err :=  PrepBinOpCis[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err :=  PrepBasicBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +21,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
 	case toBroadcast:
 		err = {{.Interface|lower}}.{{.Name}}Broadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil{
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return nil, err
 		}
 		err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, toIncr)
@@ -54,7 +54,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) 
 	case toBroadcast:
 		err = {{.Interface|lower}}.{{.Name}}Broadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil{
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return nil, err
 		}
 		err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, asSame)

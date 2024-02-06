@@ -6,7 +6,7 @@ import "gorgonia.org/tensor/internal/errors"
 
 // Add performs `t + u`.
 func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBasicBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	case toBroadcast:
 		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = adder.Add(ctx, t, u, retVal, toIncr)
@@ -34,7 +34,7 @@ func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Sub performs `t - u`.
 func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBasicBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	case toBroadcast:
 		err = basicarither.SubBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = basicarither.Sub(ctx, t, u, retVal, toIncr)
@@ -62,7 +62,7 @@ func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Mul performs `t * u`.
 func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBasicBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	case toBroadcast:
 		err = basicarither.MulBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = basicarither.Mul(ctx, t, u, retVal, toIncr)
@@ -90,7 +90,7 @@ func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 // Div performs `t / u`.
 func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := PrepBinOpCis[DT](t, u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := PrepBasicBinOpCis[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	case toBroadcast:
 		err = basicarither.DivBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = basicarither.Div(ctx, t, u, retVal, toIncr)
@@ -138,7 +138,7 @@ func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	case toBroadcast:
 		err = ord.LtBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = ord.Lt(ctx, t, u, retVal, asSame)
@@ -169,7 +169,7 @@ func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	case toBroadcast:
 		err = ord.LteBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = ord.Lte(ctx, t, u, retVal, asSame)
@@ -200,7 +200,7 @@ func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	case toBroadcast:
 		err = fullord.GtBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = fullord.Gt(ctx, t, u, retVal, asSame)
@@ -231,7 +231,7 @@ func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	case toBroadcast:
 		err = fullord.GteBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = fullord.Gte(ctx, t, u, retVal, asSame)
@@ -262,7 +262,7 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	case toBroadcast:
 		err = comparer.ElEqBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = comparer.ElEq(ctx, t, u, retVal, asSame)
@@ -293,7 +293,7 @@ func Ne[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	case toBroadcast:
 		err = comparer.NeBroadcastable(ctx, t, u, retVal, asSame, newAPT, newAPU)
 	default:
-		if err := checkCompatibleShape(t.Shape(), u.Shape()); err != nil {
+		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
 		err = comparer.Ne(ctx, t, u, retVal, asSame)
