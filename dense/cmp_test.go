@@ -32,15 +32,15 @@ func TestDense_Ne_manual(t *testing.T) {
 		88, 17, 36, 44, 0, 0,
 	}))
 
-	ab, err := a.Ne(b)
+	ab, err := a.ElNe(b)
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc, err := b.Ne(c)
+	bc, err := b.ElNe(c)
 	if err != nil {
 		t.Fatal(err)
 	}
-	ac, err := a.Ne(c)
+	ac, err := a.ElNe(c)
 	if err != nil {
 		t.Fatal(err)
 	}

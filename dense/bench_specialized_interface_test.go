@@ -98,7 +98,7 @@ func (e StdFloat64Engine[T]) AddScalarSpecialized(ctx context.Context, a T, b fl
 }
 
 func (t *Dense[DT]) Add_INTERFACE(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	e := getEngine[DT](t, u)
+	e := tensor.GetEngine(t, u)
 	if err = check(checkFlags(e, t, u), checkEqShape(t.Shape(), u.Shape())); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
@@ -129,7 +129,7 @@ func (t *Dense[DT]) Add_INTERFACE(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[
 }
 
 func (t *Dense[DT]) Add_SPECIALIZED(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	e := getEngine[DT](t, u)
+	e := tensor.GetEngine(t, u)
 	if err = check(checkFlags(e, t, u), checkEqShape(t.Shape(), u.Shape())); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}

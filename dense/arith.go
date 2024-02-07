@@ -14,7 +14,7 @@ func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, new
 }
 
 func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {
-	e = getEngine[DT](t)
+	e = tensor.GetEngine(t)
 	if err = check(checkFlags(e, t)); err != nil {
 		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}

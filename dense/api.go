@@ -79,7 +79,7 @@ func Prod[DT Num](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) 
 // 2. Triangle inequality: Norm(a + b) <= Norm(a) + Norm(b)
 // 3. Homogeneity: Norm(alpha * a) = |alpha| * Norm(a)
 func Norm[DT constraints.Float](a *Dense[DT], order tensor.NormOrder, opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	e := getEngine[DT](a)
+	e := tensor.GetEngine(a)
 	if err = check(checkFlags(e, a)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
@@ -109,7 +109,7 @@ func Norm[DT constraints.Float](a *Dense[DT], order tensor.NormOrder, opts ...Fu
 }
 
 func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e := getEngine[DT](a, b)
+	e := tensor.GetEngine(a, b)
 	if err = check(checkFlags(e, a, b), checkEqShape(a.Shape(), b.Shape())); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}

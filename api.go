@@ -30,7 +30,7 @@ func getLargestShape(ss ...shapes.Shape) shapes.Shape {
 }
 
 func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
-	e := getEngine(a, b).BasicEng()
+	e := GetEngine(a, b).BasicEng()
 
 	// TODO: checks
 
@@ -55,7 +55,7 @@ func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err erro
 }
 
 func Abs[DT Num](a Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
-	e := getEngine(a).BasicEng()
+	e := GetEngine(a).BasicEng()
 	var abser Abser[DT, Basic[DT]]
 	var ok bool
 	if abser, ok = e.(Abser[DT, Basic[DT]]); !ok {
@@ -72,7 +72,7 @@ func Abs[DT Num](a Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
 }
 
 func MatVecMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
-	e := getEngine(a, b).BasicEng()
+	e := GetEngine(a, b).BasicEng()
 	var mvmer BLA[DT, Basic[DT]]
 	var ok bool
 	if mvmer, ok = e.(BLA[DT, Basic[DT]]); !ok {
@@ -97,7 +97,7 @@ func MatVecMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err e
 }
 
 func Inner[DT Num](a, b Basic[DT]) (retVal DT, err error) {
-	e := getEngine(a, b).BasicEng()
+	e := GetEngine(a, b).BasicEng()
 	var innerer InnerProder[DT, Basic[DT]]
 	var ok bool
 	if innerer, ok = e.(InnerProder[DT, Basic[DT]]); !ok {
@@ -107,7 +107,7 @@ func Inner[DT Num](a, b Basic[DT]) (retVal DT, err error) {
 }
 
 func Outer[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
-	e := getEngine(a, b).BasicEng()
+	e := GetEngine(a, b).BasicEng()
 	var outerer BLA[DT, Basic[DT]]
 	var ok bool
 	if outerer, ok = e.(BLA[DT, Basic[DT]]); !ok {
