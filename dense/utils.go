@@ -21,15 +21,6 @@ func memoryFlagFromEngine(e Engine) (retVal MemoryFlag) {
 	return retVal
 }
 
-func getEngine[DT any](vs ...Value[DT]) Engine {
-	for _, v := range vs {
-		if v.Engine() != nil {
-			return v.Engine().Workhorse()
-		}
-	}
-	panic("Unreachable")
-}
-
 func getAliker[DT any](v Value[DT]) tensor.Aliker[*Dense[DT]] {
 	d, ok := v.(tensor.Aliker[*Dense[DT]])
 	if ok {

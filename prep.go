@@ -5,11 +5,12 @@ import (
 	"gorgonia.org/tensor/internal/errors"
 )
 
-func getEngine(ts ...Engineer) Engine {
+// GetEngine gets the workhorse engine from the given list of tensors.
+func GetEngine(ts ...Engineer) Engine {
 	// TODO: get highest capability engine
 	for _, t := range ts {
 		if e := t.Engine(); e != nil {
-			return e
+			return e.Workhorse()
 		}
 	}
 	return nil
@@ -26,7 +27,7 @@ func defaultCmpFuncOpt(opts []FuncOpt) []FuncOpt {
 
 // PrepBinOpCis is a function that preps two basic tensors for a elementwise binary operation that returns the a tensor of the same datatype as its inputs.
 func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal T, fo Option, err error) {
-	e = getEngine(a, b)
+	e = GetEngine(a, b)
 	if err = check(checkFlags(e, a, b)); err != nil {
 		return nil, nil, nil, retVal, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
@@ -63,7 +64,7 @@ func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, n
 
 // PrepBasicBinOpCis is a function that preps two basic tensors for a elementwise binary operation that returns the a tensor of the same datatype as its inputs. It is like PrepBinOpCis except the input and output types are Basic[DT].
 func PrepBasicBinOpCis[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal Basic[DT], fo Option, err error) {
-	e = getEngine(a, b)
+	e = GetEngine(a, b)
 	aShp := a.Shape()
 	bShp := b.Shape()
 	cShp := getLargestShape(aShp, bShp)
@@ -97,7 +98,7 @@ func PrepBasicBinOpCis[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAP
 
 // PrepBinOpTrans is a function that preps two basic tensors for a comparison based binary operation.
 func PrepBinOpTrans[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal DescWithStorage, fo Option, err error) {
-	e = getEngine(a, b)
+	e = GetEngine(a, b)
 	if err = check(checkFlags(e, a, b)); err != nil {
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
