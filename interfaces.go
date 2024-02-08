@@ -119,8 +119,8 @@ type Operable[T any] interface {
 	// Materialize turns a view into T.
 	Materialize() (T, error)
 
-	// Repeat repeats the *Dense tensor along the given axis the given number of times.
-	Repeat(axis int, repeats ...int) (T, error)
+	// Transpose performs a transposition where the data is actually moved.
+	Transpose(axes ...int) (T, error)
 }
 
 type Tensor[DT any, T Basic[DT]] interface {
@@ -142,6 +142,9 @@ type Tensor[DT any, T Basic[DT]] interface {
 
 	// Dot
 	Dot(reductionFn, elwiseFn func(DT, DT) DT, other T, opts ...FuncOpt) (T, error)
+
+	// Repeat repeats the *Dense tensor along the given axis the given number of times.
+	Repeat(axis int, repeats ...int) (T, error)
 }
 
 type RawAccessor[DT any] interface {
