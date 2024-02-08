@@ -1,8 +1,9 @@
 package dense
 
 import (
-	"gorgonia.org/tensor"
 	"testing"
+
+	"gorgonia.org/tensor"
 )
 
 // func TestDense_Lt(t *testing.T) {
