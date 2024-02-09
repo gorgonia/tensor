@@ -2,6 +2,8 @@ package stdeng
 
 import (
 	"context"
+	"log"
+
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
@@ -39,20 +41,18 @@ func checkDtype(expDtype dtype.Dtype, got dtype.Dtype) error {
 func (e StdEng[DT, T]) HandleFuncOptsDesc(a tensor.Basic[DT], expShape shapes.Shape, opts ...FuncOpt) (retVal DescWithStorage, fo Option, err error) {
 	fo = ParseFuncOpts(opts...)
 
-	reuseAny := fo.Reuse
-	toReuse := reuseAny != nil
-	safe := fo.Safe()
+	var toReuse bool
+	if retVal, toReuse = fo.Reuse.(DescWithStorage); toReuse {
+		toReuse = retVal == nil // check that its not a nil value
+	}
 
+	safe := fo.Safe()
 	asType := fo.AsType
 
-	var ok bool
 	switch {
 	case toReuse:
-		if retVal, ok = reuseAny.(DescWithStorage); !ok {
-			err = errors.Wrap(errors.Errorf(errors.TypeError, retVal, reuseAny), cannotUseReuse)
-			return
-		}
 		// if asType is not nil, then we would expect that the reuse should be of the same dtype
+		log.Printf("asType %v | retVal %v", asType, retVal)
 		if err = checkDtype(asType, retVal.Dtype()); err != nil {
 			err = errors.Wrap(err, cannotUseReuse)
 			return
@@ -124,25 +124,19 @@ func (e StdEng[DT, T]) HandleFuncOptsDesc(a tensor.Basic[DT], expShape shapes.Sh
 func (e StdEng[DT, T]) HandleFuncOpts(a tensor.Basic[DT], expShape shapes.Shape, opts ...FuncOpt) (retVal tensor.Basic[DT], fo Option, err error) {
 	fo = ParseFuncOpts(opts...)
 
-	reuseAny := fo.Reuse
-	toReuse := reuseAny != nil
+	var toReuse bool
+	if retVal, toReuse = fo.Reuse.(tensor.Basic[DT]); toReuse {
+		toReuse = retVal == nil // check that its not a nil value
+	}
+
 	safe := fo.Safe()
-
-	var ok bool
-	var empty tensor.Basic[DT]
-
 	if fo.AsType != nil {
-		err = errors.Errorf("Cannot use HandleFuncOptsSpecialized with a return tensor of a different dtype %v.")
+		err = errors.Errorf("Cannot use HandleFuncOpts with a return tensor of a different dtype %v.")
 		return
 	}
 
 	switch {
 	case toReuse:
-		if retVal, ok = reuseAny.(tensor.Basic[DT]); !ok {
-			err = errors.Wrap(errors.Errorf(errors.TypeError, empty, reuseAny), cannotUseReuse)
-			return
-		}
-
 		if !retVal.IsNativelyAccessible() {
 			err = errors.Wrap(errors.Errorf(errors.InaccessibleData, retVal), cannotUseReuse)
 			return
