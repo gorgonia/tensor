@@ -4,6 +4,7 @@ import (
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 // metaops.go contains methods that perform operation on metadata of the *Dense tensor
@@ -85,6 +86,7 @@ func (t *Dense[DT]) T(axes ...int) (view *Dense[DT], err error) {
 		return nil
 	*/
 }
+
 func (t *Dense[DT]) Slice(slices ...SliceRange) (retVal *Dense[DT], err error) {
 	var newAP AP
 	var ndStart, ndEnd int
@@ -105,6 +107,37 @@ func (t *Dense[DT]) Slice(slices ...SliceRange) (retVal *Dense[DT], err error) {
 	// TODO: slicing non accessible data
 
 	return v, nil
+}
+
+func (t *Dense[DT]) SliceInto(other *Dense[DT], slices ...SliceRange) (err error) {
+	var newAP AP
+	var ndStart, ndEnd int
+	if newAP, ndStart, ndEnd, err = t.AP.S(len(t.data), slices...); err != nil {
+		return
+	}
+	if ndStart < 0 || ndEnd < ndStart || ndEnd > cap(t.data) {
+		return errors.Errorf("Cannot slice %T. Index %d:%d is out of bounds", t, ndStart, ndEnd)
+	}
+
+	// check if there is enough data
+	data := t.data[ndStart:ndEnd]
+	if len(other.data) < len(data) {
+		return errors.Errorf("Cannot Slice %v. `other`'s preallocated `data` is too small. Expected at least %d elements. Got %d instead", t, len(data), len(other.data))
+	}
+
+	// copy metadata
+	other.copyMetadata(newAP, t.e, t.f, t.t)
+
+	// copy data
+	copy(other.data, data)
+
+	// if other is bigger, then we need to tag it as overallocated
+	if len(other.data) > len(data) {
+		t.f |= internal.IsOverallocated
+		other.data = other.data[:len(data)]
+		other.bytes = gutils.BytesFromSlice(other.data)
+	}
+	return nil
 }
 
 // RollAxis rolls the axis backwards until it lies in the given position.
