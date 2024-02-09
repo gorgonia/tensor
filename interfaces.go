@@ -97,6 +97,10 @@ type Slicer[T any] interface {
 	Slice(rs ...SliceRange) (T, error)
 }
 
+type SlicerInto[T any] interface {
+	SliceInto(other T, rs ...SliceRange) error
+}
+
 // Operable represents any tensor-like structure that can perform tensor-like operations without having to know about the datatype contained within.
 type Operable[T any] interface {
 	DescWithStorage
