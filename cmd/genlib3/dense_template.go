@@ -2,32 +2,9 @@ package main
 
 import "text/template"
 
-const basicArithPrep = `func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
-	return tensor.PrepBinOpCis[DT,*Dense[DT]](t, u, opts...)
-}
-
-
-func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {
-	e = tensor.GetEngine(t)
-	if err = check(checkFlags(e, t)); err != nil {
-		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-	var fo Option
-	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, t.Shape(), opts...)
-	if err != nil {
-		return nil, nil, nil, false, err
-	}
-
-	toIncr = fo.Incr
-	ctx = fo.Ctx
-	return
-}
-
-`
-
 const denseArithOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`." + `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT,*Dense[DT]](t,u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,10 +32,11 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 
 // {{.Name}}Scalar performs ` + "`t {{.Symbol}} s`. If `scalarOnLeft` is true, then it performs `s {{.Symbol}} t`." + `
 func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
-	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
+	e, retVal, fo, err :=  tensor.PrepBinOpScalarCis(t, s, opts...)
 	if err != nil {
 		return nil, err
 	}
+	ctx, toIncr := fo.Ctx, fo.Incr
 
 	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT, *Dense[DT]])
 	if !ok {
@@ -72,14 +50,9 @@ func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*
 }
 `
 
-const basicCmpPrep = `func (t *Dense[DT]) basicCmpPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal DescWithStorage, fo Option, err error) {
-	return tensor.PrepBinOpTrans[DT](t, u, opts...)
-}
-`
-
 const denseCmpOpRaw = `// {{.Name}} performs ` + "`t {{.Symbol}} u`" + `
 func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
  	if err != nil {
 		return nil, err
 	}
