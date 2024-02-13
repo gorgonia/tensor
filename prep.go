@@ -48,7 +48,12 @@ func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, n
 	newAPA = a.Info()
 	newAPB = b.Info()
 
-	// fast path
+	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
+	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
+	// it should be manually specified.
+	fo.Broadcast = fo.Broadcast || newAPA.shape.IsScalarEquiv() || newAPB.shape.IsScalarEquiv()
+
+	// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
 	if !fo.Broadcast || aShp.TotalSize() == bShp.TotalSize() {
 		// no broadcasting necessary
 		fo.Broadcast = false
@@ -82,7 +87,12 @@ func PrepBasicBinOpCis[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAP
 	newAPA = a.Info()
 	newAPB = b.Info()
 
-	// fast path
+	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
+	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
+	// it should be manually specified.
+	fo.Broadcast = fo.Broadcast || newAPA.shape.IsScalarEquiv() || newAPB.shape.IsScalarEquiv()
+
+	// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
 	if !fo.Broadcast || aShp.TotalSize() == bShp.TotalSize() {
 		// no broadcasting necessary
 		fo.Broadcast = false
@@ -120,7 +130,12 @@ func PrepBinOpTrans[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, 
 	newAPA = a.Info()
 	newAPB = b.Info()
 
-	// fast path
+	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
+	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
+	// it should be manually specified.
+	fo.Broadcast = fo.Broadcast || newAPA.shape.IsScalarEquiv() || newAPB.shape.IsScalarEquiv()
+
+	// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
 	if !fo.Broadcast || aShp.TotalSize() == bShp.TotalSize() {
 		// no broadcasting necessary
 		fo.Broadcast = false
