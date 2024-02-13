@@ -60,6 +60,14 @@ func TestDense_Add_manual(t *testing.T) {
 	assert.Equal(c.data, ret.data)
 	assert.True(c.Shape().Eq(ret.Shape()))
 
+	// with scalar representation
+	c.data = []float64{2, 3, 4, 5, 6, 7}
+	b = New[float64](WithShape(), WithBacking([]float64{1}))
+	ret, err = a.Add(b)
+	assert.Nil(err)
+	assert.Equal(c.data, ret.data)
+	assert.True(c.Shape().Eq(ret.Shape()))
+
 }
 
 func TestBroadcastDebug(t *testing.T) {
