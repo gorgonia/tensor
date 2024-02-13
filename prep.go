@@ -132,5 +132,24 @@ func PrepBinOpTrans[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, 
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 	return
+}
 
+// PrepBinOpScalarCis is a function that preps a tensor and a scalar for a binary operation that returns a tensor of the same datatype.
+func PrepBinOpScalarCis[DT any, T Tensor[DT, T]](a T, s DT, opts ...FuncOpt) (e Engine, retVal T, fo Option, err error) {
+	e = GetEngine(a)
+	if err = check(checkFlags(e, a)); err != nil {
+		return nil, retVal, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
+	}
+
+	var prepper SpecializedFuncOptHandler[DT, T]
+	var ok bool
+
+	if prepper, ok = e.(SpecializedFuncOptHandler[DT, T]); !ok {
+		return nil, retVal, fo, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
+	}
+
+	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(a, a.Shape(), opts...); err != nil {
+		return nil, retVal, fo, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	}
+	return e, retVal, fo, nil
 }

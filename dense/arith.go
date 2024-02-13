@@ -3,35 +3,13 @@
 package dense
 
 import (
-	"context"
-
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 )
 
-func (t *Dense[DT]) basicArithPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal *Dense[DT], fo Option, err error) {
-	return tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
-}
-
-func (t *Dense[DT]) basicArithScalarPrep(s DT, opts ...FuncOpt) (e Engine, retVal *Dense[DT], ctx context.Context, toIncr bool, err error) {
-	e = tensor.GetEngine(t)
-	if err = check(checkFlags(e, t)); err != nil {
-		return nil, nil, nil, false, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
-	}
-	var fo Option
-	retVal, fo, err = handleFuncOpts[DT, *Dense[DT]](e, t, t.Shape(), opts...)
-	if err != nil {
-		return nil, nil, nil, false, err
-	}
-
-	toIncr = fo.Incr
-	ctx = fo.Ctx
-	return
-}
-
 // Add performs `t + u`.
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +37,11 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 // AddScalar performs `t + s`. If `scalarOnLeft` is true, then it performs `s + t`.
 func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
-	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
+	e, retVal, fo, err := tensor.PrepBinOpScalarCis(t, s, opts...)
 	if err != nil {
 		return nil, err
 	}
+	ctx, toIncr := fo.Ctx, fo.Incr
 
 	adder, ok := e.(tensor.Adder[DT, *Dense[DT]])
 	if !ok {
@@ -77,7 +56,7 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 
 // Sub performs `t - u`.
 func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,10 +84,11 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 // SubScalar performs `t - s`. If `scalarOnLeft` is true, then it performs `s - t`.
 func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
-	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
+	e, retVal, fo, err := tensor.PrepBinOpScalarCis(t, s, opts...)
 	if err != nil {
 		return nil, err
 	}
+	ctx, toIncr := fo.Ctx, fo.Incr
 
 	suber, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
 	if !ok {
@@ -123,7 +103,7 @@ func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 
 // Mul performs `t * u`.
 func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -151,10 +131,11 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 // MulScalar performs `t * s`. If `scalarOnLeft` is true, then it performs `s * t`.
 func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
-	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
+	e, retVal, fo, err := tensor.PrepBinOpScalarCis(t, s, opts...)
 	if err != nil {
 		return nil, err
 	}
+	ctx, toIncr := fo.Ctx, fo.Incr
 
 	muler, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
 	if !ok {
@@ -169,7 +150,7 @@ func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 
 // Div performs `t / u`.
 func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicArithPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -197,10 +178,11 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 // DivScalar performs `t / s`. If `scalarOnLeft` is true, then it performs `s / t`.
 func (t *Dense[DT]) DivScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[DT], error) {
-	e, retVal, ctx, toIncr, err := t.basicArithScalarPrep(s, opts...)
+	e, retVal, fo, err := tensor.PrepBinOpScalarCis(t, s, opts...)
 	if err != nil {
 		return nil, err
 	}
+	ctx, toIncr := fo.Ctx, fo.Incr
 
 	diver, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
 	if !ok {

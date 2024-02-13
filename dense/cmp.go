@@ -7,13 +7,9 @@ import (
 	"gorgonia.org/tensor/internal/errors"
 )
 
-func (t *Dense[DT]) basicCmpPrep(u *Dense[DT], opts ...FuncOpt) (e Engine, newAPT, newAPU *tensor.AP, retVal DescWithStorage, fo Option, err error) {
-	return tensor.PrepBinOpTrans[DT](t, u, opts...)
-}
-
 // Lt performs `t < u`
 func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +40,7 @@ func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 
 // Lte performs `t <= u`
 func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +71,7 @@ func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 
 // Gt performs `t > u`
 func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +102,7 @@ func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 
 // Gte performs `t >= u`
 func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +133,7 @@ func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 
 // ElEq performs `t == u`
 func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +164,7 @@ func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 
 // ElNe performs `t != u`
 func (t *Dense[DT]) ElNe(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, err error) {
-	e, newAPT, newAPU, retVal, fo, err := t.basicCmpPrep(u, opts...)
+	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpTrans[DT](t, u, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -83,18 +83,10 @@ func genOrderedNumEngMethods(w io.Writer) {
 	}
 }
 
-func genDenseArithPrepMethods(w io.Writer) {
-	fmt.Fprintf(w, basicArithPrep)
-}
-
 func genDenseArithMethods(w io.Writer) {
 	for _, op := range arithOps {
 		denseArithOp.Execute(w, op)
 	}
-}
-
-func genDenseCmpPrepMethods(w io.Writer) {
-	fmt.Fprintf(w, basicCmpPrep)
 }
 
 func genDenseCmpMethods(w io.Writer) {
@@ -224,8 +216,8 @@ func main() {
 	pipeline(stdengLoc, "defaultOrderedEngine_gen.go", genOrderedEngMethods)
 	pipeline(stdengLoc, "defaultOrderedNumEngine_gen.go", genOrderedNumEngMethods)
 
-	pipeline(denseLoc, "arith.go", genDenseArithPrepMethods, genDenseArithMethods)
-	pipeline(denseLoc, "cmp.go", genDenseCmpPrepMethods, genDenseCmpMethods)
+	pipeline(denseLoc, "arith.go", genDenseArithMethods)
+	pipeline(denseLoc, "cmp.go", genDenseCmpMethods)
 	pipeline(denseLoc, "arith_gen_test.go", genDenseArithMethodTests)
 	pipeline(denseLoc, "cmp_gen_test.go", genDenseCmpMethodTests)
 	pipeline(floatengLoc, "defaultFloatEngines_gen.go", genFloatEngineUnOpMethods)
