@@ -7,6 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+type NoOpError interface {
+	NoOp()
+}
+
 type NoOp struct{}
 
 func (err NoOp) Error() string { return "No Op" }

@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"gorgonia.org/dtype"
+	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal/errors"
 )
 
@@ -61,7 +62,7 @@ func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, n
 	}
 
 	newAPA, newAPB = CalcBroadcastShapes(newAPA, newAPB)
-	if err = CheckBroadcastable(newAPA.Shape(), newAPB.Shape()); err != nil {
+	if err = shapes.AreBroadcastable(newAPA.Shape(), newAPB.Shape()); err != nil {
 		return nil, nil, nil, retVal, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 	return
@@ -100,7 +101,7 @@ func PrepBasicBinOpCis[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAP
 	}
 
 	newAPA, newAPB = CalcBroadcastShapes(newAPA, newAPB)
-	if err = CheckBroadcastable(newAPA.Shape(), newAPB.Shape()); err != nil {
+	if err = shapes.AreBroadcastable(newAPA.Shape(), newAPB.Shape()); err != nil {
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 	return
@@ -143,7 +144,7 @@ func PrepBinOpTrans[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, 
 	}
 
 	newAPA, newAPB = CalcBroadcastShapes(newAPA, newAPB)
-	if err = CheckBroadcastable(newAPA.Shape(), newAPB.Shape()); err != nil {
+	if err = shapes.AreBroadcastable(newAPA.Shape(), newAPB.Shape()); err != nil {
 		return nil, nil, nil, nil, fo, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn(1))
 	}
 	return
