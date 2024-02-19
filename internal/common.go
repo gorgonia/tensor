@@ -51,7 +51,7 @@ func HandleNoOp(err error) error {
 	if err == nil {
 		return nil
 	}
-	if _, ok := err.(errors.NoOp); ok {
+	if _, ok := err.(errors.NoOpError); ok {
 		return nil
 	}
 	return err

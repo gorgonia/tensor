@@ -27,7 +27,7 @@ var checkBCShapeCases = []struct {
 func TestCheckBroadcastShape(t *testing.T) {
 	for _, tc := range checkBCShapeCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := CheckBroadcastable(tc.a, tc.b)
+			err := shapes.AreBroadcastable(tc.a, tc.b)
 			if err := internal.HandleNoOp(err); err != nil && !tc.willErr {
 				t.Errorf("%v failed. Error: %v", tc.name, err)
 				return
@@ -52,7 +52,7 @@ func TestCalcBroadcastShapes(t *testing.T) {
 			if !newAPB.Shape().Eq(tc.newShapeB) {
 				t.Errorf("Expected %v. Got %v", tc.newShapeB, newAPB.Shape())
 			}
-			if err := internal.HandleNoOp(CheckBroadcastable(newAPA.Shape(), newAPB.Shape())); err != nil {
+			if err := internal.HandleNoOp(shapes.AreBroadcastable(newAPA.Shape(), newAPB.Shape())); err != nil {
 				t.Errorf("%v failed. Error: %v", tc.name, err)
 				return
 			}
