@@ -25,6 +25,7 @@ type Engineer interface {
 type Desc interface {
 	// info
 	Dtyper
+	IsNil() bool // can tell whether itself is nil. To see why this is required, look at HandleFunccOpt of the default engines and consider what happens if you need to pass in a (T)(nil) preallocated value
 	Shape() shapes.Shape
 	Strides() []int
 	Dims() int

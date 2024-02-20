@@ -26,6 +26,7 @@ func S[DT any](a DT) Scalar[DT] {
 // Z creates a zero valued scalar of the given dtype.
 func Z(dt dtype.Dtype) DescWithStorage { panic("XXX") }
 
+func (s Scalar[DT]) IsNil() bool        { return false } // Scalar will never be nil. The zero value is simply well, the zero value
 func (s Scalar[DT]) Info() *AP          { return nil }
 func (s Scalar[DT]) Dtype() dtype.Dtype { return dtype.Datatype[DT]{} }
 
