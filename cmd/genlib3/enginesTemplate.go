@@ -123,7 +123,7 @@ func (e StdOrderedNumEngine[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b 
 func (e StdOrderedNumEngine[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := {{.Name | lower}}OpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp )
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp )
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }

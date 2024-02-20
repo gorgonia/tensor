@@ -31,7 +31,7 @@ func (e StdOrderedNumEngine[DT, T]) LtScalar(ctx context.Context, a T, b DT, ret
 func (e StdOrderedNumEngine[DT, T]) LtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := ltOpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
@@ -59,7 +59,7 @@ func (e StdOrderedNumEngine[DT, T]) LteScalar(ctx context.Context, a T, b DT, re
 func (e StdOrderedNumEngine[DT, T]) LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := lteOpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
@@ -87,7 +87,7 @@ func (e StdOrderedNumEngine[DT, T]) GtScalar(ctx context.Context, a T, b DT, ret
 func (e StdOrderedNumEngine[DT, T]) GtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := gtOpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
@@ -115,7 +115,7 @@ func (e StdOrderedNumEngine[DT, T]) GteScalar(ctx context.Context, a T, b DT, re
 func (e StdOrderedNumEngine[DT, T]) GteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := gteOpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
@@ -143,7 +143,7 @@ func (e StdOrderedNumEngine[DT, T]) ElEqScalar(ctx context.Context, a T, b DT, r
 func (e StdOrderedNumEngine[DT, T]) ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := eleqOpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
@@ -171,7 +171,7 @@ func (e StdOrderedNumEngine[DT, T]) ElNeScalar(ctx context.Context, a T, b DT, r
 func (e StdOrderedNumEngine[DT, T]) ElNeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
-		e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
+		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
 	}
 	return e.cmpOpBC(ctx, a, b, retVal.(tensor.Basic[DT]), expAPA, expAPB, op)
 }
