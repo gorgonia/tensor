@@ -171,7 +171,7 @@ func CSCFromCoord[DT any](shape shapes.Shape, xs, ys []int, data interface{}) *C
 	t.indptr = indptr
 	return t
 }
-
+func (t *CS[DT]) IsNil() bool          { return t == nil }
 func (t *CS[DT]) Shape() shapes.Shape  { return t.s }
 func (t *CS[DT]) Strides() []int       { return nil }
 func (t *CS[DT]) Dtype() dtype.Dtype   { return t.t }

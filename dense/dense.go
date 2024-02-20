@@ -210,7 +210,7 @@ func (t *Dense[T]) fix() {
 }
 
 /* Getters for properties */
-
+func (t *Dense[T]) IsNil() bool        { return t == nil }
 func (t *Dense[T]) Info() *AP          { return &t.AP }
 func (t *Dense[T]) Dtype() dtype.Dtype { return t.t }
 func (t *Dense[T]) Engine() Engine     { return t.e }

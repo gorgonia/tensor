@@ -2,7 +2,6 @@ package stdeng
 
 import (
 	"context"
-	"log"
 
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
@@ -43,7 +42,7 @@ func (e StdEng[DT, T]) HandleFuncOptsDesc(a tensor.Basic[DT], expShape shapes.Sh
 
 	var toReuse bool
 	if retVal, toReuse = fo.Reuse.(DescWithStorage); toReuse {
-		toReuse = retVal == nil // check that its not a nil value
+		toReuse = !retVal.IsNil() // check that its not a nil value
 	}
 
 	safe := fo.Safe()
@@ -52,7 +51,6 @@ func (e StdEng[DT, T]) HandleFuncOptsDesc(a tensor.Basic[DT], expShape shapes.Sh
 	switch {
 	case toReuse:
 		// if asType is not nil, then we would expect that the reuse should be of the same dtype
-		log.Printf("asType %v | retVal %v", asType, retVal)
 		if err = checkDtype(asType, retVal.Dtype()); err != nil {
 			err = errors.Wrap(err, cannotUseReuse)
 			return
@@ -126,7 +124,7 @@ func (e StdEng[DT, T]) HandleFuncOpts(a tensor.Basic[DT], expShape shapes.Shape,
 
 	var toReuse bool
 	if retVal, toReuse = fo.Reuse.(tensor.Basic[DT]); toReuse {
-		toReuse = retVal == nil // check that its not a nil value
+		toReuse = !retVal.IsNil() // check that its not a nil value
 	}
 
 	safe := fo.Safe()
