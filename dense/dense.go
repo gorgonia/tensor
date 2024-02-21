@@ -277,8 +277,15 @@ func (t *Dense[T]) SetAt(v T, coords ...int) error {
 	if !t.IsNativelyAccessible() {
 		return errors.Errorf(errors.InaccessibleData, t)
 	}
-	if len(coords) != t.Dims() {
+	scalarException := t.IsScalar() && len(coords) == 1
+	coordCheck := len(coords) == t.Dims()
+	if !coordCheck && !scalarException {
 		return errors.Errorf(errors.DimMismatch, t.Dims(), len(coords))
+	}
+
+	if scalarException {
+		t.data[0] = v
+		return nil
 	}
 	at, err := tensor.Ltoi(t.Shape(), t.Strides(), coords...)
 	if err != nil {
