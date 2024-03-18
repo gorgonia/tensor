@@ -4,14 +4,13 @@ import (
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
-	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 // metaops.go contains methods that perform operation on metadata of the *Dense tensor
 
 func (t *Dense[T]) Reshape(dims ...int) error {
-	if len(t.data) < shapes.Shape(dims).TotalSize() {
-		return errors.Errorf("Cannot reshape a tensor with %d elements (as %v) into %v", len(t.data), t.Shape(), dims)
+	if t.DataSize() < shapes.Shape(dims).TotalSize() {
+		return errors.Errorf("Cannot reshape a tensor with %d elements (as %v) into %v", t.DataSize(), t.Shape(), dims)
 	}
 	t.AP.SetShape(dims...)
 	t.fix()
@@ -90,19 +89,19 @@ func (t *Dense[DT]) T(axes ...int) (view *Dense[DT], err error) {
 func (t *Dense[DT]) Slice(slices ...SliceRange) (retVal *Dense[DT], err error) {
 	var newAP AP
 	var ndStart, ndEnd int
-	if newAP, ndStart, ndEnd, err = t.AP.S(len(t.data), slices...); err != nil {
+	if newAP, ndStart, ndEnd, err = t.AP.S(t.DataSize(), slices...); err != nil {
 		return
 	}
-	if ndStart < 0 || ndEnd < ndStart || ndEnd > cap(t.data) {
+	if ndStart < 0 || ndEnd < ndStart || ndEnd > cap(t.Data()) {
 		return nil, errors.Errorf("Cannot slice %T. Index %d:%d is out of bounds", t, ndStart, ndEnd)
 	}
 
-	v := &Dense[DT]{}
+	v := &Dense[DT]{
+		Array: t.Array,
+	}
 	v.copyMetadata(newAP, t.e, t.f.ViewFlag(), t.t)
 	// TODO: consider when the data is no longer contiguous
-
-	v.data = t.data[ndStart:ndEnd]
-	v.bytes = t.bytes[ndStart*int(t.t.Size()) : ndEnd*int(t.t.Size())]
+	v.Array.Slice(ndStart, ndEnd, ndStart*int(t.t.Size()), ndEnd*int(t.t.Size()))
 
 	// TODO: slicing non accessible data
 
@@ -112,30 +111,30 @@ func (t *Dense[DT]) Slice(slices ...SliceRange) (retVal *Dense[DT], err error) {
 func (t *Dense[DT]) SliceInto(other *Dense[DT], slices ...SliceRange) (err error) {
 	var newAP AP
 	var ndStart, ndEnd int
-	if newAP, ndStart, ndEnd, err = t.AP.S(len(t.data), slices...); err != nil {
+	if newAP, ndStart, ndEnd, err = t.AP.S(t.DataSize(), slices...); err != nil {
 		return
 	}
-	if ndStart < 0 || ndEnd < ndStart || ndEnd > cap(t.data) {
+	if ndStart < 0 || ndEnd < ndStart || ndEnd > cap(t.Data()) {
 		return errors.Errorf("Cannot slice %T. Index %d:%d is out of bounds", t, ndStart, ndEnd)
 	}
 
 	// check if there is enough data
-	data := t.data[ndStart:ndEnd]
-	if len(other.data) < len(data) {
-		return errors.Errorf("Cannot Slice %v. `other`'s preallocated `data` is too small. Expected at least %d elements. Got %d instead", t, len(data), len(other.data))
+	data := t.Data()[ndStart:ndEnd]
+	if other.DataSize() < len(data) {
+		return errors.Errorf("Cannot Slice %v. `other`'s preallocated `data` is too small. Expected at least %d elements. Got %d instead", t, len(data), other.DataSize())
 	}
 
 	// copy metadata
 	other.copyMetadata(newAP, t.e, t.f, t.t)
 
 	// copy data
-	copy(other.data, data)
+	otherData := other.Data()
+	copy(otherData, data)
 
 	// if other is bigger, then we need to tag it as overallocated
-	if len(other.data) > len(data) {
-		t.f |= internal.IsOverallocated
-		other.data = other.data[:len(data)]
-		other.bytes = gutils.BytesFromSlice(other.data)
+	if other.DataSize() > len(data) {
+		other.f |= internal.IsOverallocated
+		other.ResizeTo(len(data))
 	}
 	return nil
 }

@@ -29,8 +29,7 @@ func (t *Dense[DT]) GobEncode() (p []byte, err error) {
 		return
 	}
 
-	data := t.Data()
-	if err = encoder.Encode(&data); err != nil {
+	if err = encoder.Encode(t.Array); err != nil {
 		return
 	}
 
@@ -46,7 +45,7 @@ func (t *Dense[DT]) GobDecode(p []byte) (err error) {
 		return
 	}
 
-	if err = decoder.Decode(&t.data); err != nil {
+	if err = decoder.Decode(&t.Array); err != nil {
 		return
 	}
 
@@ -149,17 +148,17 @@ func (t *Dense[DT]) WriteNpy(w io.Writer) (err error) {
 	var v DT
 	switch any(v).(type) {
 	case int:
-		data := any(t.data).([]int)
+		data := any(t.Data()).([]int)
 		for _, v := range data {
 			bw.w(int64(v))
 		}
 	case uint:
-		data := any(t.data).([]uint)
+		data := any(t.Data()).([]uint)
 		for _, v := range data {
 			bw.w(uint64(v))
 		}
 	default:
-		for _, v := range t.data {
+		for _, v := range t.Data() {
 			bw.w(v)
 		}
 	}
@@ -246,7 +245,7 @@ func FromNpy(r io.Reader) (retVal DescWithStorage, err error) {
 func (t *Dense[DT]) ToPB() *pb.Dense {
 	retVal := new(pb.Dense)
 	retVal.Ap = t.AP.ToPB()
-	retVal.Data = t.bytes
+	retVal.Data = t.Array.DataAsBytes()
 	retVal.TransposedWith = make([]int32, len(t.transposedWith))
 	for i := range retVal.TransposedWith {
 		retVal.TransposedWith[i] = int32(t.transposedWith[i])

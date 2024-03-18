@@ -91,3 +91,14 @@ func MakeMonotonicReduction[DT any](f func(a DT, b DT) DT, defaultValue DT) func
 		return retVal
 	}
 }
+
+// MaxS returns the max value given a list values of DT.
+func MaxS[DT constraints.Ordered](s ...DT) DT {
+	var m DT
+	for _, x := range s {
+		if x >= m {
+			m = x
+		}
+	}
+	return m
+}

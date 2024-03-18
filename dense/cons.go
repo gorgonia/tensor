@@ -9,8 +9,9 @@ import (
 // Ones creates a *Dense[DT] with the provided shape and data type.
 func Ones[DT Num](shape ...int) *Dense[DT] {
 	retVal := New[DT](WithShape(shape...))
-	for i := range retVal.data {
-		retVal.data[i] = DT(1)
+	err := retVal.Memset(DT(1))
+	if err != nil {
+		panic(err)
 	}
 	return retVal
 }
@@ -72,8 +73,9 @@ func I[DT Num](r, c, k int) *Dense[DT] {
 	// if err != nil {
 	// 	panic(err)
 	// }
+	data := s.Data()
 	for _, v := range nexts {
-		s.data[v] = 1
+		data[v] = 1
 	}
 	return retVal
 }
