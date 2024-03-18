@@ -1,9 +1,10 @@
 package gutils
 
 import (
-	"gorgonia.org/tensor/internal"
 	"math/rand"
 	"time"
+
+	"gorgonia.org/tensor/internal"
 )
 
 // Range creates a slice of values of the given DT

@@ -18,27 +18,27 @@ func TestDense_Add_manual(t *testing.T) {
 	if err != nil {
 		t.Errorf("Add failed: %v", err)
 	}
-	assert.Equal(c.data, ret.data)
+	assert.Equal(c.Data(), ret.Data())
 	assert.True(c.Shape().Eq(ret.Shape()))
-	assert.NotEqual(c.data, a.data)
+	assert.NotEqual(c.Data(), a.Data())
 
 	// reuse
 	reuse := New[float64](WithShape(6), WithBacking([]float64{1, 2, 3, 4, 5, 6}))
 	ret, err = a.Add(b, WithReuse(reuse))
 	assert.Nil(err)
 	assert.Equal(ret, reuse)
-	assert.Equal(c.data, ret.data)
+	assert.Equal(c.Data(), ret.Data())
 	assert.True(c.Shape().Eq(ret.Shape()))
 
 	// incr
-	c.data = []float64{4, 8, 12, 16, 20, 24}
+	c.Array.Use([]float64{4, 8, 12, 16, 20, 24})
 	ret, err = a.Add(b, WithIncr(reuse))
 	assert.Nil(err)
-	assert.Equal(c.data, ret.data)
+	assert.Equal(c.Data(), ret.Data())
 	assert.True(c.Shape().Eq(ret.Shape()))
 
 	// b requires an iterator
-	c.data = []float64{2, 4, 6, 11, 13, 15}
+	c.Array.Use([]float64{2, 4, 6, 11, 13, 15})
 
 	b = New[float64](WithShape(4, 3), WithBacking([]float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}))
 	b, err = b.Slice(SR(0, 4, 2))
@@ -50,22 +50,22 @@ func TestDense_Add_manual(t *testing.T) {
 		t.Fatalf("Add failed: %v", err)
 	}
 
-	assert.Equal(c.data, ret.data)
+	assert.Equal(c.Data(), ret.Data())
 	assert.True(c.Shape().Eq(ret.Shape()))
 
 	// incr
-	c.data = []float64{6, 12, 18, 27, 33, 39}
+	c.Array.Use([]float64{6, 12, 18, 27, 33, 39})
 	ret, err = a.Add(b, WithIncr(reuse))
 	assert.Nil(err)
-	assert.Equal(c.data, ret.data)
+	assert.Equal(c.Data(), ret.Data())
 	assert.True(c.Shape().Eq(ret.Shape()))
 
 	// with scalar representation
-	c.data = []float64{2, 3, 4, 5, 6, 7}
+	c.Array.Use([]float64{2, 3, 4, 5, 6, 7})
 	b = New[float64](WithShape(), WithBacking([]float64{1}))
 	ret, err = a.Add(b)
 	assert.Nil(err)
-	assert.Equal(c.data, ret.data)
+	assert.Equal(c.Data(), ret.Data())
 	assert.True(c.Shape().Eq(ret.Shape()))
 
 }

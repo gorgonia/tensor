@@ -8,8 +8,8 @@ import (
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/array"
 	"gorgonia.org/tensor/internal/errors"
-	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 type ExampleMemory[DT any] []byte
@@ -18,22 +18,17 @@ func (m ExampleMemory[DT]) Uintptr() uintptr { return uintptr(unsafe.Pointer(&m[
 func (m ExampleMemory[DT]) MemSize() uintptr { return uintptr(len(m)) }
 
 type ExampleNonStdEng[DT OrderedNum, T tensor.Basic[DT]] struct {
-	fake      []DT
-	fakeBytes []byte
-	m         int64
+	array.Array[DT]
+	m int64
 }
 
 func newExampleNonStdEng[DT OrderedNum, T tensor.Tensor[DT, T]]() *ExampleNonStdEng[DT, T] {
 	fake := make([]DT, 64)
-	for i := range fake {
-		fake[i] = DT(i)
-	}
-	bytes := gutils.BytesFromSlice[DT](fake)
-	m := len(bytes)
+	arr := array.Make(fake)
+	m := len(arr.DataAsBytes())
 	return &ExampleNonStdEng[DT, T]{
-		fake:      fake[:0],
-		fakeBytes: bytes[:0],
-		m:         int64(m),
+		Array: arr,
+		m:     int64(m),
 	}
 }
 
@@ -45,7 +40,7 @@ func (e ExampleNonStdEng[DT, T]) Alloc(size int64) (Memory, error) {
 	if size >= e.m {
 		return nil, errors.Errorf("Trying to allocate more that what is allowed")
 	}
-	return ExampleMemory[DT](e.fakeBytes[:size]), nil
+	return ExampleMemory[DT](e.DataAsBytes()[:size]), nil
 }
 
 func (e ExampleNonStdEng[DT, T]) Free(mem Memory, size int64) error { return nil }
@@ -58,9 +53,7 @@ func (e ExampleNonStdEng[DT, T]) Memset(mem Memory, val interface{}) error {
 	}
 	switch m := mem.(type) {
 	case *Dense[DT]:
-		for i := range m.data {
-			m.data[i] = z
-		}
+		m.Array.Memset(z)
 		return nil
 	default:
 		return errors.Errorf("Unable to memset memory of %T", mem)
@@ -96,7 +89,7 @@ type consEffect func(assert *assert.Assertions, name string, retVal *Dense[int])
 
 func autoAllocated(assert *assert.Assertions, name string, retVal *Dense[int]) {
 	name += ":autoAllocated"
-	assert.NotNil(retVal.data, name)
+	assert.NotNil(retVal.Data(), name)
 }
 
 func autoShaped(optShape ...int) consEffect {
@@ -126,7 +119,7 @@ func autoColMajor(assert *assert.Assertions, name string, retVal *Dense[int]) {
 func backingIs(backing []int) consEffect {
 	return func(assert *assert.Assertions, name string, retVal *Dense[int]) {
 		name += ":backingIs"
-		assert.True(&retVal.data[0] == &backing[0] && len(retVal.data) == len(backing), name)
+		assert.True(&retVal.Data()[0] == &backing[0] && retVal.DataSize() == len(backing), name)
 	}
 }
 
@@ -144,7 +137,7 @@ func init() {
 	mem := []int{1, 2, 3, 4, 5, 6}
 	e := newExampleNonStdEng[int, *Dense[int]]()
 	s := int(1337)
-	m := ExampleMemory[int](gutils.BytesFromSlice(mem))
+	m := ExampleMemory[int](array.BytesFromSlice(mem))
 
 	//log.Printf("e.fakeBytes[0]: %p, mem[0]: %p", &e.fakeBytes[0], &mem[0])
 
@@ -168,13 +161,13 @@ func init() {
 		{"WithShape+FromMemory", []ConsOpt{WithShape(2, 3), FromMemory(m)}, false, []consEffect{autoShaped(2, 3), backingIs(mem)}},
 		{"WithShape+FromScalar", []ConsOpt{WithShape(2, 3), FromScalar(s)}, true, nil}, // you can't set a tensor as a scalar value and set its shape as (2,3)
 		{"WithShape+AsFortran", []ConsOpt{WithShape(2, 3), AsFortran(backing)}, false, []consEffect{autoColMajor}},
-		{"WithBacking+WithEngine", []ConsOpt{WithBacking(backing), WithEngine(e)}, false, []consEffect{autoShaped(6), backingIs(e.fake)}},
+		{"WithBacking+WithEngine", []ConsOpt{WithBacking(backing), WithEngine(e)}, false, []consEffect{autoShaped(6), backingIs(e.Data())}},
 		{"WithBacking+FromMemory", []ConsOpt{WithBacking(backing), FromMemory(m)}, true, nil},                                            // you can't set a backing array then set another backing array.
 		{"WithBacking+FromScalar", []ConsOpt{WithBacking(backing), FromScalar(s)}, true, nil},                                            // you can't set a backing array then set a scalar.
 		{"WithBacking+AsFortran", []ConsOpt{WithBacking(backing), AsFortran(backing)}, false, []consEffect{autoColMajor, autoShaped(6)}}, // this is OK. because the backing slice is the same. See alternate use of `AsFortran` below
-		{"WithEngine+FromMemory", []ConsOpt{WithEngine(e), FromMemory(m)}, false, []consEffect{autoShaped(6), backingIs(e.fake)}},
+		{"WithEngine+FromMemory", []ConsOpt{WithEngine(e), FromMemory(m)}, false, []consEffect{autoShaped(6), backingIs(e.Data())}},
 		{"WithEngine+FromScalar", []ConsOpt{WithEngine(e), FromScalar(s)}, false, []consEffect{autoShaped()}}, // TODO: ???
-		{"WithEngine+AsFortran", []ConsOpt{WithEngine(e), AsFortran(backing)}, false, []consEffect{autoColMajor, autoShaped(6), backingIs(e.fake)}},
+		{"WithEngine+AsFortran", []ConsOpt{WithEngine(e), AsFortran(backing)}, false, []consEffect{autoColMajor, autoShaped(6), backingIs(e.Data())}},
 		{"FromMemory+FromScalar", []ConsOpt{FromMemory(m), FromScalar(s)}, true, nil},
 		{"FromMemory+AsFortran", []ConsOpt{FromMemory(m), AsFortran(backing)}, true, nil},
 		{"FromScalar+AsFortran", []ConsOpt{FromScalar(s), AsFortran(backing)}, true, nil},
@@ -231,7 +224,7 @@ func init() {
 		{"WithShape+FromScalar(Bad Shape)", []ConsOpt{WithShape(2, 3), FromScalar(s)}, true, nil},
 		{"WithBacking+AsFortran (Empty AsFortran)", []ConsOpt{WithBacking(backing), AsFortran()}, false, []consEffect{autoColMajor, autoShaped(6)}}, // alternate use for `AsFortran`. This is OK.
 		{"WithBacking+AsFortran(Differing backing)", []ConsOpt{WithBacking(backing), AsFortran(mem)}, true, nil},                                    // you can't use a backing array as a row-major, and then set another backing array as col-major while creating a tensor
-		{"FromMemory+AsFortran", []ConsOpt{FromMemory(m), AsFortran()}, false, []consEffect{autoColMajor, autoShaped(6), backingIs(e.fake)}},        // alternate use for `AsFortran`. This is OK.
+		{"FromMemory+AsFortran", []ConsOpt{FromMemory(m), AsFortran()}, false, []consEffect{autoColMajor, autoShaped(6), backingIs(e.Data())}},      // alternate use for `AsFortran`. This is OK.
 	}
 }
 

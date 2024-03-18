@@ -3,12 +3,12 @@ package dense
 import (
 	"context"
 	"fmt"
-	"unsafe"
 
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/array"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/flatiter"
 	gutils "gorgonia.org/tensor/internal/utils"
@@ -22,8 +22,7 @@ var (
 
 type Dense[DT any] struct {
 	AP
-	data  []DT
-	bytes []byte // the original data, but as a slice of bytes
+	array.Array[DT]
 
 	// transposedWith is the indices of permutation for a transposition
 	transposedWith []int
@@ -165,10 +164,10 @@ func construct[DT any](data []DT, shape shapes.Shape, e Engine, f MemoryFlag) *D
 	ap.SetShape(shape...)
 	dt := gutils.GetDatatype[DT]()
 	f |= memoryFlagFromEngine(e)
+	arr := array.Make(data)
 	return &Dense[DT]{
 		AP:    ap,
-		data:  data,
-		bytes: gutils.BytesFromSlice(data),
+		Array: arr,
 		e:     e,
 		f:     f,
 		t:     dt,
@@ -183,25 +182,18 @@ func (t *Dense[DT]) copyMetadata(srcAP AP, srcEng Engine, srcFlag MemoryFlag, sr
 	t.t = srcDT
 }
 
-// restore restores any overallocated tensors to the correct length
-func (t *Dense[T]) Restore() {
-	if cap(t.data) > len(t.data) {
-		t.data = t.data[:cap(t.data)]
-	}
-}
-
 /* Construction-related methods */
 
 // fix fixes flags and data and stuff.
 func (t *Dense[T]) fix() {
 	totalsize := t.Shape().TotalSize()
 	switch {
-	case totalsize < len(t.data):
+	case totalsize < len(t.Data()):
 		// overallocated
 		t.f |= internal.IsOverallocated
-		t.data = t.data[:totalsize]
+		t.ResizeTo(totalsize)
 		//t.bytes = t.bytes[:totalsize*int(t.t.Size())] // unsure if we ever need this
-	case totalsize == cap(t.data):
+	case totalsize == cap(t.Data()):
 		// exactly as allocated
 		t.f &^= internal.IsOverallocated // clear Overallocated flag
 		t.Restore()
@@ -219,35 +211,30 @@ func (t *Dense[T]) Flags() MemoryFlag  { return t.f }
 /* Setters - mainly to satisfy interfaces */
 
 // SetEngine is a method used by Gorgonia's expression graph
-func (t *Dense[T]) SetEngine(e Engine) { t.e = e }
+func (t *Dense[DT]) SetEngine(e Engine) { t.e = e }
 
 /* Data Access */
 
-func (t *Dense[T]) Data() []T {
+func (t *Dense[DT]) Data() []DT {
 	if t == nil {
 		return nil
 	}
 	f := t.Flags()
 	switch {
 	case t.IsScalarEquiv():
-		return t.data[:1]
+		return t.Array.Data()[:1]
 	case f.IsOverallocated() && !f.IsView():
 		sz := t.Size()
-		return t.data[:sz]
+		return t.Array.Data()[:sz]
 	case f.IsOverallocated() && f.IsView():
 		panic("Not Yet Implemented: Overallocated tensors as view")
 	default:
-		return t.data
+		return t.Array.Data()
 	}
 }
 
-func (t *Dense[T]) DataSize() int { return len(t.data) }
-
-// ScalarValue returns the scalar equivalent of the tensor.
-func (t *Dense[T]) ScalarValue() T { return t.data[0] }
-
-func (t *Dense[T]) At(coords ...int) (T, error) {
-	var empty T
+func (t *Dense[DT]) At(coords ...int) (DT, error) {
+	var empty DT
 	if !t.IsNativelyAccessible() {
 		return empty, errors.Errorf(errors.InaccessibleData, t)
 	}
@@ -259,15 +246,13 @@ func (t *Dense[T]) At(coords ...int) (T, error) {
 		return empty, errors.Wrap(err, "At()")
 	}
 
-	return t.data[at], nil
+	return t.Array.At(at), nil
 
 }
 
-func (t *Dense[T]) Memset(v T) error {
+func (t *Dense[DT]) Memset(v DT) error {
 	if t.f.IsNativelyAccessible() {
-		for i := range t.data {
-			t.data[i] = v
-		}
+		t.Array.Memset(v)
 		return nil
 	}
 	return t.e.Memset(t, v)
@@ -284,14 +269,14 @@ func (t *Dense[T]) SetAt(v T, coords ...int) error {
 	}
 
 	if scalarException {
-		t.data[0] = v
+		t.Array.SetAt(v, 0)
 		return nil
 	}
 	at, err := tensor.Ltoi(t.Shape(), t.Strides(), coords...)
 	if err != nil {
 		return errors.Wrap(err, "At()")
 	}
-	t.data[at] = v
+	t.Array.SetAt(v, at)
 	return nil
 }
 
@@ -300,11 +285,7 @@ func (t *Dense[T]) Zero() {
 		t.e.Memclr(t)
 		return
 	}
-	var z T
-	for i := range t.data {
-		t.data[i] = z
-	}
-
+	t.Array.Memclr()
 }
 
 /* Construction related methods */
@@ -321,10 +302,10 @@ func (t *Dense[T]) Alike(opts ...ConsOpt) *Dense[T] {
 	if len(opts) != 0 {
 		return New[T](opts...)
 	}
-	data := makeBacking[T](t.e, len(t.data), t.AP.DataOrder(), nil)
+	data := makeBacking[T](t.e, t.DataSize(), t.AP.DataOrder(), nil)
+	arr := array.Make(data)
 	retVal := &Dense[T]{
-		data:  data,
-		bytes: gutils.BytesFromSlice(data),
+		Array: arr,
 	}
 	retVal.copyMetadata(t.AP.Clone(), t.e, t.f, t.t) // the flag here is just a copy - no setting of IsView
 	return retVal
@@ -357,14 +338,13 @@ func (t *Dense[T]) AlikeAsDescWithStorage(opts ...ConsOpt) tensor.DescWithStorag
 
 func (t *Dense[T]) Clone() *Dense[T] {
 	retVal := t.Alike()
-	copy(retVal.data, t.data)
+	copy(retVal.Data(), t.Data()) // this will fail if it's a non natively accessible data
 	return retVal
 }
 
 func (t *Dense[T]) ShallowClone() *Dense[T] {
 	retVal := &Dense[T]{
-		data:  t.data,
-		bytes: t.bytes,
+		Array: t.Array,
 	}
 	retVal.copyMetadata(t.AP.Clone(), t.e, t.f.ViewFlag(), t.t)
 	return retVal
@@ -373,7 +353,7 @@ func (t *Dense[T]) ShallowClone() *Dense[T] {
 func (t *Dense[T]) CloneAsBasic() tensor.Basic[T] { return t.Clone() }
 
 func (t *Dense[T]) RequiresIterator() bool {
-	if len(t.data) == 1 {
+	if t.DataSize() == 1 {
 		return false
 	}
 	// TODO
@@ -418,8 +398,6 @@ func (t *Dense[T]) IsNativelyAccessible() bool {
 }
 func (t *Dense[T]) IsManuallyManaged() bool { return t.f.IsManuallyManaged() }
 func (t *Dense[T]) IsView() bool            { return t.f.IsView() }
-func (t *Dense[T]) MemSize() uintptr        { return uintptr(len(t.bytes)) }
-func (t *Dense[T]) Uintptr() uintptr        { return uintptr(unsafe.Pointer(&t.bytes[0])) }
 
 func (t *Dense[T]) Eq(u *Dense[T]) bool {
 	// TODO: natively accessible stuff
@@ -436,5 +414,5 @@ func (t *Dense[T]) Eq(u *Dense[T]) bool {
 	if !ok {
 		panic("Cannot compute whether the data is equal. Engine does not implement SliceEq method")
 	}
-	return e.SliceEq(t.data, u.data)
+	return e.SliceEq(t.Data(), u.Data())
 }
