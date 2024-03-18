@@ -102,8 +102,8 @@ func makeZeroTests(generic Kinds) []testData {
 }
 
 const getTestRaw = `var denseSetGetTests = []struct {
-	of Dtype
-	data interface{} 
+	of dtype.Dtype
+	data interface{}
 	set interface{}
 
 	correct []interface{}
@@ -129,7 +129,7 @@ func TestDense_setget(t *testing.T) {
 `
 
 const memsetTestRaw = `var denseMemsetTests = []struct{
-	of Dtype
+	of dtype.Dtype
 	data interface{}
 	val interface{}
 	shape Shape
@@ -139,7 +139,7 @@ const memsetTestRaw = `var denseMemsetTests = []struct{
 	{{range . -}}
 	{{$val := .Set -}}
 	{{$k := .Kind -}}
-	{ {{title .Kind.String | strip}}, []{{asType .Kind}}{ {{range .TestData0 -}}{{printf "%v" .}}, {{end -}} }, {{asType .Kind}}({{$val}}), Shape{2,3}, []{{asType .Kind}}{ {{range .Correct}} {{printf "%v" .}}, {{end -}} } }, 
+	{ {{title .Kind.String | strip}}, []{{asType .Kind}}{ {{range .TestData0 -}}{{printf "%v" .}}, {{end -}} }, {{asType .Kind}}({{$val}}), Shape{2,3}, []{{asType .Kind}}{ {{range .Correct}} {{printf "%v" .}}, {{end -}} } },
 	{{end -}}
 }
 
@@ -159,7 +159,7 @@ func TestDense_memset(t *testing.T){
 `
 
 const zeroTestRaw = `var denseZeroTests = []struct{
-	of Dtype
+	of dtype.Dtype
 	data interface{}
 
 	correct interface{}
@@ -167,18 +167,18 @@ const zeroTestRaw = `var denseZeroTests = []struct{
 	{{range . -}}
 	{{$val := .Set -}}
 	{{$k := .Kind -}}
-	{ {{title .Kind.String | strip}}, []{{asType .Kind}}{ {{range .TestData0 -}}{{printf "%v" .}}, {{end -}} }, []{{asType .Kind}}{ {{range .Correct}} {{printf "%v" .}}, {{end -}} } }, 
+	{ {{title .Kind.String | strip}}, []{{asType .Kind}}{ {{range .TestData0 -}}{{printf "%v" .}}, {{end -}} }, []{{asType .Kind}}{ {{range .Correct}} {{printf "%v" .}}, {{end -}} } },
 	{{end -}}
 }
 
 func TestDense_Zero(t *testing.T) {
 	assert := assert.New(t)
 	for _, mts := range denseZeroTests {
-		
+
 		typ := reflect.TypeOf(mts.data)
 		val := reflect.ValueOf(mts.data)
 		data := reflect.MakeSlice(typ, val.Len(), val.Cap())
-		reflect.Copy(data, val)	
+		reflect.Copy(data, val)
 
 		T := New(Of(mts.of), WithBacking(data.Interface()))
 		T.Zero()
@@ -188,7 +188,7 @@ func TestDense_Zero(t *testing.T) {
 		T2, _ := T.Slice(nil)
 		T2.Zero()
 		assert.Equal(mts.correct, T2.Data())
-	}	
+	}
 }
 `
 

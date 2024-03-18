@@ -2,14 +2,15 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 )
 
 // Trace returns the trace of the matrix (i.e. the sum of the diagonal elements). It only works for matrices
 func (t *Dense) Trace() (retVal interface{}, err error) {
 	e := t.e
-
+	ctx := ctxFromEngine(e)
 	if tracer, ok := e.(Tracer); ok {
-		return tracer.Trace(t)
+		return tracer.Trace(ctx, t)
 	}
 	return nil, errors.Errorf("Engine %T does not support Trace", e)
 }
@@ -17,7 +18,7 @@ func (t *Dense) Trace() (retVal interface{}, err error) {
 // Inner performs a dot product on two vectors. If t or other are not vectors, it will return an error.
 func (t *Dense) Inner(other Tensor) (retVal interface{}, err error) {
 	// check that the data is a float
-	if err = typeclassCheck(t.t, floatcmplxTypes); err != nil {
+	if err = dtype.TypeClassCheck(t.t, dtype.FloatComplex); err != nil {
 		return nil, errors.Wrapf(err, unsupportedDtype, t.t, "Inner")
 	}
 
@@ -33,13 +34,14 @@ func (t *Dense) Inner(other Tensor) (retVal interface{}, err error) {
 	}
 
 	e := t.e
+	ctx := ctxFromEngine(e)
 	switch ip := e.(type) {
 	case InnerProderF32:
-		return ip.Inner(t, other)
+		return ip.Inner(ctx, t, other)
 	case InnerProderF64:
-		return ip.Inner(t, other)
+		return ip.Inner(ctx, t, other)
 	case InnerProder:
-		return ip.Inner(t, other)
+		return ip.Inner(ctx, t, other)
 	}
 
 	return nil, errors.Errorf("Engine does not support Inner()")
@@ -93,11 +95,11 @@ func (t *Dense) MatVecMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err err
 			AsFortran(nil)(retVal)
 		}
 	}
+	ctx := fo.Context()
 
 	e := t.e
-
 	if mvm, ok := e.(MatVecMuler); ok {
-		if err = mvm.MatVecMul(t, other, retVal); err != nil {
+		if err = mvm.MatVecMul(ctx, t, other, retVal); err != nil {
 			return nil, errors.Wrapf(err, opFail, "MatVecMul")
 		}
 		return handleIncr(retVal, fo.Reuse(), fo.Incr(), expectedShape)
@@ -142,10 +144,11 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 			AsFortran(nil)(retVal)
 		}
 	}
+	ctx := fo.Context()
 
 	e := t.e
 	if mm, ok := e.(MatMuler); ok {
-		if err = mm.MatMul(t, other, retVal); err != nil {
+		if err = mm.MatMul(ctx, t, other, retVal); err != nil {
 			return
 		}
 		return handleIncr(retVal, fo.Reuse(), fo.Incr(), expectedShape)
@@ -156,12 +159,6 @@ func (t *Dense) MatMul(other Tensor, opts ...FuncOpt) (retVal *Dense, err error)
 
 // Outer finds the outer product of two vectors
 func (t *Dense) Outer(other Tensor, opts ...FuncOpt) (retVal *Dense, err error) {
-	// check both are vectors
-	if !t.Shape().IsVector() || !other.Shape().IsVector() {
-		err = errors.Errorf("Outer only works when there are two vectors. t's shape: %v. other's shape: %v", t.Shape(), other.Shape())
-		return
-	}
-
 	m := t.Size()
 	n := other.Size()
 
@@ -181,13 +178,14 @@ func (t *Dense) Outer(other Tensor, opts ...FuncOpt) (retVal *Dense, err error) 
 			AsFortran(nil)(retVal)
 		}
 	}
+	ctx := fo.Context()
 
 	e := t.e
 
 	// DGER does not have any beta. So the values have to be zeroed first if the tensor is to be reused
 	retVal.Zero()
 	if op, ok := e.(OuterProder); ok {
-		if err = op.Outer(t, other, retVal); err != nil {
+		if err = op.Outer(ctx, t, other, retVal); err != nil {
 			return nil, errors.Wrapf(err, opFail, "engine.uter")
 		}
 		return handleIncr(retVal, fo.Reuse(), fo.Incr(), expectedShape)
@@ -355,10 +353,10 @@ func (t *Dense) TensorMul(other Tensor, axesA, axesB []int) (retVal *Dense, err 
 // In the future, when gonum/lapack fully supports float32, we'll look into rewriting this
 func (t *Dense) SVD(uv, full bool) (s, u, v *Dense, err error) {
 	e := t.Engine()
-
+	ctx := ctxFromEngine(e)
 	if svder, ok := e.(SVDer); ok {
 		var sT, uT, vT Tensor
-		if sT, uT, vT, err = svder.SVD(t, uv, full); err != nil {
+		if sT, uT, vT, err = svder.SVD(ctx, t, uv, full); err != nil {
 			return nil, nil, nil, errors.Wrap(err, "Error while performing *Dense.SVD")
 		}
 		if s, err = assertDense(sT); err != nil {
@@ -389,13 +387,13 @@ func handleReuse(reuse Tensor, expectedShape Shape, safe bool) (retVal *Dense, e
 		if !safe {
 			return
 		}
-		if err = reuseCheckShape(retVal, expectedShape); err != nil {
+		if err = checkFixShape(retVal, expectedShape); err != nil {
 			err = errors.Wrapf(err, "Unable to process reuse *Dense Tensor. Shape error.")
 			return
 		}
 		return
 	}
-	return
+	return nil, nil
 }
 
 // handleIncr is the cleanup step for when there is an Tensor to increment. If the result tensor is the same as the reuse Tensor, the result tensor gets returned to the pool
@@ -413,7 +411,7 @@ func handleIncr(res *Dense, reuse, incr Tensor, expectedShape Shape) (retVal *De
 			return
 		}
 
-		if err = typeclassCheck(incrD.t, numberTypes); err != nil {
+		if err = dtype.TypeClassCheck(incrD.t, dtype.Number); err != nil {
 			err = errors.Wrapf(err, "handleIncr only handles Number types. Got %v instead", incrD.t)
 			return
 		}

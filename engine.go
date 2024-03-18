@@ -1,5 +1,11 @@
 package tensor
 
+import (
+	"context"
+
+	"gorgonia.org/dtype"
+)
+
 // Memory is a representation of memory of the value.
 //
 // The main reason for requiring both Uintptr() and Pointer() methods is because while Go currently does not have a compacting
@@ -24,7 +30,16 @@ type Engine interface {
 	WorksWith(order DataOrder) bool           // WorksWith returns true if the data order can be directly worked with
 }
 
-type standardEngine interface {
+// StandardEngine is any engine that wraps a StdEng{}.
+type StandardEngine interface {
+	StandardEngine2
+
+	// anything that wraps StdEng will contain the following interfaces:
+	arrayMaker
+}
+
+// StandardEngine2 is any engine that implements the basic operations of a standard engine.
+type StandardEngine2 interface {
 	Engine
 
 	Adder
@@ -53,7 +68,12 @@ type standardEngine interface {
 }
 
 type arrayMaker interface {
-	makeArray(arr *array, t Dtype, size int)
+	makeArray(arr *array, t dtype.Dtype, size int)
+}
+
+// contexter is any engine (or type) that returns the current context.
+type contexter interface {
+	Context() context.Context
 }
 
 // NonStdEngine are any engines that do not allocate using the default built in allocator
@@ -65,33 +85,33 @@ type NonStdEngine interface {
 
 // Transposer is any engine that can perform an unsafe transpose of a tensor.
 type Transposer interface {
-	Transpose(t Tensor, expStrides []int) error
+	Transpose(ctx context.Context, t Tensor, expStrides []int) error
 }
 
 // Concater is any enegine that can concatenate multiple Tensors together
 type Concater interface {
-	Concat(t Tensor, axis int, others ...Tensor) (Tensor, error)
+	Concat(ctx context.Context, t Tensor, axis int, others ...Tensor) (Tensor, error)
 }
 
 // Stacker is any engine that can stack multiple Tenosrs along an axis
 type Stacker interface {
-	Stack(t Tensor, axis int, others ...Tensor) (Tensor, error)
+	Stack(ctx context.Context, t Tensor, axis int, others ...Tensor) (Tensor, error)
 }
 
 // DenseStacker is any engine that can stack DenseTensors along an axis. This is a specialization of Stacker.
 type DenseStacker interface {
-	StackDense(t DenseTensor, axis int, others ...DenseTensor) (retVal DenseTensor, err error)
+	StackDense(ctx context.Context, t DenseTensor, axis int, others ...DenseTensor) (retVal DenseTensor, err error)
 }
 
 // Repeater is any engine that can repeat values along the given axis.
 type Repeater interface {
-	Repeat(t Tensor, axis int, repeats ...int) (Tensor, error)
-	RepeatReuse(t Tensor, reuse Tensor, axis int, repeeats ...int) (Tensor, error)
+	Repeat(ctx context.Context, t Tensor, axis int, repeats ...int) (Tensor, error)
+	RepeatReuse(ctx context.Context, t Tensor, reuse Tensor, axis int, repeeats ...int) (Tensor, error)
 }
 
 // Diager is any engine that can return a tensor that only contains the diagonal values of the input
 type Diager interface {
-	Diag(a Tensor) (Tensor, error)
+	Diag(ctx context.Context, a Tensor) (Tensor, error)
 }
 
 /* NUMBER INTERFACES
@@ -177,43 +197,43 @@ type MaxBetweener interface {
 
 // Tracer is any engine that can return the trace (aka the sum of the diagonal elements).
 type Tracer interface {
-	Trace(a Tensor) (interface{}, error)
+	Trace(ctx context.Context, a Tensor) (interface{}, error)
 }
 
 // FMAer is any engine that can perform fused multiply add functions: A * X + Y. Also known as Axpy.
 type FMAer interface {
-	FMA(a, x, y Tensor) (Tensor, error)
-	FMAScalar(a Tensor, x interface{}, y Tensor) (Tensor, error)
+	FMA(ctx context.Context, a, x, y Tensor) (Tensor, error)
+	FMAScalar(ctx context.Context, a Tensor, x interface{}, y Tensor) (Tensor, error)
 }
 
 // MatMuler is any engine that can perform matrix multiplication
 type MatMuler interface {
-	MatMul(a, b, preallocated Tensor) error
+	MatMul(ctx context.Context, a, b, preallocated Tensor) error
 }
 
 // MatVecMuler is any engine that can perform matrix vector multiplication
 type MatVecMuler interface {
-	MatVecMul(a, b, preallocated Tensor) error
+	MatVecMul(ctx context.Context, a, b, preallocated Tensor) error
 }
 
 // InnerProder is any engine that can perform inner product multiplication
 type InnerProder interface {
-	Inner(a, b Tensor) (interface{}, error) // Inner always returns a scalar value
+	Inner(ctx context.Context, a, b Tensor) (interface{}, error) // Inner always returns a scalar value
 }
 
 // InnerProderF32 is an optimization for float32 - results are returned as float32.
 type InnerProderF32 interface {
-	Inner(a, b Tensor) (float32, error)
+	Inner(ctx context.Context, a, b Tensor) (float32, error)
 }
 
 // InnerProderF64 is an optimization for float64 - results are returned as float64
 type InnerProderF64 interface {
-	Inner(a, b Tensor) (float64, error)
+	Inner(ctx context.Context, a, b Tensor) (float64, error)
 }
 
 // OuterProder is any engine that can perform outer product (kronecker) multiplication
 type OuterProder interface {
-	Outer(a, b, preallocated Tensor) error
+	Outer(ctx context.Context, a, b, preallocated Tensor) error
 }
 
 // Dotter is used to implement sparse matrices
@@ -223,7 +243,7 @@ type Dotter interface {
 
 // SVDer is any engine that can perform SVD
 type SVDer interface {
-	SVD(a Tensor, uv, full bool) (s, u, v Tensor, err error)
+	SVD(ctx context.Context, a Tensor, uv, full bool) (s, u, v Tensor, err error)
 }
 
 /* ORD INTERFACES */
@@ -330,6 +350,16 @@ type InvSqrter interface {
 	InvSqrt(a Tensor, opts ...FuncOpt) (Tensor, error)
 }
 
+// Expm1er is any engine that can perform expm1 on the values of a Tensor.
+type Expm1er interface {
+	Expm1(a Tensor, opts ...FuncOpt) (Tensor, error)
+}
+
+// Log1per is any engine that can perform log1p on the values of a Tensor.
+type Log1per interface {
+	Log1p(a Tensor, opts ...FuncOpt) (Tensor, error)
+}
+
 // Signer is any engine that can perform a sign function on the values of a Tensor.
 type Signer interface {
 	Sign(a Tensor, opts ...FuncOpt) (Tensor, error)
@@ -359,22 +389,22 @@ type OptimizedReducer interface {
 
 // Sumer is any engine that can perform summation along an axis of a Tensor.
 type Sumer interface {
-	Sum(a Tensor, along ...int) (Tensor, error)
+	Sum(ctx context.Context, a Tensor, along ...int) (Tensor, error)
 }
 
 // Proder is any engine that can perform product along an axis of a Tensor.
 type Proder interface {
-	Prod(a Tensor, along ...int) (Tensor, error)
+	Prod(ctx context.Context, a Tensor, along ...int) (Tensor, error)
 }
 
 // Miner is any engine that can find the minimum value along an axis of a Tensor.
 type Miner interface {
-	Min(a Tensor, along ...int) (Tensor, error)
+	Min(ctx context.Context, a Tensor, along ...int) (Tensor, error)
 }
 
 // Maxer is any engine that can find the maximum value along an axis of a Tensor.
 type Maxer interface {
-	Max(a Tensor, along ...int) (Tensor, error)
+	Max(ctx context.Context, a Tensor, along ...int) (Tensor, error)
 }
 
 /* Arg methods */
@@ -382,27 +412,27 @@ type Maxer interface {
 // Argmaxer is any engine that can find the indices of the maximum values along an axis.
 // By convention the returned Tensor has Dtype of Int.
 type Argmaxer interface {
-	Argmax(t Tensor, axis int) (Tensor, error)
+	Argmax(ctx context.Context, t Tensor, axis int) (Tensor, error)
 }
 
 // Argmaxer is any engine that can find the indices of the minimum values along an axis.
 // By convention the returned Tensor has Dtype of Int.
 type Argminer interface {
-	Argmin(t Tensor, axis int) (Tensor, error)
+	Argmin(ctx context.Context, t Tensor, axis int) (Tensor, error)
 }
 
 // NaNChecker checks that the tensor contains a NaN
 // Errors are to be returned if the concept of NaN does not apply to the data type.
 // Other errors may also occur. See specific implementations for details
 type NaNChecker interface {
-	HasNaN(t Tensor) (bool, error)
+	HasNaN(ctx context.Context, t Tensor) (bool, error)
 }
 
 // InfChecker checks that the tensor contains a Inf.
 // Errors are to be returned if the concept of Inf does not apply to the data type.
 // Other errors may also occur. See specific implementations for details
 type InfChecker interface {
-	HasInf(t Tensor) (bool, error)
+	HasInf(ctx context.Context, t Tensor) (bool, error)
 }
 
 /* Advanced Indexing */
@@ -413,14 +443,18 @@ type ByIndiceser interface {
 	SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts ...FuncOpt) (retVal Tensor, err error)
 }
 
+type Scatterer interface {
+	Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error)
+}
+
 /* Internal interfaces for faster shit */
 
 type denseArgmaxer interface {
-	argmaxDenseTensor(t DenseTensor, axis int) (*Dense, error)
+	argmaxDenseTensor(ctx context.Context, t DenseTensor, axis int) (*Dense, error)
 }
 
 type denseArgminer interface {
-	argminDenseTensor(t DenseTensor, axis int) (*Dense, error)
+	argminDenseTensor(ctx context.Context, t DenseTensor, axis int) (*Dense, error)
 }
 
 type SoftMaxer interface {

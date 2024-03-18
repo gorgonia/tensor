@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 )
 
@@ -244,37 +246,35 @@ func SliceDetails(s Slice, size int) (start, end, step int, err error) {
 	return
 }
 
-// reuseDenseCheck checks a reuse tensor, and reshapes it to be the correct one
-func reuseDenseCheck(reuse DenseTensor, as DenseTensor) (err error) {
-	if reuse.DataSize() != as.Size() {
-		err = errors.Errorf("Reused Tensor %p does not have expected shape %v. Got %v instead. Reuse Size: %v, as Size %v (real: %d)", reuse, as.Shape(), reuse.Shape(), reuse.DataSize(), as.Size(), as.DataSize())
-		return
-	}
-	return reuseCheckShape(reuse, as.Shape())
-
-}
-
-// reuseCheckShape  checks the shape and reshapes it to be correct if the size fits but the shape doesn't.
-func reuseCheckShape(reuse DenseTensor, s Shape) (err error) {
+// checkFixShape checks the shape and reshapes it to be correct if the size fits but the shape doesn't.
+func checkFixShape(reuse Tensor, s Shape) (err error) {
 	throw := BorrowInts(len(s))
 	copy(throw, s)
 
-	if err = reuse.reshape(throw...); err != nil {
-		err = errors.Wrapf(err, reuseReshapeErr, s, reuse.DataSize())
+	d, ok := reuse.(DenseTensor)
+	if !ok {
+		if err = reuse.Reshape(throw...); err != nil {
+			return errors.Wrapf(err, reuseReshapeErr, s, reuse.DataSize())
+		}
+		return nil
+	}
+
+	if err = d.reshape(throw...); err != nil {
+		err = errors.Wrapf(err, reuseReshapeErr, s, d.DataSize())
 		return
 	}
 
 	// clean up any funny things that may be in the reuse
-	if oldAP := reuse.oldAP(); !oldAP.IsZero() {
+	if oldAP := d.oldAP(); !oldAP.IsZero() {
 		oldAP.zero()
 	}
 
-	if axes := reuse.transposeAxes(); axes != nil {
+	if axes := d.transposeAxes(); axes != nil {
 		ReturnInts(axes)
 	}
 
-	if viewOf := reuse.parentTensor(); viewOf != nil {
-		reuse.setParentTensor(nil)
+	if viewOf := d.parentTensor(); viewOf != nil {
+		d.setParentTensor(nil)
 	}
 	return nil
 }
@@ -291,6 +291,7 @@ func memsetBools(a []bool, v bool) {
 	}
 }
 
+// allones checks that a slice of ints are all 1.
 func allones(a []int) bool {
 	for i := range a {
 		if a[i] != 1 {
@@ -298,6 +299,14 @@ func allones(a []int) bool {
 		}
 	}
 	return true
+}
+
+// ctxFromEngine gets a context from an engine if it's a contexter. Otherwise it returns a context.Background()
+func ctxFromEngine(e Engine) context.Context {
+	if c, ok := e.(contexter); ok {
+		return c.Context()
+	}
+	return context.Background()
 }
 
 func getFloat64s(a Tensor) []float64 {
@@ -319,6 +328,7 @@ func getInts(a Tensor) []int {
 		return um.Ints()
 	}
 	return a.Data().([]int)
+
 }
 
 /* FOR ILLUSTRATIVE PURPOSES */

@@ -7,6 +7,7 @@ import (
 )
 
 type EngineArith struct {
+	isStdDenseEng  bool
 	Name           string
 	VecVar         string
 	PrepData       string
@@ -34,9 +35,11 @@ func (fn *EngineArith) Signature() *Signature {
 	case fn.VV:
 		paramNames = []string{"a", "b", "opts"}
 		paramTemplates = []*template.Template{tensorType, tensorType, splatFuncOptType}
+
 	default:
 		paramNames = []string{"t", "s", "leftTensor", "opts"}
 		paramTemplates = []*template.Template{tensorType, interfaceType, boolType, splatFuncOptType}
+
 	}
 	return &Signature{
 		Name:           fn.methName(),
@@ -388,18 +391,18 @@ func (fn *EngineUnary) Write(w io.Writer) {
 
 func generateStdEngUncondUnary(f io.Writer, ak Kinds) {
 	tcc := []string{
-		"Number",     // Neg
-		"Number",     // Inv
-		"Number",     // Square
-		"Number",     // Cube
-		"FloatCmplx", // Exp
-		"FloatCmplx", // Tanhh
-		"FloatCmplx", // Log
-		"Float",      // Log2
-		"FloatCmplx", // Log10
-		"FloatCmplx", // Sqrt
-		"Float",      // Cbrt
-		"Float",      // InvSqrt
+		"Number",       // Neg
+		"Number",       // Inv
+		"Number",       // Square
+		"Number",       // Cube
+		"FloatComplex", // Exp
+		"FloatComplex", // Tanhh
+		"FloatComplex", // Log
+		"Floats",       // Log2
+		"FloatComplex", // Log10
+		"FloatComplex", // Sqrt
+		"Floats",       // Cbrt
+		"Floats",       // InvSqrt
 	}
 	var gen []*EngineUnary
 	for i, u := range unconditionalUnaries {

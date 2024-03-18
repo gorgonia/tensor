@@ -1,19 +1,26 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
 func (e StdEng) Clamp(a Tensor, min, max interface{}, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, nonComplexNumberTypes); err != nil {
+	if err = unaryCheck(a, dtype.NonComplexNumber); err != nil {
 		return nil, errors.Wrap(err, "Clamp failed")
 	}
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.s
 	}
 
 	typ := a.Dtype().Type
@@ -73,9 +80,15 @@ func (e StdEng) Clamp(a Tensor, min, max interface{}, opts ...FuncOpt) (retVal T
 	return
 }
 
-func (e StdEng) FMA(a, x, y Tensor) (Tensor, error) {
+func (e StdEng) FMA(ctx context.Context, a, x, y Tensor) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	return e.Mul(a, x, WithIncr(y))
 }
-func (e StdEng) FMAScalar(a Tensor, x interface{}, y Tensor) (Tensor, error) {
+func (e StdEng) FMAScalar(ctx context.Context, a Tensor, x interface{}, y Tensor) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	return e.MulScalar(a, x, true, WithIncr(y))
 }

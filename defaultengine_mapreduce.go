@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"context"
 	"reflect"
 	"sort"
 
@@ -11,27 +12,30 @@ import (
 )
 
 func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
-	if err = unaryCheck(a, nil); err != nil {
+	if err = unaryCheck(a, nilTC); err != nil {
 		err = errors.Wrap(err, "Failed Map()")
 		return
+	}
+	if _, ok := a.(DenseTensor); !ok {
+		return nil, errors.Errorf("StdEng's Map method only supports dense tensors for now. Please put in a Pull Request to support other forms of Tensors. The file is: defaultengine_mapreduce.go")
 	}
 
 	var reuse DenseTensor
 	var safe, _, incr bool
-	if reuse, safe, _, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, _, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.
 	}
 	switch {
 	case safe && reuse == nil:
 		// create reuse
-		if v, ok := a.(View); ok {
-			if v.IsMaterializable() {
-				reuse = v.Materialize().(DenseTensor)
-			} else {
-				reuse = v.Clone().(DenseTensor)
-			}
+		if v, ok := a.(View); ok && v.IsMaterializable() {
+			reuse = v.Materialize().(DenseTensor)
 		} else {
-			reuse = New(Of(a.Dtype()), WithShape(a.Shape().Clone()...))
+			reuse = a.Clone().(DenseTensor)
 		}
 	case reuse != nil:
 		if !reuse.IsNativelyAccessible() {
@@ -75,7 +79,7 @@ func (e StdEng) Map(fn interface{}, a Tensor, opts ...FuncOpt) (retVal Tensor, e
 	// SET RETVAL
 	switch {
 	case reuse != nil:
-		if err = reuseCheckShape(reuse, a.Shape()); err != nil {
+		if err = checkFixShape(reuse, a.Shape()); err != nil {
 			err = errors.Wrapf(err, "Reuse shape check failed")
 			return
 		}
@@ -177,7 +181,11 @@ func (e StdEng) OptimizedReduce(a Tensor, axis int, firstFn, lastFn, defaultFn, 
 	return
 }
 
-func (e StdEng) Sum(a Tensor, along ...int) (retVal Tensor, err error) {
+func (e StdEng) Sum(ctx context.Context, a Tensor, along ...int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a2 := a
 	if v, ok := a.(View); ok && v.IsMaterializable() {
 		a2 = v.Materialize()
@@ -185,7 +193,11 @@ func (e StdEng) Sum(a Tensor, along ...int) (retVal Tensor, err error) {
 	return e.reduce("Sum", execution.MonotonicSum, execution.SumMethods, a2, along...)
 }
 
-func (e StdEng) Min(a Tensor, along ...int) (retVal Tensor, err error) {
+func (e StdEng) Min(ctx context.Context, a Tensor, along ...int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a2 := a
 	if v, ok := a.(View); ok && v.IsMaterializable() {
 		a2 = v.Materialize()
@@ -193,7 +205,11 @@ func (e StdEng) Min(a Tensor, along ...int) (retVal Tensor, err error) {
 	return e.reduce("Min", execution.MonotonicMin, execution.MinMethods, a2, along...)
 }
 
-func (e StdEng) Max(a Tensor, along ...int) (retVal Tensor, err error) {
+func (e StdEng) Max(ctx context.Context, a Tensor, along ...int) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a2 := a
 	if v, ok := a.(View); ok && v.IsMaterializable() {
 		a2 = v.Materialize()
@@ -255,15 +271,19 @@ func (StdEng) prepReduce(a Tensor, axis int, opts ...FuncOpt) (at, reuse DenseTe
 		return
 	}
 
-	if err = unaryCheck(a, nil); err != nil {
+	if err = unaryCheck(a, nilTC); err != nil {
 		err = errors.Wrap(err, "prepReduce failed")
 		return
 	}
 
 	// FUNC PREP
 	var safe bool
-	if reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, _, _, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), false, opts...); err != nil {
 		err = errors.Wrap(err, "Unable to prep unary tensor")
+		return
+	}
+	if err = handleCtx(ctx); err != nil {
 		return
 	}
 

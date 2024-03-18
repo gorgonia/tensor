@@ -120,12 +120,13 @@ func TestTensor_Norm(t *testing.T) {
 			t.Error(err)
 		}
 	}
+
 }
 
 func TestTensor_Norm_Axis(t *testing.T) {
 	assert := assert.New(t)
 	var T, s, expected, retVal *Dense
-	var sliced Tensor
+	var sliced View
 	var err error
 	var backing []float64
 	var ords []NormOrder
@@ -149,7 +150,7 @@ func TestTensor_Norm_Axis(t *testing.T) {
 		var expecteds []*Dense
 		for k := 0; k < T.Shape()[1]; k++ {
 			sliced, _ = T.Slice(nil, ss(k))
-			s = sliced.(View).Materialize().(*Dense)
+			s = sliced.Materialize().(*Dense)
 			expected, _ = s.Norm(ord)
 			expecteds = append(expecteds, expected)
 		}
@@ -162,8 +163,8 @@ func TestTensor_Norm_Axis(t *testing.T) {
 		assert.Equal(len(expecteds), retVal.Shape()[0])
 		for i, e := range expecteds {
 			sliced, _ = retVal.Slice(ss(i))
-			sliced = sliced.(View).Materialize()
-			if !allClose(e.Data(), sliced.Data()) {
+			mat := sliced.Materialize()
+			if !allClose(e.Data(), mat.Data()) {
 				t.Errorf("Axis = 0; Ord = %v; Expected %v. Got %v instead. ret %v, i: %d", ord, e.Data(), sliced.Data(), retVal, i)
 			}
 		}
@@ -173,7 +174,7 @@ func TestTensor_Norm_Axis(t *testing.T) {
 		expecteds = expecteds[:0]
 		for k := 0; k < T.Shape()[0]; k++ {
 			sliced, _ = T.Slice(ss(k))
-			s = sliced.(*Dense)
+			s = MustGetDense(sliced)
 			expected, _ = s.Norm(ord)
 			expecteds = append(expecteds, expected)
 		}
@@ -185,8 +186,8 @@ func TestTensor_Norm_Axis(t *testing.T) {
 		assert.Equal(len(expecteds), retVal.Shape()[0])
 		for i, e := range expecteds {
 			sliced, _ = retVal.Slice(ss(i))
-			sliced = sliced.(View).Materialize().(*Dense)
-			if !allClose(e.Data(), sliced.Data()) {
+			mat := sliced.Materialize()
+			if !allClose(e.Data(), mat.Data()) {
 				t.Errorf("Axis = 1; Ord = %v; Expected %v. Got %v instead", ord, e.Data(), sliced.Data())
 			}
 		}
@@ -249,9 +250,8 @@ func TestTensor_Norm_Axis(t *testing.T) {
 					if rowAxis > colAxis {
 						sliced.T()
 					}
-					sliced = sliced.(View).Materialize().(*Dense)
-					s = sliced.(*Dense)
-					expected, _ = s.Norm(ord)
+					mat := sliced.Materialize().(*Dense)
+					expected, _ = mat.Norm(ord)
 					expecteds = append(expecteds, expected)
 				}
 

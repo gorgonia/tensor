@@ -90,7 +90,7 @@ const qcGenraw = `func randomQC(a Tensor, r *rand.Rand) {
 				s[i] = randomString()
 			{{else if eq .String "unsafe.Pointer" -}}
 				s[i] = nil
-			{{end -}}	
+			{{end -}}
 		}
 	{{end -}}
 	{{end -}}
@@ -99,7 +99,7 @@ const qcGenraw = `func randomQC(a Tensor, r *rand.Rand) {
 `
 
 const testQCRaw = `type QCDense{{short .}} struct {
-	*Dense 
+	*Dense
 }
 func (*QCDense{{short .}}) Generate(r *rand.Rand, size int) reflect.Value {
 	s := make([]{{asType .}}, size)
@@ -137,11 +137,11 @@ const mutateFnsRaw = `func mutate{{short .}}(a {{asType . }}){{asType .}} { {{if
 {{else if eq .String "bool" -}}return true }
 {{else if eq .String "string" -}}return "Hello World"}
 {{else if eq .String "uintptr" -}}return 0xdeadbeef}
-{{else if eq .String "unsafe.Pointer" -}}return unsafe.Pointer(uintptr(0xdeadbeef))} 
-{{end -}} 
+{{else if eq .String "unsafe.Pointer" -}}return unsafe.Pointer(uintptr(0xdeadbeef))}
+{{end -}}
 `
 
-const identityValsRaw = `func identityVal(x int, dt Dtype) interface{} {
+const identityValsRaw = `func identityVal(x int, dt dtype.Dtype) interface{} {
 	switch dt {
 		{{range .Kinds -}}
 	case {{reflectKind .}}:

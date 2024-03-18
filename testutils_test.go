@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"math"
 	"math/cmplx"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/chewxy/math32"
 	"gorgonia.org/tensor/internal/storage"
+
+	"gorgonia.org/dtype"
 )
 
 func randomBool() bool {
@@ -330,7 +333,7 @@ func shuffleInts(a []int, r *rand.Rand) {
 
 type TensorGenerator struct {
 	ShapeConstraint Shape
-	DtypeConstraint Dtype
+	DtypeConstraint dtype.Dtype
 }
 
 func (g TensorGenerator) Generate(r *rand.Rand, size int) reflect.Value {
@@ -342,8 +345,8 @@ func (g TensorGenerator) Generate(r *rand.Rand, size int) reflect.Value {
 
 func (t *Dense) Generate(r *rand.Rand, size int) reflect.Value {
 	// generate type
-	ri := r.Intn(len(specializedTypes.set))
-	of := specializedTypes.set[ri]
+	ri := r.Intn(len(specializedTypes))
+	of := specializedTypes[ri]
 	datatyp := reflect.SliceOf(of.Type)
 	gendat, _ := quick.Value(datatyp, r)
 	// generate dims
@@ -502,14 +505,26 @@ func (e dummyEngine2) Memcpy(dst, src Memory) error             { return e.e.Mem
 func (e dummyEngine2) Accessible(mem Memory) (Memory, error)    { return e.e.Accessible(mem) }
 func (e dummyEngine2) WorksWith(order DataOrder) bool           { return e.e.WorksWith(order) }
 
-func (e dummyEngine2) Argmax(t Tensor, axis int) (Tensor, error) { return e.e.Argmax(t, axis) }
-func (e dummyEngine2) Argmin(t Tensor, axis int) (Tensor, error) { return e.e.Argmin(t, axis) }
+func (e dummyEngine2) Argmax(ctx context.Context, t Tensor, axis int) (Tensor, error) {
+	return e.e.Argmax(ctx, t, axis)
+}
+func (e dummyEngine2) Argmin(ctx context.Context, t Tensor, axis int) (Tensor, error) {
+	return e.e.Argmin(ctx, t, axis)
+}
 
-func willerr(a *Dense, tc, eqtc *typeclass) (retVal, willFailEq bool) {
-	if err := typeclassCheck(a.Dtype(), eqtc); err == nil {
+func willerr(a *Dense, tc, eqtc dtype.TypeClass) (retVal, willFailEq bool) {
+	if eqtc == nilTC {
 		willFailEq = true
+	} else {
+		if err := dtype.TypeClassCheck(a.Dtype(), eqtc); err == nil {
+			willFailEq = true
+		}
 	}
-	if err := typeclassCheck(a.Dtype(), tc); err != nil {
+	if tc == nilTC {
+		retVal = !a.IsNativelyAccessible()
+		return
+	}
+	if err := dtype.TypeClassCheck(a.Dtype(), tc); err != nil {
 		return true, willFailEq
 	}
 
@@ -539,14 +554,14 @@ func qcErrCheck(t *testing.T, name string, a Dtyper, b interface{}, we bool, err
 	return nil, false
 }
 
-func qcIsFloat(dt Dtype) bool {
-	if err := typeclassCheck(dt, floatcmplxTypes); err == nil {
+func qcIsFloat(dt dtype.Dtype) bool {
+	if err := dtype.TypeClassCheck(dt, dtype.FloatComplex); err == nil {
 		return true
 	}
 	return false
 }
 
-func qcEqCheck(t *testing.T, dt Dtype, willFailEq bool, correct, got interface{}) bool {
+func qcEqCheck(t *testing.T, dt dtype.Dtype, willFailEq bool, correct, got interface{}) bool {
 	isFloatTypes := qcIsFloat(dt)
 	if !willFailEq && (isFloatTypes && !allClose(correct, got) || (!isFloatTypes && !reflect.DeepEqual(correct, got))) {
 		t.Errorf("q.Dtype: %v", dt)

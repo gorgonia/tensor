@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 )
 
 var (
@@ -183,7 +184,7 @@ func CSCFromCoord(shape Shape, xs, ys []int, data interface{}) *CS {
 
 func (t *CS) Shape() Shape         { return t.s }
 func (t *CS) Strides() []int       { return nil }
-func (t *CS) Dtype() Dtype         { return t.t }
+func (t *CS) Dtype() dtype.Dtype   { return t.t }
 func (t *CS) Dims() int            { return 2 }
 func (t *CS) Size() int            { return t.s.TotalSize() }
 func (t *CS) DataSize() int        { return t.Len() }
@@ -233,7 +234,7 @@ func (t *CS) T(axes ...int) error {
 	UnsafePermute(axes, []int(t.s))
 	t.o = t.o.toggleColMajor()
 	t.o = MakeDataOrder(t.o, Transposed)
-	return errors.Errorf(methodNYI, "T", t)
+	return nyierr(typeNYI, t)
 }
 
 // UT untransposes the CS
@@ -242,9 +243,7 @@ func (t *CS) UT() { t.T(); t.o = t.o.clearTransposed() }
 // Transpose is a no-op. The data does not move
 func (t *CS) Transpose() error { return nil }
 
-func (t *CS) Apply(fn interface{}, opts ...FuncOpt) (Tensor, error) {
-	return nil, errors.Errorf(methodNYI, "Apply", t)
-}
+func (t *CS) Apply(fn interface{}, opts ...FuncOpt) (Tensor, error) { return nil, nyierr(typeNYI, t) }
 
 func (t *CS) Eq(other interface{}) bool {
 	if ot, ok := other.(*CS); ok {
@@ -379,4 +378,4 @@ func (t *CS) IsManuallyManaged() bool    { return t.f.manuallyManaged() }
 
 func (t *CS) arr() array                     { return t.array }
 func (t *CS) arrPtr() *array                 { return &t.array }
-func (t *CS) standardEngine() standardEngine { return nil }
+func (t *CS) standardEngine() StandardEngine { return nil }

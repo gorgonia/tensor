@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
@@ -20,7 +21,7 @@ type Dense struct {
 
 	flag MemoryFlag
 	e    Engine         // execution engine for the *Dense
-	oe   standardEngine // optimized engine
+	oe   StandardEngine // optimized engine
 
 	// backup AP. When a transpose is done, the old *AP is backed up here, for easy untransposes
 	old           AP
@@ -34,11 +35,11 @@ type Dense struct {
 }
 
 // NewDense creates a new *Dense. It tries its best to get from the tensor pool.
-func NewDense(dt Dtype, shape Shape, opts ...ConsOpt) *Dense {
+func NewDense(dt dtype.Dtype, shape Shape, opts ...ConsOpt) *Dense {
 	return recycledDense(dt, shape, opts...)
 }
 
-func recycledDense(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
+func recycledDense(dt dtype.Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 	retVal = recycledDenseNoFix(dt, shape, opts...)
 	retVal.fix()
 	if err := retVal.sanity(); err != nil {
@@ -47,7 +48,7 @@ func recycledDense(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 	return
 }
 
-func recycledDenseNoFix(dt Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
+func recycledDenseNoFix(dt dtype.Dtype, shape Shape, opts ...ConsOpt) (retVal *Dense) {
 	//	size := shape.TotalSize()
 	//if shape.IsScalar() {
 	//	size = 1
@@ -83,7 +84,9 @@ func (t *Dense) makeArray(size int) {
 	case arrayMaker:
 		te.makeArray(&t.array, t.t, size)
 		return
+	case StandardEngine2:
 	default:
+
 	}
 
 	memsize := calcMemSize(t.t, size)
@@ -100,7 +103,7 @@ func (t *Dense) makeArray(size int) {
 func (t *Dense) Info() *AP { return &t.AP }
 
 // Dtype returns the data type of the *Dense tensor.
-func (t *Dense) Dtype() Dtype { return t.t }
+func (t *Dense) Dtype() dtype.Dtype { return t.t }
 
 // Data returns the underlying array. If the *Dense represents a scalar value, the scalar value is returned instead
 func (t *Dense) Data() interface{} {
@@ -138,7 +141,7 @@ func (t *Dense) Reshape(dims ...int) error {
 	}
 
 	if t.viewOf != 0 && t.o.IsNotContiguous() {
-		return errors.Errorf(methodNYI, "Reshape", "non-contiguous views")
+		return nyierr(methodNYI, "non-contiguous views")
 	}
 
 	if !t.old.IsZero() {
@@ -180,16 +183,6 @@ func (t *Dense) ScalarValue() interface{} {
 	return t.Get(0)
 }
 
-// IsView indicates if the Tensor is a view of another (typically from slicing)
-func (t *Dense) IsView() bool {
-	return t.viewOf != 0
-}
-
-// IsMaterializeable indicates if the Tensor is materializable - if it has either gone through some transforms or slicing
-func (t *Dense) IsMaterializable() bool {
-	return t.viewOf != 0 || !t.old.IsZero()
-}
-
 // IsManuallyManaged returns true if the memory associated with this *Dense is manually managed (by the user)
 func (t *Dense) IsManuallyManaged() bool { return t.flag.manuallyManaged() }
 
@@ -213,7 +206,6 @@ func (t *Dense) Clone() interface{} {
 		}
 		copyDense(retVal, t)
 		retVal.lock()
-
 		return retVal
 	}
 	panic("Unreachable: No engine")
@@ -282,11 +274,32 @@ func (t *Dense) fix() {
 		t.e = StdEng{}
 	}
 
-	if oe, ok := t.e.(standardEngine); ok {
+	if oe, ok := t.e.(StandardEngine); ok {
 		t.oe = oe
 	}
 
+	_, isNonStdEng := t.e.(NonStdEngine)
+
 	switch {
+	case isNonStdEng && t.Shape() != nil:
+		// if there is already data in the array, we should back it up now
+		raw := t.array.Header.Raw
+
+		// make the array
+		size := t.Shape().TotalSize()
+		if t.Shape().IsScalar() {
+			size = 1
+		}
+		t.makeArray(size)
+
+		if len(raw) != 0 {
+			// copy over if natively accessible
+			if t.IsNativelyAccessible() {
+				bs := t.byteSlice()
+				copy(bs, raw)
+			}
+		}
+
 	case t.IsScalar() && t.array.Header.Raw == nil:
 		t.makeArray(1)
 	case t.Shape() == nil && t.array.Header.Raw != nil:
@@ -296,7 +309,7 @@ func (t *Dense) fix() {
 		} else {
 			t.SetShape(size) // vector
 		}
-	case t.array.Header.Raw == nil && t.t != Dtype{}:
+	case t.array.Header.Raw == nil && t.t != dtype.Dtype{}:
 		size := t.Shape().TotalSize()
 		t.makeArray(size)
 
@@ -573,7 +586,7 @@ func (t *Dense) Memset(x interface{}) error {
 	if !t.IsNativelyAccessible() {
 		return errors.Errorf(inaccessibleData, t)
 	}
-	if t.IsMaterializable() {
+	if t.RequiresIterator() {
 		it := newFlatIterator(&t.AP)
 		return t.array.memsetIter(x, it)
 	}
@@ -592,11 +605,19 @@ func (t *Dense) Eq(other interface{}) bool {
 
 		return t.array.Eq(&ot.array)
 	}
+	if ot, ok := other.(DenseTensor); ok {
+		if !t.Shape().Eq(ot.Shape()) {
+			return false
+		}
+
+		return t.array.Eq(ot.arrPtr())
+	}
+
 	return false
 }
 
 func (t *Dense) Zero() {
-	if t.IsMaterializable() {
+	if t.RequiresIterator() {
 		it := newFlatIterator(&t.AP)
 		if err := t.zeroIter(it); err != nil {
 			panic(err)
@@ -635,4 +656,4 @@ func (t *Dense) RequiresIterator() bool {
 
 func (t *Dense) Iterator() Iterator { return IteratorFromDense(t) }
 
-func (t *Dense) standardEngine() standardEngine { return t.oe }
+func (t *Dense) standardEngine() StandardEngine { return t.oe }

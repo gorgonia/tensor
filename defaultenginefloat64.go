@@ -1,16 +1,19 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/execution"
 	"gorgonia.org/tensor/internal/storage"
 
 	"gorgonia.org/vecf64"
 )
 
-func handleFuncOptsF64(expShape Shape, o DataOrder, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr bool, err error) {
+func handleFuncOptsF64(expShape Shape, o DataOrder, opts ...FuncOpt) (ctx context.Context, reuse DenseTensor, safe, toReuse, incr bool, err error) {
 	fo := ParseFuncOpts(opts...)
-
+	ctx = fo.Context()
 	reuseT, incr := fo.IncrReuse()
 	safe = fo.Safe()
 	toReuse = reuseT != nil
@@ -112,7 +115,7 @@ type Float64Engine struct {
 }
 
 // makeArray allocates a slice for the array
-func (e Float64Engine) makeArray(arr *array, t Dtype, size int) {
+func (e Float64Engine) makeArray(arr *array, t dtype.Dtype, size int) {
 	if t != Float64 {
 		panic("Float64Engine only creates float64s")
 	}
@@ -120,7 +123,11 @@ func (e Float64Engine) makeArray(arr *array, t Dtype, size int) {
 	arr.t = t
 }
 
-func (e Float64Engine) FMA(a, x, y Tensor) (retVal Tensor, err error) {
+func (e Float64Engine) FMA(ctx context.Context, a, x, y Tensor) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	reuse := y
 	if err = e.checkThree(a, x, reuse); err != nil {
 		return nil, errors.Wrap(err, "Failed checks")
@@ -143,7 +150,10 @@ func (e Float64Engine) FMA(a, x, y Tensor) (retVal Tensor, err error) {
 	return
 }
 
-func (e Float64Engine) FMAScalar(a Tensor, x interface{}, y Tensor) (retVal Tensor, err error) {
+func (e Float64Engine) FMAScalar(ctx context.Context, a Tensor, x interface{}, y Tensor) (retVal Tensor, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
 	reuse := y
 	if err = e.checkTwo(a, reuse); err != nil {
 		return nil, errors.Wrap(err, "Failed checks")
@@ -175,9 +185,14 @@ func (e Float64Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, err = handleFuncOptsF64(a.Shape(), a.DataOrder(), opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, err = handleFuncOptsF64(a.Shape(), a.DataOrder(), opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
+
 	if err = e.checkThree(a, b, reuse); err != nil {
 		return nil, errors.Wrap(err, "Failed checks")
 	}
@@ -206,14 +221,21 @@ func (e Float64Engine) Add(a Tensor, b Tensor, opts ...FuncOpt) (retVal Tensor, 
 		vecf64.Add(dataA, dataB)
 		retVal = a
 	default:
-		ret := a.Clone().(headerer)
-		vecf64.Add(ret.hdr().Float64s(), dataB)
+		ret, ok := a.Clone().(float64ser)
+		if !ok {
+			return nil, errors.Errorf("Unable to get the Float64 data from `a`, of %T", a)
+		}
+		vecf64.Add(ret.Float64s(), dataB)
 		retVal = ret.(Tensor)
 	}
 	return
 }
 
-func (e Float64Engine) Inner(a, b Tensor) (retVal float64, err error) {
+func (e Float64Engine) Inner(ctx context.Context, a, b Tensor, opts ...FuncOpt) (retVal float64, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return 0, err // this err will be noopError{}, no need to wrap.
+	}
+
 	var A, B []float64
 	var AD, BD *Dense
 	var ok bool

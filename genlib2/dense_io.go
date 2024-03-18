@@ -63,7 +63,7 @@ func (r *binaryReader) Err() error {
 // If tensor is masked, invalid values are replaced by the default fill value.
 func (t *Dense) WriteNpy(w io.Writer) (err error) {
 	var npdt string
-	if npdt, err = t.t.numpyDtype(); err != nil{
+	if npdt, err = t.t.NumpyDtype(); err != nil{
 		return
 	}
 
@@ -290,7 +290,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 	}
 
 	// TODO: check for endianness. For now we assume everything is little endian
-	if t.t, err = fromNumpyDtype(string(match[1][1:])); err != nil {
+	if t.t, err = dtype.FromNumpyDtype(string(match[1][1:])); err != nil {
 		return
 	}
 
@@ -348,7 +348,7 @@ func (t *Dense) ReadNpy(r io.Reader) (err error){
 
 const readCSVRaw = `// convFromStrs converts a []string to a slice of the Dtype provided. It takes a provided backing slice.
 // If into is nil, then a backing slice will be created.
-func convFromStrs(to Dtype, record []string, into interface{}) (interface{}, error) {
+func convFromStrs(to dtype.Dtype, record []string, into interface{}) (interface{}, error) {
 	var err error
 	switch to.Kind() {
 		{{range .Kinds -}}
@@ -545,12 +545,11 @@ func (t *Dense) FBDecode(buf []byte) error {
 		t.strides[i] = int(serialized.Strides(i))
 	}
 	typ := string(serialized.Type())
-	for _, dt := range allTypes.set {
-		if dt.String() == typ {
-			t.t = dt
-			break
-		}
+	dt, err := dtype.FindByName(typ)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode FlatBuffers")
 	}
+	t.t = dt
 
 	if t.e == nil {
 		t.e = StdEng{}
@@ -621,12 +620,11 @@ func (t *Dense) PBDecode(buf []byte) error {
 	}
 	t.Δ = Triangle(toSerialize.T)
 	typ := string(toSerialize.Type)
-	for _, dt := range allTypes.set {
-		if dt.String() == typ {
-			t.t = dt
-			break
-		}
+	dt, err := dtype.FindByName(typ)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode ProtoBuf")
 	}
+	t.t = dt
 
 	if t.e == nil {
 		t.e = StdEng{}

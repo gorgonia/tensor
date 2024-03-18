@@ -1,19 +1,27 @@
 package tensor
 
-import "github.com/pkg/errors"
+import (
+	"context"
 
-func (e StdEng) Argmax(t Tensor, axis int) (retVal Tensor, err error) {
+	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
+)
+
+func (e StdEng) Argmax(ctx context.Context, t Tensor, axis int) (retVal Tensor, err error) {
 
 	switch tt := t.(type) {
 	case DenseTensor:
-		return e.argmaxDenseTensor(tt, axis)
+		return e.argmaxDenseTensor(ctx, tt, axis)
 	default:
-		return nil, errors.Errorf(typeNYI, "StdEng.Argmax", t)
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
-func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+func (e StdEng) argmaxDenseTensor(ctx context.Context, t DenseTensor, axis int) (retVal *Dense, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, opFail, "Argmax")
 	}
 
@@ -89,18 +97,21 @@ func (e StdEng) argmaxDenseTensor(t DenseTensor, axis int) (retVal *Dense, err e
 	return New(WithShape(newShape...), WithBacking(indices)), nil
 }
 
-func (e StdEng) Argmin(t Tensor, axis int) (retVal Tensor, err error) {
+func (e StdEng) Argmin(ctx context.Context, t Tensor, axis int) (retVal Tensor, err error) {
 
 	switch tt := t.(type) {
 	case DenseTensor:
-		return e.argminDenseTensor(tt, axis)
+		return e.argminDenseTensor(ctx, tt, axis)
 	default:
-		return nil, errors.Errorf(typeNYI, "StdEng.Argmin", t)
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
-func (e StdEng) argminDenseTensor(t DenseTensor, axis int) (retVal *Dense, err error) {
-	if err = unaryCheck(t, ordTypes); err != nil {
+func (e StdEng) argminDenseTensor(ctx context.Context, t DenseTensor, axis int) (retVal *Dense, err error) {
+	if err = handleCtx(ctx); err != nil {
+		return nil, err
+	}
+	if err = unaryCheck(t, dtype.Ord); err != nil {
 		return nil, errors.Wrapf(err, opFail, "Argmin")
 	}
 

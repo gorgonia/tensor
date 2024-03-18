@@ -131,7 +131,9 @@ func (t *Dense) SetAt(v interface{}, coords ...int) error {
 		return errors.Errorf(inaccessibleData, t)
 	}
 
-	if len(coords) != t.Dims() {
+	switch {
+	case t.IsScalar() && len(coords) == 1:
+	case len(coords) != t.Dims():
 		return errors.Errorf(dimMismatch, t.Dims(), len(coords))
 	}
 
@@ -195,7 +197,7 @@ func (t *Dense) CopyTo(other *Dense) error {
 	}
 
 	// TODO: use copyDenseIter
-	return errors.Errorf(methodNYI, "CopyTo", "views")
+	return nyierr(methodNYI, "views")
 }
 
 // Narrow narrows the tensor.
@@ -238,18 +240,39 @@ func (t *Dense) Slice(slices ...Slice) (retVal View, err error) {
 		view.mask = t.mask[ndStart:ndEnd]
 	}
 
-	return view, err
+	return DenseView{view}, err
 }
 
 // SliceInto is a convenience method. It does NOT copy the values - it simply updates the AP of the view.
 // The underlying data is the same.
 // This method will override ALL the metadata in view.
-func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error) {
+func (t *Dense) SliceInto(view Tensor, slices ...Slice) (retVal Tensor, err error) {
+	switch view := view.(type) {
+	case nil:
+		return t.Slice(slices...)
+	case DenseView:
+		v := view.Dense
+		if v, err = t.sliceIntoDense(v, slices...); err != nil {
+			return nil, err
+		}
+		return DenseView{v}, nil
+
+	case *Dense:
+		if view, err = t.sliceIntoDense(view, slices...); err != nil {
+			return nil, err
+		}
+		return DenseView{view}, nil
+	default:
+		return nil, nyierr(typeNYI, view)
+	}
+}
+
+func (t *Dense) sliceIntoDense(view *Dense, slices ...Slice) (retVal *Dense, err error) {
 	var newAP AP
 	var ndStart, ndEnd int
 
 	if newAP, ndStart, ndEnd, err = t.AP.S(t.len(), slices...); err != nil {
-		return
+		return nil, err
 	}
 
 	view.AP.zero()
@@ -265,9 +288,7 @@ func (t *Dense) SliceInto(view *Dense, slices ...Slice) (retVal View, err error)
 	if t.IsMasked() {
 		view.mask = t.mask[ndStart:ndEnd]
 	}
-
-	return view, err
-
+	return view, nil
 }
 
 // RollAxis rolls the axis backwards until it lies in the given position.

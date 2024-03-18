@@ -1,6 +1,8 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"gorgonia.org/tensor/internal/storage"
 
@@ -18,7 +20,6 @@ func (e StdEng) SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (r
 	if indices.Dtype() != Int {
 		return nil, errors.Errorf("Expected indices to be a vector of ints. Got %v instead", indices.Dtype())
 	}
-
 	// if b is a scalar, then use Slice
 	if a.Shape().IsScalarEquiv() {
 		slices := make([]Slice, a.Shape().Dims())
@@ -31,8 +32,12 @@ func (e StdEng) SelectByIndices(a, indices Tensor, axis int, opts ...FuncOpt) (r
 
 	var reuse DenseTensor
 	var safe, toReuse, _ bool
-	if reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, _, _, err = handleFuncOpts(expectedShape, a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.
 	}
 	if safe || !toReuse && reuse == nil && safe {
 		// create reuse
@@ -105,7 +110,6 @@ func (e StdEng) selectByIdx(axis int, indices []int, typ reflect.Type, dataA, da
 			for o := 0; o < outer; o++ {
 				end := start + axStride
 				dstEnd := dstStart + retStride
-
 				storage.CopySliced(typ, dataRetVal, dstStart, dstEnd, dataA, start, end)
 
 				start += prevStride
@@ -157,8 +161,12 @@ func (e StdEng) SelectByIndicesB(input, outGrad, indices Tensor, axis int, opts 
 
 	var reuse DenseTensor
 	var _, toReuse, _ bool
-	if reuse, _, toReuse, _, _, err = handleFuncOpts(input.Shape(), input.Dtype(), input.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, _, toReuse, _, _, err = handleFuncOpts(input.Shape(), input.Dtype(), input.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // will be noopError{}, no need to wrap.
 	}
 	if !toReuse && reuse == nil {
 		// create reuse

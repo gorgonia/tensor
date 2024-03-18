@@ -3,6 +3,7 @@ package tensor
 import (
 	"reflect"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
@@ -10,8 +11,8 @@ import (
 type ConsOpt func(Tensor)
 
 // Of is a construction option for a Tensor.
-func Of(a Dtype) ConsOpt {
-	Register(a)
+func Of(a dtype.Dtype) ConsOpt {
+	dtype.Register(a)
 	f := func(t Tensor) {
 		switch tt := t.(type) {
 		case *Dense:
@@ -113,7 +114,7 @@ func FromScalar(x interface{}, argMask ...[]bool) ConsOpt {
 			xv0 := xv.Index(0)                 // xv[0]
 			xv0.Set(reflect.ValueOf(x))
 			tt.array.Header.Raw = storage.AsByteSlice(xv.Interface())
-			tt.t = Dtype{xT}
+			tt.t = dtype.Dtype{xT}
 			tt.mask = mask
 
 		default:
@@ -163,7 +164,7 @@ func WithEngine(e Engine) ConsOpt {
 			}
 
 			tt.oe = nil
-			if oe, ok := e.(standardEngine); ok {
+			if oe, ok := e.(StandardEngine); ok {
 				tt.oe = oe
 			}
 		case *CS:
@@ -234,7 +235,7 @@ func AsDenseDiag(backing interface{}) ConsOpt {
 			sli := reflect.MakeSlice(xT, l*l, l*l)
 
 			shape := Shape{l, l}
-			strides := shape.CalcStrides()
+			strides := CalcStrides(shape)
 			for i := 0; i < l; i++ {
 				idx, err := Ltoi(shape, strides, i, i)
 				if err != nil {

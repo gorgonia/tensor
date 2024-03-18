@@ -66,6 +66,9 @@ const denseIdentityArithTestBodyRaw = `iden := func(a *Dense) bool {
 	_, ok := a.Engine().({{interfaceName .Name}}); we = we || !ok
 
 	{{template "call0" . }}
+	{{if eq .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 	if err, retEarly := qcErrCheck(t, "{{.Name}}", a, b, we, err); retEarly{
 		if err != nil {
 			return false
@@ -76,7 +79,9 @@ const denseIdentityArithTestBodyRaw = `iden := func(a *Dense) bool {
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
-	{{template "funcoptcheck" -}}
+	{{if ne .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 
 	return true
 }
@@ -96,6 +101,9 @@ const denseIdentityArithScalarTestRaw = `iden1 := func(q *Dense) bool {
 	_, ok := q.Engine().({{interfaceName .Name}}); we = we || !ok
 
 	{{template "call0" . }}
+	{{if eq .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 	if err, retEarly := qcErrCheck(t, "{{.Name}}", a, b, we, err); retEarly{
 		if err != nil {
 			return false
@@ -106,7 +114,9 @@ const denseIdentityArithScalarTestRaw = `iden1 := func(q *Dense) bool {
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
-	{{template "funcoptcheck" -}}
+	{{if ne .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 
 	return true
 }
@@ -127,6 +137,9 @@ iden2 := func(q *Dense) bool {
 	_, ok := q.Engine().({{interfaceName .Name}}); we = we || !ok
 
 	{{template "call1" . }}
+	{{if eq .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 	if err, retEarly := qcErrCheck(t, "{{.Name}}", a, b, we, err); retEarly{
 		if err != nil {
 			return false
@@ -137,7 +150,9 @@ iden2 := func(q *Dense) bool {
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
-	{{template "funcoptcheck" -}}
+	{{if ne .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 
 	return true
 }
@@ -160,6 +175,9 @@ const denseInvArithTestBodyRaw = `inv := func(a *Dense) bool {
 	_, ok := a.Engine().({{interfaceName .Name}}); we = we || !ok
 
 	{{template "call0" . }}
+	{{if eq .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 	if err, retEarly := qcErrCheck(t, "{{.Name}}", a, b, we, err); retEarly{
 		if err != nil {
 			return false
@@ -171,7 +189,10 @@ const denseInvArithTestBodyRaw = `inv := func(a *Dense) bool {
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
-	{{template "funcoptcheck" -}}
+	{{if ne .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
+
 
 	return true
 }
@@ -191,6 +212,9 @@ const denseInvArithScalarTestRaw = `inv1 := func(q *Dense) bool {
 	_, ok := q.Engine().({{interfaceName .Name}}); we = we || !ok
 
 	{{template "call0" . }}
+	{{if eq .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 	if err, retEarly := qcErrCheck(t, "{{.Name}}VS", a, b, we, err); retEarly{
 		if err != nil {
 			return false
@@ -202,7 +226,9 @@ const denseInvArithScalarTestRaw = `inv1 := func(q *Dense) bool {
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
-	{{template "funcoptcheck" -}}
+	{{if ne .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 
 	return true
 }
@@ -224,6 +250,9 @@ inv2 := func(q *Dense) bool {
 	_, ok := q.Engine().({{interfaceName .Name}}); we = we || !ok
 
 	{{template "call1" . }}
+	{{if eq .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 	if err, retEarly := qcErrCheck(t, "{{.Name}}SV", a, b, we, err); retEarly{
 		if err != nil {
 			return false
@@ -235,7 +264,9 @@ inv2 := func(q *Dense) bool {
 	if !qcEqCheck(t, a.Dtype(), willFailEq, correct.Data(), ret.Data()) {
 		return false
 	}
-	{{template "funcoptcheck" -}}
+	{{if ne .FuncOpt "context" -}}
+		{{template "funcoptcheck" -}}
+	{{end -}}
 
 	return true
 }

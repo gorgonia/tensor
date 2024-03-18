@@ -1,15 +1,17 @@
 package tensor
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
-	// "log"
 )
 
-func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opts ...FuncOpt) (reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
+func handleFuncOpts(expShape Shape, expType dtype.Dtype, o DataOrder, strict bool, opts ...FuncOpt) (ctx context.Context, reuse DenseTensor, safe, toReuse, incr, same bool, err error) {
 	fo := ParseFuncOpts(opts...)
+	ctx = fo.Context()
 
 	reuseT, incr := fo.IncrReuse()
 	safe = fo.Safe()
@@ -61,7 +63,16 @@ func handleFuncOpts(expShape Shape, expType Dtype, o DataOrder, strict bool, opt
 	return
 }
 
-func binaryCheck(a, b Tensor, tc *typeclass) (err error) {
+func handleCtx(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return noopError{}
+	default:
+	}
+	return nil
+}
+
+func binaryCheck(a, b Tensor, tc dtype.TypeClass) (err error) {
 	// check if the tensors are accessible
 	if !a.IsNativelyAccessible() {
 		return errors.Errorf(inaccessibleData, a)
@@ -73,11 +84,11 @@ func binaryCheck(a, b Tensor, tc *typeclass) (err error) {
 
 	at := a.Dtype()
 	bt := b.Dtype()
-	if tc != nil {
-		if err = typeclassCheck(at, tc); err != nil {
+	if tc != nilTC {
+		if err = dtype.TypeClassCheck(at, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "a")
 		}
-		if err = typeclassCheck(bt, tc); err != nil {
+		if err = dtype.TypeClassCheck(bt, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "b")
 		}
 	}
@@ -91,13 +102,13 @@ func binaryCheck(a, b Tensor, tc *typeclass) (err error) {
 	return nil
 }
 
-func unaryCheck(a Tensor, tc *typeclass) error {
+func unaryCheck(a Tensor, tc dtype.TypeClass) error {
 	if !a.IsNativelyAccessible() {
 		return errors.Errorf(inaccessibleData, a)
 	}
 	at := a.Dtype()
-	if tc != nil {
-		if err := typeclassCheck(at, tc); err != nil {
+	if tc != nilTC {
+		if err := dtype.TypeClassCheck(at, tc); err != nil {
 			return errors.Wrapf(err, typeclassMismatch, "a")
 		}
 	}
@@ -106,13 +117,13 @@ func unaryCheck(a Tensor, tc *typeclass) error {
 
 // scalarDtypeCheck checks that a scalar value has the same dtype as the dtype of a given tensor.
 func scalarDtypeCheck(a Tensor, b interface{}) error {
-	var dt Dtype
+	var dt dtype.Dtype
 	switch bt := b.(type) {
 	case Dtyper:
 		dt = bt.Dtype()
 	default:
 		t := reflect.TypeOf(b)
-		dt = Dtype{t}
+		dt = dtype.Dtype{t}
 	}
 
 	if a.Dtype() != dt {

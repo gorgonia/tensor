@@ -1,10 +1,12 @@
 package tensor
 
+import "gorgonia.org/dtype"
+
 type maskedReduceFn func(Tensor) interface{}
 
 // MaskedReduce applies a reduction function of type maskedReduceFn to mask, and returns
 // either an int, or another array
-func MaskedReduce(t *Dense, retType Dtype, fn maskedReduceFn, axis ...int) interface{} {
+func MaskedReduce(t *Dense, retType dtype.Dtype, fn maskedReduceFn, axis ...int) interface{} {
 	if len(axis) == 0 || t.IsVector() {
 		return fn(t)
 	}
@@ -18,7 +20,7 @@ func MaskedReduce(t *Dense, retType Dtype, fn maskedReduceFn, axis ...int) inter
 	// calculate shape of tensor to be returned
 	slices[ax] = makeRS(0, 0)
 	tt, _ := t.Slice(slices...)
-	ts := tt.(*Dense)
+	ts := MustGetDense(tt)
 	retVal := NewDense(retType, ts.shape) //retVal is array to be returned
 
 	it := NewIterator(retVal.Info())
@@ -37,7 +39,7 @@ func MaskedReduce(t *Dense, retType Dtype, fn maskedReduceFn, axis ...int) inter
 			}
 		}
 		tt, _ = t.Slice(slices...)
-		ts = tt.(*Dense)
+		ts = MustGetDense(tt)
 		retVal.SetAt(fn(ts), coord...)
 
 	}

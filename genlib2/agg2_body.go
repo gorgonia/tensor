@@ -5,27 +5,40 @@ import "text/template"
 // level 2 aggregation (tensor.StdEng) templates
 
 const cmpPrepRaw = `var safe, same bool
-	if reuse, safe, _, _, same, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(),  {{.VecVar}}.DataOrder(),false, opts...); err != nil{
+	var ctx context.Context
+	if ctx, reuse, safe, _, _, same, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(),  {{.VecVar}}.DataOrder(),false, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
 	}
 	if !safe {
 		same = true
 	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
+	}
 `
 
 const arithPrepRaw = `var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil {
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 `
 
 const minmaxPrepRaw = `var safe bool
-	if reuse, safe, _, _, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
+	var ctx context.Context
+	if ctx, reuse, safe, _, _, _, err = handleFuncOpts({{.VecVar}}.Shape(), {{.VecVar}}.Dtype(), {{.VecVar}}.DataOrder(), true, opts...); err != nil{
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err !=nil{
+		return nil, err // this err will be noopError{}, no need to wrap.
 	}
 `
 
-const prepVVRaw = `if err = binaryCheck(a, b, {{.TypeClassCheck | lower}}Types); err != nil {
+const prepVVRaw = `if err = binaryCheck(a, b, dtype.{{.TypeClassCheck}}); err != nil {
+
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
 
@@ -42,7 +55,7 @@ const prepVVRaw = `if err = binaryCheck(a, b, {{.TypeClassCheck | lower}}Types);
 	}
 `
 
-const prepMixedRaw = `if err = unaryCheck(t, {{.TypeClassCheck | lower}}Types); err != nil {
+const prepMixedRaw = `if err = unaryCheck(t, dtype.{{.TypeClassCheck}}); err != nil {
 		return nil, errors.Wrapf(err, "{{.Name}} failed")
 	}
 
@@ -73,14 +86,18 @@ const prepMixedRaw = `if err = unaryCheck(t, {{.TypeClassCheck | lower}}Types); 
 
 `
 
-const prepUnaryRaw = `if err = unaryCheck(a, {{.TypeClassCheck | lower}}Types); err != nil {
+const prepUnaryRaw = `if err = unaryCheck(a, dtype.{{.TypeClassCheck}}); err != nil {
 		err = errors.Wrapf(err, "{{.Name}} failed")
 		return
 	}
 	var reuse DenseTensor
 	var safe, toReuse, incr bool
-	if reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
+	var ctx context.Context
+	if ctx, reuse, safe, toReuse, incr, _, err = handleFuncOpts(a.Shape(), a.Dtype(), a.DataOrder(), true, opts...); err != nil {
 		return nil, errors.Wrap(err, "Unable to handle funcOpts")
+	}
+	if err = handleCtx(ctx); err != nil{
+		return nil, err // this err will be a noopError{}, no need to wrap.
 	}
 
 	typ := a.Dtype().Type

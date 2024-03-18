@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorgonia.org/dtype"
 	"gorgonia.org/vecf64"
 )
 
@@ -42,7 +43,7 @@ func cloneArray(a interface{}) interface{} {
 	return nil
 }
 
-func castToDt(val float64, dt Dtype) interface{} {
+func castToDt(val float64, dt dtype.Dtype) interface{} {
 	switch dt {
 	case Bool:
 		return false
@@ -504,7 +505,7 @@ func TestDense_CopyTo(t *testing.T) {
 	T = New(Of(Byte), WithShape(3, 3))
 	T2 = New(Of(Byte), WithShape(2, 2))
 	T3, _ = T.Slice(makeRS(0, 2), makeRS(0, 2)) // T[0:2, 0:2], shape == (2,2)
-	if err = T2.CopyTo(T3.(*Dense)); err != nil {
+	if err = T2.CopyTo(MustGetDense(T3)); err != nil {
 		t.Log(err) // for now it's a not yet implemented error. TODO: FIX THIS
 	}
 
@@ -610,7 +611,7 @@ func TestDense_Slice(t *testing.T) {
 	assert.True(Shape{2}.Eq(V.Shape()))
 	assert.Equal([]int{3}, V.Strides())
 	assert.Equal([]float32{0, 1, 2, 3}, V.Data())
-	assert.True(V.(*Dense).old.IsZero())
+	assert.True(MustGetDense(V).old.IsZero())
 
 	// slice a sliced
 	t.Logf("%v", V)
@@ -775,7 +776,7 @@ func TestDense_RollAxis(t *testing.T) {
 
 var concatTests = []struct {
 	name   string
-	dt     Dtype
+	dt     dtype.Dtype
 	a      interface{}
 	b      interface{}
 	shape  Shape
@@ -933,7 +934,7 @@ func TestDense_Concat_sliced(t *testing.T) {
 
 var simpleStackTests = []struct {
 	name       string
-	dt         Dtype
+	dt         dtype.Dtype
 	shape      Shape
 	axis       int
 	stackCount int
@@ -984,7 +985,7 @@ var simpleStackTests = []struct {
 
 var viewStackTests = []struct {
 	name       string
-	dt         Dtype
+	dt         dtype.Dtype
 	shape      Shape
 	transform  []int
 	slices     []Slice
@@ -1041,12 +1042,12 @@ func TestDense_Stack(t *testing.T) {
 		T := New(WithShape(sts.shape...), WithBacking(Range(sts.dt, 0, sts.shape.TotalSize())))
 		switch {
 		case sts.slices != nil && sts.transform == nil:
-			var sliced Tensor
+			var sliced View
 			if sliced, err = T.Slice(sts.slices...); err != nil {
 				t.Error(err)
 				continue
 			}
-			T = sliced.(*Dense)
+			T = MustGetDense(sliced)
 		case sts.transform != nil && sts.slices == nil:
 			T.T(sts.transform...)
 		}
@@ -1057,12 +1058,12 @@ func TestDense_Stack(t *testing.T) {
 			T1 := New(WithShape(sts.shape...), WithBacking(Range(sts.dt, offset, sts.shape.TotalSize()+offset)))
 			switch {
 			case sts.slices != nil && sts.transform == nil:
-				var sliced Tensor
+				var sliced View
 				if sliced, err = T1.Slice(sts.slices...); err != nil {
 					t.Error(err)
 					continue
 				}
-				T1 = sliced.(*Dense)
+				T1 = MustGetDense(sliced)
 			case sts.transform != nil && sts.slices == nil:
 				T1.T(sts.transform...)
 			}
@@ -1108,12 +1109,12 @@ func TestDense_Stack(t *testing.T) {
 		T := New(WithShape(sts.shape...), WithBacking(Range(sts.dt, 0, sts.shape.TotalSize())))
 		switch {
 		case sts.slices != nil && sts.transform == nil:
-			var sliced Tensor
+			var sliced View
 			if sliced, err = T.Slice(sts.slices...); err != nil {
 				t.Error(err)
 				continue
 			}
-			T = sliced.(*Dense)
+			T = MustGetDense(sliced)
 		case sts.transform != nil && sts.slices == nil:
 			T.T(sts.transform...)
 		}
@@ -1125,12 +1126,12 @@ func TestDense_Stack(t *testing.T) {
 			T1.MaskedInside(castToDt(102.0, sts.dt), castToDt(225.0, sts.dt))
 			switch {
 			case sts.slices != nil && sts.transform == nil:
-				var sliced Tensor
+				var sliced View
 				if sliced, err = T1.Slice(sts.slices...); err != nil {
 					t.Error(err)
 					continue
 				}
-				T1 = sliced.(*Dense)
+				T1 = MustGetDense(sliced)
 			case sts.transform != nil && sts.slices == nil:
 				T1.T(sts.transform...)
 			}
@@ -1158,12 +1159,12 @@ func TestDense_Stack(t *testing.T) {
 	var stacked []*Dense
 	for i := 0; i < 1; i++ {
 		T1 := New(WithShape(2, 2), WithBacking([]string{"blah1", "blah2", "blah3", "blah4"}))
-		var sliced Tensor
+		var sliced View
 		if sliced, err = T1.Slice(nil, nil); err != nil {
 			t.Error(err)
 			break
 		}
-		T1 = sliced.(*Dense)
+		T1 = MustGetDense(sliced)
 		stacked = append(stacked, T1)
 	}
 	T2, err := T.Stack(0, stacked...)

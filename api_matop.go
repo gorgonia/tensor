@@ -19,16 +19,20 @@ func Narrow(t Tensor, dim, start, length int) (View, error) {
 
 // Repeat repeats a Tensor along the axis and given the number of repeats.
 func Repeat(t Tensor, axis int, repeats ...int) (retVal Tensor, err error) {
-	if r, ok := t.Engine().(Repeater); ok {
-		return r.Repeat(t, axis, repeats...)
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
+	if r, ok := e.(Repeater); ok {
+		return r.Repeat(ctx, t, axis, repeats...)
 	}
 	return nil, errors.New("Engine does not support Repeat")
 }
 
 // RepeatReuse repeats a Tensor along the axis and the given number of repeats, and puts the results in the provided reuse tensor. If the reuse tensor is not correctly sized, then  an error will be given, but the results will still be valid.
 func RepeatReuse(t, reuse Tensor, axis int, repeats ...int) (retval Tensor, err error) {
-	if r, ok := t.Engine().(Repeater); ok {
-		return r.RepeatReuse(t, reuse, axis, repeats...)
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
+	if r, ok := e.(Repeater); ok {
+		return r.RepeatReuse(ctx, t, reuse, axis, repeats...)
 	}
 	return nil, errors.New("Engine does not support Repeat")
 }
@@ -38,6 +42,14 @@ func T(t Tensor, axes ...int) (retVal Tensor, err error) {
 	switch tt := t.(type) {
 	case *Dense:
 		return tt.SafeT(axes...)
+	case DenseView:
+		var ret *Dense
+		if ret, err = tt.SafeT(axes...); err != nil {
+			return nil, errors.Wrap(err, "T() off a DenseView")
+		}
+		return DenseView{ret}, nil
+	default:
+		return nil, nyierr(typeNYI, t)
 	}
 	panic("Unreachable")
 }
@@ -48,11 +60,20 @@ func Transpose(t Tensor, axes ...int) (retVal Tensor, err error) {
 	case *Dense:
 		var ret *Dense
 		if ret, err = tt.SafeT(axes...); err != nil {
-			return
+			return nil, errors.Wrap(err, "Unable to perform .SafeT() on a *Dense")
 		}
 		ret.Transpose()
 		retVal = ret
 		return
+	case DenseView:
+		var ret *Dense
+		if ret, err = tt.SafeT(axes...); err != nil {
+			return nil, errors.Wrap(err, "Unable to perform .SafeT() on a DenseView")
+		}
+		ret.Transpose()
+		return DenseView{ret}, nil
+	default:
+		return nil, nyierr(typeNYI, t)
 	}
 	panic("Unreachable")
 }
@@ -65,15 +86,30 @@ func Concat(axis int, t Tensor, others ...Tensor) (retVal Tensor, err error) {
 	}
 	switch T := t.(type) {
 	case *Dense:
+		// IF YOU UPDATE THIS, UPDATE THE DENSE VIEW CASE TOO.
 		ts := make([]*Dense, len(others))
 		for i, o := range others {
-			if ot, ok := o.(*Dense); ok {
+			ot, err := assertDense(o)
+			if err == nil {
 				ts[i] = ot
 				continue
 			}
-			return nil, errors.Errorf("Expected all Tensors to be *Dense")
+			return nil, errors.Wrapf(err, "Expected all Tensors to be *Dense. Got %T instead", o)
 		}
 		return T.Concat(axis, ts...)
+	case DenseView:
+		ts := make([]*Dense, len(others))
+		for i, o := range others {
+			ot, err := assertDense(o)
+			if err == nil {
+				ts[i] = ot
+				continue
+			}
+			return nil, errors.Wrapf(err, "Expected all Tensors to be *Dense. Got %T instead", o)
+		}
+		return T.Concat(axis, ts...)
+	default:
+		return nil, nyierr(typeNYI, t)
 	}
 	panic("Unreachable")
 }
@@ -96,7 +132,7 @@ func Copy(dst, src Tensor) error {
 		copyDense(dt, st)
 		return nil
 	default:
-		return errors.Errorf("NYI for Copy %T", src)
+		return nyierr(typeNYI, src)
 	}
 	panic("Unreachable")
 }
@@ -130,8 +166,10 @@ func Materialize(t Tensor) Tensor {
 }
 
 func Diag(t Tensor) (retVal Tensor, err error) {
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
 	if d, ok := t.Engine().(Diager); ok {
-		return d.Diag(t)
+		return d.Diag(ctx, t)
 	}
 	return nil, errors.Errorf("Unable to perform diagonalization of tensor ")
 }
@@ -193,4 +231,11 @@ func LogSoftMaxB(output, grad Tensor, axis int, opts ...FuncOpt) (retVal Tensor,
 	}
 
 	return nil, errors.Errorf("Unable to apply SoftMaxB. Engine %T does not support that.", output.Engine())
+}
+
+func Scatter(a, indices Tensor, opts ...FuncOpt) (retVal Tensor, err error) {
+	if sc, ok := a.Engine().(Scatterer); ok {
+		return sc.Scatter(a, indices, opts...)
+	}
+	return nil, errors.Errorf("Unable to scatter. Engine %T does not support Scattering.", a.Engine())
 }

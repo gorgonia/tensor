@@ -76,7 +76,7 @@ func ExampleDense_MatVecMul_rowMajorSliced() {
 	// here we print the underlying slice of T3 just to show that it's actually a much larger slice
 	fmt.Printf("Underlying Slice: %v\n", T3.Data())
 
-	T4, err := T2.(*Dense).MatVecMul(T3)
+	T4, err := MustGetDense(T2).MatVecMul(T3)
 	handleErr(err)
 
 	fmt.Printf("T4:\n%v\n", T4)
@@ -120,7 +120,7 @@ func ExampleDense_MatMul_sliced() {
 	handleErr(err)
 	fmt.Printf("T4:\n%v", T4)
 
-	T5, err := T3.(*Dense).MatMul(T4)
+	T5, err := MustGetDense(T3).MatMul(T4)
 	handleErr(err)
 	fmt.Printf("T3xT4:\n%v", T5)
 

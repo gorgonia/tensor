@@ -1,14 +1,15 @@
 package tensor
 
 import (
+	"math"
 	"math/rand"
 	"testing"
 	"testing/quick"
 	"time"
-	"math"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/chewxy/math32"
+	"github.com/stretchr/testify/assert"
+	"gorgonia.org/dtype"
 )
 
 /*
@@ -354,12 +355,12 @@ func TestInvSqrt(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(InvSqrter)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := InvSqrt(a)
@@ -387,12 +388,12 @@ func TestInvSqrt(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(InvSqrter)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := InvSqrt(a, UseUnsafe())
@@ -426,12 +427,12 @@ func TestInvSqrt(t *testing.T) {
 		reuse := q.Clone().(*Dense)
 		reuse.Zero()
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(InvSqrter)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := InvSqrt(a, WithReuse(reuse))
@@ -466,12 +467,12 @@ func TestInvSqrt(t *testing.T) {
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
 
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(InvSqrter)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := InvSqrt(a, WithIncr(incr))
@@ -509,12 +510,12 @@ func TestInv(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Inver)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Inv(a)
@@ -541,12 +542,12 @@ func TestInv(t *testing.T) {
 		a := q.Clone().(*Dense)
 		b := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Inver)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Inv(a, UseUnsafe())
@@ -577,12 +578,12 @@ func TestInv(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		reuse := a.Clone().(*Dense)
 		reuse.Zero()
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Inver)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Inv(a, WithReuse(reuse))
@@ -613,12 +614,12 @@ func TestInv(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Inver)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Inv(a, WithIncr(incr))
@@ -654,12 +655,12 @@ func TestLog10(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log10er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log10(a)
@@ -683,18 +684,17 @@ func TestLog10(t *testing.T) {
 		t.Errorf("Inv tests for Log10 failed: %v", err)
 	}
 
-
 	// unsafe
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		b := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log10er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log10(a, UseUnsafe())
@@ -720,19 +720,18 @@ func TestLog10(t *testing.T) {
 		t.Errorf("Inv tests using unsafe for Log10 failed: %v", err)
 	}
 
-
 	// reuse
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
 		reuse := a.Clone().(*Dense)
 		reuse.Zero()
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log10er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log10(a, WithReuse(reuse))
@@ -764,12 +763,12 @@ func TestLog10(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log10er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log10(a, WithIncr(incr))
@@ -808,10 +807,10 @@ func TestAbs(t *testing.T) {
 		correct := New(Of(Bool), WithShape(q.Shape().Clone()...))
 		correct.Memset(true)
 		// we'll exclude everything other than ordtypes because complex numbers cannot be abs'd
-		if err := typeclassCheck(a.Dtype(), ordTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Ord); err != nil {
 			return true
 		}
-		we, willFailEq := willerr(a, signedTypes, nil)
+		we, willFailEq := willerr(a, dtype.Signed, nilTC)
 		_, ok := q.Engine().(Abser)
 		we = we || !ok
 
@@ -836,19 +835,18 @@ func TestAbs(t *testing.T) {
 	}
 }
 
-
 func TestTanh(t *testing.T) {
 	var r *rand.Rand
 	// default
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Tanher)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Tanh(a)
@@ -885,12 +883,12 @@ func TestTanh(t *testing.T) {
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Tanher)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Tanh(a, UseUnsafe())
@@ -926,19 +924,18 @@ func TestTanh(t *testing.T) {
 		t.Errorf("Inv tests using unsafe for Tanh failed: %v", err)
 	}
 
-
 	// reuse
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
 		reuse := a.Clone().(*Dense)
 		reuse.Zero()
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Tanher)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Tanh(a, WithReuse(reuse))
@@ -973,7 +970,6 @@ func TestTanh(t *testing.T) {
 		t.Errorf("Inv tests using unsafe for Tanh failed: %v", err)
 	}
 
-
 	// incr
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
@@ -981,12 +977,12 @@ func TestTanh(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Tanher)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Tanh(a, WithIncr(incr))
@@ -1033,12 +1029,12 @@ func TestLog2(t *testing.T) {
 	invFn := func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log2er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log2(a)
@@ -1062,18 +1058,17 @@ func TestLog2(t *testing.T) {
 		t.Errorf("Inv tests for Log2 failed: %v", err)
 	}
 
-
 	// unsafe
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		b := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log2er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log2(a, UseUnsafe())
@@ -1099,19 +1094,18 @@ func TestLog2(t *testing.T) {
 		t.Errorf("Inv tests using unsafe for Log2 failed: %v", err)
 	}
 
-
 	// reuse
 	invFn = func(q *Dense) bool {
 		a := q.Clone().(*Dense)
 		correct := a.Clone().(*Dense)
 		reuse := a.Clone().(*Dense)
 		reuse.Zero()
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log2er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log2(a, WithReuse(reuse))
@@ -1143,12 +1137,12 @@ func TestLog2(t *testing.T) {
 		correct := a.Clone().(*Dense)
 		incr.Memset(identityVal(100, a.t))
 		correct.Add(incr, UseUnsafe())
-		we, willFailEq := willerr(a, floatTypes, nil)
+		we, willFailEq := willerr(a, dtype.Floats, nilTC)
 		_, ok := q.Engine().(Log2er)
 		we = we || !ok
 
 		// we'll exclude everything other than floats
-		if err := typeclassCheck(a.Dtype(), floatTypes); err != nil {
+		if err := dtype.TypeClassCheck(a.Dtype(), dtype.Floats); err != nil {
 			return true
 		}
 		ret, err := Log2(a, WithIncr(incr))

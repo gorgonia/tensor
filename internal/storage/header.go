@@ -3,6 +3,8 @@ package storage // import "gorgonia.org/tensor/internal/storage"
 import (
 	"reflect"
 	"unsafe"
+
+	_ "go4.org/unsafe/assume-no-moving-gc"
 )
 
 // Header is runtime representation of a slice. It's a cleaner version of reflect.SliceHeader.

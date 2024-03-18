@@ -20,7 +20,7 @@ func ExampleDense_Gt_basic() {
 	// Sliced tensors are safe too
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Gt(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -28,7 +28,7 @@ func ExampleDense_Gt_basic() {
 	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Gt(T2, AsSameType()) // AsSameType returns a tensor of the same type
 	fmt.Printf("Safe slicing (Same type)\n========================\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -83,7 +83,7 @@ func ExampleDense_Gt_unsafe() {
 
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	V.Gt(T2, UseUnsafe())
 	fmt.Printf("Unsafe operation, with a sliced Tensor\n======================================\nT1:\n%v", T1)
@@ -129,7 +129,7 @@ func ExampleDense_Gt_reuse() {
 	// Slicing is similar:
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking([]bool{true, true, true, true}), WithShape(2, 2))
 	V.Gt(T2, WithReuse(T3))
@@ -138,7 +138,7 @@ func ExampleDense_Gt_reuse() {
 	// Again, bear in mind same types
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking(Range(Float64, 100, 104)), WithShape(2, 2))
 	V.Gt(T2, WithReuse(T3), AsSameType())
@@ -192,7 +192,7 @@ func ExampleDense_Gte_basic() {
 	// Sliced tensors are safe too
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Gte(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -200,7 +200,7 @@ func ExampleDense_Gte_basic() {
 	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Gte(T2, AsSameType()) // AsSameType returns a tensor of the same type
 	fmt.Printf("Safe slicing (Same type)\n========================\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -255,7 +255,7 @@ func ExampleDense_Gte_unsafe() {
 
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	V.Gte(T2, UseUnsafe())
 	fmt.Printf("Unsafe operation, with a sliced Tensor\n======================================\nT1:\n%v", T1)
@@ -301,7 +301,7 @@ func ExampleDense_Gte_reuse() {
 	// Slicing is similar:
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking([]bool{true, true, true, true}), WithShape(2, 2))
 	V.Gte(T2, WithReuse(T3))
@@ -310,7 +310,7 @@ func ExampleDense_Gte_reuse() {
 	// Again, bear in mind same types
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking(Range(Float64, 100, 104)), WithShape(2, 2))
 	V.Gte(T2, WithReuse(T3), AsSameType())
@@ -364,7 +364,7 @@ func ExampleDense_Lt_basic() {
 	// Sliced tensors are safe too
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Lt(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -372,7 +372,7 @@ func ExampleDense_Lt_basic() {
 	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Lt(T2, AsSameType()) // AsSameType returns a tensor of the same type
 	fmt.Printf("Safe slicing (Same type)\n========================\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -427,7 +427,7 @@ func ExampleDense_Lt_unsafe() {
 
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	V.Lt(T2, UseUnsafe())
 	fmt.Printf("Unsafe operation, with a sliced Tensor\n======================================\nT1:\n%v", T1)
@@ -473,7 +473,7 @@ func ExampleDense_Lt_reuse() {
 	// Slicing is similar:
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking([]bool{true, true, true, true}), WithShape(2, 2))
 	V.Lt(T2, WithReuse(T3))
@@ -482,7 +482,7 @@ func ExampleDense_Lt_reuse() {
 	// Again, bear in mind same types
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking(Range(Float64, 100, 104)), WithShape(2, 2))
 	V.Lt(T2, WithReuse(T3), AsSameType())
@@ -535,7 +535,7 @@ func ExampleDense_Lte_basic() {
 	// Sliced tensors are safe too
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Lte(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -543,7 +543,7 @@ func ExampleDense_Lte_basic() {
 	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.Lte(T2, AsSameType()) // AsSameType returns a tensor of the same type
 	fmt.Printf("Safe slicing (Same type)\n========================\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -598,7 +598,7 @@ func ExampleDense_Lte_unsafe() {
 
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	V.Lte(T2, UseUnsafe())
 	fmt.Printf("Unsafe operation, with a sliced Tensor\n======================================\nT1:\n%v", T1)
@@ -644,7 +644,7 @@ func ExampleDense_Lte_reuse() {
 	// Slicing is similar:
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking([]bool{true, true, true, true}), WithShape(2, 2))
 	V.Lte(T2, WithReuse(T3))
@@ -653,7 +653,7 @@ func ExampleDense_Lte_reuse() {
 	// Again, bear in mind same types
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking(Range(Float64, 100, 104)), WithShape(2, 2))
 	V.Lte(T2, WithReuse(T3), AsSameType())
@@ -707,7 +707,7 @@ func ExampleDense_ElEq_basic() {
 	// Sliced tensors are safe too
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.ElEq(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -715,7 +715,7 @@ func ExampleDense_ElEq_basic() {
 	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.ElEq(T2, AsSameType()) // AsSameType returns a tensor of the same type
 	fmt.Printf("Safe slicing (Same type)\n========================\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -770,7 +770,7 @@ func ExampleDense_ElEq_unsafe() {
 
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	V.ElEq(T2, UseUnsafe())
 	fmt.Printf("Unsafe operation, with a sliced Tensor\n======================================\nT1:\n%v", T1)
@@ -817,7 +817,7 @@ func ExampleDense_ElEq_reuse() {
 	// Slicing is similar:
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking([]bool{true, true, true, true}), WithShape(2, 2))
 	V.ElEq(T2, WithReuse(T3))
@@ -826,7 +826,7 @@ func ExampleDense_ElEq_reuse() {
 	// Again, bear in mind same types
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking(Range(Float64, 100, 104)), WithShape(2, 2))
 	V.ElEq(T2, WithReuse(T3), AsSameType())
@@ -880,7 +880,7 @@ func ExampleDense_ElNe_basic() {
 	// Sliced tensors are safe too
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.ElNe(T2)
 	fmt.Printf("Safe slicing\n============\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -888,7 +888,7 @@ func ExampleDense_ElNe_basic() {
 	// Similarly for tensors that return the same type
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	T3, _ = V.ElNe(T2, AsSameType()) // AsSameType returns a tensor of the same type
 	fmt.Printf("Safe slicing (Same type)\n========================\nT3:\n%v\nT1 remains unchanged:\n%v\n", T3, T1)
@@ -943,7 +943,7 @@ func ExampleDense_ElNe_unsafe() {
 
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 1, 5)), WithShape(2, 2))
 	V.ElNe(T2, UseUnsafe())
 	fmt.Printf("Unsafe operation, with a sliced Tensor\n======================================\nT1:\n%v", T1)
@@ -990,7 +990,7 @@ func ExampleDense_ElNe_reuse() {
 	// Slicing is similar:
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking([]bool{true, true, true, true}), WithShape(2, 2))
 	V.ElNe(T2, WithReuse(T3))
@@ -999,7 +999,7 @@ func ExampleDense_ElNe_reuse() {
 	// Again, bear in mind same types
 	T1 = New(WithBacking(Range(Float64, 0, 9)), WithShape(3, 3))
 	sliced, _ = T1.Slice(makeRS(0, 2), makeRS(0, 2))
-	V = sliced.(*Dense)
+	V = MustGetDense(sliced)
 	T2 = New(WithBacking(Range(Float64, 0, 4)), WithShape(2, 2))
 	T3 = New(WithBacking(Range(Float64, 100, 104)), WithShape(2, 2))
 	V.ElNe(T2, WithReuse(T3), AsSameType())

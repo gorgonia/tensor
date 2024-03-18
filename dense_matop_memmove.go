@@ -27,9 +27,9 @@ func (t *Dense) Transpose() error {
 	// important! because the strides would have changed once the underlying data changed
 	var expStrides []int
 	if t.AP.o.IsColMajor() {
-		expStrides = expShape.CalcStridesColMajor()
+		expStrides = CalcStridesColMajor(expShape)
 	} else {
-		expStrides = expShape.CalcStrides()
+		expStrides = CalcStrides(expShape)
 	}
 	defer ReturnInts(expStrides)
 	defer func() {
@@ -43,13 +43,14 @@ func (t *Dense) Transpose() error {
 	}
 
 	// actually move data
-	var e Engine = t.e
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
 
 	transposer, ok := e.(Transposer)
 	if !ok {
 		return errors.Errorf("Engine does not support Transpose()")
 	}
-	return transposer.Transpose(t, expStrides)
+	return transposer.Transpose(ctx, t, expStrides)
 }
 
 // Repeat is like Numpy's repeat. It repeats the elements of an array.
@@ -57,9 +58,10 @@ func (t *Dense) Transpose() error {
 // Just like NumPy, the repeats param is broadcasted to fit the size of the given axis.
 func (t *Dense) Repeat(axis int, repeats ...int) (retVal Tensor, err error) {
 	e := t.Engine()
+	ctx := ctxFromEngine(e)
 
 	if rp, ok := e.(Repeater); ok {
-		return rp.Repeat(t, axis, repeats...)
+		return rp.Repeat(ctx, t, axis, repeats...)
 	}
 	return nil, errors.New("Engine does not support Repeat")
 }
@@ -67,11 +69,12 @@ func (t *Dense) Repeat(axis int, repeats ...int) (retVal Tensor, err error) {
 // Concat concatenates the other tensors along the given axis. It is like Numpy's concatenate() function.
 func (t *Dense) Concat(axis int, Ts ...*Dense) (retVal *Dense, err error) {
 	e := t.Engine()
+	ctx := ctxFromEngine(e)
 
 	if c, ok := e.(Concater); ok {
 		var ret Tensor
 		others := densesToTensors(Ts)
-		if ret, err = c.Concat(t, axis, others...); err != nil {
+		if ret, err = c.Concat(ctx, t, axis, others...); err != nil {
 			return nil, errors.Wrapf(err, opFail, "Concat")
 		}
 		return ret.(*Dense), nil
@@ -127,8 +130,10 @@ func (t *Dense) Stack(axis int, others ...*Dense) (retVal *Dense, err error) {
 }
 
 func (t *Dense) stackDense(axis int, others ...DenseTensor) (retVal DenseTensor, err error) {
+	e := t.Engine()
+	ctx := ctxFromEngine(e)
 	if ds, ok := t.Engine().(DenseStacker); ok {
-		return ds.StackDense(t, axis, others...)
+		return ds.StackDense(ctx, t, axis, others...)
 	}
 	return nil, errors.Errorf("Engine does not support DenseStacker")
 }

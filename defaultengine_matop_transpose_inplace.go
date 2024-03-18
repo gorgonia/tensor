@@ -3,10 +3,16 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 )
 
-func (e StdEng) Transpose(a Tensor, expStrides []int) error {
+func (e StdEng) Transpose(ctx context.Context, a Tensor, expStrides []int) error {
+	if err := handleCtx(ctx); err != nil {
+		return err
+	}
+
 	if !a.IsNativelyAccessible() {
 		return errors.Errorf("Cannot Transpose() on non-natively accessible tensor")
 	}

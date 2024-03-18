@@ -205,10 +205,10 @@ func generateAPIArithTests(f io.Writer, ak Kinds) {
 		t := &ArithTest{
 			arithOp:             op,
 			lvl:                 API,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		if t.name == "Pow" {
-			t.EqFailTypeClassName = "complexTypes"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		}
 		tests = append(tests, t)
 	}
@@ -232,6 +232,13 @@ func generateAPIArithTests(f io.Writer, ak Kinds) {
 			fn.Write(f)
 		}
 		fn.FuncOpt = "incr"
+	}
+
+	for _, fn := range tests {
+		if fn.canWrite() {
+			fn.Write(f)
+		}
+		fn.FuncOpt = "context"
 	}
 
 	for _, fn := range tests {
@@ -248,13 +255,13 @@ func generateAPIArithScalarTests(f io.Writer, ak Kinds) {
 			arithOp:             op,
 			scalars:             true,
 			lvl:                 API,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		switch t.name {
 		case "Pow":
-			t.EqFailTypeClassName = "complexTypes"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		case "Sub":
-			t.EqFailTypeClassName = "unsignedTypes"
+			t.EqFailTypeClassName = "dtype.Unsigned"
 		}
 		tests = append(tests, t)
 	}
@@ -284,6 +291,13 @@ func generateAPIArithScalarTests(f io.Writer, ak Kinds) {
 		if fn.canWrite() {
 			fn.Write(f)
 		}
+		fn.FuncOpt = "context"
+	}
+
+	for _, fn := range tests {
+		if fn.canWrite() {
+			fn.Write(f)
+		}
 	}
 }
 
@@ -293,10 +307,10 @@ func generateDenseMethodArithTests(f io.Writer, ak Kinds) {
 		t := &ArithTest{
 			arithOp:             op,
 			lvl:                 Dense,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		if t.name == "Pow" {
-			t.EqFailTypeClassName = "complexTypes"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		}
 		tests = append(tests, t)
 	}
@@ -336,13 +350,13 @@ func generateDenseMethodScalarTests(f io.Writer, ak Kinds) {
 			arithOp:             op,
 			scalars:             true,
 			lvl:                 Dense,
-			EqFailTypeClassName: "nil",
+			EqFailTypeClassName: "nilTC",
 		}
 		switch t.name {
 		case "Pow":
-			t.EqFailTypeClassName = "complexTypes"
+			t.EqFailTypeClassName = "dtype.Complexes"
 		case "Sub":
-			t.EqFailTypeClassName = "unsignedTypes"
+			t.EqFailTypeClassName = "dtype.Unsigned"
 		}
 		tests = append(tests, t)
 	}

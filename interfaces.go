@@ -3,12 +3,13 @@ package tensor
 import (
 	"reflect"
 
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
 )
 
 // Dtyper is any type that has a Dtype
 type Dtyper interface {
-	Dtype() Dtype
+	Dtype() dtype.Dtype
 }
 
 // Eq is any type where you can perform an equality test
@@ -71,6 +72,22 @@ type Slicer interface {
 	Slice(...Slice) (View, error)
 }
 
+// SlicerInto is any tensor that can slice into another tensor.
+// The other tensor may already have data allocated in it.
+// If that is the case then the slice will be a copy operation.
+type SlicerInto interface {
+	SliceInto(view Tensor, slices ...Slice) (retVal Tensor, err error)
+}
+
+// Reslicer is any tensor that can reslice.
+// To reslice is to reuse the container (*Dense, *CS) etc, but with new `Slice`s applied to it.
+//
+// e.g: A is a (3,3) matrix that has been sliced at [1:3, 1:3]. Call it B. So now B's shape is (2,2).
+// B.Reslice(S(0,2), S(0,2)) would reslice the original tensor (A) with the new slices.
+type Reslicer interface {
+	Reslice(...Slice) (View, error)
+}
+
 // DenseTensor is the interface for any Dense tensor.
 type DenseTensor interface {
 	Tensor
@@ -131,6 +148,11 @@ type Kinder interface {
 	Kind() reflect.Kind
 }
 
+// MakeAliker is any Tensor that can make more like itself.
+type MakeAliker interface {
+	MakeAike(opts ...ConsOpt) Tensor
+}
+
 type headerer interface {
 	hdr() *storage.Header
 }
@@ -149,4 +171,12 @@ type unsafeMem interface {
 	Float32s() []float32
 	Complex64s() []complex64
 	Complex128s() []complex128
+}
+
+type float64ser interface {
+	Float64s() []float64
+}
+
+type float32ser interface {
+	Float32s() []float32
 }

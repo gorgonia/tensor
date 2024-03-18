@@ -1,8 +1,13 @@
 package tensor
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/storage"
+
+	"gorgonia.org/shapes"
 )
 
 var (
@@ -14,7 +19,11 @@ type fastcopier interface {
 }
 
 // Repeat ...
-func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
+func (e StdEng) Repeat(ctx context.Context, t Tensor, axis int, repeats ...int) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	switch tt := t.(type) {
 	case DenseTensor:
 		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
@@ -24,12 +33,16 @@ func (e StdEng) Repeat(t Tensor, axis int, repeats ...int) (Tensor, error) {
 		rr := recycledDense(t.Dtype(), newShape, WithEngine(StdEng{}))
 		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
 // RepeatReuse is like Repeat, but with a provided reuse Tensor. The reuseTensor must be of the same type as the input t.
-func (e StdEng) RepeatReuse(t Tensor, reuse Tensor, axis int, repeats ...int) (Tensor, error) {
+func (e StdEng) RepeatReuse(ctx context.Context, t Tensor, reuse Tensor, axis int, repeats ...int) (Tensor, error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	switch tt := t.(type) {
 	case DenseTensor:
 		newShape, newRepeats, newAxis, size, err := e.denseRepeatCheck(t, axis, repeats)
@@ -46,14 +59,16 @@ func (e StdEng) RepeatReuse(t Tensor, reuse Tensor, axis int, repeats ...int) (T
 		}
 		return e.denseRepeat(tt, rr, newShape, newAxis, size, newRepeats)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
 func (StdEng) denseRepeatCheck(t Tensor, axis int, repeats []int) (newShape Shape, newRepeats []int, newAxis, size int, err error) {
-	if newShape, newRepeats, size, err = t.Shape().Repeat(axis, repeats...); err != nil {
+	var newShapelike shapes.Shapelike
+	if newShapelike, newRepeats, size, err = t.Shape().Repeat(shapes.Axis(axis), repeats...); err != nil {
 		return nil, nil, -1, -1, errors.Wrap(err, "Unable to get repeated shape")
 	}
+	newShape = newShapelike.(Shape)
 	newAxis = axis
 	if axis == AllAxes {
 		newAxis = 0
@@ -198,7 +213,6 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 			}
 
 			// we can straightaway broadcast
-
 			continue
 		}
 
@@ -228,7 +242,11 @@ func (e StdEng) fastCopyDenseRepeat(src DenseTensor, dest *Dense, outers, size, 
 }
 
 // Concat tensors
-func (e StdEng) Concat(t Tensor, axis int, others ...Tensor) (retVal Tensor, err error) {
+func (e StdEng) Concat(ctx context.Context, t Tensor, axis int, others ...Tensor) (retVal Tensor, err error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	switch tt := t.(type) {
 	case DenseTensor:
 		var denses []DenseTensor
@@ -237,7 +255,7 @@ func (e StdEng) Concat(t Tensor, axis int, others ...Tensor) (retVal Tensor, err
 		}
 		return e.denseConcat(tt, axis, denses)
 	default:
-		return nil, errors.Errorf("NYI")
+		return nil, nyierr(typeNYI, t)
 	}
 }
 
@@ -252,10 +270,11 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 		}
 	}
 
-	var newShape Shape
-	if newShape, err = a.Shape().Concat(axis, ss...); err != nil {
+	var newShapelike shapes.Shapelike
+	if newShapelike, err = a.Shape().Concat(shapes.Axis(axis), shapes.ShapesToShapelikes(ss)...); err != nil {
 		return nil, errors.Wrap(err, "Unable to find new shape that results from concatenation")
 	}
+	newShape := newShapelike.(Shape)
 
 	retVal := recycledDense(a.Dtype(), newShape, WithEngine(e))
 	if isMasked {
@@ -359,7 +378,11 @@ func (e StdEng) denseConcat(a DenseTensor, axis int, Ts []DenseTensor) (DenseTen
 }
 
 // Diag ...
-func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
+func (e StdEng) Diag(ctx context.Context, t Tensor) (retVal Tensor, err error) {
+	if err := handleCtx(ctx); err != nil {
+		return nil, err
+	}
+
 	a, ok := t.(DenseTensor)
 	if !ok {
 		return nil, errors.Errorf("StdEng only works with DenseTensor for Diagonal()")
@@ -370,7 +393,7 @@ func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 		return
 	}
 
-	if err = typeclassCheck(a.Dtype(), numberTypes); err != nil {
+	if err = dtype.TypeClassCheck(a.Dtype(), dtype.Number); err != nil {
 		return nil, errors.Wrap(err, "Diagonal")
 	}
 
@@ -412,7 +435,7 @@ func (e StdEng) Diag(t Tensor) (retVal Tensor, err error) {
 			bdata[i] = adata[i*stride]
 		}
 	default:
-		return nil, errors.Errorf(typeNYI, "Arbitrary sized diag", t)
+		return nil, nyierr(typeNYI, "Arbitrary-sized .Diag()", t)
 	}
 	return b, nil
 }

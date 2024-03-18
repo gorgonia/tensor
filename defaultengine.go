@@ -2,22 +2,29 @@ package tensor
 
 import (
 	"github.com/pkg/errors"
+	"gorgonia.org/dtype"
 	"gorgonia.org/tensor/internal/execution"
 )
 
-// StdEng is the default execution engine that comes with the tensors. To use other execution engines, use the WithEngine construction option.
-type StdEng struct {
+// stdDenseEng is the default execution engine for dense tensor operations.
+type stdDenseEng struct {
 	execution.E
 }
 
+// StdEng is the default execution engine that comes with the tensors. To use other execution engines, use the WithEngine construction option.
+type StdEng struct {
+	stdDenseEng
+}
+
 // makeArray allocates a slice for the array
-func (e StdEng) makeArray(arr *array, t Dtype, size int) {
+func (e StdEng) makeArray(arr *array, t dtype.Dtype, size int) {
 	arr.Raw = malloc(t, size)
 	arr.t = t
 }
 
-func (e StdEng) AllocAccessible() bool             { return true }
-func (e StdEng) Alloc(size int64) (Memory, error)  { return nil, noopError{} }
+func (e StdEng) AllocAccessible() bool            { return true }
+func (e StdEng) Alloc(size int64) (Memory, error) { return nil, noopError{} }
+
 func (e StdEng) Free(mem Memory, size int64) error { return nil }
 func (e StdEng) Memset(mem Memory, val interface{}) error {
 	if ms, ok := mem.(MemSetter); ok {

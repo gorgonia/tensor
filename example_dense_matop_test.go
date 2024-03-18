@@ -31,6 +31,71 @@ func ExampleDense_Slice() {
 	// [1  4]
 }
 
+func ExampleDense_SliceInto() {
+	var v Tensor
+	var err error
+	T := New(WithBacking(Range(Int, 0, 9)), WithShape(3, 3))
+	fmt.Println("SliceInto works with nil values. It simply creates a View.\n==========================================================")
+	fmt.Printf("T:\n%v\n", T)
+
+	if v, err = T.SliceInto(v, makeRS(0, 2), makeRS(0, 2)); err != nil {
+		fmt.Printf("ERR %v\n", err)
+		return
+	}
+	fmt.Printf("T[0:2, 0:2]:\n%v\n", v)
+
+	v.Zero()
+	fmt.Printf("When v is zeroed, T is zeroed too.\n==================================\nv:\n%v\nT:\n%v\n", v, T)
+
+	fmt.Println("Primary use case of SliceInto.\n==============================")
+	T = New(WithBacking(Range(Int, 0, 9)), WithShape(3, 3))
+	fmt.Printf("T:\n%v\nv:\n%v\n", T, v)
+	if v, err = T.SliceInto(v, makeRS(0, 2), makeRS(0, 2)); err != nil {
+		fmt.Printf("ERR %v\n", err)
+		return
+	}
+	fmt.Printf("v = T[0:2, 0:2]:\n%v\n", v)
+
+	// Output:
+	// SliceInto works with nil values. It simply creates a View.
+	// ==========================================================
+	// T:
+	// ⎡0  1  2⎤
+	// ⎢3  4  5⎥
+	// ⎣6  7  8⎦
+	//
+	// T[0:2, 0:2]:
+	// ⎡0  1⎤
+	// ⎣3  4⎦
+	//
+	// When v is zeroed, T is zeroed too.
+	// ==================================
+	// v:
+	// ⎡0  0⎤
+	// ⎣0  0⎦
+	//
+	// T:
+	// ⎡0  0  0⎤
+	// ⎢0  0  5⎥
+	// ⎣6  7  8⎦
+	//
+	// Primary use case of SliceInto.
+	// ==============================
+	// T:
+	// ⎡0  1  2⎤
+	// ⎢3  4  5⎥
+	// ⎣6  7  8⎦
+	//
+	// v:
+	// ⎡0  0⎤
+	// ⎣0  0⎦
+	//
+	// v = T[0:2, 0:2]:
+	// ⎡0  1⎤
+	// ⎣3  4⎦
+
+}
+
 // Slicing works on one dimensional arrays too:
 func ExampleDense_Slice_oneDimension() {
 	var T Tensor
@@ -58,7 +123,7 @@ func ExampleDense_Slice_viewMutation() {
 	fmt.Printf("V:\n%v\n", V)
 
 	// Now we modify V's 0th value
-	V.(*Dense).Set(0, 1000)
+	MustGetDense(V).Set(0, 1000)
 	fmt.Printf("V[0] = 1000:\n%v\n", V)
 	fmt.Printf("T is also mutated:\n%v", T)
 
@@ -93,7 +158,7 @@ func ExampleView() {
 	fmt.Printf("V:\n%v\n", V)
 
 	// Now we modify V's 0th value
-	V.(*Dense).Set(0, 1000)
+	MustGetDense(V).Set(0, 1000)
 	fmt.Printf("V[0] = 1000:\n%v\n", V)
 	fmt.Printf("T is also mutated:\n%v\n", T)
 
