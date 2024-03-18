@@ -9,7 +9,7 @@ import (
 )
 
 // Lt performs `a < b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) Lt(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) Lt(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := ltOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -19,7 +19,7 @@ func (e StdOrderedNumEngine[DT, T]) Lt(ctx context.Context, a, b T, retVal DescW
 
 // LtScalar performs `vec < scalar` or `scalar < vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) LtScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := ltOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -28,7 +28,7 @@ func (e StdOrderedNumEngine[DT, T]) LtScalar(ctx context.Context, a T, b DT, ret
 }
 
 // LtBroadcastable performs `a < b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) LtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) LtBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := ltOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
@@ -37,7 +37,7 @@ func (e StdOrderedNumEngine[DT, T]) LtBroadcastable(ctx context.Context, a, b T,
 }
 
 // Lte performs `a <= b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) Lte(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) Lte(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := lteOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -47,7 +47,7 @@ func (e StdOrderedNumEngine[DT, T]) Lte(ctx context.Context, a, b T, retVal Desc
 
 // LteScalar performs `vec <= scalar` or `scalar <= vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) LteScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := lteOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -56,7 +56,7 @@ func (e StdOrderedNumEngine[DT, T]) LteScalar(ctx context.Context, a T, b DT, re
 }
 
 // LteBroadcastable performs `a <= b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) LteBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := lteOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
@@ -65,7 +65,7 @@ func (e StdOrderedNumEngine[DT, T]) LteBroadcastable(ctx context.Context, a, b T
 }
 
 // Gt performs `a > b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) Gt(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) Gt(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := gtOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -75,7 +75,7 @@ func (e StdOrderedNumEngine[DT, T]) Gt(ctx context.Context, a, b T, retVal DescW
 
 // GtScalar performs `vec > scalar` or `scalar > vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) GtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) GtScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := gtOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -84,7 +84,7 @@ func (e StdOrderedNumEngine[DT, T]) GtScalar(ctx context.Context, a T, b DT, ret
 }
 
 // GtBroadcastable performs `a > b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) GtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) GtBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := gtOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
@@ -93,7 +93,7 @@ func (e StdOrderedNumEngine[DT, T]) GtBroadcastable(ctx context.Context, a, b T,
 }
 
 // Gte performs `a >= b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) Gte(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) Gte(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := gteOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -103,7 +103,7 @@ func (e StdOrderedNumEngine[DT, T]) Gte(ctx context.Context, a, b T, retVal Desc
 
 // GteScalar performs `vec >= scalar` or `scalar >= vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) GteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) GteScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := gteOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -112,7 +112,7 @@ func (e StdOrderedNumEngine[DT, T]) GteScalar(ctx context.Context, a T, b DT, re
 }
 
 // GteBroadcastable performs `a >= b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) GteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) GteBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := gteOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
@@ -121,7 +121,7 @@ func (e StdOrderedNumEngine[DT, T]) GteBroadcastable(ctx context.Context, a, b T
 }
 
 // ElEq performs `a == b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) ElEq(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) ElEq(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := eleqOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -131,7 +131,7 @@ func (e StdOrderedNumEngine[DT, T]) ElEq(ctx context.Context, a, b T, retVal Des
 
 // ElEqScalar performs `vec == scalar` or `scalar == vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) ElEqScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := eleqOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -140,7 +140,7 @@ func (e StdOrderedNumEngine[DT, T]) ElEqScalar(ctx context.Context, a T, b DT, r
 }
 
 // ElEqBroadcastable performs `a == b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) ElEqBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := eleqOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)
@@ -149,7 +149,7 @@ func (e StdOrderedNumEngine[DT, T]) ElEqBroadcastable(ctx context.Context, a, b 
 }
 
 // ElNe performs `a != b`, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) ElNe(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) ElNe(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -159,7 +159,7 @@ func (e StdOrderedNumEngine[DT, T]) ElNe(ctx context.Context, a, b T, retVal Des
 
 // ElNeScalar performs `vec != scalar` or `scalar != vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) ElNeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) ElNeScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -168,7 +168,7 @@ func (e StdOrderedNumEngine[DT, T]) ElNeScalar(ctx context.Context, a T, b DT, r
 }
 
 // ElNeBroadcastable performs `a != b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) ElNeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) ElNeBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := elneOpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp)

@@ -45,207 +45,207 @@ type FuncOptHandler[DT any] interface {
 	HandleFuncOpts(a Basic[DT], expShape Shape, opts ...FuncOpt) (retVal Basic[DT], fo Option, err error)
 }
 
-type Adder[DT any, T Basic[DT]] interface {
-	Add(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
-	AddScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	AddBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
+type Adder[DT any] interface {
+	Add(ctx context.Context, a, b, retVal Basic[DT], toIncr bool) (err error)
+	AddScalar(ctx context.Context, t Basic[DT], s DT, retVal Basic[DT], scalarOnLeft, toIncr bool) (err error)
+	AddBroadcastable(ctx context.Context, a, b, retVal Basic[DT], expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
-type BasicArither[DT any, T Basic[DT]] interface {
-	Adder[DT, T]
+type BasicArither[DT any] interface {
+	Adder[DT]
 
-	Sub(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
-	SubScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	SubBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
+	Sub(ctx context.Context, a, b, retVal Basic[DT], toIncr bool) (err error)
+	SubScalar(ctx context.Context, t Basic[DT], s DT, retVal Basic[DT], scalarOnLeft, toIncr bool) (err error)
+	SubBroadcastable(ctx context.Context, a, b, retVal Basic[DT], expAPA, expAPB *AP, toIncr bool) (err error)
 
-	Mul(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
-	MulScalar(ctx context.Context, a T, b DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	MulBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
+	Mul(ctx context.Context, a, b, retVal Basic[DT], toIncr bool) (err error)
+	MulScalar(ctx context.Context, a Basic[DT], b DT, retVal Basic[DT], scalarOnLeft, toIncr bool) (err error)
+	MulBroadcastable(ctx context.Context, a, b, retVal Basic[DT], expAPA, expAPB *AP, toIncr bool) (err error)
 
-	Div(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
-	DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	DivBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
+	Div(ctx context.Context, a, b, retVal Basic[DT], toIncr bool) (err error)
+	DivScalar(ctx context.Context, t Basic[DT], s DT, retVal Basic[DT], scalarOnLeft, toIncr bool) (err error)
+	DivBroadcastable(ctx context.Context, a, b, retVal Basic[DT], expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
-type Arither[DT any, T Basic[DT]] interface {
-	BasicArither[DT, T]
+type Arither[DT any] interface {
+	BasicArither[DT]
 
-	Mod(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
-	ModScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	ModBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
+	Mod(ctx context.Context, a, b, retVal Basic[DT], toIncr bool) (err error)
+	ModScalar(ctx context.Context, t Basic[DT], s DT, retVal Basic[DT], scalarOnLeft, toIncr bool) (err error)
+	ModBroadcastable(ctx context.Context, a, b, retVal Basic[DT], expAPA, expAPB *AP, toIncr bool) (err error)
 
-	Pow(ctx context.Context, a, b, retVal T, toIncr bool) (err error)
-	PowScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error)
-	PowBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *AP, toIncr bool) (err error)
+	Pow(ctx context.Context, a, b, retVal Basic[DT], toIncr bool) (err error)
+	PowScalar(ctx context.Context, t Basic[DT], s DT, retVal Basic[DT], scalarOnLeft, toIncr bool) (err error)
+	PowBroadcastable(ctx context.Context, a, b, retVal Basic[DT], expAPA, expAPB *AP, toIncr bool) (err error)
 }
 
-type Comparer[DT any, T Basic[DT]] interface {
-	ElEq(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+type Comparer[DT any] interface {
+	ElEq(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool) (err error)
+	ElEqScalar(ctx context.Context, a Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	ElEqBroadcastable(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
-	ElNe(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error)
-	ElNeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	ElNeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+	ElNe(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, asSameDT bool) (err error)
+	ElNeScalar(ctx context.Context, a Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	ElNeBroadcastable(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
-type Ord[DT any, T Basic[DT]] interface {
-	Comparer[DT, T]
-	Lt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	LtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+type Ord[DT any] interface {
+	Comparer[DT]
+	Lt(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool) (err error)
+	LtScalar(ctx context.Context, a Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	LtBroadcastable(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
-	Lte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+	Lte(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool) (err error)
+	LteScalar(ctx context.Context, a Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	LteBroadcastable(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
-type FullOrd[DT any, T Basic[DT]] interface {
-	Ord[DT, T]
+type FullOrd[DT any] interface {
+	Ord[DT]
 
-	Gt(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	GtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	GtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+	Gt(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool) (err error)
+	GtScalar(ctx context.Context, a Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	GtBroadcastable(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 
-	Gte(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool) (err error)
-	GteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
-	GteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
+	Gte(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool) (err error)
+	GteScalar(ctx context.Context, a Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, returnSameDataType bool) (err error)
+	GteBroadcastable(ctx context.Context, a, b Basic[DT], retVal DescWithStorage, returnSameDataType bool, expAPA, expAPB *AP) (err error)
 }
 
-type MinMaxer[DT any, T Tensor[DT, T]] interface {
-	MinBetween(ctx context.Context, a, b, retVal T) (err error)
-	MinBetweenScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft bool) (err error)
+type MinMaxer[DT any] interface {
+	MinBetween(ctx context.Context, a, b, retVal Basic[DT]) (err error)
+	MinBetweenScalar(ctx context.Context, t Basic[DT], s DT, retVal Basic[DT], scalarOnLeft bool) (err error)
 
-	MaxBetween(ctx context.Context, a, b, retVal T) (err error)
-	MaxBetweenScalar(ctx context.Context, t T, s DT, retval T, scalarOnLeft bool) (err error)
+	MaxBetween(ctx context.Context, a, b, retVal Basic[DT]) (err error)
+	MaxBetweenScalar(ctx context.Context, t Basic[DT], s DT, retval Basic[DT], scalarOnLeft bool) (err error)
 }
 
-type Argmethoder[DT any, T Tensor[DT, T]] interface {
-	Argmax(ctx context.Context, a T, axis int) (Basic[int], error)
-	Argmin(ctx context.Context, a T, axis int) (Basic[int], error)
+type Argmethoder[DT any] interface {
+	Argmax(ctx context.Context, a Basic[DT], axis int) (Basic[int], error)
+	Argmin(ctx context.Context, a Basic[DT], axis int) (Basic[int], error)
 }
 
-type Reducer[DT any, T Tensor[DT, T]] interface {
-	Reduce(ctx context.Context, fn any, a T, axis int, defaultValue DT, retVal T) (err error)
-	ReduceAlong(ctx context.Context, fns any, defaultValue DT, a T, retVal T, along ...int) (err error)
+type Reducer[DT any] interface {
+	Reduce(ctx context.Context, fn any, a Basic[DT], axis int, defaultValue DT, retVal Basic[DT]) (err error)
+	ReduceAlong(ctx context.Context, fns any, defaultValue DT, a Basic[DT], retVal Basic[DT], along ...int) (err error)
 
-	PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, axes []int, retVal T, err error)
+	PrepReduce(a Basic[DT], opts ...FuncOpt) (ctx context.Context, axes []int, retVal Basic[DT], err error)
 }
 
-type Scanner[DT any, T Tensor[DT, T]] interface {
-	Scan(ctx context.Context, fn any, a T, axis int, retVal T) (err error)
+type Scanner[DT any] interface {
+	Scan(ctx context.Context, fn any, a Basic[DT], axis int, retVal Basic[DT]) (err error)
 }
 
-type DotIterer[DT any, T Tensor[DT, T]] interface {
-	DotIter(ctx context.Context, reduceWithFn, elwiseFn func(DT, DT) DT, a, b, retVal T) (err error)
+type DotIterer[DT any] interface {
+	DotIter(ctx context.Context, reduceWithFn, elwiseFn func(DT, DT) DT, a, b, retVal Basic[DT]) (err error)
 }
 
-type Mapper[DT any, T Tensor[DT, T]] interface {
-	Map(ctx context.Context, fn any, a T, retVal T) (err error)
+type Mapper[DT any] interface {
+	Map(ctx context.Context, fn any, a Basic[DT], retVal Basic[DT]) (err error)
 }
 
-type SVDer[DT any, T Basic[DT]] interface {
-	SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error)
+type SVDer[DT any] interface {
+	SVD(ctx context.Context, a Basic[DT], uv, full bool) (s, u, v Basic[DT], err error)
 }
 
-type Tracer[DT any, T Basic[DT]] interface {
-	Trace(ctx context.Context, t T) (DT, error)
+type Tracer[DT any] interface {
+	Trace(ctx context.Context, t Basic[DT]) (DT, error)
 }
 
-type Scatterer[DT any, T Tensor[DT, T]] interface {
-	Scatter(ctx context.Context, a T, indices Basic[int], retVal T) (err error)
+type Scatterer[DT any] interface {
+	Scatter(ctx context.Context, a Basic[DT], indices Basic[int], retVal Basic[DT]) (err error)
 }
 
-// InnerProder are any engines that support the computation of  inner products.
-type InnerProder[DT any, T Basic[DT]] interface {
-	Inner(ctx context.Context, a, b T) (DT, error)
+// InnerProder are any engines Basic[DT]hat support Basic[DT]he computation of  inner products.
+type InnerProder[DT any] interface {
+	Inner(ctx context.Context, a, b Basic[DT]) (DT, error)
 }
 
-// BLA are any engines that can support basic linear algebra
-type BLA[DT any, T Basic[DT]] interface {
-	InnerProder[DT, T]
-	FMA(ctx context.Context, a, x, retVal T) error
-	MatVecMul(ctx context.Context, a, b, retVal T, incr []DT) error
-	MatMul(ctx context.Context, a, b, retVal T, incr []DT) error
-	Outer(ctx context.Context, a, b, retVal T, incr []DT) error
+// BLA are any engines Basic[DT]hat can support basic linear algebra
+type BLA[DT any] interface {
+	InnerProder[DT]
+	FMA(ctx context.Context, a, x, retVal Basic[DT]) error
+	MatVecMul(ctx context.Context, a, b, retVal Basic[DT], incr []DT) error
+	MatMul(ctx context.Context, a, b, retVal Basic[DT], incr []DT) error
+	Outer(ctx context.Context, a, b, retVal Basic[DT], incr []DT) error
 }
 
-type Repeater[DT any, T Tensor[DT, T]] interface {
-	Repeat(ctx context.Context, a, retVal T, axis, size int, repeats []int) error
-	PrepRepeat(a T, axis int, repeats []int, opts ...FuncOpt) (ctx context.Context, retVal T, newAxis, size int, newRepeats []int, err error)
+type Repeater[DT any] interface {
+	Repeat(ctx context.Context, a, retVal Basic[DT], axis, size int, repeats []int) error
+	PrepRepeat(a Basic[DT], axis int, repeats []int, opts ...FuncOpt) (ctx context.Context, retVal Basic[DT], newAxis, size int, newRepeats []int, err error)
 }
 
-type FancyIndexer[DT any, T Tensor[DT, T]] interface {
-	SelectByIndices(ctx context.Context, a T, indices Basic[int], axis int, retVal T) (err error)
-	SelectByIndicesB(ctx context.Context, input, outGrade T, indices Basic[int], axis int, retVal T) (err error)
+type FancyIndexer[DT any] interface {
+	SelectByIndices(ctx context.Context, a Basic[DT], indices Basic[int], axis int, retVal Basic[DT]) (err error)
+	SelectByIndicesB(ctx context.Context, input, outGrade Basic[DT], indices Basic[int], axis int, retVal Basic[DT]) (err error)
 }
 
-type Normer[DT any, T Tensor[DT, T]] interface {
-	Norm(ctx context.Context, t T, ord NormOrder, axes []int) Basic[DT]
-	Norm2(ctx context.Context, t T) DT
+type Normer[DT any] interface {
+	Norm(ctx context.Context, t Basic[DT], ord NormOrder, axes []int) Basic[DT]
+	Norm2(ctx context.Context, t Basic[DT]) DT
 }
 
-type Concater[DT any, T Tensor[DT, T]] interface {
-	Concat(ctx context.Context, a T, axis int, others ...T) (T, error)
+type Concater[DT any] interface {
+	Concat(ctx context.Context, a Basic[DT], axis int, others ...Basic[DT]) (Basic[DT], error)
 }
 
 /*
 Unary Operations
 
-Note: typically these unary operations would have been supported by means of .Apply()
-but .Apply() cannot work for CUDA related stuff, so these unary operation interfaces
-are added for the usual deep learning related engines.
+Note: Basic[DT]ypically Basic[DT]hese unary operations would have been supported by means of .Apply()
+but .Apply() cannot work for CUDA related stuff, so Basic[DT]hese unary operation interfaces
+are added for Basic[DT]he usual deep learning related engines.
 */
 
-type Abser[DT Num, T Basic[DT]] interface {
-	Abs(ctx context.Context, a, retVal T) error
+type Abser[DT Num] interface {
+	Abs(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Signer[DT Num, T Basic[DT]] interface {
-	Sign(ctx context.Context, a, retVal T) error
+type Signer[DT Num] interface {
+	Sign(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Ceiler[DT Floats, T Basic[DT]] interface {
-	Ceil(ctx context.Context, a, retVal T) error
+type Ceiler[DT Floats] interface {
+	Ceil(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Floorer[DT Floats, T Basic[DT]] interface {
-	Floor(ctx context.Context, a, retVal T) error
+type Floorer[DT Floats] interface {
+	Floor(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Neger[DT Num, T Basic[DT]] interface {
-	Neg(ctx context.Context, a, retVal T) error
+type Neger[DT Num] interface {
+	Neg(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type ExpLoger[DT Floats, T Basic[DT]] interface {
-	Exp(ctx context.Context, a, retVal T) error
-	Log(ctx context.Context, a, retVal T) error
-	Log2(ctx context.Context, a, retVal T) error
-	Log10(ctx context.Context, a, retVal T) error
-	Log1p(ctx context.Context, a, retVal T) error
-	Expm1(ctx context.Context, a, retVal T) error
+type ExpLoger[DT Floats] interface {
+	Exp(ctx context.Context, a, retVal Basic[DT]) error
+	Log(ctx context.Context, a, retVal Basic[DT]) error
+	Log2(ctx context.Context, a, retVal Basic[DT]) error
+	Log10(ctx context.Context, a, retVal Basic[DT]) error
+	Log1p(ctx context.Context, a, retVal Basic[DT]) error
+	Expm1(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Inver[DT Num, T Basic[DT]] interface {
-	Inv(ctx context.Context, a, retVal T) error
+type Inver[DT Num] interface {
+	Inv(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type InverSqrter[DT Floats, T Basic[DT]] interface {
-	InvSqrt(ctx context.Context, a, retVal T) error
+type InverSqrter[DT Floats] interface {
+	InvSqrt(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Squarer[DT Num, T Basic[DT]] interface {
-	Square(ctx context.Context, a, retVal T) error
+type Squarer[DT Num] interface {
+	Square(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Sqrter[DT Floats, T Basic[DT]] interface {
-	Sqrt(ctx context.Context, a, retVal T) error
+type Sqrter[DT Floats] interface {
+	Sqrt(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Cuber[DT Num, T Basic[DT]] interface {
-	Cube(ctx context.Context, a, retVal T) error
+type Cuber[DT Num] interface {
+	Cube(ctx context.Context, a, retVal Basic[DT]) error
 }
 
-type Tanher[DT Floats, T Basic[DT]] interface {
-	Tanh(ctx context.Context, a, retVal T) error
+type Tanher[DT Floats] interface {
+	Tanh(ctx context.Context, a, retVal Basic[DT]) error
 }

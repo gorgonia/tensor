@@ -15,7 +15,7 @@ func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	adder, ok := e.(Adder[DT, Basic[DT]])
+	adder, ok := e.(Adder[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, adder, errors.ThisFn())
 	}
@@ -43,7 +43,7 @@ func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	basicarither, ok := e.(BasicArither[DT, Basic[DT]])
+	basicarither, ok := e.(BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, basicarither, errors.ThisFn())
 	}
@@ -71,7 +71,7 @@ func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	basicarither, ok := e.(BasicArither[DT, Basic[DT]])
+	basicarither, ok := e.(BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, basicarither, errors.ThisFn())
 	}
@@ -99,7 +99,7 @@ func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	basicarither, ok := e.(BasicArither[DT, Basic[DT]])
+	basicarither, ok := e.(BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, basicarither, errors.ThisFn())
 	}
@@ -127,7 +127,7 @@ func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	ord, ok := e.(Ord[DT, Basic[DT]])
+	ord, ok := e.(Ord[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, ord, errors.ThisFn())
 	}
@@ -158,7 +158,7 @@ func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	ord, ok := e.(Ord[DT, Basic[DT]])
+	ord, ok := e.(Ord[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, ord, errors.ThisFn())
 	}
@@ -189,7 +189,7 @@ func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	fullord, ok := e.(FullOrd[DT, Basic[DT]])
+	fullord, ok := e.(FullOrd[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, fullord, errors.ThisFn())
 	}
@@ -220,7 +220,7 @@ func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	fullord, ok := e.(FullOrd[DT, Basic[DT]])
+	fullord, ok := e.(FullOrd[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, fullord, errors.ThisFn())
 	}
@@ -251,7 +251,7 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	comparer, ok := e.(Comparer[DT, Basic[DT]])
+	comparer, ok := e.(Comparer[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, comparer, errors.ThisFn())
 	}
@@ -282,7 +282,7 @@ func ElNe[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	comparer, ok := e.(Comparer[DT, Basic[DT]])
+	comparer, ok := e.(Comparer[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, comparer, errors.ThisFn())
 	}

@@ -22,7 +22,7 @@ func (e AddableEng[DT, T]) BasicEng() Engine { return AddableEng[DT, tensor.Basi
 // Workhorse returns the engine that will actually do all the work (in this case, itself).
 func (e AddableEng[DT, T]) Workhorse() Engine { return e }
 
-func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toIncr bool, op Op[DT]) (err error) {
+func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal tensor.Basic[DT], toIncr bool, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return
 	}
@@ -52,7 +52,7 @@ func (e compAddableEng[DT, T]) StdBinOp(ctx context.Context, a, b, retVal T, toI
 	}
 }
 
-func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool, op Op[DT]) (err error) {
+func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, toIncr bool, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return
 	}
@@ -80,7 +80,7 @@ func (e compAddableEng[DT, T]) StdBinOpBC(ctx context.Context, a, b, retVal T, e
 	return nil
 }
 
-func (e compAddableEng[DT, T]) StdBinOpScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool, op Op[DT]) (err error) {
+func (e compAddableEng[DT, T]) StdBinOpScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft, toIncr bool, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return
 	}
@@ -120,15 +120,15 @@ func (e compAddableEng[DT, T]) StdBinOpScalar(ctx context.Context, t T, s DT, re
 	return nil
 }
 
-func (e compAddableEng[DT, T]) Add(ctx context.Context, a, b, retVal T, toIncr bool) (err error) {
+func (e compAddableEng[DT, T]) Add(ctx context.Context, a, b, retVal tensor.Basic[DT], toIncr bool) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, toIncr, addOp[DT]())
 }
 
-func (e compAddableEng[DT, T]) AddScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error) {
+func (e compAddableEng[DT, T]) AddScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft, toIncr bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, addOp[DT]())
 }
 
-func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
+func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
 	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, addOp[DT]())
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 // Lt performs `a < b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) Lt(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) Lt(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := ltOp[DT]()
 	if asSameDT {
 		var v DT
@@ -21,7 +21,7 @@ func (e OrderedEng[DT, T]) Lt(ctx context.Context, a, b T, retVal DescWithStorag
 
 // LtScalar performs `vec < scalar` or `scalar < vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op. If `asSameDT` == true, an error will be returned.
-func (e OrderedEng[DT, T]) LtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) LtScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := ltOp[DT]()
 	if asSameDT {
 		var v DT
@@ -31,7 +31,7 @@ func (e OrderedEng[DT, T]) LtScalar(ctx context.Context, a T, b DT, retVal DescW
 }
 
 // LtBroadcastable performs `a < b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) LtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e OrderedEng[DT, T]) LtBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := ltOp[DT]()
 	if asSameDT {
 		var v DT
@@ -41,7 +41,7 @@ func (e OrderedEng[DT, T]) LtBroadcastable(ctx context.Context, a, b T, retVal D
 }
 
 // Lte performs `a <= b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) Lte(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) Lte(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := lteOp[DT]()
 	if asSameDT {
 		var v DT
@@ -52,7 +52,7 @@ func (e OrderedEng[DT, T]) Lte(ctx context.Context, a, b T, retVal DescWithStora
 
 // LteScalar performs `vec <= scalar` or `scalar <= vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op. If `asSameDT` == true, an error will be returned.
-func (e OrderedEng[DT, T]) LteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) LteScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := lteOp[DT]()
 	if asSameDT {
 		var v DT
@@ -62,7 +62,7 @@ func (e OrderedEng[DT, T]) LteScalar(ctx context.Context, a T, b DT, retVal Desc
 }
 
 // LteBroadcastable performs `a <= b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) LteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e OrderedEng[DT, T]) LteBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := lteOp[DT]()
 	if asSameDT {
 		var v DT
@@ -72,7 +72,7 @@ func (e OrderedEng[DT, T]) LteBroadcastable(ctx context.Context, a, b T, retVal 
 }
 
 // Gt performs `a > b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) Gt(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) Gt(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := gtOp[DT]()
 	if asSameDT {
 		var v DT
@@ -83,7 +83,7 @@ func (e OrderedEng[DT, T]) Gt(ctx context.Context, a, b T, retVal DescWithStorag
 
 // GtScalar performs `vec > scalar` or `scalar > vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op. If `asSameDT` == true, an error will be returned.
-func (e OrderedEng[DT, T]) GtScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) GtScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := gtOp[DT]()
 	if asSameDT {
 		var v DT
@@ -93,7 +93,7 @@ func (e OrderedEng[DT, T]) GtScalar(ctx context.Context, a T, b DT, retVal DescW
 }
 
 // GtBroadcastable performs `a > b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) GtBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e OrderedEng[DT, T]) GtBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := gtOp[DT]()
 	if asSameDT {
 		var v DT
@@ -103,7 +103,7 @@ func (e OrderedEng[DT, T]) GtBroadcastable(ctx context.Context, a, b T, retVal D
 }
 
 // Gte performs `a >= b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) Gte(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) Gte(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := gteOp[DT]()
 	if asSameDT {
 		var v DT
@@ -114,7 +114,7 @@ func (e OrderedEng[DT, T]) Gte(ctx context.Context, a, b T, retVal DescWithStora
 
 // GteScalar performs `vec >= scalar` or `scalar >= vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op. If `asSameDT` == true, an error will be returned.
-func (e OrderedEng[DT, T]) GteScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) GteScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := gteOp[DT]()
 	if asSameDT {
 		var v DT
@@ -124,7 +124,7 @@ func (e OrderedEng[DT, T]) GteScalar(ctx context.Context, a T, b DT, retVal Desc
 }
 
 // GteBroadcastable performs `a >= b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e OrderedEng[DT, T]) GteBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e OrderedEng[DT, T]) GteBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := gteOp[DT]()
 	if asSameDT {
 		var v DT

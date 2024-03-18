@@ -10,7 +10,7 @@ import (
 )
 
 // ElEq performs `a == b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
-func (e compComparableEng[DT, T]) ElEq(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e compComparableEng[DT, T]) ElEq(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := eleqOp[DT]()
 	if asSameDT {
 		var v DT
@@ -21,7 +21,7 @@ func (e compComparableEng[DT, T]) ElEq(ctx context.Context, a, b T, retVal DescW
 
 // ElEq performs `vec == scalar` or `scalar == vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op. If `asSameDT` == true, an error will be returned.
-func (e compComparableEng[DT, T]) ElEqScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e compComparableEng[DT, T]) ElEqScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := eleqOp[DT]()
 	if asSameDT {
 		var v DT
@@ -31,7 +31,7 @@ func (e compComparableEng[DT, T]) ElEqScalar(ctx context.Context, a T, b DT, ret
 }
 
 // ElEqBroadcastable performs `a == b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e compComparableEng[DT, T]) ElEqBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e compComparableEng[DT, T]) ElEqBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := eleqOp[DT]()
 	if asSameDT {
 		var v DT
@@ -41,7 +41,7 @@ func (e compComparableEng[DT, T]) ElEqBroadcastable(ctx context.Context, a, b T,
 }
 
 // ElNe performs `a != b`, with a bool tensor as the return value. If`asSameDT == true`, an error will be returned.
-func (e compComparableEng[DT, T]) ElNe(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e compComparableEng[DT, T]) ElNe(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := elneOp[DT]()
 	if asSameDT {
 		var v DT
@@ -52,7 +52,7 @@ func (e compComparableEng[DT, T]) ElNe(ctx context.Context, a, b T, retVal DescW
 
 // ElNe performs `vec != scalar` or `scalar != vec`, with a bool tensor as the return value. The `scalarOnLeft` parameter indicates
 // if the scalar value is on the left of the bin op. If `asSameDT` == true, an error will be returned.
-func (e compComparableEng[DT, T]) ElNeScalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e compComparableEng[DT, T]) ElNeScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := eleqOp[DT]()
 	if asSameDT {
 		var v DT
@@ -62,7 +62,7 @@ func (e compComparableEng[DT, T]) ElNeScalar(ctx context.Context, a T, b DT, ret
 }
 
 // ElNeBroadcastable performs `a != b`, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If`asSameDT == true`, an error will be returned.
-func (e compComparableEng[DT, T]) ElNeBroadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e compComparableEng[DT, T]) ElNeBroadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := elneOp[DT]()
 	if asSameDT {
 		var v DT

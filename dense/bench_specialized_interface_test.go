@@ -66,7 +66,7 @@ func (e StdFloat64Engine[T]) AddSpecialized(ctx context.Context, a, b, retVal T,
 
 	var ait, bit, iit Iterator
 	var useIter bool
-	if ait, bit, iit, useIter, _, err = stdeng.PrepDataVV[float64, float64](a, b, retVal); err != nil {
+	if ait, bit, iit, useIter, _, err = stdeng.PrepDataVV2[float64, float64, T, T](a, b, retVal); err != nil {
 		return errors.Wrap(err, "Unable to prepare iterators for Add")
 	}
 

@@ -351,6 +351,19 @@ func (e StdEng[DT, T]) PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, ax
 	panic("Unreachable")
 }
 
+func PrepDataVV2[DTin, DTout any, T tensor.Basic[DTin], U tensor.Basic[DTout]](a, b T, reuse U) (ait, bit, iit Iterator, useIter, swap bool, err error) {
+	useIter = a.RequiresIterator() ||
+		b.RequiresIterator() ||
+		reuse.RequiresIterator() ||
+		!a.DataOrder().HasSameOrder(b.DataOrder())
+	if useIter {
+		ait = a.Iterator()
+		bit = b.Iterator()
+		iit = reuse.Iterator()
+	}
+	return
+}
+
 func PrepDataVV[DTin, DTout any](a, b tensor.Basic[DTin], reuse tensor.Basic[DTout]) (ait, bit, iit Iterator, useIter, swap bool, err error) {
 	useIter = a.RequiresIterator() ||
 		b.RequiresIterator() ||

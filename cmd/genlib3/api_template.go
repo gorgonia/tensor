@@ -13,7 +13,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	{{.Interface | lower}}, ok := e.({{.Interface}}[DT, Basic[DT]]);
+	{{.Interface | lower}}, ok := e.({{.Interface}}[DT]);
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, {{.Interface | lower}}, errors.ThisFn())
 	}
@@ -43,7 +43,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) 
 	toBroadcast := fo.Broadcast
 
 
-	{{.Interface | lower}}, ok := e.({{.Interface}}[DT, Basic[DT]]);
+	{{.Interface | lower}}, ok := e.({{.Interface}}[DT]);
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, {{.Interface | lower}}, errors.ThisFn())
 	}
