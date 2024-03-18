@@ -42,7 +42,7 @@ func (e ComparableEng[DT, T]) SliceEq(a, b []DT) bool {
 	return true
 }
 
-func (e compComparableEng[DT, T]) CmpOp(ctx context.Context, a, b T, retVal tensor.Basic[bool], op CmpBinOp[DT]) (err error) {
+func (e compComparableEng[DT, T]) CmpOp(ctx context.Context, a, b tensor.Basic[DT], retVal tensor.Basic[bool], op CmpBinOp[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (e compComparableEng[DT, T]) CmpOp(ctx context.Context, a, b T, retVal tens
 	return nil
 }
 
-func (e compComparableEng[DT, T]) CmpOpBC(ctx context.Context, a, b T, retVal tensor.Basic[bool], expAPA, expAPB *tensor.AP, op CmpBinOp[DT]) (err error) {
+func (e compComparableEng[DT, T]) CmpOpBC(ctx context.Context, a, b tensor.Basic[DT], retVal tensor.Basic[bool], expAPA, expAPB *tensor.AP, op CmpBinOp[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (e compComparableEng[DT, T]) CmpOpBC(ctx context.Context, a, b T, retVal te
 	return nil
 }
 
-func (e compComparableEng[DT, T]) CmpOpScalar(ctx context.Context, a T, b DT, retVal tensor.Basic[bool], scalarOnLeft bool, op CmpBinOp[DT]) (err error) {
+func (e compComparableEng[DT, T]) CmpOpScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal tensor.Basic[bool], scalarOnLeft bool, op CmpBinOp[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}

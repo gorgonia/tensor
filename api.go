@@ -34,9 +34,9 @@ func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err erro
 
 	// TODO: checks
 
-	var bla BLA[DT, Basic[DT]]
+	var bla BLA[DT]
 	var ok bool
-	if bla, ok = e.(BLA[DT, Basic[DT]]); !ok {
+	if bla, ok = e.(BLA[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, bla, errors.ThisFn())
 	}
 	// make retVal
@@ -56,9 +56,9 @@ func MatMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err erro
 
 func Abs[DT Num](a Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
 	e := GetEngine(a).BasicEng()
-	var abser Abser[DT, Basic[DT]]
+	var abser Abser[DT]
 	var ok bool
-	if abser, ok = e.(Abser[DT, Basic[DT]]); !ok {
+	if abser, ok = e.(Abser[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, abser, errors.ThisFn())
 	}
 	var fo Option
@@ -73,9 +73,9 @@ func Abs[DT Num](a Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
 
 func MatVecMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
 	e := GetEngine(a, b).BasicEng()
-	var mvmer BLA[DT, Basic[DT]]
+	var mvmer BLA[DT]
 	var ok bool
-	if mvmer, ok = e.(BLA[DT, Basic[DT]]); !ok {
+	if mvmer, ok = e.(BLA[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, mvmer, errors.ThisFn())
 	}
 	var fo Option
@@ -98,9 +98,9 @@ func MatVecMul[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err e
 
 func Inner[DT Num](a, b Basic[DT]) (retVal DT, err error) {
 	e := GetEngine(a, b).BasicEng()
-	var innerer InnerProder[DT, Basic[DT]]
+	var innerer InnerProder[DT]
 	var ok bool
-	if innerer, ok = e.(InnerProder[DT, Basic[DT]]); !ok {
+	if innerer, ok = e.(InnerProder[DT]); !ok {
 		return retVal, errors.Errorf(errors.EngineSupport, e, innerer, errors.ThisFn())
 	}
 	return innerer.Inner(context.Background(), a, b)
@@ -108,9 +108,9 @@ func Inner[DT Num](a, b Basic[DT]) (retVal DT, err error) {
 
 func Outer[DT Num](a, b Basic[DT], opts ...FuncOpt) (retVal Basic[DT], err error) {
 	e := GetEngine(a, b).BasicEng()
-	var outerer BLA[DT, Basic[DT]]
+	var outerer BLA[DT]
 	var ok bool
-	if outerer, ok = e.(BLA[DT, Basic[DT]]); !ok {
+	if outerer, ok = e.(BLA[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, outerer, errors.ThisFn())
 	}
 	var fo Option

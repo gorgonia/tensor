@@ -24,7 +24,7 @@ func (e StdOrderedNumEngine[DT, T]) BasicEng() Engine {
 // Workhorse returns the engine that will actually do all the work (in this case, itself).
 func (e StdOrderedNumEngine[DT, T]) Workhorse() Engine { return e }
 
-func (e StdOrderedNumEngine[DT, T]) cmpOp(ctx context.Context, a, b T, retVal tensor.Basic[DT], op Op[DT]) (err error) {
+func (e StdOrderedNumEngine[DT, T]) cmpOp(ctx context.Context, a, b tensor.Basic[DT], retVal tensor.Basic[DT], op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (e StdOrderedNumEngine[DT, T]) cmpOp(ctx context.Context, a, b T, retVal te
 	return nil
 }
 
-func (e StdOrderedNumEngine[DT, T]) cmpOpScalar(ctx context.Context, a T, b DT, retVal tensor.Basic[DT], scalarOnLeft bool, op Op[DT]) (err error) {
+func (e StdOrderedNumEngine[DT, T]) cmpOpScalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal tensor.Basic[DT], scalarOnLeft bool, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (e StdOrderedNumEngine[DT, T]) cmpOpScalar(ctx context.Context, a T, b DT, 
 	return nil
 }
 
-func (e StdOrderedNumEngine[DT, T]) cmpOpBC(ctx context.Context, a, b T, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, op Op[DT]) (err error) {
+func (e StdOrderedNumEngine[DT, T]) cmpOpBC(ctx context.Context, a, b tensor.Basic[DT], retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, op Op[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (e StdOrderedNumEngine[DT, T]) cmpOpBC(ctx context.Context, a, b T, retVal 
 
 // flatFn is a function that performs argmax/min on a slice.
 // iterFn is a function that performs argmax/min on a slice with an iterator and a last size value.
-func (e StdOrderedNumEngine[DT, T]) argCmp(ctx context.Context, a T, axis int, name string, flatFn func([]DT) int, iterFn func([]DT, Iterator, int) ([]int, error)) (retVal tensor.Basic[int], err error) {
+func (e StdOrderedNumEngine[DT, T]) argCmp(ctx context.Context, a tensor.Basic[DT], axis int, name string, flatFn func([]DT) int, iterFn func([]DT, Iterator, int) ([]int, error)) (retVal tensor.Basic[int], err error) {
 	t := any(a).(tensor.Tensor[DT, T])
 	if err = internal.HandleCtx(ctx); err != nil {
 		return nil, err
@@ -147,18 +147,18 @@ func (e StdOrderedNumEngine[DT, T]) Argmin(ctx context.Context, t T, axis int) (
 
 /* MIN/MAX */
 
-func (e StdOrderedNumEngine[DT, T]) MinBetween(ctx context.Context, a, b, retVal T) (err error) {
+func (e StdOrderedNumEngine[DT, T]) MinBetween(ctx context.Context, a, b, retVal tensor.Basic[DT]) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, false, minOp[DT]())
 }
 
-func (e StdOrderedNumEngine[DT, T]) MinBetweenScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) MinBetweenScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, false, minOp[DT]())
 }
 
-func (e StdOrderedNumEngine[DT, T]) MaxBetween(ctx context.Context, a, b, retVal T) (err error) {
+func (e StdOrderedNumEngine[DT, T]) MaxBetween(ctx context.Context, a, b, retVal tensor.Basic[DT]) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, false, maxOp[DT]())
 }
 
-func (e StdOrderedNumEngine[DT, T]) MaxBetweenScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) MaxBetweenScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, false, maxOp[DT]())
 }

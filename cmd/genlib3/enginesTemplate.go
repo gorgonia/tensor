@@ -35,7 +35,7 @@ func {{.Name | lower}}OpOrderedNum[DT {{.TypeClass}}]() (Op[DT], CmpBinOp[DT]){
 `
 
 const compComparableEngMethodsRaw = `// {{.Name}} performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. If` + "`asSameDT == true`" + `, an error will be returned.
-func (e compComparableEng[DT, T]) {{.Name}}(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e compComparableEng[DT, T]) {{.Name}}(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := {{.Name | lower}}Op[DT]()
 	if asSameDT {
 		var v DT
@@ -46,7 +46,7 @@ func (e compComparableEng[DT, T]) {{.Name}}(ctx context.Context, a, b T, retVal 
 
 // {{.Name}} performs` + " `vec {{.Symbol}} scalar` or `scalar {{.Symbol}} vec`" + `, with a bool tensor as the return value. The ` + "`scalarOnLeft`" + ` parameter indicates
 // if the scalar value is on the left of the bin op. If ` + "`asSameDT` == true" + `, an error will be returned.
-func (e compComparableEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e compComparableEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := eleqOp[DT]()
 	if asSameDT {
 		var v DT
@@ -56,7 +56,7 @@ func (e compComparableEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT
 }
 
 // {{.Name}}Broadcastable performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If` + "`asSameDT == true`" + `, an error will be returned.
-func (e compComparableEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e compComparableEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := {{.Name | lower}}Op[DT]()
 	if asSameDT {
 		var v DT
@@ -67,7 +67,7 @@ func (e compComparableEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a,
 `
 
 const orderedEngMethodsRaw = `// {{.Name}} performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. If` + "`asSameDT == true`" + `, an error will be returned.
-func (e OrderedEng[DT, T]) {{.Name}}(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) {{.Name}}(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op := {{.Name | lower}}Op[DT]()
 	if asSameDT {
 		var v DT
@@ -78,7 +78,7 @@ func (e OrderedEng[DT, T]) {{.Name}}(ctx context.Context, a, b T, retVal DescWit
 
 // {{.Name}}Scalar performs` + " `vec {{.Symbol}} scalar` or `scalar {{.Symbol}} vec`" + `, with a bool tensor as the return value. The ` + "`scalarOnLeft`" + ` parameter indicates
 // if the scalar value is on the left of the bin op. If ` + "`asSameDT` == true" + `, an error will be returned.
-func (e OrderedEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e OrderedEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op := {{.Name | lower}}Op[DT]()
 	if asSameDT {
 		var v DT
@@ -89,7 +89,7 @@ func (e OrderedEng[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT, retVa
 
 
 // {{.Name}}Broadcastable performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If` + "`asSameDT == true`" + `, an error will be returned.
-func (e OrderedEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e OrderedEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op := {{.Name | lower}}Op[DT]()
 	if asSameDT {
 		var v DT
@@ -100,7 +100,7 @@ func (e OrderedEng[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, r
 `
 
 const orderedNumEngMethodsRaw = `// {{.Name}} performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value.
-func (e StdOrderedNumEngine[DT, T]) {{.Name}}(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) {{.Name}}(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool) (err error) {
 	op, cmpOp := {{.Name | lower}}OpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOp(ctx, a, b, retVal.(tensor.Basic[bool]), cmpOp)
@@ -110,7 +110,7 @@ func (e StdOrderedNumEngine[DT, T]) {{.Name}}(ctx context.Context, a, b T, retVa
 
 // {{.Name}}Scalar performs` + " `vec {{.Symbol}} scalar` or `scalar {{.Symbol}} vec`" + `, with a bool tensor as the return value. The ` + "`scalarOnLeft`" + ` parameter indicates
 // if the scalar value is on the left of the bin op
-func (e StdOrderedNumEngine[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
+func (e StdOrderedNumEngine[DT, T]) {{.Name}}Scalar(ctx context.Context, a tensor.Basic[DT], b DT, retVal DescWithStorage, scalarOnLeft bool, asSameDT bool) (err error) {
 	op, cmpOp := {{.Name | lower}}OpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpScalar(ctx, a, b, retVal.(tensor.Basic[bool]), scalarOnLeft, cmpOp)
@@ -120,7 +120,7 @@ func (e StdOrderedNumEngine[DT, T]) {{.Name}}Scalar(ctx context.Context, a T, b 
 
 
 // {{.Name}}Broadcastable performs ` + "`a {{.Symbol}} b`" + `, with a bool tensor as the return value. The operation is broadacasted correctly according to shape. If` + "`asSameDT == true`" + `, an error will be returned.
-func (e StdOrderedNumEngine[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b T, retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
+func (e StdOrderedNumEngine[DT, T]) {{.Name}}Broadcastable(ctx context.Context, a, b tensor.Basic[DT], retVal DescWithStorage, asSameDT bool, expAPA, expAPB *tensor.AP) (err error) {
 	op, cmpOp := {{.Name | lower}}OpOrderedNum[DT]()
 	if !asSameDT {
 		return e.CmpOpBC(ctx, a, b, retVal.(tensor.Basic[bool]), expAPA, expAPB, cmpOp )
