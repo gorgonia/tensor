@@ -3,6 +3,7 @@ package stdeng
 import (
 	"gonum.org/v1/gonum/blas"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor"
 )
 
 func convertToBool[DT comparable](data []DT) []bool {
@@ -20,7 +21,7 @@ func convertToBool[DT comparable](data []DT) []bool {
 //	a has shape (m, k)
 //	b has shape (k, n)
 //	c has shape (m, n)
-func (e StdEng[DT, T]) MatMulHelper(a, b, retVal T, asShapes ...shapes.Shape) (m, n, k, lda, ldb, ldc int, tA, tB blas.Transpose) {
+func (e StdEng[DT, T]) MatMulHelper(a, b, retVal tensor.Basic[DT], asShapes ...shapes.Shape) (m, n, k, lda, ldb, ldc int, tA, tB blas.Transpose) {
 	ado := a.DataOrder()
 	bdo := b.DataOrder()
 	cdo := retVal.DataOrder()

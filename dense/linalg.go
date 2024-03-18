@@ -15,7 +15,7 @@ func (t *Dense[DT]) Trace() (retVal DT, err error) {
 		return retVal, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	if tracer, ok := t.e.Workhorse().(tensor.Tracer[DT, *Dense[DT]]); ok {
+	if tracer, ok := t.e.Workhorse().(tensor.Tracer[DT]); ok {
 		return tracer.Trace(context.Background(), t)
 	}
 	return retVal, errors.Errorf("Engine %T does not support Trace", t.e)
@@ -26,7 +26,7 @@ func (t *Dense[DT]) SVD(uv, full bool) (s, u, v *Dense[DT], err error) {
 		return s, u, v, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	svder, ok := t.e.Workhorse().(tensor.SVDer[DT, *Dense[DT]])
+	svder, ok := t.e.Workhorse().(tensor.SVDer[DT])
 	if !ok {
 		return nil, nil, nil, errors.Errorf(errors.EngineSupport, t.e, svder, errors.ThisFn())
 	}
@@ -39,9 +39,9 @@ func (t *Dense[DT]) Inner(u *Dense[DT]) (retVal DT, err error) {
 		return retVal, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	var bla tensor.InnerProder[DT, *Dense[DT]]
+	var bla tensor.InnerProder[DT]
 	var ok bool
-	if bla, ok = t.e.Workhorse().(tensor.InnerProder[DT, *Dense[DT]]); !ok {
+	if bla, ok = t.e.Workhorse().(tensor.InnerProder[DT]); !ok {
 		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	return bla.Inner(context.Background(), t, u)
@@ -62,8 +62,8 @@ func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT],
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 
-	var bla tensor.BLA[DT, *Dense[DT]]
-	if bla, ok = t.e.Workhorse().(tensor.BLA[DT, *Dense[DT]]); !ok {
+	var bla tensor.BLA[DT]
+	if bla, ok = t.e.Workhorse().(tensor.BLA[DT]); !ok {
 		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	var incr []DT
@@ -90,9 +90,9 @@ func (t *Dense[DT]) MatMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], er
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 
-	var bla tensor.BLA[DT, *Dense[DT]]
+	var bla tensor.BLA[DT]
 	var ok bool
-	if bla, ok = e.(tensor.BLA[DT, *Dense[DT]]); !ok {
+	if bla, ok = e.(tensor.BLA[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, bla, errors.ThisFn())
 	}
 	var incr []DT
@@ -121,8 +121,8 @@ func (t *Dense[DT]) Outer(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 
-	var bla tensor.BLA[DT, *Dense[DT]]
-	if bla, ok = t.e.Workhorse().(tensor.BLA[DT, *Dense[DT]]); !ok {
+	var bla tensor.BLA[DT]
+	if bla, ok = t.e.Workhorse().(tensor.BLA[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
 	var incr []DT

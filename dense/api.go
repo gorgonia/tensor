@@ -99,8 +99,8 @@ func Norm[DT constraints.Float](a *Dense[DT], order tensor.NormOrder, opts ...Fu
 		return nil, errors.Errorf(errors.NYIPR, "Norm", "WithIncr")
 	}
 
-	var normer tensor.Normer[DT, *Dense[DT]]
-	if normer, ok = e.(tensor.Normer[DT, *Dense[DT]]); !ok {
+	var normer tensor.Normer[DT]
+	if normer, ok = e.(tensor.Normer[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, normer, errors.ThisFn())
 	}
 	ret := normer.Norm(ctx, a, order, along)
@@ -131,8 +131,8 @@ func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage
 	asBool := fo.AsType == dtype.Bool
 	ctx := fo.Ctx
 
-	var cmper tensor.Ord[DT, *Dense[DT]]
-	if cmper, ok = e.(tensor.Ord[DT, *Dense[DT]]); !ok {
+	var cmper tensor.Ord[DT]
+	if cmper, ok = e.(tensor.Ord[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
 	if err = cmper.Lt(ctx, a, b, retVal, !asBool); err != nil {

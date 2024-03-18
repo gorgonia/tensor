@@ -7,8 +7,8 @@ import (
 /* Data Agnostic Execution Engine Methods */
 
 // Transposer is any engine that can perform an unsafe transpose of a tensor.
-type Transposer[DT any, T Tensor[DT, T]] interface {
-	Transpose(ctx context.Context, t T, expStrides []int) error
+type Transposer[DT any] interface {
+	Transpose(ctx context.Context, t Basic[DT], expStrides []int) error
 }
 
 type Copier[DT any, T Tensor[DT, T]] interface {

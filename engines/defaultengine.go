@@ -84,7 +84,7 @@ func (e StdEng[DT, T]) SliceEq(a, b []DT) bool {
 	return true
 }
 
-func (e StdEng[DT, T]) Transpose(ctx context.Context, t T, expStrides []int) error {
+func (e StdEng[DT, T]) Transpose(ctx context.Context, t tensor.Basic[DT], expStrides []int) error {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func (e StdEng[DT, T]) Copy(ctx context.Context, dst, src T) error {
 	return nil
 }
 
-func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaultValue DT, retVal T) (err error) {
+func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a tensor.Basic[DT], axis int, defaultValue DT, retVal tensor.Basic[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a T, axis int, defaul
 	return
 }
 
-func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT, a T, retVal T, along ...int) (err error) {
+func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT, a tensor.Basic[DT], retVal tensor.Basic[DT], along ...int) (err error) {
 	fn := mod.(tensor.ReductionModule[DT])
 	if fn.IsNonCommutative {
 		return e.nonCommReduceAlong(ctx, fn, defaultValue, a, retVal, along...)
@@ -237,7 +237,7 @@ func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT
 	return nil
 }
 
-func (e StdEng[DT, T]) nonCommReduceAlong(ctx context.Context, fn tensor.ReductionModule[DT], defaultValue DT, a T, retVal T, along ...int) (err error) {
+func (e StdEng[DT, T]) nonCommReduceAlong(ctx context.Context, fn tensor.ReductionModule[DT], defaultValue DT, a tensor.Basic[DT], retVal tensor.Basic[DT], along ...int) (err error) {
 	track := make([]int, a.Dims())
 	input := a
 	for _, axis := range along {
@@ -259,7 +259,7 @@ func (e StdEng[DT, T]) nonCommReduceAlong(ctx context.Context, fn tensor.Reducti
 	return nil
 }
 
-func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T) (err error) {
+func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a tensor.Basic[DT], axis int, retVal T) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a T, axis int, retVal T
 	return
 }
 
-func (e StdEng[DT, T]) Map(ctx context.Context, fn any, a T, retVal T) (err error) {
+func (e StdEng[DT, T]) Map(ctx context.Context, fn any, a tensor.Basic[DT], retVal tensor.Basic[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -364,7 +364,7 @@ func (e StdEng[DT, T]) DotIter(ctx context.Context, reduceWithFn, elwiseFn func(
 	return execution.GeDOR(reduceWithFn, elwiseFn, tA, tB, m, n, k, a.Data(), lda, b.Data(), ldb, retVal.Data(), ldc)
 }
 
-func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (retVal T, err error) {
+func (e StdEng[DT, T]) Concat(ctx context.Context, a tensor.Basic[DT], axis int, others ...tensor.Basic[DT]) (retVal tensor.Basic[DT], err error) {
 	ss := make([]shapes.Shapelike, len(others))
 	for i, o := range others {
 		ss[i] = o.Shape()
@@ -385,7 +385,7 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 	// retVal.makeMask() // this should be handled by the tensor.Aliker
 	//}
 
-	all := make([]T, len(others)+1)
+	all := make([]tensor.Basic[DT], len(others)+1)
 	all[0] = a
 	copy(all[1:], others)
 
@@ -481,6 +481,6 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 	return retVal, nil
 }
 
-func (e StdEng[DT, T]) Stack(ctx context.Context, a T, axis int, others ...T) (retVal T, err error) {
+func (e StdEng[DT, T]) Stack(ctx context.Context, a tensor.Basic[DT], axis int, others ...T) (retVal tensor.Basic[DT], err error) {
 	panic("NYI")
 }

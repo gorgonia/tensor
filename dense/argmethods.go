@@ -15,8 +15,8 @@ func (t *Dense[DT]) Argmax(axis int, opts ...FuncOpt) (retVal *Dense[int], err e
 	fo := ParseFuncOpts(opts...)
 	ctx := fo.Ctx
 
-	var e tensor.Argmethoder[DT, *Dense[DT]]
-	e, ok := t.e.(tensor.Argmethoder[DT, *Dense[DT]])
+	var e tensor.Argmethoder[DT]
+	e, ok := t.e.(tensor.Argmethoder[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
@@ -36,8 +36,8 @@ func (t *Dense[DT]) Argmin(axis int, opts ...FuncOpt) (retVal *Dense[int], err e
 	fo := ParseFuncOpts(opts...)
 	ctx := fo.Ctx
 
-	var e tensor.Argmethoder[DT, *Dense[DT]]
-	e, ok := t.e.(tensor.Argmethoder[DT, *Dense[DT]])
+	var e tensor.Argmethoder[DT]
+	e, ok := t.e.(tensor.Argmethoder[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}

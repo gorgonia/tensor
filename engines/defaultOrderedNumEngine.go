@@ -137,11 +137,11 @@ func (e StdOrderedNumEngine[DT, T]) argCmp(ctx context.Context, a tensor.Basic[D
 	}
 	return nil, errors.Errorf("tensor is not an AlikeAsTyper")
 }
-func (e StdOrderedNumEngine[DT, T]) Argmax(ctx context.Context, t T, axis int) (retVal tensor.Basic[int], err error) {
+func (e StdOrderedNumEngine[DT, T]) Argmax(ctx context.Context, t tensor.Basic[DT], axis int) (retVal tensor.Basic[int], err error) {
 	return e.argCmp(ctx, t, axis, "Argmax", execution.Argmax[DT], execution.ArgmaxIter[DT])
 }
 
-func (e StdOrderedNumEngine[DT, T]) Argmin(ctx context.Context, t T, axis int) (retVal tensor.Basic[int], err error) {
+func (e StdOrderedNumEngine[DT, T]) Argmin(ctx context.Context, t tensor.Basic[DT], axis int) (retVal tensor.Basic[int], err error) {
 	return e.argCmp(ctx, t, axis, "Argmin", execution.Argmin[DT], execution.ArgminIter[DT])
 }
 

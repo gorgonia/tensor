@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	_ tensor.Adder[float64, *Dense[float64]]       = StdFloat64Engine[*Dense[float64]]{}
-	_ tensor.Reducer[float64, *Dense[float64]]     = StdFloat64Engine[*Dense[float64]]{}
-	_ tensor.Argmethoder[float64, *Dense[float64]] = StdFloat64Engine[*Dense[float64]]{}
-	_ tensor.Scatterer[float64, *Dense[float64]]   = StdFloat64Engine[*Dense[float64]]{}
-	_ tensor.Ord[float64, *Dense[float64]]         = StdFloat64Engine[*Dense[float64]]{}
+	_ tensor.Adder[float64]       = StdFloat64Engine[*Dense[float64]]{}
+	_ tensor.Reducer[float64]     = StdFloat64Engine[*Dense[float64]]{}
+	_ tensor.Argmethoder[float64] = StdFloat64Engine[*Dense[float64]]{}
+	_ tensor.Scatterer[float64]   = StdFloat64Engine[*Dense[float64]]{}
+	_ tensor.Ord[float64]         = StdFloat64Engine[*Dense[float64]]{}
 )
 
 // type StdFloat64Engine[T tensor.Tensor[float64, T]] struct {
@@ -36,7 +36,7 @@ func (e StdFloat64Engine[T]) BasicEng() Engine {
 	return StdFloat64Engine[tensor.Basic[float64]]{}
 }
 
-func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error) {
+func (e StdFloat64Engine[T]) SVD(ctx context.Context, a tensor.Basic[float64], uv, full bool) (s, u, v tensor.Basic[float64], err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return
 	}
@@ -104,7 +104,7 @@ func (e StdFloat64Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	return
 }
 
-func (e StdFloat64Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float64], err error) {
+func (e StdFloat64Engine[T]) Norm(ctx context.Context, t tensor.Basic[float64], ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float64], err error) {
 	oneOverOrd := float64(1) / float64(ord)
 	ps := func(x float64) float64 { return math.Pow(x, oneOverOrd) }
 	norm0 := func(x float64) float64 {
@@ -143,7 +143,7 @@ func (e StdFloat64Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder
 
 }
 
-func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t T) (float64, error) {
+func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float64]) (float64, error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return math.NaN(), err
 	}
@@ -155,7 +155,7 @@ func (e StdFloat64Engine[T]) Norm2(ctx context.Context, t T) (float64, error) {
 	return math.Sqrt(retVal), nil
 }
 
-func (e StdFloat64Engine[T]) Inner(ctx context.Context, a, b T) (retVal float64, err error) {
+func (e StdFloat64Engine[T]) Inner(ctx context.Context, a, b tensor.Basic[float64]) (retVal float64, err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return 0, err
 	}
@@ -164,7 +164,7 @@ func (e StdFloat64Engine[T]) Inner(ctx context.Context, a, b T) (retVal float64,
 	return
 }
 
-func (e StdFloat64Engine[T]) FMA(ctx context.Context, a, x, retVal T) (err error) {
+func (e StdFloat64Engine[T]) FMA(ctx context.Context, a, x, retVal tensor.Basic[float64]) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (e StdFloat64Engine[T]) FMA(ctx context.Context, a, x, retVal T) (err error
 	return nil
 }
 
-func (e StdFloat64Engine[T]) FMAScalar(ctx context.Context, a T, x float64, retVal T) (err error) {
+func (e StdFloat64Engine[T]) FMAScalar(ctx context.Context, a tensor.Basic[float64], x float64, retVal tensor.Basic[float64]) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (e StdFloat64Engine[T]) FMAScalar(ctx context.Context, a T, x float64, retV
 //	y = αA * x + βy
 //
 // we set beta to 0, so we don't have to manually zero out the reused/retval tensor data
-func (e StdFloat64Engine[T]) MatVecMul(ctx context.Context, a, b, retVal T, incr []float64) (err error) {
+func (e StdFloat64Engine[T]) MatVecMul(ctx context.Context, a, b, retVal tensor.Basic[float64], incr []float64) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (e StdFloat64Engine[T]) MatVecMul(ctx context.Context, a, b, retVal T, incr
 	return nil
 }
 
-func (e StdFloat64Engine[T]) MatMul(ctx context.Context, a, b, retVal T, incr []float64) (err error) {
+func (e StdFloat64Engine[T]) MatMul(ctx context.Context, a, b, retVal tensor.Basic[float64], incr []float64) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func (e StdFloat64Engine[T]) MatMul(ctx context.Context, a, b, retVal T, incr []
 	return nil
 }
 
-func (e StdFloat64Engine[T]) Outer(ctx context.Context, a, b, retVal T, incr []float64) (err error) {
+func (e StdFloat64Engine[T]) Outer(ctx context.Context, a, b, retVal tensor.Basic[float64], incr []float64) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -291,7 +291,7 @@ func (e StdFloat64Engine[T]) Outer(ctx context.Context, a, b, retVal T, incr []f
 }
 
 // NPDot is an implementation of Numpy's Dot.
-func (e StdFloat64Engine[T]) NPDot(ctx context.Context, a, b, retVal T, toIncr bool) (scalarRetVal float64, err error) {
+func (e StdFloat64Engine[T]) NPDot(ctx context.Context, a, b, retVal tensor.Basic[float64], toIncr bool) (scalarRetVal float64, err error) {
 	aShp := a.Shape()
 	bShp := b.Shape()
 	// TODO

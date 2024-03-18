@@ -27,7 +27,7 @@ func (t *Dense[DT]) Apply(fn any, opts ...FuncOpt) (retVal *Dense[DT], err error
 	}
 	ctx := fo.Ctx
 
-	e, ok := t.e.(tensor.Mapper[DT, *Dense[DT]])
+	e, ok := t.e.(tensor.Mapper[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
@@ -43,9 +43,9 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	var e tensor.Reducer[DT, *Dense[DT]]
+	var e tensor.Reducer[DT]
 	var ok bool
-	if e, ok = t.e.(tensor.Reducer[DT, *Dense[DT]]); !ok {
+	if e, ok = t.e.(tensor.Reducer[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
 
@@ -58,7 +58,7 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 		if err = e.Reduce(ctx, fn, t, axes[0], defaultVal, reuse); err != nil {
 			return nil, err
 		}
-		return reuse, nil
+		return reuse.(*Dense[DT]), nil
 	}
 
 	module, err := redFunc2Mod[DT](fn)
@@ -69,7 +69,7 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 	if err = e.ReduceAlong(ctx, module, defaultVal, t, reuse, axes...); err != nil {
 		return nil, errors.Wrap(err, "Cannot Reduce. ReduceAlong caused an error.")
 	}
-	return reuse, nil
+	return reuse.(*Dense[DT]), nil
 }
 
 func (t *Dense[DT]) Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -87,8 +87,8 @@ func (t *Dense[DT]) Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (retVal
 	}
 	ctx := fo.Ctx
 
-	var e tensor.Scanner[DT, *Dense[DT]]
-	if e, ok = t.e.(tensor.Scanner[DT, *Dense[DT]]); !ok {
+	var e tensor.Scanner[DT]
+	if e, ok = t.e.(tensor.Scanner[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
 	err = e.Scan(ctx, fn, t, axis, retVal)
@@ -100,7 +100,7 @@ func (t *Dense[DT]) Dot(reductionFn, elwiseFn func(DT, DT) DT, other *Dense[DT],
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	e, ok := t.e.(tensor.DotIterer[DT, *Dense[DT]])
+	e, ok := t.e.(tensor.DotIterer[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
@@ -145,9 +145,9 @@ func (t *Dense[DT]) Transpose(axes ...int) (retVal *Dense[DT], err error) {
 	u.AP = transform
 	expStrides := transform.Strides()
 
-	var txer tensor.Transposer[DT, *Dense[DT]]
+	var txer tensor.Transposer[DT]
 	var ok bool
-	if txer, ok = t.e.(tensor.Transposer[DT, *Dense[DT]]); !ok {
+	if txer, ok = t.e.(tensor.Transposer[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, txer, errors.ThisFn())
 	}
 
@@ -168,16 +168,16 @@ func (t *Dense[DT]) Repeat(axis int, repeats ...int) (retVal *Dense[DT], err err
 	if err = check(checkFlags(t.e, t), checkRepeatValidAxis(axis, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
-	e, ok := t.e.(tensor.Repeater[DT, *Dense[DT]])
+	e, ok := t.e.(tensor.Repeater[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
-	ctx, retVal, newAxis, size, newRepeats, err := e.PrepRepeat(t, axis, repeats)
+	ctx, ret, newAxis, size, newRepeats, err := e.PrepRepeat(t, axis, repeats)
 	if err != nil {
 		return nil, err
 	}
-	err = e.Repeat(ctx, t, retVal, newAxis, size, newRepeats)
-	return retVal, err
+	err = e.Repeat(ctx, t, ret, newAxis, size, newRepeats)
+	return ret.(*Dense[DT]), err
 }
 
 // Concat concatenates the receiver with the given tensors along the given axis.
@@ -188,7 +188,7 @@ func (t *Dense[DT]) Concat(axis int, tensors ...*Dense[DT]) (retVal *Dense[DT], 
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	e, ok := t.e.(tensor.Concater[DT, *Dense[DT]])
+	e, ok := t.e.(tensor.Concater[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}

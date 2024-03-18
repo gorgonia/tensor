@@ -68,7 +68,7 @@ func broadcastStrides(destShape, srcShape shapes.Shape, destStrides, srcStrides 
 	return
 }
 
-func assign[DT any, T tensor.Basic[DT]](dst, src T) (err error) {
+func assign[DT any](dst, src tensor.Basic[DT]) (err error) {
 	dd := dst.Dims()
 	sd := src.Dims()
 

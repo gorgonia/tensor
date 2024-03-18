@@ -272,7 +272,7 @@ func (e StdEng[DT, T]) PrepRepeat(a T, axis int, repeats []int, opts ...FuncOpt)
 }
 
 // PrepReduce is a helper function to help reductions
-func (e StdEng[DT, T]) PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, axes []int, retVal T, err error) {
+func (e StdEng[DT, T]) PrepReduce(a tensor.Basic[DT], opts ...FuncOpt) (ctx context.Context, axes []int, retVal tensor.Basic[DT], err error) {
 	// compute the largest shape after reduction
 	// for example:
 	//
@@ -316,7 +316,7 @@ func (e StdEng[DT, T]) PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, ax
 
 	// now  we have the expected shape, handle the FuncOpts
 	var fo Option
-	if retVal, fo, err = e.HandleFuncOptsSpecialized(a, newShape, opts...); err != nil {
+	if retVal, fo, err = e.HandleFuncOpts(a, newShape, opts...); err != nil {
 		return ctx, axes, retVal, errors.Wrapf(err, "Unable to PrepReduce")
 	}
 
