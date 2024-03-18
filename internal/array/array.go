@@ -11,6 +11,7 @@ type Array[DT any] struct {
 	bytes []byte // the original data, but as a slice of bytes.
 }
 
+// Make makes an array
 func Make[DT any](data []DT) Array[DT] {
 	bs := BytesFromSlice[DT](data)
 	return Array[DT]{
