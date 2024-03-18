@@ -10,7 +10,7 @@ import (
 	"gorgonia.org/tensor/internal/errors"
 )
 
-func (e StdEng[DT, T]) Scatter(ctx context.Context, t T, indices tensor.Basic[int], retVal T) error {
+func (e StdEng[DT, T]) Scatter(ctx context.Context, t tensor.Basic[DT], indices tensor.Basic[int], retVal tensor.Basic[DT]) error {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}

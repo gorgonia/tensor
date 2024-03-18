@@ -12,7 +12,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT, *Dense[DT]])
+	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, {{.Name|lower}}er, errors.ThisFn())
 	}
@@ -38,7 +38,7 @@ func (t *Dense[DT]) {{.Name}}Scalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*
 	}
 	ctx, toIncr := fo.Ctx, fo.Incr
 
-	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT, *Dense[DT]])
+	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, {{.Name|lower}}er, errors.ThisFn())
 	}
@@ -60,7 +60,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.{{.Interface}}[DT, *Dense[DT]]);
+	cmper, ok := e.(tensor.{{.Interface}}[DT]);
  	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}

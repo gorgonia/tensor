@@ -17,7 +17,7 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	adder, ok := e.(tensor.Adder[DT, *Dense[DT]])
+	adder, ok := e.(tensor.Adder[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, adder, errors.ThisFn())
 	}
@@ -43,7 +43,7 @@ func (t *Dense[DT]) AddScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	}
 	ctx, toIncr := fo.Ctx, fo.Incr
 
-	adder, ok := e.(tensor.Adder[DT, *Dense[DT]])
+	adder, ok := e.(tensor.Adder[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, adder, errors.ThisFn())
 	}
@@ -64,7 +64,7 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	suber, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
+	suber, ok := e.(tensor.BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, suber, errors.ThisFn())
 	}
@@ -90,7 +90,7 @@ func (t *Dense[DT]) SubScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	}
 	ctx, toIncr := fo.Ctx, fo.Incr
 
-	suber, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
+	suber, ok := e.(tensor.BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, suber, errors.ThisFn())
 	}
@@ -111,7 +111,7 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	muler, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
+	muler, ok := e.(tensor.BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, muler, errors.ThisFn())
 	}
@@ -137,7 +137,7 @@ func (t *Dense[DT]) MulScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	}
 	ctx, toIncr := fo.Ctx, fo.Incr
 
-	muler, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
+	muler, ok := e.(tensor.BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, muler, errors.ThisFn())
 	}
@@ -158,7 +158,7 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	toIncr := fo.Incr
 	toBroadcast := fo.Broadcast
 
-	diver, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
+	diver, ok := e.(tensor.BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, diver, errors.ThisFn())
 	}
@@ -184,7 +184,7 @@ func (t *Dense[DT]) DivScalar(s DT, scalarOnLeft bool, opts ...FuncOpt) (*Dense[
 	}
 	ctx, toIncr := fo.Ctx, fo.Incr
 
-	diver, ok := e.(tensor.BasicArither[DT, *Dense[DT]])
+	diver, ok := e.(tensor.BasicArither[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, diver, errors.ThisFn())
 	}

@@ -17,7 +17,7 @@ func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.Ord[DT, *Dense[DT]])
+	cmper, ok := e.(tensor.Ord[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
@@ -48,7 +48,7 @@ func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.Ord[DT, *Dense[DT]])
+	cmper, ok := e.(tensor.Ord[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
@@ -79,7 +79,7 @@ func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.FullOrd[DT, *Dense[DT]])
+	cmper, ok := e.(tensor.FullOrd[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
@@ -110,7 +110,7 @@ func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.FullOrd[DT, *Dense[DT]])
+	cmper, ok := e.(tensor.FullOrd[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
@@ -141,7 +141,7 @@ func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.Comparer[DT, *Dense[DT]])
+	cmper, ok := e.(tensor.Comparer[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}
@@ -172,7 +172,7 @@ func (t *Dense[DT]) ElNe(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 	ctx := fo.Ctx
 	toBroadcast := fo.Broadcast
 
-	cmper, ok := e.(tensor.Comparer[DT, *Dense[DT]])
+	cmper, ok := e.(tensor.Comparer[DT])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, cmper, errors.ThisFn())
 	}

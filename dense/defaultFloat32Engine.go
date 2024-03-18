@@ -27,7 +27,7 @@ func (e StdFloat32Engine[T]) BasicEng() Engine {
 	return stdeng.StdOrderedNumEngine[float32, tensor.Basic[float32]]{}
 }
 
-func (e StdFloat32Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error) {
+func (e StdFloat32Engine[T]) SVD(ctx context.Context, a tensor.Basic[float32], uv, full bool) (s, u, v tensor.Basic[float32], err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return s, u, v, err
 	}
@@ -93,7 +93,7 @@ func (e StdFloat32Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u,
 	return
 }
 
-func (e StdFloat32Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float32], err error) {
+func (e StdFloat32Engine[T]) Norm(ctx context.Context, t tensor.Basic[float32], ord tensor.NormOrder, axes []int) (retVal tensor.Basic[float32], err error) {
 	oneOverOrd := float32(1) / float32(ord)
 	ps := func(x float32) float32 { return math32.Pow(x, oneOverOrd) }
 	norm0 := func(x float32) float32 {
@@ -126,7 +126,7 @@ func (e StdFloat32Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder
 	return norm[float32, T](t, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
 }
 
-func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t T) (float32, error) {
+func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float32]) (float32, error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return math32.NaN(), err
 	}
@@ -138,7 +138,7 @@ func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t T) (float32, error) {
 	return math32.Sqrt(retVal), nil
 }
 
-func (e StdFloat32Engine[T]) Inner(ctx context.Context, a, b T) (retVal float32, err error) {
+func (e StdFloat32Engine[T]) Inner(ctx context.Context, a, b tensor.Basic[float32]) (retVal float32, err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return 0, err
 	}
@@ -148,7 +148,7 @@ func (e StdFloat32Engine[T]) Inner(ctx context.Context, a, b T) (retVal float32,
 	return
 }
 
-func (e StdFloat32Engine[T]) FMA(ctx context.Context, a, x, retVal T) (err error) {
+func (e StdFloat32Engine[T]) FMA(ctx context.Context, a, x, retVal tensor.Basic[float32]) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (e StdFloat32Engine[T]) FMA(ctx context.Context, a, x, retVal T) (err error
 	return nil
 }
 
-func (e StdFloat32Engine[T]) MatVecMul(ctx context.Context, a, b, retVal T, incr []float32) (err error) {
+func (e StdFloat32Engine[T]) MatVecMul(ctx context.Context, a, b, retVal tensor.Basic[float32], incr []float32) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (e StdFloat32Engine[T]) MatVecMul(ctx context.Context, a, b, retVal T, incr
 	return nil
 }
 
-func (e StdFloat32Engine[T]) MatMul(ctx context.Context, a, b, retVal T, incr []float32) (err error) {
+func (e StdFloat32Engine[T]) MatMul(ctx context.Context, a, b, retVal tensor.Basic[float32], incr []float32) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func (e StdFloat32Engine[T]) MatMul(ctx context.Context, a, b, retVal T, incr []
 	return nil
 }
 
-func (e StdFloat32Engine[T]) Outer(ctx context.Context, a, b, retVal T, incr []float32) (err error) {
+func (e StdFloat32Engine[T]) Outer(ctx context.Context, a, b, retVal tensor.Basic[float32], incr []float32) (err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return err
 	}

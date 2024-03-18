@@ -2,7 +2,7 @@ package main
 
 import "text/template"
 
-const floatUnOpRaw = `func (e {{.EngineName}}[T]) {{.Name}}(ctx context.Context, a, retVal T) (err error){
+const floatUnOpRaw = `func (e {{.EngineName}}[T]) {{.Name}}(ctx context.Context, a, retVal tensor.Basic[{{.Type}}]) (err error){
 	{{if eq .PkgFunc "" -}}
 	fn := func(x {{.Type}}) {{.Type}} { {{- replace .Body "{{.MathPkg}}" .MathPkg  -}}  }
 	{{else -}}

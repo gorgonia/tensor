@@ -40,39 +40,39 @@ func (e StdNumEngine[DT, T]) SliceEq(a, b []DT) bool {
 	return true
 }
 
-func (e StdNumEngine[DT, T]) Sub(ctx context.Context, a, b, retVal T, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) Sub(ctx context.Context, a, b, retVal tensor.Basic[DT], toIncr bool) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, toIncr, subOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) SubScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) SubScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft, toIncr bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, subOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) SubBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) SubBroadcastable(ctx context.Context, a, b, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
 	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, subOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) Mul(ctx context.Context, a, b, retVal T, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) Mul(ctx context.Context, a, b, retVal tensor.Basic[DT], toIncr bool) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, toIncr, mulOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) MulScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) MulScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft, toIncr bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, mulOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) MulBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) MulBroadcastable(ctx context.Context, a, b, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
 	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, mulOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) Div(ctx context.Context, a, b, retVal T, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) Div(ctx context.Context, a, b, retVal tensor.Basic[DT], toIncr bool) (err error) {
 	return e.StdBinOp(ctx, a, b, retVal, toIncr, divOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) DivScalar(ctx context.Context, t T, s DT, retVal T, scalarOnLeft, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) DivScalar(ctx context.Context, t tensor.Basic[DT], s DT, retVal tensor.Basic[DT], scalarOnLeft, toIncr bool) (err error) {
 	return e.StdBinOpScalar(ctx, t, s, retVal, scalarOnLeft, toIncr, divOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) DivBroadcastable(ctx context.Context, a, b, retVal T, expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
+func (e StdNumEngine[DT, T]) DivBroadcastable(ctx context.Context, a, b, retVal tensor.Basic[DT], expAPA, expAPB *tensor.AP, toIncr bool) (err error) {
 	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, divOp[DT]())
 }
 
