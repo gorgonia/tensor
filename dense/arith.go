@@ -11,11 +11,12 @@ import (
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
+
 		return nil, err
 	}
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	adder, ok := e.(tensor.Adder[DT])
 	if !ok {
@@ -24,13 +25,18 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
+
 		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
+
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
+
 			return retVal, err
 		}
-		err = adder.Add(ctx, t, u, retVal, toIncr)
-
+		if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -62,7 +68,7 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	}
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	suber, ok := e.(tensor.BasicArither[DT])
 	if !ok {
@@ -76,7 +82,10 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = suber.Sub(ctx, t, u, retVal, toIncr)
+		if err = suber.Sub(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 
 	}
 	return retVal, err
@@ -109,7 +118,7 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	}
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	muler, ok := e.(tensor.BasicArither[DT])
 	if !ok {
@@ -123,7 +132,10 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = muler.Mul(ctx, t, u, retVal, toIncr)
+		if err = muler.Mul(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 
 	}
 	return retVal, err
@@ -156,7 +168,7 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	}
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	diver, ok := e.(tensor.BasicArither[DT])
 	if !ok {
@@ -170,7 +182,10 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = diver.Div(ctx, t, u, retVal, toIncr)
+		if err = diver.Div(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 
 	}
 	return retVal, err
