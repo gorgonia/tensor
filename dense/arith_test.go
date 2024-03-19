@@ -73,8 +73,8 @@ func TestDense_Add_manual(t *testing.T) {
 func TestBroadcastDebug(t *testing.T) {
 	//assert := assert.New(t)
 	// broadcast left, inner most
-	a := New[float64](WithShape(5, 4, 4))
-	b := New[float64](WithShape(5, 4, 4, 1))
+	a := New[float64](WithShape(1, 1, 1), WithBacking([]float64{1}))
+	b := New[float64](WithShape(1, 1), WithBacking([]float64{1}))
 	c, err := a.Add(b, tensor.AutoBroadcast)
 	if err != nil {
 		t.Logf("err %v", err)

@@ -24,8 +24,10 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return retVal, err
 		}
-		err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr)
-
+		if err = {{.Name|lower}}er.{{.Name}}(ctx, t, u, retVal, toIncr); err !=nil{
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -75,8 +77,10 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return retVal, err
 		}
-		err = cmper.{{.Name}}(ctx, t, u, retVal, asSame)
-
+		if err = cmper.{{.Name}}(ctx, t, u, retVal, asSame); err !=nil{
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }

@@ -3,8 +3,6 @@
 package dense
 
 import (
-	"log"
-
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 )
@@ -27,14 +25,11 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	switch {
 	case toBroadcast:
 		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
-
 	default:
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
-			log.Printf("err?2")
 			return retVal, err
 		}
 		if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
-			log.Printf("err?3")
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
@@ -87,7 +82,6 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -137,7 +131,6 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -187,7 +180,6 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }

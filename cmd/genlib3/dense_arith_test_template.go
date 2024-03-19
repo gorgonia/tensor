@@ -154,7 +154,7 @@ func gen{{.Name}}IdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.A
 				t.Errorf("{{.Name}} failed: %v", err)
 				return false
 			}
-			if ok :=  assert.True(correct.Shape().Eq(ret.Shape())) &&
+			if ok :=  assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok{
 				return false
 			}
@@ -205,7 +205,7 @@ func gen{{.Name}}IdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *asse
 				return false
 			}
 			if ok := assert.Same(incr, ret) &&
-				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok{
 				return false
 			}
@@ -246,7 +246,7 @@ func gen{{.Name}}IdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *ass
 		if err, retEarly := qcErrCheck(t, "{{.Name}} (Broadcast)", a, b, we, err); retEarly {
 			return err == nil
 		}
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
@@ -285,7 +285,7 @@ func gen{{.Name}}IdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert 
 			return err == nil
 		}
 		return assert.Same(incr, ret)&&
-			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
@@ -517,7 +517,7 @@ func gen{{.Name}}InvIter[DT internal.OrderedNum](t *testing.T, assert *assert.As
 				return false
 			}
 			ret, err = ret.{{.Inverse}}(b, tensor.UseUnsafe)
-			if ok :=  assert.True(correct.Shape().Eq(ret.Shape())) &&
+			if ok :=  assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok{
 				return false
 			}
@@ -601,7 +601,7 @@ func gen{{.Name}}InvIncrIter[DT internal.OrderedNum](t *testing.T, assert *asser
 			}
 			ret, err = ret.{{.Inverse}}(b, tensor.UseUnsafe)
 			if ok := assert.Same(incr, ret)&&
- 				assert.True(correct.Shape().Eq(ret.Shape())) &&
+ 				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok{
 				return false
 			}
@@ -643,7 +643,7 @@ func gen{{.Name}}InvBroadcast[DT internal.OrderedNum](t *testing.T, assert *asse
 			return err == nil
 		}
 		ret, err = ret.{{.Inverse}}(b, tensor.UseUnsafe, tensor.AutoBroadcast)
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
 
 	}
@@ -685,7 +685,7 @@ func gen{{.Name}}InvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *
 		}
 		ret, err = ret.{{.Inverse}}(b, tensor.UseUnsafe, tensor.AutoBroadcast)
 		return assert.Same(incr, ret)&&
-			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape())  &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
 
 	}

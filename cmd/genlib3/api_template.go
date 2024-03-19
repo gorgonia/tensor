@@ -63,7 +63,6 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) 
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
