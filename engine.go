@@ -170,14 +170,14 @@ type BLA[DT any] interface {
 	Outer(ctx context.Context, a, b, retVal Basic[DT], incr []DT) error
 }
 
-type Repeater[DT any] interface {
-	Repeat(ctx context.Context, a, retVal Basic[DT], axis, size int, repeats []int) error
-	PrepRepeat(a Basic[DT], axis int, repeats []int, opts ...FuncOpt) (ctx context.Context, retVal Basic[DT], newAxis, size int, newRepeats []int, err error)
+type Repeater[DT any, T Tensor[DT, T]] interface {
+	Repeat(ctx context.Context, a, retVal T, axis, size int, repeats []int) error
+	PrepRepeat(a T, axis int, repeats []int, opts ...FuncOpt) (ctx context.Context, retVal T, newAxis, size int, newRepeats []int, err error)
 }
 
-type FancyIndexer[DT any] interface {
-	SelectByIndices(ctx context.Context, a Basic[DT], indices Basic[int], axis int, retVal Basic[DT]) (err error)
-	SelectByIndicesB(ctx context.Context, input, outGrade Basic[DT], indices Basic[int], axis int, retVal Basic[DT]) (err error)
+type FancyIndexer[DT any, T Tensor[DT, T]] interface {
+	SelectByIndices(ctx context.Context, a T, indices Basic[int], axis int, retVal T) (err error)
+	SelectByIndicesB(ctx context.Context, input, outGrad T, indices Basic[int], axis int, retVal T) (err error)
 }
 
 type Normer[DT any] interface {
@@ -186,7 +186,7 @@ type Normer[DT any] interface {
 }
 
 type Concater[DT any, T Basic[DT]] interface {
-	Concat(ctx context.Context, a T, axis int, others ...T) (T, error)
+	Concat(ctx context.Context, a T, axis int, others ...Basic[DT]) (T, error)
 }
 
 /*

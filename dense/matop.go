@@ -10,6 +10,7 @@ import (
 )
 
 var _ tensor.Scanner[int] = stdeng.StdOrderedNumEngine[int, *Dense[int]]{}
+var _ tensor.Concater[float64, *Dense[float64]] = StdFloat64Engine[*Dense[float64]]{}
 
 // Apply applies the function `fn` to all the elements of the tensor. The function `fn` must be of type `func(DT) DT` or `func(DT) (DT, error)`.
 func (t *Dense[DT]) Apply(fn any, opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -171,22 +172,22 @@ func (t *Dense[DT]) Repeat(axis int, repeats ...int) (retVal *Dense[DT], err err
 	if err = check(checkFlags(t.e, t), checkRepeatValidAxis(axis, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
-	e, ok := t.e.(tensor.Repeater[DT])
+	e, ok := t.e.(tensor.Repeater[DT, *Dense[DT]])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
-	ctx, ret, newAxis, size, newRepeats, err := e.PrepRepeat(t, axis, repeats)
+	ctx, retVal, newAxis, size, newRepeats, err := e.PrepRepeat(t, axis, repeats)
 	if err != nil {
 		return nil, err
 	}
-	err = e.Repeat(ctx, t, ret, newAxis, size, newRepeats)
-	return ret.(*Dense[DT]), err
+	err = e.Repeat(ctx, t, retVal, newAxis, size, newRepeats)
+	return retVal, err
 }
 
 // Concat concatenates the receiver with the given tensors along the given axis.
 // The axis must be within the bounds of the shape of the receiver.
 // The shape of the tensors to be concatenated must be the same as the shape of the receiver, except for the axis of concatenation.
-func (t *Dense[DT]) Concat(axis int, tensors ...*Dense[DT]) (retVal *Dense[DT], err error) {
+func (t *Dense[DT]) Concat(axis int, tensors ...tensor.Basic[DT]) (retVal *Dense[DT], err error) {
 	if err = check(checkFlags(t.e, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}

@@ -132,7 +132,7 @@ func (e compAddableEng[DT, T]) AddBroadcastable(ctx context.Context, a, b, retVa
 	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, addOp[DT]())
 }
 
-func (e compAddableEng[DT, T]) Trace(ctx context.Context, t T) (retVal DT, err error) {
+func (e compAddableEng[DT, T]) Trace(ctx context.Context, t tensor.Basic[DT]) (retVal DT, err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return retVal, err
 	}

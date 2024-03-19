@@ -342,7 +342,7 @@ func (e StdEng[DT, T]) Map(ctx context.Context, fn any, a tensor.Basic[DT], retV
 }
 
 // DotIter is APL's `.`
-func (e StdEng[DT, T]) DotIter(ctx context.Context, reduceWithFn, elwiseFn func(DT, DT) DT, a, b, retVal T) (err error) {
+func (e StdEng[DT, T]) DotIter(ctx context.Context, reduceWithFn, elwiseFn func(DT, DT) DT, a, b, retVal tensor.Basic[DT]) (err error) {
 	/*
 	   pseudo algorithm:
 
@@ -364,7 +364,7 @@ func (e StdEng[DT, T]) DotIter(ctx context.Context, reduceWithFn, elwiseFn func(
 	return execution.GeDOR(reduceWithFn, elwiseFn, tA, tB, m, n, k, a.Data(), lda, b.Data(), ldb, retVal.Data(), ldc)
 }
 
-func (e StdEng[DT, T]) Concat(ctx context.Context, a tensor.Basic[DT], axis int, others ...tensor.Basic[DT]) (retVal tensor.Basic[DT], err error) {
+func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...tensor.Basic[DT]) (retVal T, err error) {
 	ss := make([]shapes.Shapelike, len(others))
 	for i, o := range others {
 		ss[i] = o.Shape()
