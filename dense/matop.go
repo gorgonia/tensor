@@ -5,8 +5,11 @@ import (
 
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
+	stdeng "gorgonia.org/tensor/engines"
 	"gorgonia.org/tensor/internal/errors"
 )
+
+var _ tensor.Scanner[int] = stdeng.StdOrderedNumEngine[int, *Dense[int]]{}
 
 // Apply applies the function `fn` to all the elements of the tensor. The function `fn` must be of type `func(DT) DT` or `func(DT) (DT, error)`.
 func (t *Dense[DT]) Apply(fn any, opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -188,7 +191,7 @@ func (t *Dense[DT]) Concat(axis int, tensors ...*Dense[DT]) (retVal *Dense[DT], 
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	e, ok := t.e.(tensor.Concater[DT])
+	e, ok := t.e.(tensor.Concater[DT, *Dense[DT]])
 	if !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}

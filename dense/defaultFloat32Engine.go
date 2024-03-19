@@ -15,7 +15,7 @@ import (
 	"gorgonia.org/vecf32"
 )
 
-type StdFloat32Engine[T tensor.Tensor[float32, T]] struct {
+type StdFloat32Engine[T tensor.Basic[float32]] struct {
 	stdeng.StdOrderedNumEngine[float32, T]
 	blas gonum.Implementation // the default BLAS is gonum's BLAS
 }
@@ -27,7 +27,7 @@ func (e StdFloat32Engine[T]) BasicEng() Engine {
 	return stdeng.StdOrderedNumEngine[float32, tensor.Basic[float32]]{}
 }
 
-func (e StdFloat32Engine[T]) SVD(ctx context.Context, a tensor.Basic[float32], uv, full bool) (s, u, v tensor.Basic[float32], err error) {
+func (e StdFloat32Engine[T]) SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error) {
 	if err := internal.HandleCtx(ctx); err != nil {
 		return s, u, v, err
 	}
@@ -122,8 +122,13 @@ func (e StdFloat32Engine[T]) Norm(ctx context.Context, t tensor.Basic[float32], 
 			axes[i] = i
 		}
 	}
+	gd, ok := any(t).(Densor[float32])
+	if !ok {
+		return nil, errors.Errorf("Cannot get *Dense[float64] out of t")
+	}
+	d := gd.GetDense()
 
-	return norm[float32, T](t, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
+	return norm[float32, *Dense[float32]](d, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
 }
 
 func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float32]) (float32, error) {

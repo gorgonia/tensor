@@ -13,14 +13,14 @@ import (
 func genLtTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Ord[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Lt(b)
 		if err2, retEarly := qcErrCheck(t, "Lt - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Ord[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Lt(c)
 		if err, retEarly := qcErrCheck(t, "Lt - b∙c", b, c, weBC, err); retEarly {
@@ -48,14 +48,14 @@ func genLtTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any 
 func genLtTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Ord[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Lt(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "Lt - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Ord[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Lt(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "Lt - b∙c", b, c, weBC, err); retEarly {
@@ -101,14 +101,14 @@ func TestDense_Lt(t *testing.T) {
 func genLteTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Ord[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Lte(b)
 		if err2, retEarly := qcErrCheck(t, "Lte - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Ord[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Lte(c)
 		if err, retEarly := qcErrCheck(t, "Lte - b∙c", b, c, weBC, err); retEarly {
@@ -136,14 +136,14 @@ func genLteTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any
 func genLteTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Ord[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Lte(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "Lte - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Ord[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Ord[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Lte(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "Lte - b∙c", b, c, weBC, err); retEarly {
@@ -189,14 +189,14 @@ func TestDense_Lte(t *testing.T) {
 func genGtTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.FullOrd[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Gt(b)
 		if err2, retEarly := qcErrCheck(t, "Gt - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.FullOrd[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Gt(c)
 		if err, retEarly := qcErrCheck(t, "Gt - b∙c", b, c, weBC, err); retEarly {
@@ -224,14 +224,14 @@ func genGtTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any 
 func genGtTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.FullOrd[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Gt(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "Gt - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.FullOrd[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Gt(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "Gt - b∙c", b, c, weBC, err); retEarly {
@@ -277,14 +277,14 @@ func TestDense_Gt(t *testing.T) {
 func genGteTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.FullOrd[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Gte(b)
 		if err2, retEarly := qcErrCheck(t, "Gte - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.FullOrd[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Gte(c)
 		if err, retEarly := qcErrCheck(t, "Gte - b∙c", b, c, weBC, err); retEarly {
@@ -312,14 +312,14 @@ func genGteTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any
 func genGteTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.FullOrd[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.Gte(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "Gte - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.FullOrd[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.FullOrd[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.Gte(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "Gte - b∙c", b, c, weBC, err); retEarly {
@@ -365,14 +365,14 @@ func TestDense_Gte(t *testing.T) {
 func genElEqTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Comparer[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.ElEq(b)
 		if err2, retEarly := qcErrCheck(t, "ElEq - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Comparer[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.ElEq(c)
 		if err, retEarly := qcErrCheck(t, "ElEq - b∙c", b, c, weBC, err); retEarly {
@@ -400,14 +400,14 @@ func genElEqTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) an
 func genElEqTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Comparer[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.ElEq(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "ElEq - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Comparer[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.ElEq(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "ElEq - b∙c", b, c, weBC, err); retEarly {
@@ -453,14 +453,14 @@ func TestDense_ElEq(t *testing.T) {
 func genElNeTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Comparer[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.ElNe(b)
 		if err2, retEarly := qcErrCheck(t, "ElNe - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Comparer[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.ElNe(c)
 		if err, retEarly := qcErrCheck(t, "ElNe - b∙c", b, c, weBC, err); retEarly {
@@ -488,14 +488,14 @@ func genElNeTrans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) an
 func genElNeTransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.Comparer[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.ElNe(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "ElNe - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.Comparer[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.Comparer[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.ElNe(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "ElNe - b∙c", b, c, weBC, err); retEarly {

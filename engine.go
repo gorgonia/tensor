@@ -144,8 +144,8 @@ type Mapper[DT any] interface {
 	Map(ctx context.Context, fn any, a Basic[DT], retVal Basic[DT]) (err error)
 }
 
-type SVDer[DT any] interface {
-	SVD(ctx context.Context, a Basic[DT], uv, full bool) (s, u, v Basic[DT], err error)
+type SVDer[DT any, T Basic[DT]] interface {
+	SVD(ctx context.Context, a T, uv, full bool) (s, u, v T, err error)
 }
 
 type Tracer[DT any] interface {
@@ -185,8 +185,8 @@ type Normer[DT any] interface {
 	Norm2(ctx context.Context, t Basic[DT]) DT
 }
 
-type Concater[DT any] interface {
-	Concat(ctx context.Context, a Basic[DT], axis int, others ...Basic[DT]) (Basic[DT], error)
+type Concater[DT any, T Basic[DT]] interface {
+	Concat(ctx context.Context, a T, axis int, others ...T) (T, error)
 }
 
 /*

@@ -259,7 +259,7 @@ func (e StdEng[DT, T]) nonCommReduceAlong(ctx context.Context, fn tensor.Reducti
 	return nil
 }
 
-func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a tensor.Basic[DT], axis int, retVal T) (err error) {
+func (e StdEng[DT, T]) Scan(ctx context.Context, fn any, a tensor.Basic[DT], axis int, retVal tensor.Basic[DT]) (err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return err
 	}
