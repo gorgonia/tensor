@@ -11,7 +11,6 @@ import (
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
-
 		return nil, err
 	}
 	ctx := fo.Ctx
@@ -25,12 +24,9 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-
 		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
 	default:
-
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
-
 			return retVal, err
 		}
 		if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
@@ -86,7 +82,6 @@ func (t *Dense[DT]) Sub(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -136,7 +131,6 @@ func (t *Dense[DT]) Mul(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -186,7 +180,6 @@ func (t *Dense[DT]) Div(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
