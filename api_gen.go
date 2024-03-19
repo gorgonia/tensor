@@ -13,7 +13,7 @@ func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	adder, ok := e.(Adder[DT, Basic[DT]])
 	if !ok {
@@ -26,8 +26,10 @@ func Add[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = adder.Add(ctx, t, u, retVal, toIncr)
-
+		if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -41,7 +43,7 @@ func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	basicarither, ok := e.(BasicArither[DT, Basic[DT]])
 	if !ok {
@@ -54,8 +56,10 @@ func Sub[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = basicarither.Sub(ctx, t, u, retVal, toIncr)
-
+		if err = basicarither.Sub(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -69,7 +73,7 @@ func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	basicarither, ok := e.(BasicArither[DT, Basic[DT]])
 	if !ok {
@@ -82,8 +86,10 @@ func Mul[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = basicarither.Mul(ctx, t, u, retVal, toIncr)
-
+		if err = basicarither.Mul(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -97,7 +103,7 @@ func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	basicarither, ok := e.(BasicArither[DT, Basic[DT]])
 	if !ok {
@@ -110,8 +116,10 @@ func Div[DT Num](t, u Basic[DT], opts ...FuncOpt) (Basic[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = basicarither.Div(ctx, t, u, retVal, toIncr)
-
+		if err = basicarither.Div(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -125,7 +133,7 @@ func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	ord, ok := e.(Ord[DT, Basic[DT]])
 	if !ok {
@@ -141,8 +149,10 @@ func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = ord.Lt(ctx, t, u, retVal, asSame)
-
+		if err = ord.Lt(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -156,7 +166,7 @@ func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	ord, ok := e.(Ord[DT, Basic[DT]])
 	if !ok {
@@ -172,8 +182,10 @@ func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = ord.Lte(ctx, t, u, retVal, asSame)
-
+		if err = ord.Lte(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -187,7 +199,7 @@ func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	fullord, ok := e.(FullOrd[DT, Basic[DT]])
 	if !ok {
@@ -203,8 +215,10 @@ func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = fullord.Gt(ctx, t, u, retVal, asSame)
-
+		if err = fullord.Gt(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -218,7 +232,7 @@ func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	fullord, ok := e.(FullOrd[DT, Basic[DT]])
 	if !ok {
@@ -234,8 +248,10 @@ func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = fullord.Gte(ctx, t, u, retVal, asSame)
-
+		if err = fullord.Gte(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -249,7 +265,7 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	comparer, ok := e.(Comparer[DT, Basic[DT]])
 	if !ok {
@@ -265,8 +281,10 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = comparer.ElEq(ctx, t, u, retVal, asSame)
-
+		if err = comparer.ElEq(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -280,7 +298,7 @@ func ElNe[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	comparer, ok := e.(Comparer[DT, Basic[DT]])
 	if !ok {
@@ -296,8 +314,10 @@ func ElNe[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return nil, err
 		}
-		err = comparer.ElNe(ctx, t, u, retVal, asSame)
-
+		if err = comparer.ElNe(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
