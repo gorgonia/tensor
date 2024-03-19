@@ -5,6 +5,7 @@ import (
 
 	"golang.org/x/exp/constraints"
 	"gorgonia.org/tensor"
+	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/scalar"
 )
@@ -155,3 +156,16 @@ func mustReduce[DT any](fn func(a, b DT) (DT, error)) func(DT, DT) DT {
 }
 
 func isSameSlice[DT any](a, b []DT) bool { return &a[0] == &b[0] }
+
+func postOpBroadcastReshape(behav internal.BroadcastBehaviour, t, u, retVal DescWithStorage) (err error) {
+	broadcastDir := behav.BroadcastShape()
+	switch broadcastDir {
+	case internal.BroadcastShapeLeft:
+		err = retVal.Reshape(u.Shape()...)
+	case internal.BroadcastShapeRight:
+		err = retVal.Reshape(t.Shape()...)
+	case internal.BroadcastShapeLeft | internal.BroadcastShapeRight:
+		err = errors.Errorf(errors.NYIPR, "reshaping for bidirectional broadcasting", "postOpBroadcast")
+	}
+	return
+}

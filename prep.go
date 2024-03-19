@@ -3,6 +3,7 @@ package tensor
 import (
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 )
 
@@ -24,6 +25,57 @@ func defaultCmpFuncOpt(opts []FuncOpt) []FuncOpt {
 	copy(opts[1:], opts[0:])
 	opts[0] = As(dtype.Bool) // default
 	return opts
+}
+
+func computeBroadcastBehaviour(aShp, bShp shapes.Shape, in internal.BroadcastBehaviour) (retVal internal.BroadcastBehaviour) {
+	retVal = in
+	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
+	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
+	// it should be manually specified.
+	switch {
+	case aShp.Eq(bShp):
+		retVal = internal.NoBroadcast
+	case aShp.IsScalarEquiv() && bShp.IsScalarEquiv():
+		// no broadcast
+		retVal = internal.NoBroadcast
+	case aShp.IsScalarEquiv():
+		// broadcast left
+		retVal |= internal.BroadcastShapeLeft | internal.BroadcastData
+	case bShp.IsScalarEquiv():
+		// broadcast right
+		retVal |= internal.BroadcastShapeRight | internal.BroadcastData
+	case aShp.TotalSize() == bShp.TotalSize() && !aShp.Eq(bShp):
+		// then this is a broadcast
+		// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
+		// no broadcasting of data needed
+		retVal = internal.NoBroadcast
+		switch {
+		case aShp.Dims() < bShp.Dims():
+			// e.g. (3) and (3,1)
+			retVal |= internal.BroadcastShapeLeft
+		case aShp.Dims() > bShp.Dims():
+			// e.g. (3,1) and (3)
+			retVal |= internal.BroadcastShapeRight
+		default:
+
+			// e.g. (3,1) and (3,1)
+			for i, da := range aShp {
+				db := bShp[i]
+				if da != db {
+					if da == 1 {
+						retVal |= internal.BroadcastShapeLeft
+					}
+					if db == 1 {
+						retVal |= internal.BroadcastShapeRight
+					}
+				}
+			}
+		}
+
+	default:
+		// do nothing: return NoBroadcast
+	}
+	return
 }
 
 // PrepBinOpCis is a function that preps two basic tensors for a elementwise binary operation that returns the a tensor of the same datatype as its inputs.
@@ -49,15 +101,9 @@ func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, n
 	newAPA = a.Info()
 	newAPB = b.Info()
 
-	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
-	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
-	// it should be manually specified.
-	fo.Broadcast = fo.Broadcast || newAPA.shape.IsScalarEquiv() || newAPB.shape.IsScalarEquiv()
+	fo.Broadcast = computeBroadcastBehaviour(aShp, bShp, fo.Broadcast)
 
-	// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
-	if !fo.Broadcast || aShp.TotalSize() == bShp.TotalSize() {
-		// no broadcasting necessary
-		fo.Broadcast = false
+	if !fo.Broadcast.BroadcastData() {
 		return
 	}
 
@@ -88,15 +134,8 @@ func PrepBasicBinOpCis[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAP
 	newAPA = a.Info()
 	newAPB = b.Info()
 
-	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
-	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
-	// it should be manually specified.
-	fo.Broadcast = fo.Broadcast || newAPA.shape.IsScalarEquiv() || newAPB.shape.IsScalarEquiv()
-
-	// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
-	if !fo.Broadcast || aShp.TotalSize() == bShp.TotalSize() {
-		// no broadcasting necessary
-		fo.Broadcast = false
+	fo.Broadcast = computeBroadcastBehaviour(aShp, bShp, fo.Broadcast)
+	if !fo.Broadcast.BroadcastData() {
 		return
 	}
 
@@ -131,15 +170,8 @@ func PrepBinOpTrans[DT any](a, b Basic[DT], opts ...FuncOpt) (e Engine, newAPA, 
 	newAPA = a.Info()
 	newAPB = b.Info()
 
-	// if either a or b are scalars, then `fo.Broadcast` should be set to true by default.
-	// This is because scalars are a special case. Otherwise if one wants to use broadcasting
-	// it should be manually specified.
-	fo.Broadcast = fo.Broadcast || newAPA.shape.IsScalarEquiv() || newAPB.shape.IsScalarEquiv()
-
-	// fast path. Here, we also check if the size is the same. If it is (e.g. (3,1) and (1,3) then there's no need to broadcast, even if fo.Broadcast is set.
-	if !fo.Broadcast || aShp.TotalSize() == bShp.TotalSize() {
-		// no broadcasting necessary
-		fo.Broadcast = false
+	fo.Broadcast = computeBroadcastBehaviour(aShp, bShp, fo.Broadcast)
+	if !fo.Broadcast.BroadcastData() {
 		return
 	}
 
