@@ -153,7 +153,6 @@ func Lt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -187,7 +186,6 @@ func Lte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -221,7 +219,6 @@ func Gt[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -255,7 +252,6 @@ func Gte[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -289,7 +285,6 @@ func ElEq[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }
@@ -323,7 +318,6 @@ func ElNe[DT Num](t, u Basic[DT], opts ...FuncOpt) (DescWithStorage, error) {
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
-
 	}
 	return retVal, err
 }

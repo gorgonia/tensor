@@ -162,7 +162,7 @@ func genAddIdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 				t.Errorf("Add failed: %v", err)
 				return false
 			}
-			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+			if ok := assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -213,7 +213,7 @@ func genAddIdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 				return false
 			}
 			if ok := assert.Same(incr, ret) &&
-				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -254,7 +254,7 @@ func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if err, retEarly := qcErrCheck(t, "Add (Broadcast)", a, b, we, err); retEarly {
 			return err == nil
 		}
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
@@ -293,7 +293,7 @@ func genAddIdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *asser
 			return err == nil
 		}
 		return assert.Same(incr, ret) &&
-			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
@@ -666,7 +666,7 @@ func genSubInvIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertio
 				return false
 			}
 			ret, err = ret.Add(b, tensor.UseUnsafe)
-			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+			if ok := assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -749,7 +749,7 @@ func genSubInvIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Asse
 			}
 			ret, err = ret.Add(b, tensor.UseUnsafe)
 			if ok := assert.Same(incr, ret) &&
-				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -791,7 +791,7 @@ func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 			return err == nil
 		}
 		ret, err = ret.Add(b, tensor.UseUnsafe, tensor.AutoBroadcast)
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
 
 	}
@@ -832,7 +832,7 @@ func genSubInvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert
 		}
 		ret, err = ret.Add(b, tensor.UseUnsafe, tensor.AutoBroadcast)
 		return assert.Same(incr, ret) &&
-			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
 
 	}
@@ -1245,7 +1245,7 @@ func genMulIdenIter[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 				t.Errorf("Mul failed: %v", err)
 				return false
 			}
-			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+			if ok := assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -1296,7 +1296,7 @@ func genMulIdenIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 				return false
 			}
 			if ok := assert.Same(incr, ret) &&
-				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -1337,7 +1337,7 @@ func genMulIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if err, retEarly := qcErrCheck(t, "Mul (Broadcast)", a, b, we, err); retEarly {
 			return err == nil
 		}
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
@@ -1376,7 +1376,7 @@ func genMulIdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *asser
 			return err == nil
 		}
 		return assert.Same(incr, ret) &&
-			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data())
 	}
 }
@@ -1749,7 +1749,7 @@ func genDivInvIter[DT internal.OrderedNum](t *testing.T, assert *assert.Assertio
 				return false
 			}
 			ret, err = ret.Mul(b, tensor.UseUnsafe)
-			if ok := assert.True(correct.Shape().Eq(ret.Shape())) &&
+			if ok := assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -1832,7 +1832,7 @@ func genDivInvIncrIter[DT internal.OrderedNum](t *testing.T, assert *assert.Asse
 			}
 			ret, err = ret.Mul(b, tensor.UseUnsafe)
 			if ok := assert.Same(incr, ret) &&
-				assert.True(correct.Shape().Eq(ret.Shape())) &&
+				assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 				assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close enough to correct. Expected %v. Got %v", correct.Data(), ret.Data()); !ok {
 				return false
 			}
@@ -1874,7 +1874,7 @@ func genDivInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 			return err == nil
 		}
 		ret, err = ret.Mul(b, tensor.UseUnsafe, tensor.AutoBroadcast)
-		return assert.True(correct.Shape().Eq(ret.Shape())) &&
+		return assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
 
 	}
@@ -1915,7 +1915,7 @@ func genDivInvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert
 		}
 		ret, err = ret.Mul(b, tensor.UseUnsafe, tensor.AutoBroadcast)
 		return assert.Same(incr, ret) &&
-			assert.True(correct.Shape().Eq(ret.Shape())) &&
+			assert.True(correct.Shape().Eq(ret.Shape()), "Expected %v. Got %v", correct.Shape(), ret.Shape()) &&
 			assert.True(allClose(correct.Data(), ret.Data()), "Expected ret to be close to correct.\nCorrect: %v\nGot: %v", correct.Data(), ret.Data())
 
 	}
