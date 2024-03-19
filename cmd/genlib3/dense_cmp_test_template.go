@@ -5,14 +5,14 @@ import "text/template"
 const transTestsRaw = `func gen{{.Name}}Trans[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.{{.Interface}}[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.{{.Name}}(b)
 		if err2, retEarly := qcErrCheck(t, "{{.Name}} - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.{{.Interface}}[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.{{.Name}}(c)
 		if err, retEarly := qcErrCheck(t, "{{.Name}} - b∙c", b, c, weBC, err); retEarly {
@@ -40,14 +40,14 @@ const transTestsRaw = `func gen{{.Name}}Trans[DT internal.OrderedNum](t *testing
 func gen{{.Name}}TransCisDT[DT internal.OrderedNum](t *testing.T, _ *assert.Assertions) any {
 	return func(a, b, c *Dense[DT], sameShape bool) bool {
 
-		_, ok1 := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok1 := a.Engine().(tensor.{{.Interface}}[DT])
 		weAB := !a.IsNativelyAccessible() || !b.IsNativelyAccessible() || !ok1 || !a.Shape().Eq(b.Shape())
 		ab, err := a.{{.Name}}(b, As(a.Dtype()))
 		if err2, retEarly := qcErrCheck(t, "{{.Name}} - a∙b", a, b, weAB, err); retEarly {
 			return err2 == nil
 		}
 
-		_, ok2 := b.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok2 := b.Engine().(tensor.{{.Interface}}[DT])
 		weBC := !b.IsNativelyAccessible() || !c.IsNativelyAccessible() || !ok2 || !b.Shape().Eq(c.Shape())
 		bc, err := b.{{.Name}}(c, As(b.Dtype()))
 		if err, retEarly := qcErrCheck(t, "{{.Name}} - b∙c", b, c, weBC, err); retEarly {

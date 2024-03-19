@@ -23,7 +23,7 @@ func genAddIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions)
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.Add(b)
@@ -49,7 +49,7 @@ func genAddIdenUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.Add(b, tensor.UseUnsafe)
@@ -80,7 +80,7 @@ func genAddIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.Add(b, tensor.WithReuse(reuse))
@@ -109,7 +109,7 @@ func genAddIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.Add(b, tensor.WithIncr(incr))
@@ -247,7 +247,7 @@ func genAddIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.Add(b, tensor.AutoBroadcast)
@@ -285,7 +285,7 @@ func genAddIdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *asser
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.Add(b, WithIncr(incr), tensor.AutoBroadcast)
@@ -307,7 +307,7 @@ func genAddScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.AddScalar(s, scalarOnLeft)
@@ -330,7 +330,7 @@ func genAddScalarIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		}
 		incr := a.Clone()
 		incr.Zero()
-		_, ok := a.Engine().(tensor.Adder[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.Adder[DT])
 		we = we || !ok
 
 		ret, err := a.AddScalar(s, scalarOnLeft, WithIncr(incr))
@@ -549,7 +549,7 @@ func genSubInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) 
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Sub(b)
@@ -577,7 +577,7 @@ func genSubInvUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Sub(b, tensor.UseUnsafe)
@@ -611,7 +611,7 @@ func genSubInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Sub(b, tensor.WithReuse(reuse))
@@ -691,7 +691,7 @@ func genSubInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertio
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Sub(b, tensor.WithIncr(incr))
@@ -783,7 +783,7 @@ func genSubInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Sub(b, tensor.AutoBroadcast)
@@ -823,7 +823,7 @@ func genSubInvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Sub(b, WithIncr(incr), tensor.AutoBroadcast)
@@ -847,7 +847,7 @@ func genSubScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.SubScalar(s, scalarOnLeft)
@@ -874,7 +874,7 @@ func genSubScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if !a.IsNativelyAccessible() {
 			return true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		incr := a.Clone()
@@ -1106,7 +1106,7 @@ func genMulIden[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions)
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Mul(b)
@@ -1132,7 +1132,7 @@ func genMulIdenUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Mul(b, tensor.UseUnsafe)
@@ -1163,7 +1163,7 @@ func genMulIdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Mul(b, tensor.WithReuse(reuse))
@@ -1192,7 +1192,7 @@ func genMulIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Mul(b, tensor.WithIncr(incr))
@@ -1330,7 +1330,7 @@ func genMulIdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.As
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Mul(b, tensor.AutoBroadcast)
@@ -1368,7 +1368,7 @@ func genMulIdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *asser
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Mul(b, WithIncr(incr), tensor.AutoBroadcast)
@@ -1390,7 +1390,7 @@ func genMulScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert.Asser
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.MulScalar(s, scalarOnLeft)
@@ -1413,7 +1413,7 @@ func genMulScalarIdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		}
 		incr := a.Clone()
 		incr.Zero()
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.MulScalar(s, scalarOnLeft, WithIncr(incr))
@@ -1632,7 +1632,7 @@ func genDivInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assertions) 
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Div(b)
@@ -1660,7 +1660,7 @@ func genDivInvUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Div(b, tensor.UseUnsafe)
@@ -1694,7 +1694,7 @@ func genDivInvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.Asserti
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Div(b, tensor.WithReuse(reuse))
@@ -1774,7 +1774,7 @@ func genDivInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.Assertio
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Div(b, tensor.WithIncr(incr))
@@ -1866,7 +1866,7 @@ func genDivInvBroadcast[DT internal.OrderedNum](t *testing.T, assert *assert.Ass
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Div(b, tensor.AutoBroadcast)
@@ -1906,7 +1906,7 @@ func genDivInvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *assert
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.Div(b, WithIncr(incr), tensor.AutoBroadcast)
@@ -1930,7 +1930,7 @@ func genDivScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.Assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		ret, err := a.DivScalar(s, scalarOnLeft)
@@ -1957,7 +1957,7 @@ func genDivScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if !a.IsNativelyAccessible() {
 			return true
 		}
-		_, ok := a.Engine().(tensor.BasicArither[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.BasicArither[DT])
 		we = we || !ok
 
 		incr := a.Clone()

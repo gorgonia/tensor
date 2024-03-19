@@ -15,7 +15,7 @@ const idenTestsRaw = `func gen{{.Name}}Iden[DT internal.OrderedNum](t *testing.T
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b)
@@ -41,7 +41,7 @@ func gen{{.Name}}IdenUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.UseUnsafe)
@@ -72,7 +72,7 @@ func gen{{.Name}}IdenReuse[DT internal.OrderedNum](t *testing.T, assert *assert.
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.WithReuse(reuse))
@@ -101,7 +101,7 @@ func gen{{.Name}}IdenIncr[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.WithIncr(incr))
@@ -239,7 +239,7 @@ func gen{{.Name}}IdenBroadcast[DT internal.OrderedNum](t *testing.T, assert *ass
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.AutoBroadcast)
@@ -277,7 +277,7 @@ func gen{{.Name}}IdenBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert 
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, WithIncr(incr), tensor.AutoBroadcast)
@@ -299,7 +299,7 @@ func gen{{.Name}}ScalarIden[DT internal.OrderedNum](t *testing.T, assert *assert
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft)
@@ -322,7 +322,7 @@ func gen{{.Name}}ScalarIdenIncr[DT internal.OrderedNum](t *testing.T, assert *as
 		}
 		incr := a.Clone()
 		incr.Zero()
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft, WithIncr(incr))
@@ -400,7 +400,7 @@ const invTestsRaw = `func gen{{.Name}}Inv[DT internal.OrderedNum](t *testing.T, 
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b)
@@ -428,7 +428,7 @@ func gen{{.Name}}InvUnsafe[DT internal.OrderedNum](t *testing.T, assert *assert.
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.UseUnsafe)
@@ -462,7 +462,7 @@ func gen{{.Name}}InvReuse[DT internal.OrderedNum](t *testing.T, assert *assert.A
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.WithReuse(reuse))
@@ -543,7 +543,7 @@ func gen{{.Name}}InvIncr[DT internal.OrderedNum](t *testing.T, assert *assert.As
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.WithIncr(incr))
@@ -635,7 +635,7 @@ func gen{{.Name}}InvBroadcast[DT internal.OrderedNum](t *testing.T, assert *asse
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, tensor.AutoBroadcast)
@@ -676,7 +676,7 @@ func gen{{.Name}}InvBroadcastIncr[DT internal.OrderedNum](t *testing.T, assert *
 			we = true
 		}
 
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}(b, WithIncr(incr), tensor.AutoBroadcast)
@@ -700,7 +700,7 @@ func gen{{.Name}}ScalarInv[DT internal.OrderedNum](t *testing.T, assert *assert.
 		if !a.IsNativelyAccessible() {
 			we = true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		ret, err := a.{{.Name}}Scalar(s, scalarOnLeft)
@@ -727,7 +727,7 @@ func gen{{.Name}}ScalarInvIncr[DT internal.OrderedNum](t *testing.T, assert *ass
 		if !a.IsNativelyAccessible() {
 			return true
 		}
-		_, ok := a.Engine().(tensor.{{.Interface}}[DT, *Dense[DT]])
+		_, ok := a.Engine().(tensor.{{.Interface}}[DT])
 		we = we || !ok
 
 		incr := a.Clone()

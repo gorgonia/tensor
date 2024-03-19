@@ -3,6 +3,8 @@
 package dense
 
 import (
+	"log"
+
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal/errors"
 )
@@ -11,7 +13,6 @@ import (
 func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	e, newAPT, newAPU, retVal, fo, err := tensor.PrepBinOpCis[DT, *Dense[DT]](t, u, opts...)
 	if err != nil {
-
 		return nil, err
 	}
 	ctx := fo.Ctx
@@ -25,15 +26,15 @@ func (t *Dense[DT]) Add(u *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 
 	switch {
 	case toBroadcast:
-
 		err = adder.AddBroadcastable(ctx, t, u, retVal, newAPT, newAPU, toIncr)
+
 	default:
-
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
-
+			log.Printf("err?2")
 			return retVal, err
 		}
 		if err = adder.Add(ctx, t, u, retVal, toIncr); err != nil {
+			log.Printf("err?3")
 			return nil, err
 		}
 		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)

@@ -10,7 +10,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt)(*Dense[DT], error) 
 	}
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	{{.Name|lower}}er, ok := e.(tensor.{{.Interface}}[DT])
 	if !ok {
@@ -58,7 +58,7 @@ func (t *Dense[DT]) {{.Name}}(u *Dense[DT], opts ...FuncOpt) (retVal DescWithSto
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.{{.Interface}}[DT]);
  	if !ok {

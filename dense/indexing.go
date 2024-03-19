@@ -64,9 +64,9 @@ func (t *Dense[DT]) Scatter(indices Densor[int]) (retVal *Dense[DT], err error) 
 	expShape[len(expShape)-1] = max + 1
 	retVal = New[DT](WithShape(expShape...), WithEngine(t.Engine()))
 
-	var sc tensor.Scatterer[DT, *Dense[DT]]
+	var sc tensor.Scatterer[DT]
 	var ok bool
-	if sc, ok = t.e.(tensor.Scatterer[DT, *Dense[DT]]); !ok {
+	if sc, ok = t.e.(tensor.Scatterer[DT]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, sc, errors.ThisFn())
 	}
 	err = sc.Scatter(context.Background(), t, indicesT, retVal)

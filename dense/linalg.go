@@ -7,7 +7,6 @@ import (
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
-	"gorgonia.org/tensor/internal/specialized"
 )
 
 func (t *Dense[DT]) Trace() (retVal DT, err error) {
@@ -26,12 +25,17 @@ func (t *Dense[DT]) SVD(uv, full bool) (s, u, v *Dense[DT], err error) {
 		return s, u, v, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	svder, ok := t.e.Workhorse().(tensor.SVDer[DT])
+	svder, ok := t.e.Workhorse().(tensor.SVDer[DT, *Dense[DT]])
 	if !ok {
 		return nil, nil, nil, errors.Errorf(errors.EngineSupport, t.e, svder, errors.ThisFn())
 	}
-
 	return svder.SVD(context.Background(), t, uv, full)
+
+	// sB, uB, vB, err := svder.SVD(context.Background(), t, uv, full)
+	// if err != nil {
+	// 	return nil, nil, nil, err
+	// }
+	// return sB.(*Dense[DT]), uB.(*Dense[DT]), vB.(*Dense[DT]), nil
 }
 
 func (t *Dense[DT]) Inner(u *Dense[DT]) (retVal DT, err error) {
@@ -51,9 +55,9 @@ func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT],
 	if err = check(checkFlags(t.e, t), checkInnerProdDims(t, u), checkIsVector(u)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
-	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
+	var prepper tensor.SpecializedFuncOptHandler[DT, *Dense[DT]]
 	var ok bool
-	if prepper, ok = t.e.Workhorse().(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+	if prepper, ok = t.e.Workhorse().(tensor.SpecializedFuncOptHandler[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
 	expShape := elimInnermostOutermost(t.Shape(), u.Shape())
@@ -110,9 +114,9 @@ func (t *Dense[DT]) Outer(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err
 	if err = check(checkFlags(t.e, t)); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
-	var prepper specialized.FuncOptHandler[DT, *Dense[DT]]
+	var prepper tensor.SpecializedFuncOptHandler[DT, *Dense[DT]]
 	var ok bool
-	if prepper, ok = t.e.Workhorse().(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
+	if prepper, ok = t.e.Workhorse().(tensor.SpecializedFuncOptHandler[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
 	var fo Option

@@ -11,7 +11,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
 
 	ctx := fo.Ctx
 	toIncr := fo.Incr
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	{{.Interface | lower}}, ok := e.({{.Interface}}[DT]);
 	if !ok {
@@ -24,8 +24,10 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(Basic[DT], error) {
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return nil, err
 		}
-		err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, toIncr)
-
+		if err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, toIncr); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, err
 }
@@ -40,7 +42,7 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) 
 
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 
 	{{.Interface | lower}}, ok := e.({{.Interface}}[DT]);
@@ -57,7 +59,10 @@ func {{.Name}}[DT Num](t, u Basic[DT], opts ...FuncOpt)(DescWithStorage, error) 
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil{
 			return nil, err
 		}
-		err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, asSame)
+		if err = {{.Interface|lower}}.{{.Name}}(ctx, t, u, retVal, asSame); err !=nil{
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 
 	}
 	return retVal, err
