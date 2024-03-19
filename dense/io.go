@@ -12,6 +12,7 @@ import (
 
 	"gorgonia.org/dtype"
 	"gorgonia.org/shapes"
+	"gorgonia.org/tensor/internal/array"
 	"gorgonia.org/tensor/internal/errors"
 	"gorgonia.org/tensor/internal/serialization/pb"
 
@@ -29,7 +30,7 @@ func (t *Dense[DT]) GobEncode() (p []byte, err error) {
 		return
 	}
 
-	if err = encoder.Encode(t.Array); err != nil {
+	if err = encoder.Encode(t.Data()); err != nil {
 		return
 	}
 
@@ -45,9 +46,11 @@ func (t *Dense[DT]) GobDecode(p []byte) (err error) {
 		return
 	}
 
-	if err = decoder.Decode(&t.Array); err != nil {
+	var data []DT
+	if err = decoder.Decode(&data); err != nil {
 		return
 	}
+	t.Array = array.Make(data)
 
 	return nil
 
