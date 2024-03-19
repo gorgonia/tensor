@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"gorgonia.org/dtype"
+	"gorgonia.org/tensor/internal"
 )
 
 // FuncOpt is an option that modifies the operation of a given function.
@@ -14,7 +15,7 @@ type Option struct {
 	Reuse     any
 	Incr      bool
 	Unsafe    bool
-	Broadcast bool
+	Broadcast internal.BroadcastBehaviour
 	AsType    dtype.Dtype
 	Along     []int // only used for axial operations
 
@@ -39,4 +40,6 @@ func WithIncr(incr any) FuncOpt               { return func(o *Option) { o.Reuse
 func WithContext(ctx context.Context) FuncOpt { return func(o *Option) { o.Ctx = ctx } }
 func Along(axes ...int) FuncOpt               { return func(o *Option) { o.Along = axes } }
 func As(dt dtype.Dtype) FuncOpt               { return func(o *Option) { o.AsType = dt } }
-func AutoBroadcast(o *Option)                 { o.Broadcast = true }
+func AutoBroadcast(o *Option) {
+	o.Broadcast = internal.BroadcastData
+}
