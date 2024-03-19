@@ -33,8 +33,8 @@ func (t *Dense[DT]) ByIndices(indices tensor.Basic[int], axis int, opts ...FuncO
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
 	}
 
-	var e tensor.FancyIndexer[DT]
-	if e, ok = t.e.(tensor.FancyIndexer[DT]); !ok {
+	var e tensor.FancyIndexer[DT, *Dense[DT]]
+	if e, ok = t.e.(tensor.FancyIndexer[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
 

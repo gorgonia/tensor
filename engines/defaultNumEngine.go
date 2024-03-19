@@ -76,7 +76,7 @@ func (e StdNumEngine[DT, T]) DivBroadcastable(ctx context.Context, a, b, retVal 
 	return e.StdBinOpBC(ctx, a, b, retVal, expAPA, expAPB, toIncr, divOp[DT]())
 }
 
-func (e StdNumEngine[DT, T]) Inner(ctx context.Context, a, b T) (retVal DT, err error) {
+func (e StdNumEngine[DT, T]) Inner(ctx context.Context, a, b tensor.Basic[DT]) (retVal DT, err error) {
 	if err = internal.HandleCtx(ctx); err != nil {
 		return retVal, err
 	}
