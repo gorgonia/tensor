@@ -36,8 +36,17 @@ func computeBroadcastBehaviour(aShp, bShp shapes.Shape, in internal.BroadcastBeh
 	case aShp.Eq(bShp):
 		retVal = internal.NoBroadcast
 	case aShp.IsScalarEquiv() && bShp.IsScalarEquiv():
-		// no broadcast
 		retVal = internal.NoBroadcast
+		switch {
+		case aShp.Dims() == bShp.Dims():
+			// no broadcast
+
+		case aShp.Dims() < bShp.Dims():
+			retVal |= internal.BroadcastShapeLeft
+		case aShp.Dims() > bShp.Dims():
+			retVal |= internal.BroadcastShapeRight
+		}
+
 	case aShp.IsScalarEquiv():
 		// broadcast left
 		retVal |= internal.BroadcastShapeLeft | internal.BroadcastData
@@ -102,7 +111,6 @@ func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, n
 	newAPB = b.Info()
 
 	fo.Broadcast = computeBroadcastBehaviour(aShp, bShp, fo.Broadcast)
-
 	if !fo.Broadcast.BroadcastData() {
 		return
 	}
