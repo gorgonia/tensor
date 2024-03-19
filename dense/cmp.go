@@ -32,8 +32,10 @@ func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.Lt(ctx, t, u, retVal, asSame)
-
+		if err = cmper.Lt(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }
@@ -63,8 +65,10 @@ func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.Lte(ctx, t, u, retVal, asSame)
-
+		if err = cmper.Lte(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }
@@ -94,8 +98,10 @@ func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.Gt(ctx, t, u, retVal, asSame)
-
+		if err = cmper.Gt(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }
@@ -125,8 +131,10 @@ func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.Gte(ctx, t, u, retVal, asSame)
-
+		if err = cmper.Gte(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }
@@ -156,8 +164,10 @@ func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.ElEq(ctx, t, u, retVal, asSame)
-
+		if err = cmper.ElEq(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }
@@ -187,8 +197,10 @@ func (t *Dense[DT]) ElNe(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 		if err := checkCompatibleShape(t.Shape(), u.Shape())(); err != nil {
 			return retVal, err
 		}
-		err = cmper.ElNe(ctx, t, u, retVal, asSame)
-
+		if err = cmper.ElNe(ctx, t, u, retVal, asSame); err != nil {
+			return nil, err
+		}
+		err = postOpBroadcastReshape(fo.Broadcast, t, u, retVal)
 	}
 	return retVal, nil
 }
