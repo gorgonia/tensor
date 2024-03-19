@@ -15,7 +15,7 @@ func (t *Dense[DT]) Lt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.Ord[DT, *Dense[DT]])
 	if !ok {
@@ -46,7 +46,7 @@ func (t *Dense[DT]) Lte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.Ord[DT, *Dense[DT]])
 	if !ok {
@@ -77,7 +77,7 @@ func (t *Dense[DT]) Gt(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, e
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.FullOrd[DT, *Dense[DT]])
 	if !ok {
@@ -108,7 +108,7 @@ func (t *Dense[DT]) Gte(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage, 
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.FullOrd[DT, *Dense[DT]])
 	if !ok {
@@ -139,7 +139,7 @@ func (t *Dense[DT]) ElEq(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.Comparer[DT, *Dense[DT]])
 	if !ok {
@@ -170,7 +170,7 @@ func (t *Dense[DT]) ElNe(u *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage,
 	}
 	asSame := fo.AsType == t.Dtype()
 	ctx := fo.Ctx
-	toBroadcast := fo.Broadcast
+	toBroadcast := fo.Broadcast.BroadcastData()
 
 	cmper, ok := e.(tensor.Comparer[DT, *Dense[DT]])
 	if !ok {
