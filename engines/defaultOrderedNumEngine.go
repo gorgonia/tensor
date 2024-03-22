@@ -17,10 +17,6 @@ type StdOrderedNumEngine[DT OrderedNum, T tensor.Basic[DT]] struct {
 	compComparableEng[DT, T]
 }
 
-func (e StdOrderedNumEngine[DT, T]) BasicEng() Engine {
-	return StdOrderedNumEngine[DT, tensor.Basic[DT]]{}
-}
-
 // Workhorse returns the engine that will actually do all the work (in this case, itself).
 func (e StdOrderedNumEngine[DT, T]) Workhorse() Engine { return e }
 

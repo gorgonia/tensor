@@ -14,9 +14,6 @@ type StdNumEngine[DT Num, T tensor.Basic[DT]] struct {
 	compComparableEng[DT, T]
 }
 
-// BasicEng turns an engine that has methods that take a specialized T into one that takes tensor.Basic[DT] as inputs.
-func (e StdNumEngine[DT, T]) BasicEng() Engine { return StdNumEngine[DT, tensor.Basic[DT]]{} }
-
 // Workhorse returns the engine that will actually do all the work (in this case, itself).
 func (e StdNumEngine[DT, T]) Workhorse() Engine { return e }
 

@@ -29,7 +29,7 @@ type Engine interface {
 	WorksWith(flag MemoryFlag, order DataOrder) bool // WorksWith returns true if the memory flag and  data order can be directly worked with
 
 	Workhorse() Engine
-	BasicEng() Engine
+	// BasicEng() Engine
 }
 
 type Iterator interface {
