@@ -19,7 +19,7 @@ func TestStdEng_Reduce(t *testing.T) {
 
 	a := dense.New[float64](WithShape(2, 3), WithBacking([]float64{1, 2, 3, 4, 5, 6}))
 
-	eng := a.Engine().(tensor.Reducer[float64, *dense.Dense[float64]])
+	eng := a.Engine().(tensor.Reducer[float64])
 
 	ctx := context.Background()
 
@@ -352,7 +352,7 @@ func TestPrepReduce(t *testing.T) {
 type concatTest[DT any] struct {
 	name   string
 	a      *dense.Dense[DT]
-	others []*dense.Dense[DT]
+	others []tensor.Basic[DT]
 	axis   int
 
 	correctShape shapes.Shape
@@ -363,11 +363,11 @@ func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 	return []concatTest[DT]{
 		{"vector-vector",
 			dense.New[DT](WithShape(2), WithBacking([]DT{1, 2})),
-			[]*dense.Dense[DT]{dense.New[DT](WithShape(2), WithBacking([]DT{3, 4}))},
+			[]tensor.Basic[DT]{dense.New[DT](WithShape(2), WithBacking([]DT{3, 4}))},
 			0, shapes.Shape{4}, []DT{1, 2, 3, 4}},
 		{"vector-vector (many)",
 			dense.New[DT](WithShape(2), WithBacking([]DT{1, 2})),
-			[]*dense.Dense[DT]{
+			[]tensor.Basic[DT]{
 				dense.New[DT](WithShape(2), WithBacking([]DT{3, 4})),
 				dense.New[DT](WithShape(2), WithBacking([]DT{5, 6})),
 			}, 0, shapes.Shape{6}, []DT{1, 2, 3, 4, 5, 6}},
@@ -375,7 +375,7 @@ func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 			dense.New[DT](WithShape(2, 2), WithBacking([]DT{
 				1, 2,
 				3, 4})),
-			[]*dense.Dense[DT]{dense.New[DT](WithShape(2, 2), WithBacking([]DT{
+			[]tensor.Basic[DT]{dense.New[DT](WithShape(2, 2), WithBacking([]DT{
 				5, 6,
 				7, 8}))},
 			0,
@@ -391,7 +391,7 @@ func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 			dense.New[DT](WithShape(2, 2), WithBacking([]DT{
 				1, 2,
 				3, 4})),
-			[]*dense.Dense[DT]{dense.New[DT](WithShape(2, 2), WithBacking([]DT{
+			[]tensor.Basic[DT]{dense.New[DT](WithShape(2, 2), WithBacking([]DT{
 				5, 6,
 				7, 8}))},
 			1,
@@ -408,7 +408,7 @@ func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 
 				5, 6,
 				7, 8})),
-			[]*dense.Dense[DT]{dense.New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+			[]tensor.Basic[DT]{dense.New[DT](WithShape(2, 2, 2), WithBacking([]DT{
 				9, 10,
 				11, 12,
 
@@ -436,7 +436,7 @@ func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 
 				5, 6,
 				7, 8})),
-			[]*dense.Dense[DT]{dense.New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+			[]tensor.Basic[DT]{dense.New[DT](WithShape(2, 2, 2), WithBacking([]DT{
 				9, 10,
 				11, 12,
 
@@ -462,7 +462,7 @@ func makeConcatTests[DT internal.Num]() []concatTest[DT] {
 
 				5, 6,
 				7, 8})),
-			[]*dense.Dense[DT]{dense.New[DT](WithShape(2, 2, 2), WithBacking([]DT{
+			[]tensor.Basic[DT]{dense.New[DT](WithShape(2, 2, 2), WithBacking([]DT{
 				9, 10,
 				11, 12,
 

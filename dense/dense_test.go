@@ -81,8 +81,6 @@ func (e ExampleNonStdEng[DT, T]) WorksWith(flag MemoryFlag, order DataOrder) boo
 	return flag&internal.ManuallyManaged > 0
 }
 
-func (e ExampleNonStdEng[DT, T]) BasicEng() Engine { return ExampleNonStdEng[DT, tensor.Basic[DT]]{} }
-
 func (e ExampleNonStdEng[DT, T]) MemoryFlag() MemoryFlag { return tensor.NativelyInaccessible }
 
 type consEffect func(assert *assert.Assertions, name string, retVal *Dense[int])

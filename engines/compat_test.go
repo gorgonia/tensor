@@ -28,7 +28,7 @@ func CompatAdd[DT any](a, b tensor.Basic[DT], opts ...tensor.FuncOpt) (retVal te
 	toIncr := fo.Incr
 	ctx := fo.Ctx
 
-	adder, ok := e.BasicEng().(tensor.Adder[DT, tensor.Basic[DT]])
+	adder, ok := e.(tensor.Adder[DT])
 	if !ok {
 		return nil, errors.Errorf("Expected engine to be an Adder")
 	}
