@@ -17,6 +17,10 @@ func (h *Header) TypedLen(t reflect.Type) int {
 	return len(h.Raw) / int(t.Size())
 }
 
+func (h *Header) TypedCap(t reflect.Type) int {
+	return cap(h.Raw) / int(t.Size())
+}
+
 func Copy(t reflect.Type, dst, src *Header) int {
 	copied := copy(dst.Raw, src.Raw)
 	return copied / int(t.Size())
