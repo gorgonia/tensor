@@ -3,7 +3,7 @@ package tensor
 import (
 	"bytes"
 	"encoding/gob"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -75,7 +75,7 @@ func TestSaveLoadNumpy(t *testing.T) {
 	}
 
 	importError := `ImportError: No module named numpy`
-	slurpErr, _ := ioutil.ReadAll(stderr)
+	slurpErr, _ := io.ReadAll(stderr)
 	if ok, _ := regexp.Match(importError, slurpErr); ok {
 		t.Skipf("Skipping numpy test. It would appear that you do not have Numpy installed.")
 	}

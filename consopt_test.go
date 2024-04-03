@@ -4,7 +4,6 @@ package tensor
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"syscall"
 	"testing"
@@ -39,7 +38,7 @@ func Test_FromMemory(t *testing.T) {
 		t.Logf("%v", err)
 	}
 
-	f, err := ioutil.TempFile("", "test")
+	f, err := os.CreateTemp("", "test")
 	if err != nil {
 		t.Fatal(err)
 	}

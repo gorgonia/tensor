@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -182,7 +181,7 @@ func cleanup(loc string) error {
 		return err
 	}
 	for _, m := range matches {
-		b, err := ioutil.ReadFile(m)
+		b, err := os.ReadFile(m)
 		if err != nil {
 			return err
 		}
