@@ -24,7 +24,7 @@ func SortIndexStable(in interface{}) (out []int) {
 	return sortIndex(in, sort.SliceStable)
 }
 
-func sortIndex(in interface{}, sortFunc func(x any, less func(i int, j int) bool)) (out []int) {
+func sortIndex(in interface{}, sortFunc func(x interface{}, less func(i int, j int) bool)) (out []int) {
 	switch list := in.(type) {
 	case []int:
 		out = make([]int, len(list))
