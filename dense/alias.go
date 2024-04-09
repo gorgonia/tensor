@@ -71,3 +71,5 @@ func Along(axes ...int) FuncOpt { return tensor.Along(axes...) }
 func As(dt dtype.Dtype) FuncOpt { return tensor.As(dt) }
 
 /* utils */
+
+var largestShape = internal.LargestShape
