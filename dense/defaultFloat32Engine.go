@@ -124,7 +124,7 @@ func (e StdFloat32Engine[T]) Norm(ctx context.Context, t tensor.Basic[float32], 
 	}
 	d := gd.GetDense()
 
-	return norm[float32, *Dense[float32]](d, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
+	return norm[float32](d, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
 }
 
 func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t tensor.Basic[float32]) (float32, error) {
