@@ -39,12 +39,16 @@ func (t *Dense[DT]) Inner(u *Dense[DT]) (retVal DT, err error) {
 		return retVal, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	var bla tensor.InnerProder[DT, *Dense[DT]]
-	var ok bool
-	if bla, ok = t.e.Workhorse().(tensor.InnerProder[DT, *Dense[DT]]); !ok {
+	switch e := t.e.Workhorse().(type) {
+	case tensor.InnerProder[DT, *Dense[DT]]:
+		return e.Inner(context.Background(), t, u)
+	case tensor.DotIterer[DT, *Dense[DT]]:
+		var bla tensor.InnerProder[DT, *Dense[DT]]
+		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
+	default:
+		var bla tensor.InnerProder[DT, *Dense[DT]]
 		return retVal, errors.Errorf(errors.EngineSupport, t.e, bla, errors.ThisFn())
 	}
-	return bla.Inner(context.Background(), t, u)
 }
 
 func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
@@ -56,7 +60,7 @@ func (t *Dense[DT]) MatVecMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT],
 	if prepper, ok = t.e.Workhorse().(specialized.FuncOptHandler[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, t.e, prepper, errors.ThisFn())
 	}
-	expShape := elimInnermostOutermost(t.Shape(), u.Shape())
+	expShape := internal.ElimInnermostOutermost(t.Shape(), u.Shape())
 	var fo Option
 	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(t, expShape, opts...); err != nil {
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())
@@ -84,7 +88,7 @@ func (t *Dense[DT]) MatMul(u *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], er
 		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
 	}
 
-	expShape := elimInnermostOutermost(t.Shape(), u.Shape())
+	expShape := internal.ElimInnermostOutermost(t.Shape(), u.Shape())
 	retVal, fo, err := handleFuncOpts[DT, *Dense[DT]](e, t, expShape, opts...)
 	if err != nil {
 		return nil, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn())

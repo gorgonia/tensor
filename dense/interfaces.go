@@ -4,7 +4,13 @@ import (
 	"gorgonia.org/tensor"
 )
 
-type DenseTensor[DT any, T tensor.Tensor[DT, T]] interface {
+type DenseTensor interface {
+	tensor.DescWithStorage
+
+	// internal methods of *Dense
+}
+
+type FullDenseTensor[DT any, T tensor.Tensor[DT, T]] interface {
 	tensor.Tensor[DT, T]
 
 	IsMatrix() bool

@@ -187,7 +187,7 @@ func (t *Dense[DT]) RollAxis(axis, start int, safe bool) (retVal *Dense[DT], err
 
 // Narrow narrows the given dimension of a tensor.
 func (t *Dense[DT]) Narrow(dim, start, length int) (*Dense[DT], error) {
-	dim = resolveAxis(dim, t.Dims())
+	dim = internal.ResolveAxis(dim, t.Dims())
 
 	slices := make([]SliceRange, internal.Min(dim+1, t.Dims()))
 	slices[dim] = SR(start, start+length, 1)

@@ -1,4 +1,4 @@
-package dense
+package internal
 
 import "testing"
 
@@ -17,7 +17,7 @@ func TestResolveAxis(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		got := resolveAxis(c.axis, c.dims)
+		got := ResolveAxis(c.axis, c.dims)
 		if got != c.expect {
 			t.Errorf("Expected %d, got %d for axis %d and dims %d", c.expect, got, c.axis, c.dims)
 		}

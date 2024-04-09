@@ -1,6 +1,7 @@
 package dense
 
 import (
+	"gorgonia.org/tensor"
 	stdeng "gorgonia.org/tensor/engines"
 )
 
@@ -8,7 +9,9 @@ func defaultEngine[DT any]() Engine {
 	var e Engine
 	var v DT
 
-	switch any(v).(type) { // TODO fill in rest of numeric engine
+	switch v := any(v).(type) { // TODO fill in rest of numeric engine
+	case tensor.Engineer:
+		return v.Engine()
 	case int:
 		e = stdeng.StdOrderedNumEngine[int, *Dense[int]]{}
 	case int8:
@@ -36,8 +39,9 @@ func defaultEngine[DT any]() Engine {
 	default:
 		// rv := reflect.ValueOf(v)
 		// if rv.Comparable() {
-		// 	return stdeng.StdComparableEngine[DT, *Dense[DT]]
+		// 	return stdeng.ComparableEng[DT, *Dense[DT]]{}
 		// }
+
 		e = stdeng.StdEng[DT, *Dense[DT]]{}
 	}
 	return e
