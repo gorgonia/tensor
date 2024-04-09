@@ -135,7 +135,7 @@ func (e StdFloat64Engine[T]) Norm(ctx context.Context, t tensor.Basic[float64], 
 	}
 	d := gd.GetDense()
 
-	return norm[float64, *Dense[float64]](d, ord, axes, math.Sqrt, math.Sqrt, norm0, normN, ps)
+	return norm[float64](d, ord, axes, math.Sqrt, math.Sqrt, norm0, normN, ps)
 
 }
 

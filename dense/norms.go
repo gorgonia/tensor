@@ -5,56 +5,91 @@ import (
 	"gorgonia.org/tensor/internal/errors"
 )
 
-func norm[DT float32 | float64, T tensor.Tensor[DT, T]](t T, ord tensor.NormOrder, axes []int, sqrt, abs, norm0, normN, ps func(DT) DT) (retVal tensor.Basic[DT], err error) {
+func multisvdnorm[DT float32 | float64](t *Dense[DT], rowAxis, colAxis int) (retVal *Dense[DT], err error) {
+	if rowAxis > colAxis {
+		rowAxis--
+	}
+	dims := t.Dims()
+
+	if retVal, err = t.RollAxis(colAxis, dims, true); err != nil {
+		return
+	}
+
+	if retVal, err = retVal.RollAxis(rowAxis, dims, true); err != nil {
+		return
+	}
+
+	// manual, since SVD only works on matrices. In the future, this needs to be fixed when gonum's lapack works for float32
+	// TODO: SVDFuture
+	switch dims {
+	case 2:
+		retVal, _, _, err = retVal.SVD(false, false)
+	case 3:
+		toStack := make([]*Dense[DT], retVal.Shape()[0])
+		for i := 0; i < retVal.Shape()[0]; i++ {
+			// var sliced, ithS *Dense[DT]
+			// if sliced, err = sliceDense(retVal, ss(i)); err != nil {
+			// 	return
+			// }
+
+			// if ithS, _, _, err = sliced.SVD(false, false); err != nil {
+			// 	return
+			// }
+
+			// toStack[i] = ithS
+		}
+
+		retVal, err = toStack[0].Stack(0, toStack[1:]...)
+		return
+	default:
+		err = errors.Errorf("multiSVDNorm for dimensions greater than 3")
+	}
+
+	return
+}
+
+func norm[DT float32 | float64](t *Dense[DT], ord tensor.NormOrder, axes []int, sqrt, abs, norm0, normN, ps func(DT) DT) (retVal *Dense[DT], err error) {
 	sq := func(a DT) DT { return a * a }
 
 	switch len(axes) {
 	case 1:
 		switch {
 		case ord.IsUnordered() || ord == tensor.Norm(2):
-			ret, err := t.Apply(sq)
-			if err != nil {
+			if retVal, err = t.Apply(sq); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-2: square step")
 			}
-			r := any(ret).(*Dense[DT])
-			if r, err = Sum(r, tensor.Along(axes...)); err != nil {
+			if retVal, err = Sum(retVal, tensor.Along(axes...)); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-2: sum step")
 			}
-			return r.Apply(sqrt, tensor.UseUnsafe)
+			return retVal.Apply(sqrt, tensor.UseUnsafe)
 		case ord.IsInf(1):
-			ret, err := t.Apply(abs)
-			if err != nil {
+			if retVal, err = t.Apply(abs); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm +∞: abs")
 			}
-			return Max(any(ret).(*Dense[DT]), tensor.Along(axes...))
+			return Max(retVal, tensor.Along(axes...))
 		case ord.IsInf(-1):
-			ret, err := t.Apply(abs)
-			if err != nil {
+			if retVal, err = t.Apply(abs); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm -∞: abs")
 			}
-			return Min(any(ret).(*Dense[DT]), tensor.Along(axes...))
+			return Min(retVal, tensor.Along(axes...))
 		case ord == tensor.Norm(0):
-			ret, err := t.Apply(norm0)
-			if err != nil {
+			if retVal, err := t.Apply(norm0); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-0: applying norm0")
 			}
-			return Sum(any(ret).(*Dense[DT]), tensor.Along(axes...))
+			return Sum(retVal, tensor.Along(axes...))
 		case ord == tensor.Norm(1):
-			ret, err := t.Apply(abs)
-			if err != nil {
+			if retVal, err := t.Apply(abs); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-0: applying abs")
 			}
-			return Sum(any(ret).(*Dense[DT]), tensor.Along(axes...))
+			return Sum(retVal, tensor.Along(axes...))
 		default:
-			ret, err := t.Apply(normN)
-			if err != nil {
+			if retVal, err := t.Apply(normN); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "Norm-0: applying normN")
 			}
-			r, err := Sum(any(ret).(*Dense[DT]), tensor.Along(axes...))
-			if err != nil {
+			if retVal, err = Sum(retVal, tensor.Along(axes...)); err != nil {
 				return retVal, errors.Wrapf(err, errors.OpFail, "NormN: sum step")
 			}
-			return r.Apply(ps, tensor.UseUnsafe)
+			return retVal.Apply(ps, tensor.UseUnsafe)
 		}
 	case 2:
 		rowAxis := axes[0]
