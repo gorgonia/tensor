@@ -196,6 +196,17 @@ func (t *Dense[DT]) Concat(axis int, tensors ...*Dense[DT]) (retVal *Dense[DT], 
 	return e.Concat(context.Background(), t, axis, tensors...)
 }
 
+func (t *Dense[DT]) Stack(axis int, others ...*Dense[DT]) (retVal *Dense[DT], err error) {
+	if err = check(checkFlags(t.e, t)); err != nil {
+		return nil, errors.Wrapf(err, errors.FailedSanity, errors.ThisFn())
+	}
+	e, ok := t.e.(tensor.Stacker[DT, *Dense[DT]])
+	if !ok {
+		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
+	}
+	return e.Stack(context.Background(), t, axis, others...)
+}
+
 // CopyTo copies the underlying data to the destination. The original data is untouched.
 // Note: CopyTo doesn't care about the metadata of the destination *Dense[DT].
 func (t *Dense[DT]) CopyTo(dest *Dense[DT]) error {
@@ -205,23 +216,9 @@ func (t *Dense[DT]) CopyTo(dest *Dense[DT]) error {
 	if dest.Size() != t.Size() {
 		return errors.Errorf(errors.SizeMismatch, t.Size(), dest.Size())
 	}
-	tf := t.Flags()
-	df := dest.Flags()
+	//	tf := t.Flags()
+	//	df := dest.Flags()
 	//te := t.Engine()
-	//de := d.Engine()
-	switch {
-	case !tf.IsNativelyAccessible() && !df.IsNativelyAccessible():
-		// if it's the same engine, then we can just copy
-		panic("NYI")
-	case !tf.IsNativelyAccessible() && df.IsNativelyAccessible():
-		panic("NYI")
-	case tf.IsNativelyAccessible() && !df.IsNativelyAccessible():
-		panic("NYI")
-	default:
-		// if both are natively accessible then we can just copy using the built in copy
-		copy(dest.Data(), t.Data())
-		return nil
-	}
-	panic("Unreachable")
-
+	de := dest.Engine()
+	return de.Memcpy(dest, t)
 }

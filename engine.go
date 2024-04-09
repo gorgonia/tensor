@@ -189,6 +189,10 @@ type Concater[DT any, T Tensor[DT, T]] interface {
 	Concat(ctx context.Context, a T, axis int, others ...T) (T, error)
 }
 
+type Stacker[DT any, T Tensor[DT, T]] interface {
+	Stack(ctx context.Context, a T, axis int, others ...T) (T, error)
+}
+
 /*
 Unary Operations
 

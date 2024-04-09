@@ -25,9 +25,31 @@ func (e StdEng[DT, T]) Memset(mem Memory, val any) error {
 	}
 	return errors.Errorf("Cannot memset %v with StdEng", mem)
 }
-func (e StdEng[DT, T]) Memclr(mem Memory)                     { panic("NYI") }
-func (e StdEng[DT, T]) Memcpy(dst, src Memory) error          { panic("NYI") }
-func (e StdEng[DT, T]) Accessible(mem Memory) (Memory, error) { panic("NYI") }
+func (e StdEng[DT, T]) Memclr(mem Memory) {
+	var z DT
+	acc, ok := mem.(tensor.RawAccessor[DT])
+	if !ok {
+		panic("Cannot Memclr non RawAccessor memories")
+	}
+	data := acc.Data()
+	for i := range data {
+		data[i] = z
+	}
+}
+func (e StdEng[DT, T]) Memcpy(dst, src Memory) error {
+	switch dst := dst.(type) {
+	case tensor.RawAccessor[DT]:
+		switch src := src.(type) {
+		case tensor.RawAccessor[DT]:
+			copy(dst.Data(), src.Data())
+			return nil
+
+		}
+	}
+	return errors.Errorf("Cannot Memcpy Memory of %T and %T", dst, src)
+}
+
+func (e StdEng[DT, T]) Accessible(mem Memory) (Memory, error) { return mem, nil }
 func (e StdEng[DT, T]) WorksWith(flags MemoryFlag, order DataOrder) bool {
 	return flags.IsNativelyAccessible()
 }
@@ -479,8 +501,4 @@ func (e StdEng[DT, T]) Concat(ctx context.Context, a T, axis int, others ...T) (
 
 	}
 	return retVal, nil
-}
-
-func (e StdEng[DT, T]) Stack(ctx context.Context, a T, axis int, others ...T) (retVal T, err error) {
-	panic("NYI")
 }
