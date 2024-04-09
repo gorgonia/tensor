@@ -123,7 +123,12 @@ func (e StdFloat32Engine[T]) Norm(ctx context.Context, t T, ord tensor.NormOrder
 		}
 	}
 
-	return norm[float32, T](t, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
+	gd, ok := any(t).(Densor[float32])
+	if !ok {
+		return nil, errors.Errorf("Cannot get *Dense[float64] out of t")
+	}
+	d := gd.GetDense()
+	return norm[float32](d, ord, axes, math32.Sqrt, math32.Sqrt, norm0, normN, ps)
 }
 
 func (e StdFloat32Engine[T]) Norm2(ctx context.Context, t T) (float32, error) {

@@ -254,3 +254,7 @@ type Scalar[DT any] interface {
 	IsScalar()
 	ScalarValue() DT
 }
+
+type CopierTo[T any] interface {
+	CopyTo(dest T) error
+}
