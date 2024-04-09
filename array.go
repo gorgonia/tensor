@@ -47,7 +47,7 @@ func arrayFromSlice(x interface{}) array {
 
 func (a *array) Len() int { return a.Header.TypedLen(a.t.Type) }
 
-func (a *array) Cap() int { return a.Header.TypedLen(a.t.Type) }
+func (a *array) Cap() int { return a.Header.TypedCap(a.t.Type) }
 
 // fromSlice populates the value from a slice
 func (a *array) fromSlice(x interface{}) {
@@ -91,10 +91,8 @@ func (a *array) sliceInto(i, j int, res *array) {
 
 	s := i * int(a.t.Size())
 	e := j * int(a.t.Size())
-	c = c - i
 
 	res.Raw = a.Raw[s:e]
-
 }
 
 // slice slices an array
