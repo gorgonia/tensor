@@ -7,7 +7,7 @@ import (
 
 var _ tensor.Tensor[float64, *Wrapped[float64]] = &Wrapped[float64]{}
 
-var _ DenseTensor[float64, *Wrapped[float64]] = &Wrapped[float64]{}
+var _ FullDenseTensor[float64, *Wrapped[float64]] = &Wrapped[float64]{}
 
 type Wrapped[DT any] struct {
 	*Dense[DT]

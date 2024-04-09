@@ -8,7 +8,7 @@ import (
 	"gorgonia.org/tensor/scalar"
 )
 
-type E[T dense.DenseTensor[Point, T]] struct {
+type E[T dense.FullDenseTensor[Point, T]] struct {
 	stdeng.StdEng[Point, T]
 }
 

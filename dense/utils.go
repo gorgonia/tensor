@@ -7,7 +7,6 @@ import (
 	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
-	"gorgonia.org/tensor/scalar"
 )
 
 type noopError interface {
@@ -22,13 +21,13 @@ func memoryFlagFromEngine(e Engine) (retVal MemoryFlag) {
 	return retVal
 }
 
-func getAliker[DT any](v Value[DT]) tensor.Aliker[*Dense[DT]] {
-	d, ok := v.(tensor.Aliker[*Dense[DT]])
-	if ok {
-		return d
-	}
-	return nil
-}
+// func getAliker[DT any](v Value[DT]) tensor.Aliker[*Dense[DT]] {
+// 	d, ok := v.(tensor.Aliker[*Dense[DT]])
+// 	if ok {
+// 		return d
+// 	}
+// 	return nil
+// }
 
 // func getNumEngine[DT Num](vs ...NumValue[DT]) NumEngine[DT] {
 // 	for _, v := range vs {
@@ -41,21 +40,21 @@ func getAliker[DT any](v Value[DT]) tensor.Aliker[*Dense[DT]] {
 
 // getLargestType  gets the largest value type amongst the values provided.
 // i.e. if a tensor and a scalar were passed in, then the tensor value will be returned
-func getLargestType[DT any](vs ...Value[DT]) Value[DT] {
-	var largest Value[DT]
-	for _, v := range vs {
-		switch v := v.(type) {
-		case scalar.Scalar[DT]:
-			if largest == nil {
-				largest = v
-			}
-		case tensor.Basic[DT]:
-			return v
-		}
-	}
-	return largest
+// func getLargestType[DT any](vs ...Value[DT]) Value[DT] {
+// 	var largest Value[DT]
+// 	for _, v := range vs {
+// 		switch v := v.(type) {
+// 		case scalar.Scalar[DT]:
+// 			if largest == nil {
+// 				largest = v
+// 			}
+// 		case tensor.Basic[DT]:
+// 			return v
+// 		}
+// 	}
+// 	return largest
 
-}
+// }
 
 // func getLargestNumType[DT Num](vs ...NumValue[DT]) NumValue[DT] {
 // 	var largest NumValue[DT]
