@@ -3,7 +3,14 @@ package array
 import (
 	"reflect"
 	"unsafe"
+
+	"gorgonia.org/tensor/internal"
+	"gorgonia.org/tensor/internal/errors"
 )
+
+type byteser interface {
+	DataAsBytes() []byte
+}
 
 // An Array holds the slice of the data type.
 type Array[DT any] struct {
@@ -11,7 +18,7 @@ type Array[DT any] struct {
 	bytes []byte // the original data, but as a slice of bytes.
 }
 
-// Make makes an array
+// Make makes an array given a slice.
 func Make[DT any](data []DT) Array[DT] {
 	bs := BytesFromSlice[DT](data)
 	return Array[DT]{
@@ -57,6 +64,18 @@ func (a *Array[DT]) Memclr() {
 	for i := range a.data {
 		a.data[i] = z
 	}
+}
+
+func (a *Array[DT]) MemcpyTo(other internal.Memory) error {
+	switch b := other.(type) {
+	case *Array[DT]:
+		copy(b.data, a.data)
+		return nil
+	case byteser:
+		copy(b.DataAsBytes(), a.bytes)
+		return nil
+	}
+	return errors.Errorf("Unable to Memcpy")
 }
 
 func (a *Array[DT]) Slice(start, end, bytesStart, bytesEnd int) {

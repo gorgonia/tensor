@@ -402,6 +402,9 @@ func (t *Dense[T]) IsView() bool            { return t.f.IsView() }
 func (t *Dense[T]) Eq(u *Dense[T]) bool {
 	// TODO: natively accessible stuff
 	// TODO: fortran flag stuff
+	if t.DataOrder() != u.DataOrder() {
+		return false
+	}
 
 	if !t.Shape().Eq(u.Shape()) {
 		return false
