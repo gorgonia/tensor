@@ -3,6 +3,7 @@ package dense_test
 import (
 	"context"
 
+	"gorgonia.org/tensor"
 	"gorgonia.org/tensor/dense"
 	stdeng "gorgonia.org/tensor/engines"
 	"gorgonia.org/tensor/scalar"
@@ -12,11 +13,15 @@ type E[T dense.FullDenseTensor[Point, T]] struct {
 	stdeng.StdEng[Point, T]
 }
 
+type Value[DT any] interface {
+	tensor.Basic[DT]
+}
+
 type Point struct {
 	X, Y int
 }
 
-func (e E[T]) Add(ctx context.Context, a, b, c dense.Value[Point]) (dense.Value[Point], error) {
+func (e E[T]) Add(ctx context.Context, a, b, c Value[Point]) (Value[Point], error) {
 	switch a := any(a).(type) {
 	case *dense.Dense[Point]:
 		switch b := any(b).(type) {
