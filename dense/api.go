@@ -146,3 +146,19 @@ func Lt[DT OrderedNum](a, b *Dense[DT], opts ...FuncOpt) (retVal DescWithStorage
 	}
 	return retVal, nil
 }
+
+func Abs[DT Num](a *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
+	e, retVal, fo, err := tensor.PrepUnOp[DT, *Dense[DT]](a, opts...)
+	if err != nil {
+		return nil, err
+	}
+	var abser tensor.Abser[DT]
+	var ok bool
+	if abser, ok = e.(tensor.Abser[DT]); !ok {
+		return nil, errors.Errorf(errors.EngineSupport, e, abser, errors.ThisFn())
+	}
+	if err = abser.Abs(fo.Ctx, a, retVal); err != nil {
+		return nil, err
+	}
+	return retVal, nil
+}
