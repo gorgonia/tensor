@@ -12,16 +12,16 @@ func (t *Dense[DT]) Sum(opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	if !e.WorksWith(nativelyAccessible, t.DataOrder()) {
 		fn = "add"
 	}
-	var z [0]DT
+	var z DT
 	switch any(z).(type) {
-	case [0]float32:
+	case float32:
 		fn = tensor.ReductionModule[float32]{
 			MonotonicReduction: execution.MonotonicSum[float32],
 			ReduceFirstN:       execution.Sum0[float32],
 			ReduceLastN:        execution.Sum[float32],
 			Reduce:             func(a, b float32) float32 { return a + b },
 		}
-	case [0]float64:
+	case float64:
 		fn = tensor.ReductionModule[float64]{
 			MonotonicReduction: execution.MonotonicSum[float64],
 			ReduceFirstN:       execution.Sum0[float64],
