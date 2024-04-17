@@ -87,6 +87,45 @@ func computeBroadcastBehaviour(aShp, bShp shapes.Shape, in internal.BroadcastBeh
 	return
 }
 
+// PrepUnOp is a function that prepares a tensor for an unary operation.
+func PrepUnOp[DT any, T Tensor[DT, T]](a T, opts ...FuncOpt) (e Engine, retVal T, fo Option, err error) {
+	e = GetEngine(a)
+	if err = check(checkFlags(e, a)); err != nil {
+		return nil, retVal, fo, err
+	}
+	aShp := a.Shape()
+
+	var prepper SpecializedFuncOptHandler[DT, T]
+	var ok bool
+
+	if prepper, ok = e.(SpecializedFuncOptHandler[DT, T]); !ok {
+		return nil, retVal, fo, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
+	}
+	if retVal, fo, err = prepper.HandleFuncOptsSpecialized(a, aShp, opts...); err != nil {
+		return nil, retVal, fo, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	}
+	return e, retVal, fo, err
+}
+
+// PrepBasicUnOpUnOp is a function that prepares a tensor for an unary operation.
+func PrepBasicUnOp[DT any](a Basic[DT], opts ...FuncOpt) (e Engine, retVal Basic[DT], fo Option, err error) {
+	e = GetEngine(a)
+	if err = check(checkFlags(e, a)); err != nil {
+		return nil, retVal, fo, err
+	}
+	aShp := a.Shape()
+
+	var prepper FuncOptHandler[DT]
+	var ok bool
+	if prepper, ok = e.(FuncOptHandler[DT]); !ok {
+		return nil, retVal, fo, errors.Errorf(errors.EngineSupport, e, prepper, errors.ThisFn(1))
+	}
+	if retVal, fo, err = prepper.HandleFuncOpts(a, aShp, opts...); err != nil {
+		return nil, retVal, fo, errors.Wrapf(err, errors.FailedFuncOpt, errors.ThisFn(1))
+	}
+	return e, retVal, fo, err
+}
+
 // PrepBinOpCis is a function that preps two basic tensors for a elementwise binary operation that returns the a tensor of the same datatype as its inputs.
 func PrepBinOpCis[DT any, T Tensor[DT, T]](a, b T, opts ...FuncOpt) (e Engine, newAPA, newAPB *AP, retVal T, fo Option, err error) {
 	e = GetEngine(a, b)
