@@ -187,7 +187,6 @@ func (e StdEng[DT, T]) HandleFuncOptsSpecialized(a T, expShape shapes.Shape, opt
 	toReuse := reuseAny != nil
 	safe := fo.Safe()
 
-	var ok bool
 	var empty T
 
 	if fo.AsType != nil {
@@ -197,32 +196,78 @@ func (e StdEng[DT, T]) HandleFuncOptsSpecialized(a T, expShape shapes.Shape, opt
 
 	switch {
 	case toReuse:
-		if retVal, ok = reuseAny.(T); !ok {
-			err = errors.Wrap(errors.Errorf(errors.TypeError, empty, reuseAny), cannotUseReuse)
-			return
-		}
-
-		if !retVal.IsNativelyAccessible() {
-			err = errors.Wrap(errors.Errorf(errors.InaccessibleData, retVal), cannotUseReuse)
-			return
-		}
-
-		// restore the state to the original
-		retVal.Restore()
-
-		if err = checkArrayShape(retVal, expShape); err != nil {
-			err = errors.Wrap(err, cannotUseReuse)
-			return
-		}
-
-		if !retVal.Shape().Eq(expShape) {
-			if err = retVal.Reshape(expShape...); err != nil {
+		switch ret := reuseAny.(type) {
+		case T:
+			if ret.IsNil() {
+				aliker, ok := any(a).(tensor.Aliker[T])
+				if !ok {
+					return retVal, fo, errors.Errorf("Tensor does not support aliker")
+				}
+				retVal = aliker.Alike(WithShape(expShape...))
 				return
 			}
-		}
+			retVal = ret
 
-		if !fo.Incr {
-			retVal.SetDataOrder(a.DataOrder())
+			if !retVal.IsNativelyAccessible() {
+				err = errors.Wrap(errors.Errorf(errors.InaccessibleData, retVal), cannotUseReuse)
+				return
+			}
+
+			// restore the state to the original
+			retVal.Restore()
+
+			if err = checkArrayShape(retVal, expShape); err != nil {
+				err = errors.Wrap(err, cannotUseReuse)
+				return
+			}
+
+			if !retVal.Shape().Eq(expShape) {
+				if err = retVal.Reshape(expShape...); err != nil {
+					return
+				}
+			}
+
+			if !fo.Incr {
+				retVal.SetDataOrder(a.DataOrder())
+			}
+		case *T:
+			retVal = *ret
+			if retVal.IsNil() {
+				aliker, ok := any(a).(tensor.Aliker[T])
+				if !ok {
+					return retVal, fo, errors.Errorf("Tensor does not support aliker")
+				}
+				retVal = aliker.Alike(WithShape(expShape...))
+				*ret = retVal
+				return
+			}
+
+			if !retVal.IsNativelyAccessible() {
+				err = errors.Wrap(errors.Errorf(errors.InaccessibleData, retVal), cannotUseReuse)
+				return
+			}
+
+			// restore the state to the original
+			retVal.Restore()
+
+			if err = checkArrayShape(retVal, expShape); err != nil {
+				err = errors.Wrap(err, cannotUseReuse)
+				return
+			}
+
+			if !retVal.Shape().Eq(expShape) {
+				if err = retVal.Reshape(expShape...); err != nil {
+					return
+				}
+			}
+
+			if !fo.Incr {
+				retVal.SetDataOrder(a.DataOrder())
+			}
+
+		default:
+			err = errors.Wrap(errors.Errorf(errors.TypeError, empty, reuseAny), cannotUseReuse)
+			return
 		}
 	case !safe:
 		// if the reuse tensor has a smaller array size than the expected array size, we cannot use unsafe.
