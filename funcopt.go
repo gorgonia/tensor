@@ -15,6 +15,7 @@ type Option struct {
 	Reuse     any
 	Incr      bool
 	Unsafe    bool
+	KeepDims  bool
 	Broadcast internal.BroadcastBehaviour
 	AsType    dtype.Dtype
 	Along     []int // only used for axial operations
@@ -33,13 +34,13 @@ func ParseFuncOpts(opts ...FuncOpt) Option {
 	return retVal
 }
 
-func UseUnsafe(o *Option)                     { o.Unsafe = true }
-func UseSafe(o *Option)                       { o.Unsafe = false }
+func UseUnsafe(o *Option)     { o.Unsafe = true }
+func UseSafe(o *Option)       { o.Unsafe = false }
+func AutoBroadcast(o *Option) { o.Broadcast = internal.BroadcastData }
+func KeepDims(o *Option)      { o.KeepDims = true }
+
 func WithReuse(reuse any) FuncOpt             { return func(o *Option) { o.Reuse = reuse } }
 func WithIncr(incr any) FuncOpt               { return func(o *Option) { o.Reuse = incr; o.Incr = true } }
 func WithContext(ctx context.Context) FuncOpt { return func(o *Option) { o.Ctx = ctx } }
 func Along(axes ...int) FuncOpt               { return func(o *Option) { o.Along = axes } }
 func As(dt dtype.Dtype) FuncOpt               { return func(o *Option) { o.AsType = dt } }
-func AutoBroadcast(o *Option) {
-	o.Broadcast = internal.BroadcastData
-}

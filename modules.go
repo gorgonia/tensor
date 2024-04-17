@@ -20,6 +20,11 @@ type ReductionModule[DT any] struct {
 	// Either this or Reduce must be filled.
 	ReduceWithErr func(DT, DT) (DT, error)
 
+	// When all else fails, resort to using names for a module
+	Name string
+
+	/* Supplementary Reduction Functions, which when supplied, will be used to speed things up */
+
 	// MonotonicReduction is a function that reduces a list of DT values into a single DT value.
 	// This package will generate a default monotonic reduction function from the Reduce function that
 	// can best be characterized as an APL-form of folds.
@@ -39,4 +44,6 @@ type ReductionModule[DT any] struct {
 	IsNonCommutative bool
 }
 
-func (r ReductionModule[DT]) IsValid() bool { return r.Reduce != nil || r.ReduceWithErr != nil }
+func (r ReductionModule[DT]) IsValid() bool {
+	return r.Reduce != nil || r.ReduceWithErr != nil || r.Name != ""
+}

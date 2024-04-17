@@ -171,6 +171,17 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a tensor.Basic[DT], a
 			} else {
 				execution.ReduceFirst[DT](a.Data(), retValData, split, size, fn.Reduce)
 			}
+		case string:
+			// we know about "add", "mul", so we should do those
+			switch fn {
+			case "add":
+				//execution.ReduceFirstN[DT](a.Data(), retValData, split, size, execution.Sum0[DT])
+				fallthrough
+			case "mul":
+				fallthrough
+			default:
+				err = errors.Errorf(errors.NYIPR, errors.ThisFn(), "string typed functions (first axis)")
+			}
 		default:
 			err = errors.Errorf("Unable to reduce with function of type %T", fn)
 		}
@@ -190,6 +201,18 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a tensor.Basic[DT], a
 			} else {
 				execution.ReduceLast[DT](aData, retValData, dimSize, defaultValue, fn.Reduce)
 			}
+
+		case string:
+			// we know about "add", "mul", so we should do those
+			switch fn {
+			case "add":
+				//execution.ReduceFirstN[DT](a.Data(), retValData, split, size, execution.Sum0[DT])
+				fallthrough
+			case "mul":
+				fallthrough
+			default:
+				err = errors.Errorf(errors.NYIPR, errors.ThisFn(), "string typed functions (last axis)")
+			}
 		default:
 			err = errors.Errorf("Unable to reduce last axis with function of type %T", fn)
 		}
@@ -207,6 +230,17 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a tensor.Basic[DT], a
 			err = execution.ReduceDefaultWithErr[DT](aData, retValData, dim0, dimSize, outerStride, stride, expected, fn)
 		case tensor.ReductionModule[DT]:
 			execution.ReduceDefault[DT](aData, retValData, dim0, dimSize, outerStride, stride, expected, fn.Reduce)
+		case string:
+			// we know about "add", "mul", so we should do those
+			switch fn {
+			case "add":
+				//execution.ReduceFirstN[DT](a.Data(), retValData, split, size, execution.Sum0[DT])
+				fallthrough
+			case "mul":
+				fallthrough
+			default:
+				err = errors.Errorf(errors.NYIPR, errors.ThisFn(), "string typed functions (arbitrary axis)")
+			}
 		default:
 			err = errors.Errorf("Unable to reduce axis %d with function of type %T", axis, fn)
 		}
@@ -221,6 +255,7 @@ func (e StdEng[DT, T]) Reduce(ctx context.Context, fn any, a tensor.Basic[DT], a
 
 func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT, a tensor.Basic[DT], retVal tensor.Basic[DT], along ...int) (err error) {
 	fn := mod.(tensor.ReductionModule[DT])
+
 	if fn.IsNonCommutative {
 		return e.nonCommReduceAlong(ctx, fn, defaultValue, a, retVal, along...)
 	}
@@ -254,6 +289,7 @@ func (e StdEng[DT, T]) ReduceAlong(ctx context.Context, mod any, defaultValue DT
 		input = retVal
 	}
 	return nil
+
 }
 
 func (e StdEng[DT, T]) nonCommReduceAlong(ctx context.Context, fn tensor.ReductionModule[DT], defaultValue DT, a tensor.Basic[DT], retVal tensor.Basic[DT], along ...int) (err error) {

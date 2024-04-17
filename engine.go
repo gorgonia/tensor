@@ -129,7 +129,7 @@ type Reducer[DT any] interface {
 	Reduce(ctx context.Context, fn any, a Basic[DT], axis int, defaultValue DT, retVal Basic[DT]) (err error)
 	ReduceAlong(ctx context.Context, fns any, defaultValue DT, a Basic[DT], retVal Basic[DT], along ...int) (err error)
 
-	PrepReduce(a Basic[DT], opts ...FuncOpt) (ctx context.Context, axes []int, retVal Basic[DT], err error)
+	PrepReduce(a Basic[DT], opts ...FuncOpt) (fo Option, axes []int, retVal Basic[DT], err error)
 }
 
 type Scanner[DT any] interface {

@@ -268,11 +268,12 @@ func (e StdEng[DT, T]) PrepRepeat(a T, axis int, repeats []int, opts ...FuncOpt)
 		err = errors.Wrapf(err, cannotPrepRepeat)
 		return
 	}
-	return fo.Ctx, retVal, newAxis, size, newRepeats, nil
+	ctx = fo.Ctx
+	return ctx, retVal, newAxis, size, newRepeats, nil
 }
 
 // PrepReduce is a helper function to help reductions
-func (e StdEng[DT, T]) PrepReduce(a tensor.Basic[DT], opts ...FuncOpt) (ctx context.Context, axes []int, retVal tensor.Basic[DT], err error) {
+func (e StdEng[DT, T]) PrepReduce(a tensor.Basic[DT], opts ...FuncOpt) (fo Option, axes []int, retVal tensor.Basic[DT], err error) {
 	// compute the largest shape after reduction
 	// for example:
 	//
@@ -315,12 +316,10 @@ func (e StdEng[DT, T]) PrepReduce(a tensor.Basic[DT], opts ...FuncOpt) (ctx cont
 	newShape := internal.ReduceShape(shp, minAx)
 
 	// now  we have the expected shape, handle the FuncOpts
-	var fo Option
 	if retVal, fo, err = e.HandleFuncOpts(a, newShape, opts...); err != nil {
-		return ctx, axes, retVal, errors.Wrapf(err, "Unable to PrepReduce")
+		return fo, axes, retVal, errors.Wrapf(err, "Unable to PrepReduce")
 	}
 
-	ctx = fo.Ctx
 	axes = fo.Along
 	toReuse := fo.Reuse != nil
 	safe := fo.Safe()
@@ -331,19 +330,19 @@ func (e StdEng[DT, T]) PrepReduce(a tensor.Basic[DT], opts ...FuncOpt) (ctx cont
 
 	for _, axis := range axes {
 		if axis >= a.Dims() {
-			return nil, axes, retVal, errors.Errorf(errors.DimMismatch, axis, a.Dims())
+			return fo, axes, retVal, errors.Errorf(errors.DimMismatch, axis, a.Dims())
 		}
 	}
 
 	switch {
 	case toReuse:
 		// reshape is already handled by handleFuncOpt
-		return ctx, axes, retVal, err
+		return fo, axes, retVal, err
 	case safe:
 		//	retVal = a.Alike(WithShape(newShape...))
-		return ctx, axes, retVal, nil
+		return fo, axes, retVal, nil
 	case !safe:
-		return ctx, axes, retVal, errors.New("Reduce only supports safe operations")
+		return fo, axes, retVal, errors.New("Reduce only supports safe operations")
 		// case !retVal.IsNativelyAccessible():
 		// this case is unreachable because handleFuncOpts already checks this
 		// 	return nil, retVal, errors.Errorf(errors.InaccessibleData, retVal)

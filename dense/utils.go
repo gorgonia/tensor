@@ -125,6 +125,10 @@ func redFunc2Mod[DT any](fn any) (retVal tensor.ReductionModule[DT], err error) 
 			return fn, errors.Errorf("Invalid ReductionModule")
 		}
 		return fn, nil
+	case string:
+		return tensor.ReductionModule[DT]{
+			Name: fn,
+		}, nil
 	default:
 		return retVal, errors.Errorf("Cannot put fn of %T into a ReductionFunctions. Please file a pull request", fn)
 	}
