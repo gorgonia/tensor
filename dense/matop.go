@@ -6,6 +6,7 @@ import (
 	"gorgonia.org/shapes"
 	"gorgonia.org/tensor"
 	stdeng "gorgonia.org/tensor/engines"
+	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/errors"
 )
 
@@ -53,16 +54,30 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 		return nil, errors.Errorf(errors.EngineSupport, t.e, e, errors.ThisFn())
 	}
 
-	ctx, axes, reuse, err := e.PrepReduce(t, opts...)
+	fo, axes, reuse, err := e.PrepReduce(t, opts...)
 	if err != nil {
 		return nil, errors.Wrap(err, "PrepReduce")
+	}
+	ctx := fo.Ctx
+	var finalShape shapes.Shape
+	if fo.KeepDims {
+		finalShape = t.Shape().Clone()
+		dims := finalShape.Dims()
+		for _, ax := range fo.Along {
+			x := internal.ResolveAxis(ax, dims)
+			finalShape[x] = 1
+		}
+		defer func() {
+			err = retVal.Reshape(finalShape...)
+		}()
 	}
 
 	if len(axes) == 1 {
 		if err = e.Reduce(ctx, fn, t, axes[0], defaultVal, reuse); err != nil {
 			return nil, err
 		}
-		return reuse.(*Dense[DT]), nil
+		retVal = reuse.(*Dense[DT])
+		return retVal, nil
 	}
 
 	module, err := redFunc2Mod[DT](fn)
@@ -73,7 +88,8 @@ func (t *Dense[DT]) Reduce(fn any, defaultVal DT, opts ...FuncOpt) (retVal *Dens
 	if err = e.ReduceAlong(ctx, module, defaultVal, t, reuse, axes...); err != nil {
 		return nil, errors.Wrap(err, "Cannot Reduce. ReduceAlong caused an error.")
 	}
-	return reuse.(*Dense[DT]), nil
+	retVal = reuse.(*Dense[DT])
+	return retVal, nil
 }
 
 func (t *Dense[DT]) Scan(fn func(a, b DT) DT, axis int, opts ...FuncOpt) (retVal *Dense[DT], err error) {
