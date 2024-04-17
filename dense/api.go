@@ -47,7 +47,13 @@ func Min[DT constraints.Ordered](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[D
 
 // Sum returns the sum of the elements in the tensor. To return the sum of along one or more particular axes, use the Along funcopt.
 func Sum[DT Num](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
-	module := tensor.ReductionModule[DT]{
+	var fn any
+	e := a.e.Workhorse()
+	var nativelyAccessible tensor.MemoryFlag
+	if !e.WorksWith(nativelyAccessible, a.DataOrder()) {
+		fn = "add"
+	}
+	fn = tensor.ReductionModule[DT]{
 		MonotonicReduction: execution.MonotonicSum[DT],
 		ReduceFirstN:       execution.Sum0[DT],
 		ReduceLastN:        execution.Sum[DT],
@@ -55,7 +61,7 @@ func Sum[DT Num](a *Dense[DT], opts ...FuncOpt) (retVal *Dense[DT], err error) {
 	}
 
 	var z DT
-	return a.Reduce(module, z, opts...)
+	return a.Reduce(fn, z, opts...)
 }
 
 // Prod returns the product of the elements in the tensor. To return the product of along one or more particular axes, use the Along funcopt.

@@ -128,8 +128,7 @@ type Argmethoder[DT any, T Tensor[DT, T]] interface {
 type Reducer[DT any, T Tensor[DT, T]] interface {
 	Reduce(ctx context.Context, fn any, a T, axis int, defaultValue DT, retVal T) (err error)
 	ReduceAlong(ctx context.Context, fns any, defaultValue DT, a T, retVal T, along ...int) (err error)
-
-	PrepReduce(a T, opts ...FuncOpt) (ctx context.Context, axes []int, retVal T, err error)
+	PrepReduce(a T, opts ...FuncOpt) (fo Option, axes []int, retVal T, err error)
 }
 
 type Scanner[DT any, T Tensor[DT, T]] interface {
