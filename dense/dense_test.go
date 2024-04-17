@@ -10,6 +10,7 @@ import (
 	"gorgonia.org/tensor/internal"
 	"gorgonia.org/tensor/internal/array"
 	"gorgonia.org/tensor/internal/errors"
+	gutils "gorgonia.org/tensor/internal/utils"
 )
 
 type ExampleMemory[DT any] []byte
@@ -348,5 +349,25 @@ func TestDense_At(t *testing.T) {
 	if _, err := T.At(1, 2); err == nil {
 		t.Fatalf("Expected error. Got none")
 	}
+
+}
+
+func TestDense_NilReuse(t *testing.T) {
+	assert := assert.New(t)
+	d := New[float64](WithShape(2, 3, 4), WithBacking(gutils.Range[float64](-24, 0)))
+	var reuse *Dense[float64]
+	retVal, err := Abs(d, WithReuse(reuse))
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotEqual(retVal, reuse)
+	correct := gutils.Range[float64](24, 0)
+	assert.Equal(retVal.Data(), correct)
+
+	retVal, err = Abs(d, WithReuse(&reuse)) // SUPPORTED BUT NOT RECOMMENDED
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(retVal, reuse)
 
 }
