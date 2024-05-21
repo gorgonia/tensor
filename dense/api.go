@@ -152,9 +152,9 @@ func Abs[DT Num](a *Dense[DT], opts ...FuncOpt) (*Dense[DT], error) {
 	if err != nil {
 		return nil, err
 	}
-	var abser tensor.Abser[DT]
+	var abser tensor.Abser[DT, *Dense[DT]]
 	var ok bool
-	if abser, ok = e.(tensor.Abser[DT]); !ok {
+	if abser, ok = e.(tensor.Abser[DT, *Dense[DT]]); !ok {
 		return nil, errors.Errorf(errors.EngineSupport, e, abser, errors.ThisFn())
 	}
 	if err = abser.Abs(fo.Ctx, a, retVal); err != nil {
