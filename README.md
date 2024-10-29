@@ -261,10 +261,10 @@ Significant Contributors list will be updated once a month (if anyone even uses 
 
 # Licence #
 
-Gorgonia and the `tensor` package are licenced under a variant of Apache 2.0. It's for all intents and purposes the same as the Apache 2.0 Licence, with the exception of not being able to commercially profit directly from the package unless you're a Significant Contributor (for example, providing commercial support for the package). It's perfectly fine to profit directly from a derivative of Gorgonia (for example, if you use Gorgonia as a library in your product)
+Gorgonia and the `tensor` package are licenced Apache 2.0.
 
 
-Everyone is still allowed to use Gorgonia for commercial purposes (example: using it in a software for your business).
+Everyone is allowed to use Gorgonia for commercial purposes (example: using it in a software for your business).
 
 ## Various Other Copyright Notices ##
 
